@@ -1,0 +1,85 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
+import { FinancialDashboardService } from '@/lib/services/reporting/financial-dashboard.service'
+import { InventoryAnalyticsService } from '@/lib/services/reporting/inventory-analytics.service'
+import { SalesAnalyticsService } from '@/lib/services/reporting/sales-analytics.service'
+import { z } from 'zod'
+
+const dashboardMetricsSchema = z.object({
+  asOfDate: z.string().optional(),
+  includeInventory: z.string().optional(),
+  includeSales: z.string().optional()
+})
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await verifyJWTFromRequest(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    const { searchParams } = new URL(request.url)
+    const asOfDateParam = searchParams.get('asOfDate')
+    const includeInventoryParam = searchParams.get('includeInventory')
+    const includeSalesParam = searchParams.get('includeSales')
+    
+    const data = dashboardMetricsSchema.parse({
+      asOfDate: asOfDateParam,
+      includeInventory: includeInventoryParam,
+      includeSales: includeSalesParam
+    })
+    
+    const asOfDate = data.asOfDate ? new Date(data.asOfDate) : new Date()
+    const includeInventory = data.includeInventory === 'true'
+    const includeSales = data.includeSales === 'true'
+
+    // Initialize services
+    const dashboardService = new FinancialDashboardService()
+    const inventoryService = new InventoryAnalyticsService()
+    const salesService = new SalesAnalyticsService()
+
+    // Get metrics in parallel
+    const [
+      dashboardMetrics,
+      inventoryMetrics,
+      salesMetrics
+    ] = await Promise.all([
+      dashboardService.getDashboardMetrics(asOfDate),
+      includeInventory ? inventoryService.getInventoryMetrics() : null,
+      includeSales ? salesService.getSalesMetrics(
+        new Date(asOfDate.getFullYear(), asOfDate.getMonth(), 1),
+        asOfDate
+      ) : null
+    ])
+
+    const response = {
+      financial: dashboardMetrics,
+      ...(inventoryMetrics && { inventory: inventoryMetrics }),
+      ...(salesMetrics && { sales: salesMetrics }),
+      asOfDate: asOfDate.toISOString()
+    }
+    
+    return NextResponse.json({ data: response })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      )
+    }
+    
+    console.error('Error getting dashboard metrics:', error)
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to get dashboard metrics' },
+      { status: 500 }
+    )
+  }
+}

@@ -1,0 +1,87 @@
+/**
+ * Example of enhanced API route using new error handling system
+ * 
+ * Before: Manual error handling with repetitive try-catch blocks
+ * After: Clean code with automatic error handling and performance monitoring
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { LeadService } from '@/lib/services/lead.service'
+import { createLeadSchema, leadListQuerySchema } from '@/lib/validators/lead.validator'
+import { getUserFromRequest } from '@/lib/utils/auth'
+import { withPOST, withGET } from '@/lib/middleware/error-middleware'
+import { throwAuthenticationError, BusinessLogicError } from '@/lib/utils/error-handler'
+
+// POST handler with automatic error handling
+export const POST = withPOST(async (request: NextRequest) => {
+  // No need for try-catch - middleware handles all errors automatically
+  
+  // Authenticate user (throws AuthenticationError if invalid)
+  const user = await getUserFromRequest(request)
+  
+  // Parse and validate request body (throws ZodError if invalid)
+  const body = await request.json()
+  const validatedData = createLeadSchema.parse(body)
+  
+  // Business logic validation
+  if (validatedData.estimatedValue && validatedData.estimatedValue < 0) {
+    throw new BusinessLogicError(
+      'Estimated value cannot be negative',
+      'INVALID_ESTIMATED_VALUE',
+      { estimatedValue: validatedData.estimatedValue },
+      ['Use a positive value for estimated value', 'Leave blank if unknown']
+    )
+  }
+  
+  // Create lead (throws database errors if failed)
+  const leadService = new LeadService()
+  const lead = await leadService.createLead(validatedData, user.id)
+  
+  return NextResponse.json(lead, { status: 201 })
+})
+
+// GET handler with automatic error handling and performance monitoring
+export const GET = withGET(async (request: NextRequest) => {
+  // Authenticate user
+  const user = await getUserFromRequest(request)
+  
+  // Parse query parameters
+  const { searchParams } = new URL(request.url)
+  const queryParams = Object.fromEntries(searchParams.entries())
+  
+  // Validate query parameters
+  const validatedQuery = leadListQuerySchema.parse(queryParams)
+  
+  // Get leads
+  const leadService = new LeadService()
+  const result = await leadService.getLeads(validatedQuery, user.id)
+  
+  return NextResponse.json(result)
+})
+
+/* 
+Key Benefits of the Enhanced Approach:
+
+1. **No Manual Error Handling**: Middleware automatically catches and formats all errors
+2. **Consistent Error Responses**: All errors follow the same ErrorResponse format
+3. **Better Error Context**: Automatic logging with request details
+4. **Performance Monitoring**: Automatic timing and slow request detection
+5. **Business Logic Errors**: Easy to throw custom errors with suggestions
+6. **Type Safety**: Full TypeScript support with proper typing
+
+Error Response Example:
+{
+  "error": "BusinessLogicError",
+  "message": "Estimated value cannot be negative",
+  "category": "BUSINESS_LOGIC",
+  "severity": "MEDIUM",
+  "code": "INVALID_ESTIMATED_VALUE",
+  "details": { "estimatedValue": -1000 },
+  "timestamp": "2024-01-20T10:30:00.000Z",
+  "requestId": "req_1705747800000_abc123def",
+  "suggestions": [
+    "Use a positive value for estimated value",
+    "Leave blank if unknown"
+  ]
+}
+*/

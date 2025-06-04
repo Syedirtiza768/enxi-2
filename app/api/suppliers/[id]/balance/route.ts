@@ -1,0 +1,35 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
+import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
+
+// GET /api/suppliers/[id]/balance - Get supplier balance
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await verifyJWTFromRequest(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const supplierPaymentService = new SupplierPaymentService()
+    const balance = await supplierPaymentService.getSupplierBalance(params.id)
+
+    return NextResponse.json({ data: balance })
+  } catch (error) {
+    console.error('Error fetching supplier balance:', error)
+    
+    if (error.message?.includes('not found')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 404 }
+      )
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to fetch supplier balance' },
+      { status: 500 }
+    )
+  }
+}

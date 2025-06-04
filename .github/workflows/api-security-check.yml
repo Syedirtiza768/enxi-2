@@ -1,0 +1,84 @@
+name: API Security and Integration Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  api-security-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check for raw fetch calls
+        run: |
+          echo "🔍 Checking for unauthorized raw fetch() calls..."
+          # Look for fetch calls outside of allowed files
+          if grep -r "fetch(" --include="*.ts" --include="*.tsx" \
+             --exclude-dir=node_modules \
+             --exclude="**/lib/api/client.ts" \
+             --exclude="**/*.test.*" \
+             --exclude="**/*.spec.*" \
+             --exclude-dir=tests \
+             .; then
+            echo "❌ Raw fetch() calls found! Use apiClient or api helper methods instead."
+            echo "Files with raw fetch calls:"
+            grep -r "fetch(" --include="*.ts" --include="*.tsx" \
+               --exclude-dir=node_modules \
+               --exclude="**/lib/api/client.ts" \
+               --exclude="**/*.test.*" \
+               --exclude="**/*.spec.*" \
+               --exclude-dir=tests \
+               . || true
+            exit 1
+          else
+            echo "✅ No unauthorized raw fetch() calls found."
+          fi
+      
+      - name: Check for empty Select.Item values
+        run: |
+          echo "🔍 Checking for empty Select.Item values..."
+          if grep -r 'value=""' --include="*.tsx" --exclude-dir=node_modules .; then
+            echo "❌ Empty Select.Item values found! Use meaningful values like 'ALL' instead."
+            exit 1
+          else
+            echo "✅ No empty Select.Item values found."
+          fi
+      
+      - name: Run API integration tests
+        run: |
+          echo "🧪 Running API client integration tests..."
+          npm test -- tests/integration/api-client.test.ts
+      
+      - name: Run Select validation tests
+        run: |
+          echo "🧪 Running Select component validation tests..."
+          npm test -- tests/components/select-validation.test.tsx
+      
+      - name: Check TypeScript compilation
+        run: |
+          echo "🔧 Checking TypeScript compilation..."
+          npx tsc --noEmit
+      
+      - name: Lint check
+        run: |
+          echo "🧹 Running ESLint checks..."
+          npm run lint
+      
+      - name: Security audit
+        run: |
+          echo "🔒 Running security audit..."
+          npm audit --audit-level high
