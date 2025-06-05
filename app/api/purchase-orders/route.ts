@@ -4,7 +4,7 @@ import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.ser
 import { POStatus } from '@/lib/generated/prisma'
 
 // GET /api/purchase-orders - Get all purchase orders
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/purchase-orders - Create purchase order
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

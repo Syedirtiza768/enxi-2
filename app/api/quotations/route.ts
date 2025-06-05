@@ -4,9 +4,9 @@ import { QuotationService } from '@/lib/services/quotation.service'
 import { QuotationStatus } from '@/lib/generated/prisma'
 
 // GET /api/quotations - List all quotations with filtering
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     const searchParams = request.nextUrl.searchParams
     
@@ -63,9 +63,9 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/quotations - Create new quotation
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { 
@@ -103,7 +103,7 @@ export async function POST(_request: NextRequest) {
       deliveryTerms,
       notes,
       items,
-      createdBy: _user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

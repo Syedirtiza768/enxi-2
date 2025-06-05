@@ -71,10 +71,6 @@ export function ShipmentList() {
   const [total, setTotal] = useState(0)
   const limit = 10
 
-  useEffect(() => {
-    fetchShipments()
-  }, [page, statusFilter, searchTerm, fetchShipments])
-
   const fetchShipments = useCallback(async () => {
     try {
       setLoading(true)
@@ -107,6 +103,10 @@ export function ShipmentList() {
       setLoading(false)
     }
   }, [page, statusFilter, searchTerm, limit])
+
+  useEffect(() => {
+    fetchShipments()
+  }, [fetchShipments])
 
   const getStatusIcon = (status: string) => {
     switch (status) {

@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SalesAnalyticsService } from '@/lib/services/reporting/sales-analytics.service'
 
 // GET /api/reporting/sales-analytics
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

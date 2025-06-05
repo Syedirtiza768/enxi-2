@@ -4,7 +4,7 @@ import { StockMovementService, CreateStockMovementInput } from '@/lib/services/i
 import { MovementType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/stock-movements - Get stock movements
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -55,7 +55,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/inventory/stock-movements - Create stock movement
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

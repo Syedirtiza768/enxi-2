@@ -26,7 +26,7 @@ const convertCurrencySchema = z.object({
   toCurrency: z.string().length(3)
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const currencyService = new CurrencyService()
     const { searchParams } = new URL(request.url)
@@ -90,7 +90,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // TODO: Add authentication
     const userId = 'system' // Replace with actual user authentication

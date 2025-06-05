@@ -26,7 +26,7 @@ const createSalesOrderSchema = z.object({
   })).min(1)
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const salesOrderService = new SalesOrderService()
     const { searchParams } = new URL(request.url)
@@ -54,7 +54,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication

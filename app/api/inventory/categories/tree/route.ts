@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { CategoryService } from '@/lib/services/inventory/category.service'
 
 // GET /api/inventory/categories/tree - Get category hierarchy tree
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/utils/auth';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     console.warn('=== AUTH TEST START ===');
     console.warn('NODE_ENV:', process.env.NODE_ENV);
     console.warn('Headers:', Object.fromEntries(request.headers.entries()));
     console.warn('Cookies:', Array.from(request.cookies.keys()));
     
-    const _user = await getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
     
     console.warn('Auth successful:', user);
     console.warn('=== AUTH TEST SUCCESS ===');
@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     

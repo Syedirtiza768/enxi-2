@@ -4,7 +4,7 @@ import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment
 import { PaymentMethod } from '@/lib/generated/prisma'
 
 // GET /api/supplier-payments - Get all supplier payments
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -42,7 +42,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/supplier-payments - Create supplier payment
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

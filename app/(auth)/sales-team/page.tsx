@@ -69,7 +69,7 @@ export default function SalesTeamPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      setError(null)
+      _setError(null)
 
       const response = await api.get('/api/sales-team')
       if (response.ok && response.data) {

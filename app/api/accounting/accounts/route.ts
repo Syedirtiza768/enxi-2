@@ -7,11 +7,11 @@ import {
 } from '@/lib/generated/prisma'
 
 // GET /api/accounting/accounts - List all accounts with filtering
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const chartOfAccountsService = new ChartOfAccountsService()
-    const searchParams = _request.nextUrl.searchParams
+    const searchParams = request.nextUrl.searchParams
     
     const options: {
       type?: AccountType
@@ -50,9 +50,9 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/accounting/accounts - Create new account
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const body = await request.json()
     const { code, name, type, currency, description, parentId } = body
 

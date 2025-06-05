@@ -76,19 +76,6 @@ export function UserList() {
 
   const limit = 20
 
-  useEffect(() => {
-    fetchUsers()
-  }, [page, roleFilter, statusFilter, fetchUsers])
-
-  useEffect(() => {
-    // Reset to page 1 when search changes
-    if (page !== 1) {
-      setPage(1)
-    } else {
-      fetchUsers()
-    }
-  }, [search, page, fetchUsers])
-
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
@@ -119,6 +106,19 @@ export function UserList() {
       setLoading(false)
     }
   }, [page, search, roleFilter, statusFilter, limit])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [page, roleFilter, statusFilter, fetchUsers])
+
+  useEffect(() => {
+    // Reset to page 1 when search changes
+    if (page !== 1) {
+      setPage(1)
+    } else {
+      fetchUsers()
+    }
+  }, [search, page, fetchUsers])
 
   const getRoleBadge = (role: Role) => {
     const roleConfig = {

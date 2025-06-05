@@ -79,10 +79,6 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
   // Validation state
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    fetchSalesOrder()
-  }, [fetchSalesOrder])
-
   const fetchSalesOrder = useCallback(async () => {
     try {
       setLoading(true)
@@ -105,6 +101,10 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
       setLoading(false)
     }
   }, [salesOrderId])
+
+  useEffect(() => {
+    fetchSalesOrder()
+  }, [fetchSalesOrder])
 
   const getAvailableQuantity = (item: SalesOrderItem) => {
     return item.quantity - item.quantityShipped

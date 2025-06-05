@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
 
 // GET /api/sales-cases/metrics - Get sales case metrics
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const salesCaseService = new SalesCaseService()
     const searchParams = request.nextUrl.searchParams
     

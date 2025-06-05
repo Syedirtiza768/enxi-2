@@ -4,7 +4,7 @@ import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.serv
 import { ItemType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/items - Get all items with filters
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/inventory/items - Create new item
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

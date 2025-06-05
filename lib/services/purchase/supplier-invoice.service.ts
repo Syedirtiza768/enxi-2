@@ -31,26 +31,12 @@ export interface SupplierInvoiceWithDetails extends SupplierInvoice {
   supplier: {
     id: string
     name: string
-    code: string
     supplierNumber: string
   }
-  items: Array<SupplierInvoiceItem & {
-    goodsReceiptItem: {
-      id: string
-      quantityReceived: number
-      quantityInvoiced?: number
-      goodsReceipt: {
-        receiptNumber: string
-        purchaseOrder: {
-          orderNumber: string
-        }
-      }
-    }
-    account: {
-      code: string
-      name: string
-    }
-  }>
+  purchaseOrder?: {
+    id: string
+    poNumber: string
+  }
   journalEntry?: {
     id: string
     entryNumber: string
@@ -136,7 +122,6 @@ export class SupplierInvoiceService {
             select: {
               id: true,
               name: true,
-              code: true,
               supplierNumber: true
             }
           }
@@ -173,8 +158,7 @@ export class SupplierInvoiceService {
             },
             account: {
               select: {
-                code: true,
-                name: true
+                  name: true
               }
             }
           }
@@ -367,7 +351,6 @@ export class SupplierInvoiceService {
           select: {
             id: true,
             name: true,
-            code: true,
             supplierNumber: true
           }
         },
@@ -388,8 +371,7 @@ export class SupplierInvoiceService {
             },
             account: {
               select: {
-                code: true,
-                name: true
+                  name: true
               }
             }
           }
@@ -450,7 +432,7 @@ export class SupplierInvoiceService {
       where.OR = [
         { invoiceNumber: { contains: search, mode: 'insensitive' } },
         { supplier: { name: { contains: search, mode: 'insensitive' } } },
-        { supplier: { code: { contains: search, mode: 'insensitive' } } }
+        { supplier: { supplierNumber: { contains: search, mode: 'insensitive' } } }
       ]
     }
 
@@ -464,31 +446,13 @@ export class SupplierInvoiceService {
           select: {
             id: true,
             name: true,
-            code: true,
             supplierNumber: true
           }
         },
-        items: {
-          include: {
-            goodsReceiptItem: {
-              include: {
-                goodsReceipt: {
-                  include: {
-                    purchaseOrder: {
-                      select: {
-                        orderNumber: true
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            account: {
-              select: {
-                code: true,
-                name: true
-              }
-            }
+        purchaseOrder: {
+          select: {
+            id: true,
+            poNumber: true
           }
         },
         journalEntry: {
@@ -564,7 +528,6 @@ export class SupplierInvoiceService {
             select: {
               id: true,
               name: true,
-              code: true,
               supplierNumber: true
             }
           }
@@ -608,8 +571,7 @@ export class SupplierInvoiceService {
               },
               account: {
                 select: {
-                  code: true,
-                  name: true
+                      name: true
                 }
               }
             }
@@ -669,7 +631,6 @@ export class SupplierInvoiceService {
             select: {
               id: true,
               name: true,
-              code: true,
               supplierNumber: true
             }
           },
@@ -690,8 +651,7 @@ export class SupplierInvoiceService {
               },
               account: {
                 select: {
-                  code: true,
-                  name: true
+                      name: true
                 }
               }
             }

@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { FinancialStatementsService } from '@/lib/services/accounting/financial-statements.service'
 
 // GET /api/accounting/reports/balance-sheet - Generate balance sheet
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const searchParams = request.nextUrl.searchParams
     
     const asOfDateParam = searchParams.get('asOfDate')

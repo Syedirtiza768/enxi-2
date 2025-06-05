@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 
 // GET /api/accounting/accounts/tree - Get hierarchical account tree
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const chartOfAccountsService = new ChartOfAccountsService()
     const accountTree = await chartOfAccountsService.getAccountTree()
 

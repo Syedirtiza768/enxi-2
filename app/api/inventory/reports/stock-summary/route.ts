@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService } from '@/lib/services/inventory/item.service'
 
 // GET /api/inventory/reports/stock-summary - Get stock summary report
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

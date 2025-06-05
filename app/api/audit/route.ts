@@ -11,7 +11,7 @@ const querySchema = z.object({
   action: z.string().optional().transform(val => val ? val as AuditAction : undefined),
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams.entries())

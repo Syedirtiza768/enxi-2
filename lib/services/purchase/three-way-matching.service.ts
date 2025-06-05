@@ -1,6 +1,6 @@
 import { BaseService } from '@/lib/services/base.service'
 import { PrismaClient } from '@/lib/generated/prisma'
-import { getAuditedPrisma } from '@/lib/utils/get-audited-prisma'
+import { prisma } from '@/lib/db/prisma'
 
 interface MatchingTolerance {
   quantityTolerancePercent: number
@@ -116,17 +116,14 @@ interface MatchingMetrics {
 }
 
 export class ThreeWayMatchingService extends BaseService {
-  private auditedPrisma: PrismaClient
-
   constructor() {
     super('ThreeWayMatchingService')
-    this.auditedPrisma = getAuditedPrisma()
   }
 
   async analyzeThreeWayMatching(purchaseOrderId: string): Promise<ThreeWayMatchingAnalysis> {
     return this.withLogging('analyzeThreeWayMatching', async () => {
       // Get purchase order with all related data
-      const purchaseOrder = await this.auditedPrisma.purchaseOrder.findUnique({
+      const purchaseOrder = await prisma.purchaseOrder.findUnique({
         where: { id: purchaseOrderId },
         include: {
           supplier: true,
@@ -143,7 +140,7 @@ export class ThreeWayMatchingService extends BaseService {
       }
 
       // Get all goods receipts for this PO
-      const goodsReceipts = await this.auditedPrisma.goodsReceipt.findMany({
+      const goodsReceipts = await prisma.goodsReceipt.findMany({
         where: { purchaseOrderId },
         include: {
           items: {
@@ -157,7 +154,7 @@ export class ThreeWayMatchingService extends BaseService {
       // Get all supplier invoices related to these goods receipts
       const goodsReceiptItemIds = goodsReceipts.flatMap(gr => gr.items.map(item => item.id))
       
-      const supplierInvoices = await this.auditedPrisma.supplierInvoice.findMany({
+      const supplierInvoices = await prisma.supplierInvoice.findMany({
         where: {
           supplierId: purchaseOrder.supplierId,
           items: {
@@ -284,7 +281,7 @@ export class ThreeWayMatchingService extends BaseService {
     request: ApprovalRequest
   ): Promise<{ approved: boolean; matchingStatus: string }> {
     return this.withLogging('approveMatching', async () => {
-      const result = await this.auditedPrisma.$transaction(async (prisma) => {
+      const result = await prisma.$transaction(async (prisma) => {
         // Update supplier invoice matching status
         const updatedInvoice = await prisma.supplierInvoice.update({
           where: { id: supplierInvoiceId },
@@ -320,7 +317,7 @@ export class ThreeWayMatchingService extends BaseService {
     request: RejectionRequest
   ): Promise<{ rejected: boolean; matchingStatus: string; requiredActions: string[] }> {
     return this.withLogging('rejectMatching', async () => {
-      const result = await this.auditedPrisma.$transaction(async (prisma) => {
+      const result = await prisma.$transaction(async (prisma) => {
         // Update supplier invoice matching status
         const updatedInvoice = await prisma.supplierInvoice.update({
           where: { id: supplierInvoiceId },
@@ -403,7 +400,7 @@ export class ThreeWayMatchingService extends BaseService {
       }
 
       // Get supplier invoices with discrepancies
-      const invoicesWithDiscrepancies = await this.auditedPrisma.supplierInvoice.findMany({
+      const invoicesWithDiscrepancies = await prisma.supplierInvoice.findMany({
         where: {
           ...where,
           matchingStatus: {
@@ -412,19 +409,7 @@ export class ThreeWayMatchingService extends BaseService {
         },
         include: {
           supplier: true,
-          items: {
-            include: {
-              goodsReceiptItem: {
-                include: {
-                  goodsReceipt: {
-                    include: {
-                      purchaseOrder: true
-                    }
-                  }
-                }
-              }
-            }
-          }
+          purchaseOrder: true
         }
       })
 
@@ -492,7 +477,7 @@ export class ThreeWayMatchingService extends BaseService {
       }
 
       // Get all supplier invoices in the period
-      const invoices = await this.auditedPrisma.supplierInvoice.findMany({
+      const invoices = await prisma.supplierInvoice.findMany({
         where,
         include: {
           supplier: true

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { globalErrorHandler } from '@/lib/utils/global-error-handler';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(_request.url);
     

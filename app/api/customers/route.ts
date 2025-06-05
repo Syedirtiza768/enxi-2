@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { CustomerService } from '@/lib/services/customer.service'
 
 // GET /api/customers - List all customers with search
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const customerService = new CustomerService()
     const searchParams = request.nextUrl.searchParams
     
@@ -32,9 +32,9 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/customers - Create new customer
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { 
@@ -72,7 +72,7 @@ export async function POST(_request: NextRequest) {
       creditLimit,
       paymentTerms,
       leadId,
-      createdBy: _user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

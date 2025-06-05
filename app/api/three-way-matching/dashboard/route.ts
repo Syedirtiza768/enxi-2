@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 // GET /api/three-way-matching/dashboard - Get three-way matching dashboard data
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

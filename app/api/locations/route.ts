@@ -4,7 +4,7 @@ import { LocationService } from '@/lib/services/warehouse/location.service'
 import { LocationType } from '@/lib/generated/prisma'
 
 // GET /api/locations - Get all locations
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/locations - Create location
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

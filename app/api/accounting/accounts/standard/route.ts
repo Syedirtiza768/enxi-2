@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 
 // POST /api/accounting/accounts/standard - Create standard COA
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const body = await request.json()
     const { currency = 'USD' } = body
 

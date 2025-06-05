@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Get route testing status and configuration
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const routes = await routeDiscovery.discoverAllRoutes();
     const categorizedRoutes = routeDiscovery.getRoutesByCategory();

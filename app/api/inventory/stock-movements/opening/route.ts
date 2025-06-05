@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 
 // POST /api/inventory/stock-movements/opening - Create opening stock
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

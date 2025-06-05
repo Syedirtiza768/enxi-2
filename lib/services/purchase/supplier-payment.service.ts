@@ -1,6 +1,6 @@
 import { BaseService } from '@/lib/services/base.service'
 import { PrismaClient, PaymentMethod, Prisma } from '@/lib/generated/prisma'
-import { getAuditedPrisma } from '@/lib/utils/get-audited-prisma'
+import { prisma } from '@/lib/db/prisma'
 
 interface CreateSupplierPaymentInput {
   supplierId: string
@@ -42,11 +42,8 @@ interface SupplierBalance {
 }
 
 export class SupplierPaymentService extends BaseService {
-  private auditedPrisma: PrismaClient
-
   constructor() {
     super('SupplierPaymentService')
-    this.auditedPrisma = getAuditedPrisma()
   }
 
   async createSupplierPayment(data: CreateSupplierPaymentInput) {
@@ -55,7 +52,7 @@ export class SupplierPaymentService extends BaseService {
       this.validateCreatePaymentInput(data)
 
       // Get supplier and validate
-      const supplier = await this.auditedPrisma.supplier.findUnique({
+      const supplier = await prisma.supplier.findUnique({
         where: { id: data.supplierId },
         include: { apAccount: true }
       })
@@ -73,7 +70,7 @@ export class SupplierPaymentService extends BaseService {
       }
 
       // Get bank account and validate
-      const bankAccount = await this.auditedPrisma.account.findUnique({
+      const bankAccount = await prisma.account.findUnique({
         where: { id: data.bankAccountId }
       })
 
@@ -88,7 +85,7 @@ export class SupplierPaymentService extends BaseService {
       let supplierInvoice = null
       if (data.supplierInvoiceId) {
         // Validate invoice and check remaining balance
-        supplierInvoice = await this.auditedPrisma.supplierInvoice.findUnique({
+        supplierInvoice = await prisma.supplierInvoice.findUnique({
           where: { id: data.supplierInvoiceId },
           include: {
             payments: true
@@ -125,7 +122,7 @@ export class SupplierPaymentService extends BaseService {
       const baseAmount = data.amount * exchangeRate
 
       // Create payment in transaction
-      const result = await this.auditedPrisma.$transaction(async (prisma) => {
+      const result = await prisma.$transaction(async (prisma) => {
         // Create the payment
         const payment = await prisma.supplierPayment.create({
           data: {
@@ -183,7 +180,7 @@ export class SupplierPaymentService extends BaseService {
       })
 
       // Return payment with all relations
-      return this.auditedPrisma.supplierPayment.findUnique({
+      return prisma.supplierPayment.findUnique({
         where: { id: result.id },
         include: {
           supplier: true,
@@ -202,7 +199,7 @@ export class SupplierPaymentService extends BaseService {
 
   async updateSupplierPayment(paymentId: string, data: UpdateSupplierPaymentInput, _updatedBy: string) {
     return this.withLogging('updateSupplierPayment', async () => {
-      const payment = await this.auditedPrisma.supplierPayment.findUnique({
+      const payment = await prisma.supplierPayment.findUnique({
         where: { id: paymentId }
       })
 
@@ -216,7 +213,7 @@ export class SupplierPaymentService extends BaseService {
       if (data.notes !== undefined) updateData.notes = data.notes
       if (data.paymentMethod !== undefined) updateData.paymentMethod = data.paymentMethod
 
-      const updatedPayment = await this.auditedPrisma.supplierPayment.update({
+      const updatedPayment = await prisma.supplierPayment.update({
         where: { id: paymentId },
         data: updateData,
         include: {
@@ -238,7 +235,7 @@ export class SupplierPaymentService extends BaseService {
 
   async getSupplierPayment(paymentId: string) {
     return this.withLogging('getSupplierPayment', async () => {
-      const payment = await this.auditedPrisma.supplierPayment.findUnique({
+      const payment = await prisma.supplierPayment.findUnique({
         where: { id: paymentId },
         include: {
           supplier: true,
@@ -295,7 +292,7 @@ export class SupplierPaymentService extends BaseService {
         ]
       }
 
-      const payments = await this.auditedPrisma.supplierPayment.findMany({
+      const payments = await prisma.supplierPayment.findMany({
         where,
         include: {
           supplier: true,
@@ -312,7 +309,7 @@ export class SupplierPaymentService extends BaseService {
 
   async getPaymentsBySupplier(supplierId: string, options: { limit?: number; offset?: number } = {}) {
     return this.withLogging('getPaymentsBySupplier', async () => {
-      const payments = await this.auditedPrisma.supplierPayment.findMany({
+      const payments = await prisma.supplierPayment.findMany({
         where: { supplierId },
         include: {
           supplier: true,
@@ -329,7 +326,7 @@ export class SupplierPaymentService extends BaseService {
 
   async getPaymentsByInvoice(supplierInvoiceId: string) {
     return this.withLogging('getPaymentsByInvoice', async () => {
-      const payments = await this.auditedPrisma.supplierPayment.findMany({
+      const payments = await prisma.supplierPayment.findMany({
         where: { supplierInvoiceId },
         include: {
           supplier: true,
@@ -344,7 +341,7 @@ export class SupplierPaymentService extends BaseService {
 
   async getSupplierBalance(supplierId: string): Promise<SupplierBalance> {
     return this.withLogging('getSupplierBalance', async () => {
-      const supplier = await this.auditedPrisma.supplier.findUnique({
+      const supplier = await prisma.supplier.findUnique({
         where: { id: supplierId }
       })
 
@@ -353,7 +350,7 @@ export class SupplierPaymentService extends BaseService {
       }
 
       // Get all invoices for the supplier
-      const invoices = await this.auditedPrisma.supplierInvoice.findMany({
+      const invoices = await prisma.supplierInvoice.findMany({
         where: {
           supplierId,
           status: { in: ['POSTED', 'PAID'] }
@@ -364,7 +361,7 @@ export class SupplierPaymentService extends BaseService {
       })
 
       // Get all payments for the supplier
-      const allPayments = await this.auditedPrisma.supplierPayment.findMany({
+      const allPayments = await prisma.supplierPayment.findMany({
         where: { supplierId }
       })
 

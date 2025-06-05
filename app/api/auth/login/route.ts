@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
     // Log successful login (skip for now to avoid issues)
     try {
       await auditService.logAction({
-        userId: _user.id,
+        userId: user.id,
         action: AuditAction.LOGIN,
         entityType: 'User',
-        entityId: _user.id,
+        entityId: user.id,
         metadata: { 
           success: true,
           username: user.username

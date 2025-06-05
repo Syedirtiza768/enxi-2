@@ -3,7 +3,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const customerId = searchParams.get('customerId')
@@ -58,7 +58,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {

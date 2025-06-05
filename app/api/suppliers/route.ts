@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierService } from '@/lib/services/purchase/supplier.service'
 
 // GET /api/suppliers - Get all suppliers
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -37,7 +37,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/suppliers - Create supplier
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

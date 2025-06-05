@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { UnitOfMeasureService, CreateUnitOfMeasureInput } from '@/lib/services/inventory/unit-of-measure.service'
 
 // GET /api/inventory/units-of-measure - Get all units of measure
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST /api/inventory/units-of-measure - Create new unit of measure
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
