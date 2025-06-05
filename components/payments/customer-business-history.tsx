@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -76,9 +76,9 @@ export function CustomerBusinessHistory({
 
   useEffect(() => {
     loadCustomerBusinessData()
-  }, [customerId])
+  }, [customerId, loadCustomerBusinessData])
 
-  const loadCustomerBusinessData = async () => {
+  const loadCustomerBusinessData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -105,7 +105,7 @@ export function CustomerBusinessHistory({
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

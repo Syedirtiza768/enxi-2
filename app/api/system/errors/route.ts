@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { globalErrorHandler } from '@/lib/utils/global-error-handler';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(_request.url);
     
     // Parse filters from query parameters
     const resolved = searchParams.get('resolved') === 'true' ? true : 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       minOccurrences
     }).slice(0, limit);
 
-    let response: any = {
+    const response: unknown = {
       errors: errorReports.map(report => ({
         id: report.id,
         resolved: report.resolved,
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
           requestId: report.context.requestId
         },
         // Include error message but not full stack trace for security
-        errorMessage: report.error.message,
+        errorMessage: report.error instanceof Error ? report.error.message : String(report.error),
         errorType: report.error.constructor.name
       })),
       total: errorReports.length,
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       response.systemHealth = globalErrorHandler.getSystemHealth();
     }
 
-    console.log('Error reports retrieved', {
+    console.warn('Error reports retrieved', {
       total: errorReports.length,
       filters: { resolved, minOccurrences }
     });
@@ -59,13 +59,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
 
   } catch (error) {
-    console.error('Failed to retrieve error reports', error);
-    
-    return NextResponse.json({
-      error: 'Failed to retrieve error reports',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to get error reports' },
+      { status: 500 }
+    );
   }
 }
 
@@ -86,7 +84,7 @@ export async function PATCH(request: NextRequest) {
     const success = false;
     
     if (success) {
-      console.log('Error marked as resolved', { errorId });
+      console.warn('Error marked as resolved', { errorId });
       
       return NextResponse.json({
         success: true,
@@ -102,12 +100,11 @@ export async function PATCH(request: NextRequest) {
     }
 
   } catch (error) {
-    console.error('Failed to mark error as resolved', error);
-    
-    return NextResponse.json({
-      error: 'Failed to mark error as resolved',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to mark error as resolved' },
+      { status: 500 }
+    );
   }
 }
 
@@ -120,7 +117,7 @@ export async function DELETE(request: NextRequest) {
     // Note: This would need to be implemented in globalErrorHandler
     // For now, return a placeholder response
     
-    console.log('Clear old errors requested', { olderThanHours });
+    console.warn('Clear old errors requested', { olderThanHours });
     
     return NextResponse.json({
       success: true,
@@ -130,11 +127,10 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Failed to clear old errors', error);
-    
-    return NextResponse.json({
-      error: 'Failed to clear old errors',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to clear old errors' },
+      { status: 500 }
+    );
   }
 }

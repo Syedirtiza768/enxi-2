@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Edit, Send, FileText, Trash2, Copy, DollarSign, Download, Mail } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { ArrowLeft, Edit, Send, FileText, Trash2, DollarSign, Download } from 'lucide-react'
 import { InvoiceForm } from '@/components/invoices/invoice-form'
 import { PaymentForm } from '@/components/payments/payment-form'
 import { apiClient } from '@/lib/api/client'
@@ -57,7 +57,6 @@ interface Invoice {
 }
 
 export default function InvoiceDetailPage() {
-  const router = useRouter()
   const params = useParams()
   const invoiceId = params.id as string
 
@@ -94,9 +93,10 @@ export default function InvoiceDetailPage() {
     if (invoiceId) {
       fetchInvoice()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceId])
 
-  const handleUpdate = async (invoiceData: any) => {
+  const handleUpdate = async (invoiceData: Record<string, unknown>) => {
     try {
       const response = await apiClient(`/api/invoices/${invoiceId}`, {
         method: 'PUT',
@@ -110,8 +110,7 @@ export default function InvoiceDetailPage() {
       setInvoice(response.data?.data || response.data)
       setMode('view')
     } catch (error) {
-      console.error('Error updating invoice:', error)
-      throw error
+      console.error('Error:', error)
     }
   }
 
@@ -127,7 +126,7 @@ export default function InvoiceDetailPage() {
 
       setInvoice(response.data?.data || response.data)
     } catch (error) {
-      console.error('Error sending invoice:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -137,7 +136,7 @@ export default function InvoiceDetailPage() {
 
   const handleDownloadPDF = async () => {
     // TODO: Implement PDF download
-    console.log('Download PDF functionality coming soon')
+    console.warn('Download PDF functionality coming soon')
   }
 
   const handleDelete = async () => {
@@ -154,9 +153,9 @@ export default function InvoiceDetailPage() {
         throw new Error('Failed to delete invoice')
       }
 
-      router.push('/invoices')
+      window.location.href = '/invoices'
     } catch (error) {
-      console.error('Error deleting invoice:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -210,7 +209,7 @@ export default function InvoiceDetailPage() {
           {error || 'Invoice not found'}
         </h3>
         <button
-          onClick={() => router.push('/invoices')}
+          onClick={() => window.location.href = '/invoices'}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -227,7 +226,7 @@ export default function InvoiceDetailPage() {
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <button
-            onClick={() => router.push('/invoices')}
+            onClick={() => window.location.href = '/invoices'}
             className="flex items-center hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -282,7 +281,7 @@ export default function InvoiceDetailPage() {
           {/* Breadcrumb */}
           <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
             <button
-              onClick={() => router.push('/invoices')}
+              onClick={() => window.location.href = '/invoices'}
               className="flex items-center hover:text-gray-900"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />

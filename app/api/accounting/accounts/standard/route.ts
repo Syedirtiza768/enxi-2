@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 
 // POST /api/accounting/accounts/standard - Create standard COA
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     const { currency = 'USD' } = body
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await chartOfAccountsService.createStandardCOA(currency, user.id)
+    await chartOfAccountsService.createStandardCOA(currency, _user.id)
 
     // Return the created accounts
     const accounts = await chartOfAccountsService.getAllAccounts()
@@ -30,11 +30,11 @@ export async function POST(request: NextRequest) {
       message: 'Standard chart of accounts created successfully',
       data: accounts
     })
-  } catch (error) {
-    console.error('Error creating standard COA:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
       { error: 'Failed to create standard chart of accounts' },
       { status: 500 }
     )
-  }
+}
 }

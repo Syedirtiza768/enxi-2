@@ -15,48 +15,48 @@ import {
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting seed...')
+  console.warn('🌱 Starting seed...')
 
   // Clean existing data
   await cleanDatabase()
 
   // Create users
   const users = await createUsers()
-  console.log('✅ Created users')
+  console.warn('✅ Created users')
 
   // Create chart of accounts
   const accounts = await createChartOfAccounts(users.admin.id)
-  console.log('✅ Created chart of accounts')
+  console.warn('✅ Created chart of accounts')
 
   // Create customers
   const customers = await createCustomers(users.admin.id, users.sales.id)
-  console.log('✅ Created customers')
+  console.warn('✅ Created customers')
 
   // Create leads
   const leads = await createLeads(users.sales.id)
-  console.log('✅ Created leads')
+  console.warn('✅ Created leads')
 
   // Create sales cases
   const salesCases = await createSalesCases(users.sales.id, customers, leads)
-  console.log('✅ Created sales cases')
+  console.warn('✅ Created sales cases')
 
   // Create inventory foundation
   const inventory = await createInventoryFoundation(users.admin.id, accounts)
-  console.log('✅ Created inventory foundation')
+  console.warn('✅ Created inventory foundation')
 
   // Create quotations
   const quotations = await createQuotations(users.sales.id, customers, inventory.items)
-  console.log('✅ Created quotations')
+  console.warn('✅ Created quotations')
 
   // Create stock movements
   await createStockMovements(users.warehouse.id, inventory.items)
-  console.log('✅ Created stock movements')
+  console.warn('✅ Created stock movements')
 
   // Create sample journal entries
   await createSampleJournalEntries(users.accountant.id, accounts)
-  console.log('✅ Created journal entries')
+  console.warn('✅ Created journal entries')
 
-  console.log('🎉 Seed completed successfully!')
+  console.warn('🎉 Seed completed successfully!')
 }
 
 async function cleanDatabase() {
@@ -1111,7 +1111,7 @@ async function createSampleJournalEntries(accountantId: string, accounts: any) {
 
 main()
   .then(() => {
-    console.log('✅ Seed completed')
+    console.warn('✅ Seed completed')
     process.exit(0)
   })
   .catch((e) => {

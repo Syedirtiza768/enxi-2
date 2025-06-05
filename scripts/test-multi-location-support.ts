@@ -32,7 +32,7 @@ interface TestResults {
 }
 
 async function main() {
-  console.log('🏢 Starting Multi-Location Support System Test...\n')
+  console.warn('🏢 Starting Multi-Location Support System Test...\n')
   
   const results: TestResults = {
     locationsCreated: 0,
@@ -52,7 +52,7 @@ async function main() {
     const stockMovementService = new StockMovementService()
     const itemService = new ItemService()
 
-    console.log('📋 Step 1: Setting up test data...')
+    console.warn('📋 Step 1: Setting up test data...')
     
     // Get admin user
     const adminUser = await prisma.user.findFirst({
@@ -79,7 +79,7 @@ async function main() {
       throw new Error('Test items not found. Please run purchase order test first.')
     }
 
-    console.log(`   Found ${testItems.length} test items`)
+    console.warn(`   Found ${testItems.length} test items`)
 
     // Get inventory account for locations
     const inventoryAccount = await prisma.account.findFirst({
@@ -96,10 +96,10 @@ async function main() {
       throw new Error('Inventory account not found')
     }
 
-    console.log('✅ Test data setup complete\n')
+    console.warn('✅ Test data setup complete\n')
 
     // Test 1: Create Multiple Locations
-    console.log('📋 Step 2: Creating multiple locations...')
+    console.warn('📋 Step 2: Creating multiple locations...')
     
     const locationData = [
       {
@@ -184,10 +184,10 @@ async function main() {
           await locationService.setDefaultLocation(newLocation.id)
         }
         
-        console.log(`   ✅ Created location: ${newLocation.name} (${newLocation.locationCode})`)
+        console.warn(`   ✅ Created location: ${newLocation.name} (${newLocation.locationCode})`)
       } catch (error: any) {
         if (error.message.includes('already exists')) {
-          console.log(`   ⚠️  Location ${location.name} code already exists, using existing`)
+          console.warn(`   ⚠️  Location ${location.name} code already exists, using existing`)
           const existingLocation = await locationService.getAllLocations({
             search: location.name
           })
@@ -200,10 +200,10 @@ async function main() {
       }
     }
 
-    console.log(`✅ Locations created: ${results.locationsCreated}\n`)
+    console.warn(`✅ Locations created: ${results.locationsCreated}\n`)
 
     // Test 2: Set up Initial Inventory at Main Warehouse
-    console.log('📋 Step 3: Setting up initial inventory at main warehouse...')
+    console.warn('📋 Step 3: Setting up initial inventory at main warehouse...')
 
     const mainWarehouse = createdLocations[0]
     
@@ -239,16 +239,16 @@ async function main() {
         results.inventoryBalancesCreated++
         results.stockMovementsCreated++
         
-        console.log(`   ✅ Set up ${initialQuantity} units of ${item.name} at ${mainWarehouse.name}`)
+        console.warn(`   ✅ Set up ${initialQuantity} units of ${item.name} at ${mainWarehouse.name}`)
       } catch (error: any) {
         results.errors.push(`Failed to set up initial inventory for ${item.name}: ${error.message}`)
       }
     }
 
-    console.log(`✅ Initial inventory setup complete\n`)
+    console.warn(`✅ Initial inventory setup complete\n`)
 
     // Test 3: Create Stock Transfers Between Locations
-    console.log('📋 Step 4: Creating stock transfers between locations...')
+    console.warn('📋 Step 4: Creating stock transfers between locations...')
 
     const transferData = [
       {
@@ -302,35 +302,35 @@ async function main() {
         createdTransfers.push(transfer)
         results.stockTransfersCreated++
         
-        console.log(`   ✅ Created transfer: ${transfer.transferNumber}`)
-        console.log(`      From: ${transferSpec.fromLocation.name} → To: ${transferSpec.toLocation.name}`)
-        console.log(`      Items: ${transferSpec.items.length}, Total Qty: ${transferSpec.items.reduce((sum, i) => sum + i.quantity, 0)}`)
+        console.warn(`   ✅ Created transfer: ${transfer.transferNumber}`)
+        console.warn(`      From: ${transferSpec.fromLocation.name} → To: ${transferSpec.toLocation.name}`)
+        console.warn(`      Items: ${transferSpec.items.length}, Total Qty: ${transferSpec.items.reduce((sum, i) => sum + i.quantity, 0)}`)
       } catch (error: any) {
         results.errors.push(`Failed to create transfer from ${transferSpec.fromLocation.name} to ${transferSpec.toLocation.name}: ${error.message}`)
       }
     }
 
-    console.log(`✅ Stock transfers created: ${results.stockTransfersCreated}\n`)
+    console.warn(`✅ Stock transfers created: ${results.stockTransfersCreated}\n`)
 
     // Test 4: Process Stock Transfer Workflow
-    console.log('📋 Step 5: Processing stock transfer workflow...')
+    console.warn('📋 Step 5: Processing stock transfer workflow...')
 
     for (const transfer of createdTransfers) {
       try {
-        console.log(`   Processing transfer ${transfer.transferNumber}...`)
+        console.warn(`   Processing transfer ${transfer.transferNumber}...`)
 
         // Step 1: Approve transfer
         const approvedTransfer = await stockTransferService.approveStockTransfer(transfer.id, adminUser.id)
-        console.log(`     ✅ Approved: ${approvedTransfer.transferNumber}`)
+        console.warn(`     ✅ Approved: ${approvedTransfer.transferNumber}`)
 
         // Step 2: Ship transfer
         const shippedTransfer = await stockTransferService.shipStockTransfer(transfer.id, adminUser.id)
-        console.log(`     ✅ Shipped: ${shippedTransfer.transferNumber}`)
+        console.warn(`     ✅ Shipped: ${shippedTransfer.transferNumber}`)
 
         // Step 3: Receive transfer
         const receivedTransfer = await stockTransferService.receiveStockTransfer(transfer.id, adminUser.id)
-        console.log(`     ✅ Received: ${receivedTransfer.transferNumber}`)
-        console.log(`     Status: ${receivedTransfer.status}`)
+        console.warn(`     ✅ Received: ${receivedTransfer.transferNumber}`)
+        console.warn(`     Status: ${receivedTransfer.status}`)
 
         results.stockMovementsCreated += transfer.items.length * 2 // Outbound + Inbound movements
 
@@ -339,10 +339,10 @@ async function main() {
       }
     }
 
-    console.log(`✅ Stock transfer workflow processing complete\n`)
+    console.warn(`✅ Stock transfer workflow processing complete\n`)
 
     // Test 5: Test Stock Reservations
-    console.log('📋 Step 6: Testing stock reservations...')
+    console.warn('📋 Step 6: Testing stock reservations...')
 
     for (const location of createdLocations.slice(1)) { // Skip main warehouse
       try {
@@ -357,7 +357,7 @@ async function main() {
           'SALES_ORDER'
         )
 
-        console.log(`   ✅ Reserved ${reserveQuantity} units of ${item.name} at ${location.name}`)
+        console.warn(`   ✅ Reserved ${reserveQuantity} units of ${item.name} at ${location.name}`)
         results.reservationsProcessed++
 
         // Release half of the reservation
@@ -368,7 +368,7 @@ async function main() {
           releaseQuantity
         )
 
-        console.log(`   ✅ Released ${releaseQuantity} units of ${item.name} at ${location.name}`)
+        console.warn(`   ✅ Released ${releaseQuantity} units of ${item.name} at ${location.name}`)
         results.reservationsProcessed++
 
       } catch (error: any) {
@@ -376,10 +376,10 @@ async function main() {
       }
     }
 
-    console.log(`✅ Stock reservations processed: ${results.reservationsProcessed}\n`)
+    console.warn(`✅ Stock reservations processed: ${results.reservationsProcessed}\n`)
 
     // Test 6: Generate Multi-Location Inventory Reports
-    console.log('📋 Step 7: Generating multi-location inventory reports...')
+    console.warn('📋 Step 7: Generating multi-location inventory reports...')
 
     try {
       // Location-specific inventory summaries
@@ -387,79 +387,79 @@ async function main() {
         const summary = await locationService.getLocationInventorySummary(location.id)
         const stockSummary = await inventoryBalanceService.getLocationStockSummary(location.id)
         
-        console.log(`   📍 ${location.name} (${location.locationCode}):`)
-        console.log(`      Total Items: ${summary.totalItems}`)
-        console.log(`      Total Quantity: ${summary.totalQuantity}`)
-        console.log(`      Total Value: $${summary.totalValue.toFixed(2)}`)
-        console.log(`      Utilization: ${summary.utilization.toFixed(1)}%`)
-        console.log(`      Low Stock Items: ${summary.lowStockItems}`)
-        console.log(`      Out of Stock Items: ${summary.outOfStockItems}`)
+        console.warn(`   📍 ${location.name} (${location.locationCode}):`)
+        console.warn(`      Total Items: ${summary.totalItems}`)
+        console.warn(`      Total Quantity: ${summary.totalQuantity}`)
+        console.warn(`      Total Value: $${summary.totalValue.toFixed(2)}`)
+        console.warn(`      Utilization: ${summary.utilization.toFixed(1)}%`)
+        console.warn(`      Low Stock Items: ${summary.lowStockItems}`)
+        console.warn(`      Out of Stock Items: ${summary.outOfStockItems}`)
       }
 
       // Multi-location stock summary
       const multiLocationSummary = await inventoryBalanceService.getMultiLocationStockSummary()
-      console.log(`\n   📊 Multi-Location Stock Summary:`)
-      console.log(`      Items tracked: ${multiLocationSummary.length}`)
+      console.warn(`\n   📊 Multi-Location Stock Summary:`)
+      console.warn(`      Items tracked: ${multiLocationSummary.length}`)
       
       for (const itemSummary of multiLocationSummary) {
-        console.log(`      📦 ${itemSummary.itemCode} - ${itemSummary.itemName}:`)
-        console.log(`         Total Quantity: ${itemSummary.totalQuantityAllLocations}`)
-        console.log(`         Total Value: $${itemSummary.totalValueAllLocations.toFixed(2)}`)
-        console.log(`         Locations with Stock: ${itemSummary.locationsWithStock}/${itemSummary.locationDetails.length}`)
+        console.warn(`      📦 ${itemSummary.itemCode} - ${itemSummary.itemName}:`)
+        console.warn(`         Total Quantity: ${itemSummary.totalQuantityAllLocations}`)
+        console.warn(`         Total Value: $${itemSummary.totalValueAllLocations.toFixed(2)}`)
+        console.warn(`         Locations with Stock: ${itemSummary.locationsWithStock}/${itemSummary.locationDetails.length}`)
         
         for (const locationDetail of itemSummary.locationDetails) {
           if (locationDetail.totalQuantity > 0) {
-            console.log(`           - ${locationDetail.locationName}: ${locationDetail.totalQuantity} units`)
+            console.warn(`           - ${locationDetail.locationName}: ${locationDetail.totalQuantity} units`)
           }
         }
       }
 
       // Low stock alerts across all locations
       const lowStockItems = await inventoryBalanceService.getLowStockItems()
-      console.log(`\n   ⚠️  Low Stock Alerts: ${lowStockItems.length} items`)
+      console.warn(`\n   ⚠️  Low Stock Alerts: ${lowStockItems.length} items`)
       for (const lowStock of lowStockItems) {
-        console.log(`      - ${lowStock.itemCode} at ${lowStock.locationName}: ${lowStock.totalQuantity} units`)
+        console.warn(`      - ${lowStock.itemCode} at ${lowStock.locationName}: ${lowStock.totalQuantity} units`)
       }
 
     } catch (error: any) {
       results.warnings.push(`Reporting test warning: ${error.message}`)
     }
 
-    console.log('✅ Multi-location inventory reports generated\n')
+    console.warn('✅ Multi-location inventory reports generated\n')
 
     // Test 7: Test Location Management Features
-    console.log('📋 Step 8: Testing location management features...')
+    console.warn('📋 Step 8: Testing location management features...')
 
     try {
       // Test default location
       const defaultLocation = await locationService.getDefaultLocation()
-      console.log(`   🏠 Default Location: ${defaultLocation?.name || 'None set'}`)
+      console.warn(`   🏠 Default Location: ${defaultLocation?.name || 'None set'}`)
 
       // Test location search
       const warehouseLocations = await locationService.getAllLocations({
         type: LocationType.WAREHOUSE,
         isActive: true
       })
-      console.log(`   🏢 Warehouse Locations: ${warehouseLocations.length}`)
+      console.warn(`   🏢 Warehouse Locations: ${warehouseLocations.length}`)
 
       const storeLocations = await locationService.getAllLocations({
         type: LocationType.STORE,
         isActive: true
       })
-      console.log(`   🏪 Store Locations: ${storeLocations.length}`)
+      console.warn(`   🏪 Store Locations: ${storeLocations.length}`)
 
       // Test location search by name
       const searchResults = await locationService.getAllLocations({
         search: 'Coast',
         isActive: true
       })
-      console.log(`   🔍 Search for 'Coast': ${searchResults.length} results`)
+      console.warn(`   🔍 Search for 'Coast': ${searchResults.length} results`)
 
     } catch (error: any) {
       results.warnings.push(`Location management test warning: ${error.message}`)
     }
 
-    console.log('✅ Location management tests complete\n')
+    console.warn('✅ Location management tests complete\n')
 
   } catch (error: any) {
     results.errors.push(`Critical error: ${error.message}`)
@@ -469,40 +469,40 @@ async function main() {
   }
 
   // Print summary
-  console.log('📊 Test Summary:')
-  console.log('================')
-  console.log(`✅ Locations Created: ${results.locationsCreated}`)
-  console.log(`✅ Stock Transfers Created: ${results.stockTransfersCreated}`)
-  console.log(`✅ Inventory Balances Created: ${results.inventoryBalancesCreated}`)
-  console.log(`✅ Stock Movements Created: ${results.stockMovementsCreated}`)
-  console.log(`✅ Reservations Processed: ${results.reservationsProcessed}`)
+  console.warn('📊 Test Summary:')
+  console.warn('================')
+  console.warn(`✅ Locations Created: ${results.locationsCreated}`)
+  console.warn(`✅ Stock Transfers Created: ${results.stockTransfersCreated}`)
+  console.warn(`✅ Inventory Balances Created: ${results.inventoryBalancesCreated}`)
+  console.warn(`✅ Stock Movements Created: ${results.stockMovementsCreated}`)
+  console.warn(`✅ Reservations Processed: ${results.reservationsProcessed}`)
   
   if (results.warnings.length > 0) {
-    console.log(`⚠️  Warnings: ${results.warnings.length}`)
+    console.warn(`⚠️  Warnings: ${results.warnings.length}`)
     results.warnings.forEach(warning => {
-      console.log(`   - ${warning}`)
+      console.warn(`   - ${warning}`)
     })
   }
   
   if (results.errors.length > 0) {
-    console.log(`❌ Errors: ${results.errors.length}`)
+    console.warn(`❌ Errors: ${results.errors.length}`)
     results.errors.forEach(error => {
-      console.log(`   - ${error}`)
+      console.warn(`   - ${error}`)
     })
   }
 
   if (results.errors.length === 0) {
-    console.log('\n🎉 Multi-Location Support System test completed successfully!')
-    console.log('\n✅ Key capabilities validated:')
-    console.log('   • Multiple location types (Warehouse, Store, Factory)')
-    console.log('   • Location-based inventory tracking')
-    console.log('   • Inter-location stock transfers with approval workflow')
-    console.log('   • Stock reservations and releases')
-    console.log('   • Multi-location inventory reporting')
-    console.log('   • Location capacity and utilization tracking')
-    console.log('\n✅ Ready for Phase 2.3: Advanced Reporting implementation')
+    console.warn('\n🎉 Multi-Location Support System test completed successfully!')
+    console.warn('\n✅ Key capabilities validated:')
+    console.warn('   • Multiple location types (Warehouse, Store, Factory)')
+    console.warn('   • Location-based inventory tracking')
+    console.warn('   • Inter-location stock transfers with approval workflow')
+    console.warn('   • Stock reservations and releases')
+    console.warn('   • Multi-location inventory reporting')
+    console.warn('   • Location capacity and utilization tracking')
+    console.warn('\n✅ Ready for Phase 2.3: Advanced Reporting implementation')
   } else {
-    console.log('\n❌ Multi-Location Support System test completed with errors')
+    console.warn('\n❌ Multi-Location Support System test completed with errors')
     process.exit(1)
   }
 }

@@ -17,10 +17,10 @@ export async function GET(
     const payments = await supplierPaymentService.getPaymentsByInvoice(params.id)
 
     return NextResponse.json({ data: payments })
-  } catch (error) {
-    console.error('Error fetching invoice payments:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch invoice payments' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -1,10 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { ItemForm } from '@/components/inventory/item-form'
-import { useAuth } from '@/lib/hooks/use-auth'
 
 interface ItemFormData {
   code: string
@@ -28,13 +26,11 @@ interface ItemFormData {
 }
 
 export default function NewItemPage() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const [submitting, setSubmitting] = useState(false)
+  const [_submitting, _setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (data: ItemFormData) => {
-    setSubmitting(true)
+    _setSubmitting(true)
     setError(null)
 
     try {
@@ -44,10 +40,7 @@ export default function NewItemPage() {
           'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: JSON.stringify({
-          ...data,
-          createdById: user?.id
-        })
+        body: JSON.stringify(data)
       })
 
       if (!response.ok) {
@@ -55,20 +48,20 @@ export default function NewItemPage() {
         throw new Error(errorData.error || 'Failed to create item')
       }
 
-      const result = await response.json()
+      const _result = await response.json()
       
       // Navigate back to items list on success
-      router.push('/inventory/items')
+      window.location.href = '/inventory/items'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create item')
       throw err // Re-throw so ItemForm can handle it
     } finally {
-      setSubmitting(false)
+      _setSubmitting(false)
     }
   }
 
   const handleCancel = () => {
-    router.push('/inventory/items')
+    window.location.href = '/inventory/items'
   }
 
   return (

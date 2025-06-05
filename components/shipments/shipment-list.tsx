@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -61,7 +61,7 @@ interface ShipmentListResponse {
 }
 
 export function ShipmentList() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -73,9 +73,9 @@ export function ShipmentList() {
 
   useEffect(() => {
     fetchShipments()
-  }, [page, statusFilter, searchTerm])
+  }, [page, statusFilter, searchTerm, fetchShipments])
 
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -106,7 +106,7 @@ export function ShipmentList() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, statusFilter, searchTerm, limit])
 
   const getStatusIcon = (status: string) => {
     switch (status) {

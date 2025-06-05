@@ -48,9 +48,8 @@ export default function AccountsPage() {
         console.error('Failed to load accounts:', response.error)
         setAccounts([])
       }
-    } catch (error) {
-      console.error('Error loading accounts:', error)
-      setAccounts([])
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

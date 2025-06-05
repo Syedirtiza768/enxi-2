@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 
 // POST /api/inventory/stock-movements/adjust - Create stock adjustment
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -32,25 +32,25 @@ export async function POST(request: NextRequest) {
       itemId,
       adjustmentQuantity,
       reason,
-      user.id,
+      _user.id,
       unitCost
     )
 
     return NextResponse.json(adjustment, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating stock adjustment:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Insufficient stock') || 
-        error.message?.includes('does not track')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Insufficient stock') || 
+        error instanceof Error ? error.message : String(error)?.includes('does not track')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

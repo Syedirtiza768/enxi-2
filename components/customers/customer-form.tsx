@@ -28,7 +28,7 @@ interface CustomerFormProps {
     phone?: string
     company?: string
   }
-  onSuccess?: (customer: any) => void
+  onSuccess?: (customer: Record<string, unknown>) => void
   onCancel?: () => void
 }
 
@@ -56,7 +56,7 @@ const industries = [
 ]
 
 export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   
@@ -74,7 +74,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
     leadId: leadData?.id
   })
 
-  const handleChange = (field: keyof CreateCustomerData, value: any) => {
+  const handleChange = (field: keyof CreateCustomerData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field
     if (errors[field]) {
@@ -111,18 +111,19 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
       } else {
         router.push(`/customers/${response.data.data.id}`)
       }
-    } catch (error: any) {
-      if (error.errors) {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error) {
         // Zod validation errors
         const fieldErrors: Record<string, string> = {}
-        error.errors.forEach((err: any) => {
+        const zodError = error as { errors: { path: (string | number)[]; message: string }[] }
+        zodError.errors.forEach((err: { path: (string | number)[]; message: string }) => {
           if (err.path[0]) {
             fieldErrors[err.path[0]] = err.message
           }
         })
         setErrors(fieldErrors)
       } else {
-        setErrors({ general: error.message || 'Failed to create customer' })
+        setErrors({ general: error instanceof Error ? error.message : 'Failed to create customer' })
       }
     } finally {
       setLoading(false)

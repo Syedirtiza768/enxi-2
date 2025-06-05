@@ -13,12 +13,12 @@ export interface WrapperOptions {
  * Universal wrapper that adds comprehensive error handling, health monitoring,
  * and logging to ANY API route handler
  */
-export function withUniversalErrorHandling<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withUniversalErrorHandling<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   route: string,
   options: WrapperOptions = {}
 ): T {
-  return (async (request: NextRequest, ...args: any[]) => {
+  return (async (request: NextRequest, ...args: unknown[]) => {
     const startTime = Date.now();
     const method = request.method;
     const requestId = crypto.randomUUID();
@@ -30,7 +30,7 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
     try {
       // Log request if enabled
       if (options.logRequests !== false) {
-        console.log(`${method} ${route} - Start`, {
+        console.warn(`${method} ${route} - Start`, {
           requestId,
           route,
           method
@@ -53,7 +53,7 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
 
       // Log successful completion
       if (options.logRequests !== false) {
-        console.log(`${method} ${route} - Success`, {
+        console.warn(`${method} ${route} - Success`, {
           requestId,
           route,
           method,
@@ -69,16 +69,12 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
 
       return response;
 
-    } catch (error) {
+    } catch (err: unknown) {
       const responseTime = Date.now() - startTime;
-      const err = error instanceof Error ? error : new Error(String(error));
 
-      // For authentication and validation errors, handle them simply
-      if (err.message.includes('authentication') || 
-          err.message.includes('No authentication token') || 
-          err.message.includes('Invalid authentication token') ||
-          err.message.includes('Unauthorized')) {
-        
+      // Handle authentication errors
+      if ((err instanceof Error && err.message?.includes('Unauthorized')) || 
+          (err instanceof Error && err.message?.includes('authentication'))) {
         // Record failed request in health monitor
         if (!options.skipHealthMonitoring) {
           routeHealthMonitor.recordRequest(route, method, responseTime, 401, err);
@@ -86,7 +82,7 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
 
         // Log auth error
         console.warn(`${method} ${route} - Authentication failed`, {
-          requestId, route, method, responseTime: `${responseTime}ms`, error: err.message
+          requestId, route, method, responseTime: `${responseTime}ms`, error: err instanceof Error ? err.message : 'Unknown error'
         });
 
         const authErrorResponse = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -97,18 +93,19 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
       }
 
       // For validation errors (ZodError)
-      if (err.name === 'ZodError' || err.message.includes('validation')) {
+      if ((err instanceof Error && err.name === 'ZodError') || 
+          (err instanceof Error && err.message.includes('validation'))) {
         // Record failed request in health monitor
         if (!options.skipHealthMonitoring) {
           routeHealthMonitor.recordRequest(route, method, responseTime, 400, err);
         }
 
         console.warn(`${method} ${route} - Validation failed`, {
-          requestId, route, method, responseTime: `${responseTime}ms`, error: err.message
+          requestId, route, method, responseTime: `${responseTime}ms`, error: err instanceof Error ? err.message : 'Unknown error'
         });
 
         const validationErrorResponse = NextResponse.json(
-          { error: 'Validation failed', message: err.message }, 
+          { error: 'Validation failed', message: err instanceof Error ? err.message : 'Validation error' }, 
           { status: 400 }
         );
         Object.entries(headers).forEach(([key, value]) => {
@@ -118,7 +115,7 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
       }
       // Record failed request in health monitor
       if (!options.skipHealthMonitoring) {
-        const statusCode = 'statusCode' in err ? (err as any).statusCode : 500;
+        const statusCode = typeof err === 'object' && err !== null && 'statusCode' in err ? (err as { statusCode: number }).statusCode : 500;
         routeHealthMonitor.recordRequest(
           route,
           method,
@@ -161,7 +158,7 @@ export function withUniversalErrorHandling<T extends (...args: any[]) => Promise
  * Quick wrapper for common API patterns
  */
 export const createApiHandler = (route: string, options?: WrapperOptions) => {
-  return <T extends (...args: any[]) => Promise<NextResponse>>(handler: T): T => {
+  return <T extends (...args: unknown[]) => Promise<NextResponse>>(handler: T): T => {
     return withUniversalErrorHandling(handler, route, options);
   };
 };
@@ -169,8 +166,8 @@ export const createApiHandler = (route: string, options?: WrapperOptions) => {
 /**
  * Decorator pattern for auto-wrapping all methods in a route file
  */
-export function wrapRouteHandlers(route: string, handlers: Record<string, any>, options?: WrapperOptions): Record<string, any> {
-  const wrappedHandlers: Record<string, any> = {};
+export function wrapRouteHandlers(route: string, handlers: Record<string, unknown>, options?: WrapperOptions): Record<string, unknown> {
+  const wrappedHandlers: Record<string, unknown> = {};
   
   for (const [method, handler] of Object.entries(handlers)) {
     if (typeof handler === 'function' && ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].includes(method)) {
@@ -190,7 +187,7 @@ export function wrapRouteHandlers(route: string, handlers: Record<string, any>, 
 /**
  * Auto-wrapping middleware for specific error types
  */
-export function withAuthErrorHandling<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withAuthErrorHandling<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   route: string
 ): T {
@@ -200,7 +197,7 @@ export function withAuthErrorHandling<T extends (...args: any[]) => Promise<Next
   });
 }
 
-export function withDatabaseErrorHandling<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withDatabaseErrorHandling<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   route: string
 ): T {
@@ -210,7 +207,7 @@ export function withDatabaseErrorHandling<T extends (...args: any[]) => Promise<
   });
 }
 
-export function withValidationErrorHandling<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withValidationErrorHandling<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   route: string
 ): T {

@@ -4,9 +4,9 @@ import { QuotationService } from '@/lib/services/quotation.service'
 import { QuotationStatus } from '@/lib/generated/prisma'
 
 // GET /api/quotations - List all quotations with filtering
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     const searchParams = request.nextUrl.searchParams
     
@@ -53,19 +53,19 @@ export async function GET(request: NextRequest) {
       success: true,
       data: quotations
     })
-  } catch (error) {
-    console.error('Error fetching quotations:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch quotations' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/quotations - Create new quotation
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { 
@@ -103,26 +103,26 @@ export async function POST(request: NextRequest) {
       deliveryTerms,
       notes,
       items,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: quotation
     }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating quotation:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('Can only create quotations')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only create quotations')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

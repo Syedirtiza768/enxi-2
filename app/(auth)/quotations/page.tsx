@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, RefreshCw, Download, FileText, Send, Eye, Edit } from 'lucide-react'
-import { PageLayout, PageHeader, PageSection, VStack, Button, Card, CardContent, CardHeader, CardTitle, Grid } from '@/components/design-system'
-import { useAuth } from '@/lib/hooks/use-auth'
+import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit } from 'lucide-react'
+import { PageLayout, PageHeader, PageSection, VStack, Grid } from '@/components/design-system'
+import { Card } from '@/components/ui/card'
 import { apiClient } from '@/lib/api/client'
 
 interface QuotationItem {
@@ -53,16 +52,8 @@ interface SalesCase {
   }
 }
 
-interface ApiResponse<T> {
-  data: T
-  total?: number
-  page?: number
-  limit?: number
-}
 
 export default function QuotationsPage() {
-  const router = useRouter()
-  const { user } = useAuth()
   
   // State management
   const [quotations, setQuotations] = useState<Quotation[]>([])
@@ -82,7 +73,7 @@ export default function QuotationsPage() {
   const limit = 20
   
   // Selection for bulk operations
-  const [selectedQuotations, setSelectedQuotations] = useState<string[]>([])
+  const [_selectedQuotations, _setSelectedQuotations] = useState<string[]>([])
   const [hoveredQuotation, setHoveredQuotation] = useState<string | null>(null)
   
   // Reference data
@@ -135,7 +126,7 @@ export default function QuotationsPage() {
         setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
       }
     } catch (error) {
-      console.error('Failed to fetch sales cases:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -146,7 +137,7 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     fetchQuotations()
-  }, [currentPage, search, statusFilter, salesCaseFilter, dateRangeFilter])
+  }, [currentPage, search, statusFilter, salesCaseFilter, dateRangeFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helper functions
   const formatCurrency = (amount: number) => {
@@ -181,16 +172,16 @@ export default function QuotationsPage() {
 
   // Event handlers
   const handleQuotationSelect = (quotation: Quotation) => {
-    router.push(`/quotations/${quotation.id}`)
+    window.location.href = `/quotations/${quotation.id}`
   }
 
   const handleCreateNew = () => {
-    router.push('/quotations/new')
+    window.location.href = '/quotations/new'
   }
 
   const handleEdit = (quotationId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    router.push(`/quotations/${quotationId}/edit`)
+    window.location.href = `/quotations/${quotationId}/edit`
   }
 
   const handleSend = async (quotationId: string, e: React.MouseEvent) => {
@@ -203,7 +194,7 @@ export default function QuotationsPage() {
         await fetchQuotations() // Refresh list
       }
     } catch (error) {
-      console.error('Failed to send quotation:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -385,10 +376,10 @@ export default function QuotationsPage() {
             </div>
 
             {/* Bulk Actions */}
-            {selectedQuotations.length > 0 && (
+            {_selectedQuotations.length > 0 && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">
-                  {selectedQuotations.length} quotation{selectedQuotations.length > 1 ? 's' : ''} selected
+                  {_selectedQuotations.length} quotation{_selectedQuotations.length > 1 ? 's' : ''} selected
                 </span>
                 <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
                   Export Selected

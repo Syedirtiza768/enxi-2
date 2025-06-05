@@ -6,12 +6,12 @@ const kpiMetricsSchema = z.object({
   asOfDate: z.string().datetime().optional()
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // TODO: Add proper authentication
-    const userId = 'system' // Replace with actual user authentication
+    const _userId = 'system' // Replace with actual user authentication
     
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     const asOfDateParam = searchParams.get('asOfDate')
     
     const data = kpiMetricsSchema.parse({
@@ -25,13 +25,6 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(metrics)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error getting KPI metrics:', error)
     
     if (error instanceof Error) {

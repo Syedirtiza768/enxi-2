@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { InventoryAnalyticsService } from '@/lib/services/reporting/inventory-analytics.service'
 
 // GET /api/reporting/inventory-analytics
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -59,10 +59,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ data: response })
-  } catch (error) {
-    console.error('Error fetching inventory analytics:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch inventory analytics' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

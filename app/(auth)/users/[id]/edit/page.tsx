@@ -24,7 +24,7 @@ interface User {
 }
 
 export default function UserEditPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const userId = params.id as string
 
@@ -36,7 +36,7 @@ export default function UserEditPage() {
     if (userId) {
       fetchUser()
     }
-  }, [userId])
+  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUser = async () => {
     try {

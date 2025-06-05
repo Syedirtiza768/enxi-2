@@ -4,9 +4,9 @@ import { JournalEntryService } from '@/lib/services/accounting/journal-entry.ser
 import { JournalStatus } from '@/lib/generated/prisma'
 
 // GET /api/accounting/journal-entries - List journal entries with filtering
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const journalEntryService = new JournalEntryService()
     const searchParams = request.nextUrl.searchParams
     
@@ -61,19 +61,19 @@ export async function GET(request: NextRequest) {
       success: true,
       data: journalEntries
     })
-  } catch (error) {
-    console.error('Error fetching journal entries:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch journal entries' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/accounting/journal-entries - Create new journal entry
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { date, description, reference, currency, exchangeRate, lines } = body
@@ -103,39 +103,39 @@ export async function POST(request: NextRequest) {
       reference,
       currency: currency || 'USD',
       exchangeRate: exchangeRate || 1.0,
-      lines: lines.map((line: any) => ({
+      lines: lines.map((line: unknown) => ({
         accountId: line.accountId,
         description: line.description,
         debitAmount: line.debitAmount || 0,
         creditAmount: line.creditAmount || 0
       })),
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: journalEntry
     }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating journal entry:', error)
     
-    if (error.message?.includes('not balanced')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not balanced')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
 
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('must have at least 2 lines')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('must have at least 2 lines')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

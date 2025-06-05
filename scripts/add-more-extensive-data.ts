@@ -13,7 +13,7 @@ const LEAD_SOURCES: LeadSource[] = [
 ]
 
 async function createAdditionalCustomers() {
-  console.log('🔥 Creating additional 50+ customers...')
+  console.warn('🔥 Creating additional 50+ customers...')
   
   const additionalCustomers = [
     // High-value customers
@@ -123,17 +123,15 @@ async function createAdditionalCustomers() {
           updatedAt: createdAt
         }
       })
-    } catch (error) {
-      console.log(`Customer ${customerData.name} might already exist, continuing...`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${additionalCustomers.length} additional customers`)
+  console.warn(`✅ Created ${additionalCustomers.length} additional customers`)
 }
 
 async function generateFinalComprehensiveStats() {
-  console.log('\n📊 FINAL COMPREHENSIVE DATABASE STATISTICS')
-  console.log('='.repeat(60))
+  console.warn('\n📊 FINAL COMPREHENSIVE DATABASE STATISTICS')
+  console.warn('='.repeat(60))
   
   try {
     // Get comprehensive statistics
@@ -189,85 +187,80 @@ async function generateFinalComprehensiveStats() {
       _sum: { totalAmount: true }
     })
     
-    console.log('\n📈 RECORD COUNTS:')
-    console.log(`   👥 Total Customers: ${customerCount.toLocaleString()}`)
-    console.log(`   🧾 Total Invoices: ${invoiceCount.toLocaleString()}`)
-    console.log(`   💳 Total Payments: ${paymentCount.toLocaleString()}`)
-    console.log(`   💼 Total Sales Cases: ${salesCaseCount.toLocaleString()}`)
-    console.log(`   📋 Total Quotations: ${quotationCount.toLocaleString()}`)
-    console.log(`   📝 Total Sales Orders: ${salesOrderCount.toLocaleString()}`)
+    console.warn('\n📈 RECORD COUNTS:')
+    console.warn(`   👥 Total Customers: ${customerCount.toLocaleString()}`)
+    console.warn(`   🧾 Total Invoices: ${invoiceCount.toLocaleString()}`)
+    console.warn(`   💳 Total Payments: ${paymentCount.toLocaleString()}`)
+    console.warn(`   💼 Total Sales Cases: ${salesCaseCount.toLocaleString()}`)
+    console.warn(`   📋 Total Quotations: ${quotationCount.toLocaleString()}`)
+    console.warn(`   📝 Total Sales Orders: ${salesOrderCount.toLocaleString()}`)
     
-    console.log('\n💰 FINANCIAL OVERVIEW:')
-    console.log(`   Total Invoice Value: $${(invoiceStats._sum.totalAmount || 0).toLocaleString()}`)
-    console.log(`   Total Payments: $${(paymentStats._sum.amount || 0).toLocaleString()}`)
-    console.log(`   Total Credit Limits: $${(customerStats._sum.creditLimit || 0).toLocaleString()}`)
-    console.log(`   Collection Rate: ${(((paymentStats._sum.amount || 0) / (invoiceStats._sum.totalAmount || 1)) * 100).toFixed(1)}%`)
-    console.log(`   Average Payment Terms: ${Math.round(customerStats._avg.paymentTerms || 30)} days`)
+    console.warn('\n💰 FINANCIAL OVERVIEW:')
+    console.warn(`   Total Invoice Value: $${(invoiceStats._sum.totalAmount || 0).toLocaleString()}`)
+    console.warn(`   Total Payments: $${(paymentStats._sum.amount || 0).toLocaleString()}`)
+    console.warn(`   Total Credit Limits: $${(customerStats._sum.creditLimit || 0).toLocaleString()}`)
+    console.warn(`   Collection Rate: ${(((paymentStats._sum.amount || 0) / (invoiceStats._sum.totalAmount || 1)) * 100).toFixed(1)}%`)
+    console.warn(`   Average Payment Terms: ${Math.round(customerStats._avg.paymentTerms || 30)} days`)
     
-    console.log('\n📊 INVOICE ANALYSIS:')
-    console.log(`   Average Invoice: $${Math.round(invoiceStats._avg.totalAmount || 0).toLocaleString()}`)
-    console.log(`   Smallest Invoice: $${(invoiceStats._min.totalAmount || 0).toLocaleString()}`)
-    console.log(`   Largest Invoice: $${(invoiceStats._max.totalAmount || 0).toLocaleString()}`)
+    console.warn('\n📊 INVOICE ANALYSIS:')
+    console.warn(`   Average Invoice: $${Math.round(invoiceStats._avg.totalAmount || 0).toLocaleString()}`)
+    console.warn(`   Smallest Invoice: $${(invoiceStats._min.totalAmount || 0).toLocaleString()}`)
+    console.warn(`   Largest Invoice: $${(invoiceStats._max.totalAmount || 0).toLocaleString()}`)
     
-    console.log('\n💳 PAYMENT ANALYSIS:')
-    console.log(`   Average Payment: $${Math.round(paymentStats._avg.amount || 0).toLocaleString()}`)
-    console.log(`   Smallest Payment: $${(paymentStats._min.amount || 0).toLocaleString()}`)
-    console.log(`   Largest Payment: $${(paymentStats._max.amount || 0).toLocaleString()}`)
-    console.log(`   Payments per Invoice: ${(paymentCount / invoiceCount).toFixed(2)}`)
+    console.warn('\n💳 PAYMENT ANALYSIS:')
+    console.warn(`   Average Payment: $${Math.round(paymentStats._avg.amount || 0).toLocaleString()}`)
+    console.warn(`   Smallest Payment: $${(paymentStats._min.amount || 0).toLocaleString()}`)
+    console.warn(`   Largest Payment: $${(paymentStats._max.amount || 0).toLocaleString()}`)
+    console.warn(`   Payments per Invoice: ${(paymentCount / invoiceCount).toFixed(2)}`)
     
-    console.log('\n🏭 TOP 15 INDUSTRIES:')
+    console.warn('\n🏭 TOP 15 INDUSTRIES:')
     industryBreakdown.slice(0, 15).forEach((industry, index) => {
       const percentage = (industry._count.industry / customerCount * 100).toFixed(1)
-      console.log(`   ${index + 1}. ${industry.industry}: ${industry._count.industry} customers (${percentage}%) - $${(industry._sum.creditLimit || 0).toLocaleString()} credit limits`)
+      console.warn(`   ${index + 1}. ${industry.industry}: ${industry._count.industry} customers (${percentage}%) - $${(industry._sum.creditLimit || 0).toLocaleString()} credit limits`)
     })
     
-    console.log('\n💱 CURRENCY BREAKDOWN:')
+    console.warn('\n💱 CURRENCY BREAKDOWN:')
     currencyStats.forEach((currency, index) => {
       const percentage = (currency._count.currency / customerCount * 100).toFixed(1)
       const avgCreditLimit = Math.round(currency._avg.creditLimit || 0)
-      console.log(`   ${index + 1}. ${currency.currency}: ${currency._count.currency} customers (${percentage}%) - $${avgCreditLimit.toLocaleString()} avg credit limit`)
+      console.warn(`   ${index + 1}. ${currency.currency}: ${currency._count.currency} customers (${percentage}%) - $${avgCreditLimit.toLocaleString()} avg credit limit`)
     })
     
-    console.log('\n📋 INVOICE STATUS BREAKDOWN:')
+    console.warn('\n📋 INVOICE STATUS BREAKDOWN:')
     invoiceStatus.forEach(status => {
       const percentage = (status._count.status / invoiceCount * 100).toFixed(1)
-      console.log(`   ${status.status.toUpperCase()}: ${status._count.status} invoices (${percentage}%) - $${(status._sum.totalAmount || 0).toLocaleString()}`)
+      console.warn(`   ${status.status.toUpperCase()}: ${status._count.status} invoices (${percentage}%) - $${(status._sum.totalAmount || 0).toLocaleString()}`)
     })
     
-    console.log('\n🎯 DATA QUALITY METRICS:')
+    console.warn('\n🎯 DATA QUALITY METRICS:')
     const dataCompleteness = (customerCount > 0 && invoiceCount > 0 && paymentCount > 0) ? 'Excellent' : 'Needs Improvement'
     const diversityScore = industryBreakdown.length
     const activityLevel = paymentCount / Math.max(1, Math.ceil((Date.now() - new Date('2022-01-01').getTime()) / (1000 * 60 * 60 * 24 * 30)))
     
-    console.log(`   Data Completeness: ${dataCompleteness}`)
-    console.log(`   Industry Diversity: ${diversityScore} different industries`)
-    console.log(`   Monthly Activity: ${activityLevel.toFixed(1)} payments per month avg`)
-    console.log(`   Business Coverage: ${customerCount > 100 ? 'Enterprise Scale' : customerCount > 50 ? 'Mid-Market' : 'Small Business'}`)
+    console.warn(`   Data Completeness: ${dataCompleteness}`)
+    console.warn(`   Industry Diversity: ${diversityScore} different industries`)
+    console.warn(`   Monthly Activity: ${activityLevel.toFixed(1)} payments per month avg`)
+    console.warn(`   Business Coverage: ${customerCount > 100 ? 'Enterprise Scale' : customerCount > 50 ? 'Mid-Market' : 'Small Business'}`)
     
-    console.log('\n✅ DATABASE EXTENSIVELY POPULATED AND READY FOR PRODUCTION TESTING!')
-    console.log('🚀 Perfect for stress testing, reporting, and performance analysis!')
+    console.warn('\n✅ DATABASE EXTENSIVELY POPULATED AND READY FOR PRODUCTION TESTING!')
+    console.warn('🚀 Perfect for stress testing, reporting, and performance analysis!')
     
-  } catch (error) {
-    console.error('Error generating comprehensive statistics:', error)
-  }
-}
+} catch {}
 
 async function runAdditionalSeeding() {
-  console.log('🔥 ADDING EXTENSIVE ADDITIONAL DATA TO EXISTING SEED')
-  console.log('='.repeat(60))
+  console.warn('🔥 ADDING EXTENSIVE ADDITIONAL DATA TO EXISTING SEED')
+  console.warn('='.repeat(60))
   
   try {
     await createAdditionalCustomers()
     await generateFinalComprehensiveStats()
     
-    console.log('\n🎉 EXTENSIVE ADDITIONAL SEEDING COMPLETED!')
+    console.warn('\n🎉 EXTENSIVE ADDITIONAL SEEDING COMPLETED!')
     
-  } catch (error) {
-    console.error('❌ Error during additional seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Run if called directly

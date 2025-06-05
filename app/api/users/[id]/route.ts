@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { z } from 'zod'
@@ -30,19 +30,11 @@ export const GET = createProtectedHandler(
       const user = await userService.getUser(userId)
 
       // Remove password from response
-      const { password, ...userResponse } = user as any
+      const { password: _password, ...userResponse } = user as Record<string, unknown> & { password: string }
       
       return NextResponse.json(userResponse)
     } catch (error) {
-      console.error('Error getting user:', error)
-      
-      if (error instanceof Error && error.message === 'User not found') {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        )
-      }
-
+      console.error('Error getting user:', error);
       return NextResponse.json(
         { error: 'Failed to get user' },
         { status: 500 }
@@ -65,19 +57,12 @@ export const PUT = createProtectedHandler(
       const user = await userService.updateUser(userId, data, request.user!.id)
 
       // Remove password from response
-      const { password, ...userResponse } = user as any
+      const { password: _password, ...userResponse } = user as Record<string, unknown> & { password: string }
       
       return NextResponse.json(userResponse)
     } catch (error) {
-      console.error('Error updating user:', error)
+      console.error('Error updating user:', error);
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid user data', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         if (error.message === 'User not found') {
           return NextResponse.json(
@@ -123,15 +108,7 @@ export const DELETE = createProtectedHandler(
       
       return NextResponse.json({ message: 'User deactivated successfully' })
     } catch (error) {
-      console.error('Error deactivating user:', error)
-      
-      if (error instanceof Error && error.message === 'User not found') {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        )
-      }
-
+      console.error('Error deactivating user:', error);
       return NextResponse.json(
         { error: 'Failed to deactivate user' },
         { status: 500 }

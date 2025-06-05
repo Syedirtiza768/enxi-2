@@ -3,15 +3,15 @@
 import { prisma } from '../lib/db/prisma'
 
 async function cleanupTestUsers() {
-  console.log('Cleaning up test data...')
+  console.warn('Cleaning up test data...')
   
   try {
     // Clean up test data in correct order
     const sessions = await prisma.userSession.deleteMany({})
-    console.log(`Deleted ${sessions.count} sessions`)
+    console.warn(`Deleted ${sessions.count} sessions`)
     
     const permissions = await prisma.userPermission.deleteMany({})
-    console.log(`Deleted ${permissions.count} user permissions`)
+    console.warn(`Deleted ${permissions.count} user permissions`)
     
     const auditLogs = await prisma.auditLog.deleteMany({
       where: {
@@ -22,7 +22,7 @@ async function cleanupTestUsers() {
         },
       },
     })
-    console.log(`Deleted ${auditLogs.count} audit logs`)
+    console.warn(`Deleted ${auditLogs.count} audit logs`)
     
     const profiles = await prisma.userProfile.deleteMany({
       where: {
@@ -33,7 +33,7 @@ async function cleanupTestUsers() {
         },
       },
     })
-    console.log(`Deleted ${profiles.count} user profiles`)
+    console.warn(`Deleted ${profiles.count} user profiles`)
     
     const users = await prisma.user.deleteMany({
       where: {
@@ -42,14 +42,13 @@ async function cleanupTestUsers() {
         },
       },
     })
-    console.log(`Deleted ${users.count} test users`)
+    console.warn(`Deleted ${users.count} test users`)
     
-    console.log('✓ Cleanup complete')
-  } catch (error) {
-    console.error('Error during cleanup:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+    console.warn('✓ Cleanup complete')
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 cleanupTestUsers()

@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ShipmentService } from '@/lib/services/shipment.service'
 import { z } from 'zod'
 
+// Define status constants to match service
+type ShipmentStatus = {
+  PREPARING: 'PREPARING'
+  READY: 'READY'
+  SHIPPED: 'SHIPPED'
+  IN_TRANSIT: 'IN_TRANSIT'
+  DELIVERED: 'DELIVERED'
+  RETURNED: 'RETURNED'
+  CANCELLED: 'CANCELLED'
+}
+
 const createShipmentSchema = z.object({
   salesOrderId: z.string().min(1, 'Sales order ID is required'),
   items: z.array(z.object({
@@ -39,7 +50,7 @@ export async function GET(request: NextRequest) {
     // If customerId is provided, use customer-specific method
     if (filters.customerId) {
       const result = await shipmentService.getShipmentsByCustomer(filters.customerId, {
-        status: filters.status as any,
+        status: filters.status as keyof ShipmentStatus,
         startDate: filters.startDate,
         endDate: filters.endDate,
         page,
@@ -57,13 +68,6 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(result)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid query parameters', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error fetching shipments:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -85,28 +89,16 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(shipment, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error && error.message.includes('Order must be approved')) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
-    if (error instanceof Error && error.message.includes('Cannot ship more than')) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error creating shipment:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    
+    if (errorMessage.includes('Order must be approved') || errorMessage.includes('Cannot ship more than')) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({}))
+    const body = await _request.json().catch(() => ({}))
     const { receivedItems } = body
 
     // Validate received items if provided
@@ -43,25 +43,25 @@ export async function POST(
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.receiveStockTransfer(
       params.id,
-      user.id,
+      _user.id,
       receivedItems
     )
 
     return NextResponse.json({ data: transfer })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error receiving stock transfer:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Can only receive') ||
-        error.message?.includes('Cannot receive more')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only receive') ||
+        error instanceof Error ? error.message : String(error)?.includes('Cannot receive more')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

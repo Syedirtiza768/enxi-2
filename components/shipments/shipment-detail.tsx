@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -80,7 +80,7 @@ interface Shipment {
 }
 
 export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const { user } = useAuth()
   const [shipment, setShipment] = useState<Shipment | null>(null)
   const [loading, setLoading] = useState(true)
@@ -105,32 +105,31 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
 
   useEffect(() => {
     fetchShipment()
-  }, [shipmentId])
+  }, [shipmentId, fetchShipment])
 
-  const fetchShipment = async () => {
+  const fetchShipment = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       const response = await api.get<Shipment>(`/api/shipments/${shipmentId}`)
       if (response.ok && response.data) {
         setShipment(response.data)
-      } else {
-        throw new Error(response.error || 'Failed to fetch shipment')
-      }
-      
         // Initialize tracking data
         setTrackingData({
           carrier: response.data.carrier || '',
           trackingNumber: response.data.trackingNumber || '',
           shippingMethod: response.data.shippingMethod || '',
         })
+      } else {
+        throw new Error(response.error || 'Failed to fetch shipment')
+      }
     } catch (err) {
       console.error('Error fetching shipment:', err)
       setError('Error loading shipment. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [shipmentId])
 
   const handleConfirmShipment = async () => {
     if (!user) return

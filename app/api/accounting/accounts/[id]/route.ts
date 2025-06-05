@@ -15,7 +15,7 @@ export async function GET(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const params = await context.params
     const chartOfAccountsService = new ChartOfAccountsService()
     const account = await chartOfAccountsService.getAccount(params.id)
@@ -32,11 +32,8 @@ export async function GET(
       data: account
     })
   } catch (error) {
-    console.error('Error fetching account:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch account' },
-      { status: 500 }
-    )
+    console.error('Error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -46,12 +43,12 @@ export async function PUT(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const params = await context.params
-    const body = await request.json()
+    const body = await _request.json()
     const { name, description, status } = body
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     
     if (name !== undefined) {
       updateData.name = name
@@ -75,24 +72,24 @@ export async function PUT(
     const account = await chartOfAccountsService.updateAccount(
       params.id,
       updateData,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({
       success: true,
       data: account
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating account:', error)
     
-    if (error.message === 'Account not found') {
+    if (error instanceof Error && error instanceof Error ? error.message : String(error) === 'Account not found') {
       return NextResponse.json(
         { error: 'Account not found' },
         { status: 404 }
       )
     }
     
-    if (error.message === 'System accounts cannot be modified') {
+    if (error instanceof Error && error instanceof Error ? error.message : String(error) === 'System accounts cannot be modified') {
       return NextResponse.json(
         { error: 'System accounts cannot be modified' },
         { status: 403 }

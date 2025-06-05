@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/services/auth.service'
 import { createUserSchema } from '@/lib/validators/auth.validator'
-import { z } from 'zod'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,21 +18,16 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
-    }
-
+} catch (error) {
+    console.error('Error:', error)
+    
     if (error instanceof Error && error.message === 'Username already exists') {
       return NextResponse.json(
         { error: 'Username already exists' },
         { status: 400 }
       )
     }
-
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

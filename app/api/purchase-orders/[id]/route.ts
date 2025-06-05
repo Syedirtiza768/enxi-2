@@ -30,10 +30,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data: purchaseOrder })
-  } catch (error) {
-    console.error('Error fetching purchase order:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch purchase order' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const {
       expectedDate,
       requestedBy,
@@ -79,23 +79,23 @@ export async function PUT(
         currency,
         exchangeRate
       },
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: purchaseOrder })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating purchase order:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Can only update draft')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only update draft')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

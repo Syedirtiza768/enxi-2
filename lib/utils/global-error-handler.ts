@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { Prisma } from '@/lib/generated/prisma';
 
@@ -8,7 +8,7 @@ export interface ErrorResponse {
   code?: string;
   requestId?: string;
   timestamp: string;
-  details?: any;
+  details?: unknown;
 }
 
 export interface ErrorContext {
@@ -19,7 +19,7 @@ export interface ErrorContext {
   userAgent?: string;
   ip?: string;
   timestamp: string;
-  additionalData?: Record<string, any>;
+  additionalData?: Record<string, unknown>;
 }
 
 export interface ErrorReport {
@@ -36,14 +36,14 @@ export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code: string;
   public readonly isOperational: boolean;
-  public readonly details?: any;
+  public readonly details?: unknown;
 
   constructor(
     message: string,
     statusCode: number = 500,
     code: string = 'INTERNAL_ERROR',
     isOperational: boolean = true,
-    details?: any
+    details?: unknown
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -109,7 +109,7 @@ class GlobalErrorHandler {
     }
 
     this.isInitialized = true;
-    console.log('Global error handler initialized');
+    console.warn('Global error handler initialized');
   }
 
   async handleError(error: Error, context: Partial<ErrorContext> = {}): Promise<ErrorReport> {
@@ -145,7 +145,7 @@ class GlobalErrorHandler {
     }
 
     // Log the error with full context
-    console.error('Global error captured', error, {
+    console.error('Global error captured', {
       errorId: report.id,
       occurrenceCount: report.occurrenceCount,
       ...fullContext
@@ -164,7 +164,7 @@ class GlobalErrorHandler {
   }
 
   private escalateError(report: ErrorReport): void {
-    console.error('Critical error escalated', report.error, {
+    console.error('Critical error escalated', {
       errorId: report.id,
       occurrenceCount: report.occurrenceCount
     });
@@ -238,7 +238,6 @@ export async function handleError(
   // Log the error with full context
   console.error(
     'Request failed',
-    error,
     {
       errorType: error instanceof Error ? error.constructor.name : typeof error,
       operation: context?.operation || 'unknown'
@@ -284,7 +283,7 @@ export async function handleError(
   }
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    console.error('Database error', error, {
+    console.error('Database error', {
       code: error.code,
       meta: error.meta
     });
@@ -374,7 +373,7 @@ export async function handleError(
   }
 
   // Unknown error type
-  console.error('Unknown error type', { error });
+  console.error('Unknown error type', { errorType: typeof error });
 
   return NextResponse.json(
     {
@@ -391,16 +390,14 @@ export async function handleError(
 }
 
 // Error handler for async operations
-export function asyncHandler<T extends (...args: any[]) => Promise<any>>(
+export function asyncHandler<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
-  context?: any
+  _context?: unknown
 ): T {
   return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args);
-    } catch (error) {
-      console.error('Async operation failed', error, context);
-      throw error;
+} catch {      throw error;
     }
   }) as T;
 }
@@ -409,17 +406,17 @@ export function asyncHandler<T extends (...args: any[]) => Promise<any>>(
 export async function withPerformanceLogging<T>(
   operation: string,
   fn: () => Promise<T>,
-  context?: any
+  context?: unknown
 ): Promise<T> {
   const startTime = Date.now();
   
-  console.log(`Starting ${operation}`, context);
+  console.warn(`Starting ${operation}`, context);
   
   try {
     const result = await fn();
     const duration = Date.now() - startTime;
     
-    console.log(`Completed ${operation}`, {
+    console.warn(`Completed ${operation}`, {
       duration: `${duration}ms`,
       success: true,
       ...context
@@ -436,9 +433,8 @@ export async function withPerformanceLogging<T>(
     
     return result;
   } catch (error) {
-    const duration = Date.now() - startTime;
-    
-    console.error(`Failed ${operation}`, error, {
+    console.error('Error handling error:', error);
+    console.warn('Error handling failed', {
       duration: `${duration}ms`,
       success: false,
       ...context

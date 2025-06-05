@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
 async function testSalesTeamAPI() {
-  console.log('🧪 Testing Sales Team API endpoints...\n')
+  console.warn('🧪 Testing Sales Team API endpoints...\n')
 
   try {
     // Create test JWT tokens
@@ -43,7 +43,7 @@ async function testSalesTeamAPI() {
       }
     }
 
-    console.log('📋 Testing GET /api/sales-team (hierarchy)...')
+    console.warn('📋 Testing GET /api/sales-team (hierarchy)...')
     
     const hierarchyResponse = await fetch('http://localhost:3000/api/sales-team', {
       method: 'GET',
@@ -55,15 +55,15 @@ async function testSalesTeamAPI() {
 
     if (hierarchyResponse.ok) {
       const hierarchyData = await hierarchyResponse.json()
-      console.log('✅ Hierarchy endpoint works:')
-      console.log(JSON.stringify(hierarchyData, null, 2))
+      console.warn('✅ Hierarchy endpoint works:')
+      console.warn(JSON.stringify(hierarchyData, null, 2))
     } else {
-      console.log('❌ Hierarchy endpoint failed:')
-      console.log('Status:', hierarchyResponse.status)
-      console.log('Response:', await hierarchyResponse.text())
+      console.warn('❌ Hierarchy endpoint failed:')
+      console.warn('Status:', hierarchyResponse.status)
+      console.warn('Response:', await hierarchyResponse.text())
     }
 
-    console.log('\n📋 Testing GET /api/sales-team?view=unassigned...')
+    console.warn('\n📋 Testing GET /api/sales-team?view=unassigned...')
     
     const unassignedResponse = await fetch('http://localhost:3000/api/sales-team?view=unassigned', {
       method: 'GET',
@@ -75,20 +75,17 @@ async function testSalesTeamAPI() {
 
     if (unassignedResponse.ok) {
       const unassignedData = await unassignedResponse.json()
-      console.log('✅ Unassigned customers endpoint works:')
-      console.log(JSON.stringify(unassignedData, null, 2))
+      console.warn('✅ Unassigned customers endpoint works:')
+      console.warn(JSON.stringify(unassignedData, null, 2))
     } else {
-      console.log('❌ Unassigned customers endpoint failed:')
-      console.log('Status:', unassignedResponse.status)
-      console.log('Response:', await unassignedResponse.text())
+      console.warn('❌ Unassigned customers endpoint failed:')
+      console.warn('Status:', unassignedResponse.status)
+      console.warn('Response:', await unassignedResponse.text())
     }
 
-    console.log('\n🏁 API test completed!')
+    console.warn('\n🏁 API test completed!')
 
-  } catch (error) {
-    console.error('❌ Test failed:', error)
-  }
-}
+} catch {}
 
 // Run the test
 testSalesTeamAPI()

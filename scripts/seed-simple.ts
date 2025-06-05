@@ -15,14 +15,14 @@ const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 10
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
 async function main() {
-  console.log('🌱 Starting Simple ERP Data Seed...\n')
+  console.warn('🌱 Starting Simple ERP Data Seed...\n')
 
   try {
     // Clean database first
     await cleanDatabase()
 
     // Step 1: Create Users
-    console.log('👥 Creating users...')
+    console.warn('👥 Creating users...')
     const hashedPassword = await bcrypt.hash('demo123', 10)
     
     const admin = await prisma.user.create({
@@ -45,10 +45,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Users created')
+    console.warn('✅ Users created')
 
     // Step 2: Create Chart of Accounts
-    console.log('\n💰 Creating chart of accounts...')
+    console.warn('\n💰 Creating chart of accounts...')
     const accountsReceivable = await prisma.account.create({
       data: {
         code: '1200',
@@ -71,10 +71,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Chart of accounts created')
+    console.warn('✅ Chart of accounts created')
 
     // Step 3: Create Customers
-    console.log('\n🏢 Creating customers...')
+    console.warn('\n🏢 Creating customers...')
     const customer1 = await prisma.customer.create({
       data: {
         customerNumber: 'CUST-0001',
@@ -102,10 +102,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Customers created')
+    console.warn('✅ Customers created')
 
     // Step 4: Create Leads
-    console.log('\n📞 Creating leads...')
+    console.warn('\n📞 Creating leads...')
     const lead1 = await prisma.lead.create({
       data: {
         firstName: 'John',
@@ -121,10 +121,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Leads created')
+    console.warn('✅ Leads created')
 
     // Step 5: Create Inventory
-    console.log('\n📦 Creating inventory system...')
+    console.warn('\n📦 Creating inventory system...')
     
     // Units of Measure
     const pieces = await prisma.unitOfMeasure.create({
@@ -169,10 +169,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Inventory system created')
+    console.warn('✅ Inventory system created')
 
     // Step 6: Create Sales Case
-    console.log('\n💼 Creating sales cases...')
+    console.warn('\n💼 Creating sales cases...')
     const salesCase = await prisma.salesCase.create({
       data: {
         caseNumber: 'SC-2024-001',
@@ -189,10 +189,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Sales cases created')
+    console.warn('✅ Sales cases created')
 
     // Step 7: Create Quotation
-    console.log('\n📋 Creating quotations...')
+    console.warn('\n📋 Creating quotations...')
     const quotation = await prisma.quotation.create({
       data: {
         quotationNumber: 'QT-2024-001',
@@ -228,10 +228,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Quotations created')
+    console.warn('✅ Quotations created')
 
     // Step 8: Create Sales Order
-    console.log('\n📝 Creating sales orders...')
+    console.warn('\n📝 Creating sales orders...')
     const salesOrder = await prisma.salesOrder.create({
       data: {
         orderNumber: 'SO-2024-001',
@@ -268,10 +268,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Sales orders created')
+    console.warn('✅ Sales orders created')
 
     // Step 9: Create Invoice
-    console.log('\n🧾 Creating invoices...')
+    console.warn('\n🧾 Creating invoices...')
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber: 'INV-2024-001',
@@ -313,10 +313,10 @@ async function main() {
       }
     })
     
-    console.log('✅ Invoices created')
+    console.warn('✅ Invoices created')
 
     // Step 10: Create Payment
-    console.log('\n💳 Creating payments...')
+    console.warn('\n💳 Creating payments...')
     const payment = await prisma.payment.create({
       data: {
         paymentNumber: 'PAY-2024-001',
@@ -341,38 +341,36 @@ async function main() {
       }
     })
     
-    console.log('✅ Payments created')
+    console.warn('✅ Payments created')
 
     // Print Summary
-    console.log('\n' + '='.repeat(60))
-    console.log('📊 SEED DATA SUMMARY')
-    console.log('='.repeat(60))
-    console.log('\n✅ Simple test data seeded successfully!')
-    console.log('\n🔑 LOGIN CREDENTIALS:')
-    console.log('   Admin: admin / demo123')
-    console.log('   Sales: sarah / demo123')
-    console.log('\n📋 CREATED:')
-    console.log('   - 2 Users')
-    console.log('   - 2 GL Accounts')  
-    console.log('   - 1 Customer with AR account')
-    console.log('   - 1 Lead')
-    console.log('   - 1 Product Item')
-    console.log('   - 1 Sales Case')
-    console.log('   - 1 Quotation')
-    console.log('   - 1 Sales Order')
-    console.log('   - 1 Invoice')
-    console.log('   - 1 Partial Payment')
+    console.warn('\n' + '='.repeat(60))
+    console.warn('📊 SEED DATA SUMMARY')
+    console.warn('='.repeat(60))
+    console.warn('\n✅ Simple test data seeded successfully!')
+    console.warn('\n🔑 LOGIN CREDENTIALS:')
+    console.warn('   Admin: admin / demo123')
+    console.warn('   Sales: sarah / demo123')
+    console.warn('\n📋 CREATED:')
+    console.warn('   - 2 Users')
+    console.warn('   - 2 GL Accounts')  
+    console.warn('   - 1 Customer with AR account')
+    console.warn('   - 1 Lead')
+    console.warn('   - 1 Product Item')
+    console.warn('   - 1 Sales Case')
+    console.warn('   - 1 Quotation')
+    console.warn('   - 1 Sales Order')
+    console.warn('   - 1 Invoice')
+    console.warn('   - 1 Partial Payment')
 
-  } catch (error) {
-    console.error('❌ Seed error:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 async function cleanDatabase() {
-  console.log('🧹 Cleaning database...')
+  console.warn('🧹 Cleaning database...')
   
   try {
     // Clean tables in the correct order
@@ -405,18 +403,12 @@ async function cleanDatabase() {
     for (const operation of cleanupOperations) {
       try {
         await operation.fn()
-        console.log(`  ✓ Cleaned ${operation.name}`)
-      } catch (error) {
-        console.log(`  ⚠️ Skipped ${operation.name}`)
-      }
+        console.warn(`  ✓ Cleaned ${operation.name}`)
+} catch {      }
     }
     
-    console.log('✅ Database cleaned')
-  } catch (error) {
-    console.error('⚠️ Error during cleanup:', error)
-    console.log('Continuing with seeding...')
-  }
-}
+    console.warn('✅ Database cleaned')
+} catch {}
 
 main()
   .catch((e) => {

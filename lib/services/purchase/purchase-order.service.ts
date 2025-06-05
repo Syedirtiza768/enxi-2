@@ -235,7 +235,7 @@ export class PurchaseOrderService extends BaseService {
   async updatePurchaseOrder(
     id: string,
     data: UpdatePurchaseOrderInput,
-    userId: string
+    _userId: string
   ): Promise<PurchaseOrderWithDetails> {
     return this.withLogging('updatePurchaseOrder', async () => {
       const existingPO = await prisma.purchaseOrder.findUnique({
@@ -496,7 +496,7 @@ export class PurchaseOrderService extends BaseService {
     })
   }
 
-  async sendToSupplier(id: string, userId: string): Promise<PurchaseOrderWithDetails> {
+  async sendToSupplier(id: string, _userId: string): Promise<PurchaseOrderWithDetails> {
     return this.withLogging('sendToSupplier', async () => {
       const po = await this.getPurchaseOrder(id)
       if (!po) {
@@ -514,7 +514,7 @@ export class PurchaseOrderService extends BaseService {
     })
   }
 
-  async cancelPurchaseOrder(id: string, userId: string): Promise<PurchaseOrderWithDetails> {
+  async cancelPurchaseOrder(id: string, _userId: string): Promise<PurchaseOrderWithDetails> {
     return this.withLogging('cancelPurchaseOrder', async () => {
       const po = await this.getPurchaseOrder(id)
       if (!po) {
@@ -536,7 +536,7 @@ export class PurchaseOrderService extends BaseService {
   private async updatePurchaseOrderStatus(
     id: string,
     status: POStatus,
-    additionalData: Record<string, any>
+    additionalData: Record<string, unknown>
   ): Promise<PurchaseOrderWithDetails> {
     const updatedPO = await prisma.purchaseOrder.update({
       where: { id },

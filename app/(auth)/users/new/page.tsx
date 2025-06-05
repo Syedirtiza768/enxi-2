@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +27,6 @@ const roles = [
 ]
 
 export default function NewUserPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -88,11 +86,11 @@ export default function NewUserPage() {
       const response = await api.post('/api/users', userData)
 
       if (response.ok) {
-        router.push('/users')
+        window.location.href = '/users'
       } else {
         setError(response.error || 'Failed to create user')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to create user. Please try again.')
     } finally {
       setIsLoading(false)
@@ -105,7 +103,7 @@ export default function NewUserPage() {
       <div className="flex items-center space-x-4">
         <Button
           variant="ghost"
-          onClick={() => router.push('/users')}
+          onClick={() => window.location.href = '/users'}
           className="flex items-center space-x-2"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -278,7 +276,7 @@ export default function NewUserPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/users')}
+                onClick={() => window.location.href = '/users'}
                 disabled={isLoading}
               >
                 Cancel

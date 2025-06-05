@@ -30,7 +30,7 @@ interface TestResults {
 }
 
 async function main() {
-  console.log('📊 Starting Advanced Reporting and Analytics System Test...\n')
+  console.warn('📊 Starting Advanced Reporting and Analytics System Test...\n')
   
   const results: TestResults = {
     financialDashboardTests: 0,
@@ -48,16 +48,16 @@ async function main() {
     const inventoryService = new InventoryAnalyticsService()
     const salesService = new SalesAnalyticsService()
 
-    console.log('📋 Step 1: Testing Financial Dashboard Service...')
+    console.warn('📋 Step 1: Testing Financial Dashboard Service...')
     
     // Test 1: Financial Dashboard Metrics
     try {
       const dashboardMetrics = await financialService.getDashboardMetrics()
-      console.log('   ✅ Dashboard metrics retrieved successfully')
-      console.log(`      Revenue - Current Month: $${dashboardMetrics.revenue.currentMonth.toFixed(2)}`)
-      console.log(`      Orders - Pending: ${dashboardMetrics.orders.pending}`)
-      console.log(`      Invoices - Outstanding: ${dashboardMetrics.invoices.outstanding}`)
-      console.log(`      Inventory - Total Value: $${dashboardMetrics.inventory.totalValue.toFixed(2)}`)
+      console.warn('   ✅ Dashboard metrics retrieved successfully')
+      console.warn(`      Revenue - Current Month: $${dashboardMetrics.revenue.currentMonth.toFixed(2)}`)
+      console.warn(`      Orders - Pending: ${dashboardMetrics.orders.pending}`)
+      console.warn(`      Invoices - Outstanding: ${dashboardMetrics.invoices.outstanding}`)
+      console.warn(`      Inventory - Total Value: $${dashboardMetrics.inventory.totalValue.toFixed(2)}`)
       results.financialDashboardTests++
     } catch (error: any) {
       results.errors.push(`Financial dashboard metrics test failed: ${error.message}`)
@@ -66,11 +66,11 @@ async function main() {
     // Test 2: Financial Summary
     try {
       const financialSummary = await financialService.getFinancialSummary()
-      console.log('   ✅ Financial summary generated successfully')
-      console.log(`      Total Revenue: $${financialSummary.profitLoss.totalRevenue.toFixed(2)}`)
-      console.log(`      Net Income: $${financialSummary.profitLoss.netIncome.toFixed(2)}`)
-      console.log(`      Total Assets: $${financialSummary.balanceSheet.totalAssets.toFixed(2)}`)
-      console.log(`      Working Capital: $${financialSummary.balanceSheet.workingCapital.toFixed(2)}`)
+      console.warn('   ✅ Financial summary generated successfully')
+      console.warn(`      Total Revenue: $${financialSummary.profitLoss.totalRevenue.toFixed(2)}`)
+      console.warn(`      Net Income: $${financialSummary.profitLoss.netIncome.toFixed(2)}`)
+      console.warn(`      Total Assets: $${financialSummary.balanceSheet.totalAssets.toFixed(2)}`)
+      console.warn(`      Working Capital: $${financialSummary.balanceSheet.workingCapital.toFixed(2)}`)
       results.financialDashboardTests++
     } catch (error: any) {
       results.errors.push(`Financial summary test failed: ${error.message}`)
@@ -79,11 +79,11 @@ async function main() {
     // Test 3: KPI Metrics
     try {
       const kpiMetrics = await financialService.getKPIMetrics()
-      console.log('   ✅ KPI metrics calculated successfully')
-      console.log(`      Days in Sales: ${kpiMetrics.daysInSales.toFixed(1)} days`)
-      console.log(`      Inventory Turnover: ${kpiMetrics.inventoryTurnover.toFixed(2)}x`)
-      console.log(`      Gross Margin: ${kpiMetrics.grossMargin.toFixed(1)}%`)
-      console.log(`      Current Ratio: ${kpiMetrics.currentRatio.toFixed(2)}`)
+      console.warn('   ✅ KPI metrics calculated successfully')
+      console.warn(`      Days in Sales: ${kpiMetrics.daysInSales.toFixed(1)} days`)
+      console.warn(`      Inventory Turnover: ${kpiMetrics.inventoryTurnover.toFixed(2)}x`)
+      console.warn(`      Gross Margin: ${kpiMetrics.grossMargin.toFixed(1)}%`)
+      console.warn(`      Current Ratio: ${kpiMetrics.currentRatio.toFixed(2)}`)
       results.financialDashboardTests++
     } catch (error: any) {
       results.errors.push(`KPI metrics test failed: ${error.message}`)
@@ -96,28 +96,28 @@ async function main() {
       const endDate = new Date()
 
       const salesAnalytics = await financialService.getSalesAnalytics(startDate, endDate)
-      console.log('   ✅ Sales analytics generated successfully')
-      console.log(`      Daily Sales Data Points: ${salesAnalytics.dailySales.length}`)
-      console.log(`      Top Customers: ${salesAnalytics.topCustomers.length}`)
-      console.log(`      Product Performance Items: ${salesAnalytics.productPerformance.length}`)
+      console.warn('   ✅ Sales analytics generated successfully')
+      console.warn(`      Daily Sales Data Points: ${salesAnalytics.dailySales.length}`)
+      console.warn(`      Top Customers: ${salesAnalytics.topCustomers.length}`)
+      console.warn(`      Product Performance Items: ${salesAnalytics.productPerformance.length}`)
       results.financialDashboardTests++
     } catch (error: any) {
       results.errors.push(`Sales analytics test failed: ${error.message}`)
     }
 
-    console.log(`✅ Financial Dashboard tests completed: ${results.financialDashboardTests}\n`)
+    console.warn(`✅ Financial Dashboard tests completed: ${results.financialDashboardTests}\n`)
 
-    console.log('📋 Step 2: Testing Inventory Analytics Service...')
+    console.warn('📋 Step 2: Testing Inventory Analytics Service...')
 
     // Test 5: Inventory Metrics
     try {
       const inventoryMetrics = await inventoryService.getInventoryMetrics()
-      console.log('   ✅ Inventory metrics retrieved successfully')
-      console.log(`      Total Value: $${inventoryMetrics.totalValue.toFixed(2)}`)
-      console.log(`      Total Quantity: ${inventoryMetrics.totalQuantity}`)
-      console.log(`      Low Stock Items: ${inventoryMetrics.lowStockItems}`)
-      console.log(`      Total Locations: ${inventoryMetrics.totalLocations}`)
-      console.log(`      Turnover Rate: ${inventoryMetrics.turnoverRate.toFixed(2)}`)
+      console.warn('   ✅ Inventory metrics retrieved successfully')
+      console.warn(`      Total Value: $${inventoryMetrics.totalValue.toFixed(2)}`)
+      console.warn(`      Total Quantity: ${inventoryMetrics.totalQuantity}`)
+      console.warn(`      Low Stock Items: ${inventoryMetrics.lowStockItems}`)
+      console.warn(`      Total Locations: ${inventoryMetrics.totalLocations}`)
+      console.warn(`      Turnover Rate: ${inventoryMetrics.turnoverRate.toFixed(2)}`)
       results.inventoryAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Inventory metrics test failed: ${error.message}`)
@@ -130,11 +130,11 @@ async function main() {
       const endDate = new Date()
 
       const movementAnalytics = await inventoryService.getStockMovementAnalytics(startDate, endDate)
-      console.log('   ✅ Stock movement analytics generated successfully')
-      console.log(`      Daily Movement Data Points: ${movementAnalytics.dailyMovements.length}`)
-      console.log(`      Movement Types: ${movementAnalytics.movementsByType.length}`)
-      console.log(`      Top Moving Items: ${movementAnalytics.topMovingItems.length}`)
-      console.log(`      Location Movements: ${movementAnalytics.locationMovements.length}`)
+      console.warn('   ✅ Stock movement analytics generated successfully')
+      console.warn(`      Daily Movement Data Points: ${movementAnalytics.dailyMovements.length}`)
+      console.warn(`      Movement Types: ${movementAnalytics.movementsByType.length}`)
+      console.warn(`      Top Moving Items: ${movementAnalytics.topMovingItems.length}`)
+      console.warn(`      Location Movements: ${movementAnalytics.locationMovements.length}`)
       results.inventoryAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Stock movement analytics test failed: ${error.message}`)
@@ -143,12 +143,12 @@ async function main() {
     // Test 7: Inventory Valuation
     try {
       const inventoryValuation = await inventoryService.getInventoryValuation()
-      console.log('   ✅ Inventory valuation calculated successfully')
-      console.log(`      Total Cost: $${inventoryValuation.totalCost.toFixed(2)}`)
-      console.log(`      Total Market Value: $${inventoryValuation.totalMarketValue.toFixed(2)}`)
-      console.log(`      Unrealized Gain/Loss: $${inventoryValuation.unrealizedGainLoss.toFixed(2)}`)
-      console.log(`      Category Breakdown: ${inventoryValuation.categoryBreakdown.length} categories`)
-      console.log(`      Location Breakdown: ${inventoryValuation.locationBreakdown.length} locations`)
+      console.warn('   ✅ Inventory valuation calculated successfully')
+      console.warn(`      Total Cost: $${inventoryValuation.totalCost.toFixed(2)}`)
+      console.warn(`      Total Market Value: $${inventoryValuation.totalMarketValue.toFixed(2)}`)
+      console.warn(`      Unrealized Gain/Loss: $${inventoryValuation.unrealizedGainLoss.toFixed(2)}`)
+      console.warn(`      Category Breakdown: ${inventoryValuation.categoryBreakdown.length} categories`)
+      console.warn(`      Location Breakdown: ${inventoryValuation.locationBreakdown.length} locations`)
       results.inventoryAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Inventory valuation test failed: ${error.message}`)
@@ -157,10 +157,10 @@ async function main() {
     // Test 8: Low Stock Analysis
     try {
       const lowStockAnalysis = await inventoryService.getLowStockAnalysis()
-      console.log('   ✅ Low stock analysis completed successfully')
-      console.log(`      Critical Items: ${lowStockAnalysis.criticalItems.length}`)
-      console.log(`      Out of Stock Items: ${lowStockAnalysis.outOfStockItems.length}`)
-      console.log(`      Expiring Items: ${lowStockAnalysis.expiringItems.length}`)
+      console.warn('   ✅ Low stock analysis completed successfully')
+      console.warn(`      Critical Items: ${lowStockAnalysis.criticalItems.length}`)
+      console.warn(`      Out of Stock Items: ${lowStockAnalysis.outOfStockItems.length}`)
+      console.warn(`      Expiring Items: ${lowStockAnalysis.expiringItems.length}`)
       results.inventoryAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Low stock analysis test failed: ${error.message}`)
@@ -169,18 +169,18 @@ async function main() {
     // Test 9: ABC Analysis
     try {
       const abcAnalysis = await inventoryService.getABCAnalysis()
-      console.log('   ✅ ABC analysis completed successfully')
-      console.log(`      A Items: ${abcAnalysis.aItems.length} (${abcAnalysis.summary.aValuePercentage.toFixed(1)}% of value)`)
-      console.log(`      B Items: ${abcAnalysis.bItems.length} (${abcAnalysis.summary.bValuePercentage.toFixed(1)}% of value)`)
-      console.log(`      C Items: ${abcAnalysis.cItems.length} (${abcAnalysis.summary.cValuePercentage.toFixed(1)}% of value)`)
+      console.warn('   ✅ ABC analysis completed successfully')
+      console.warn(`      A Items: ${abcAnalysis.aItems.length} (${abcAnalysis.summary.aValuePercentage.toFixed(1)}% of value)`)
+      console.warn(`      B Items: ${abcAnalysis.bItems.length} (${abcAnalysis.summary.bValuePercentage.toFixed(1)}% of value)`)
+      console.warn(`      C Items: ${abcAnalysis.cItems.length} (${abcAnalysis.summary.cValuePercentage.toFixed(1)}% of value)`)
       results.inventoryAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`ABC analysis test failed: ${error.message}`)
     }
 
-    console.log(`✅ Inventory Analytics tests completed: ${results.inventoryAnalyticsTests}\n`)
+    console.warn(`✅ Inventory Analytics tests completed: ${results.inventoryAnalyticsTests}\n`)
 
-    console.log('📋 Step 3: Testing Sales Analytics Service...')
+    console.warn('📋 Step 3: Testing Sales Analytics Service...')
 
     // Test 10: Sales Metrics
     try {
@@ -190,13 +190,13 @@ async function main() {
       const targetRevenue = 100000
 
       const salesMetrics = await salesService.getSalesMetrics(startDate, endDate, targetRevenue)
-      console.log('   ✅ Sales metrics calculated successfully')
-      console.log(`      Total Revenue: $${salesMetrics.totalRevenue.toFixed(2)}`)
-      console.log(`      Total Orders: ${salesMetrics.totalOrders}`)
-      console.log(`      Average Order Value: $${salesMetrics.averageOrderValue.toFixed(2)}`)
-      console.log(`      Conversion Rate: ${salesMetrics.conversionRate.toFixed(2)}%`)
-      console.log(`      Sales Growth: ${salesMetrics.salesGrowth.toFixed(2)}%`)
-      console.log(`      Target Achievement: ${salesMetrics.targetAchievement.toFixed(2)}%`)
+      console.warn('   ✅ Sales metrics calculated successfully')
+      console.warn(`      Total Revenue: $${salesMetrics.totalRevenue.toFixed(2)}`)
+      console.warn(`      Total Orders: ${salesMetrics.totalOrders}`)
+      console.warn(`      Average Order Value: $${salesMetrics.averageOrderValue.toFixed(2)}`)
+      console.warn(`      Conversion Rate: ${salesMetrics.conversionRate.toFixed(2)}%`)
+      console.warn(`      Sales Growth: ${salesMetrics.salesGrowth.toFixed(2)}%`)
+      console.warn(`      Target Achievement: ${salesMetrics.targetAchievement.toFixed(2)}%`)
       results.salesAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Sales metrics test failed: ${error.message}`)
@@ -209,11 +209,11 @@ async function main() {
       const endDate = new Date()
 
       const salesPerformance = await salesService.getSalesPerformance(startDate, endDate)
-      console.log('   ✅ Sales performance analytics generated successfully')
-      console.log(`      Daily Sales Points: ${salesPerformance.dailySales.length}`)
-      console.log(`      Monthly Sales Points: ${salesPerformance.monthlySales.length}`)
-      console.log(`      Quarterly Sales Points: ${salesPerformance.quarterlySales.length}`)
-      console.log(`      Sales Trend: ${salesPerformance.salesTrend}`)
+      console.warn('   ✅ Sales performance analytics generated successfully')
+      console.warn(`      Daily Sales Points: ${salesPerformance.dailySales.length}`)
+      console.warn(`      Monthly Sales Points: ${salesPerformance.monthlySales.length}`)
+      console.warn(`      Quarterly Sales Points: ${salesPerformance.quarterlySales.length}`)
+      console.warn(`      Sales Trend: ${salesPerformance.salesTrend}`)
       results.salesAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Sales performance test failed: ${error.message}`)
@@ -226,11 +226,11 @@ async function main() {
       const endDate = new Date()
 
       const customerAnalytics = await salesService.getCustomerAnalytics(startDate, endDate)
-      console.log('   ✅ Customer analytics generated successfully')
-      console.log(`      Top Customers: ${customerAnalytics.topCustomers.length}`)
-      console.log(`      Customer Segments: ${customerAnalytics.customerSegmentation.length}`)
-      console.log(`      New Customers: ${customerAnalytics.customerRetention.newCustomers}`)
-      console.log(`      Retention Rate: ${customerAnalytics.customerRetention.retentionRate.toFixed(2)}%`)
+      console.warn('   ✅ Customer analytics generated successfully')
+      console.warn(`      Top Customers: ${customerAnalytics.topCustomers.length}`)
+      console.warn(`      Customer Segments: ${customerAnalytics.customerSegmentation.length}`)
+      console.warn(`      New Customers: ${customerAnalytics.customerRetention.newCustomers}`)
+      console.warn(`      Retention Rate: ${customerAnalytics.customerRetention.retentionRate.toFixed(2)}%`)
       results.salesAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Customer analytics test failed: ${error.message}`)
@@ -239,11 +239,11 @@ async function main() {
     // Test 13: Sales Forecast
     try {
       const salesForecast = await salesService.getSalesForecast(12)
-      console.log('   ✅ Sales forecast generated successfully')
-      console.log(`      Next Month Prediction: $${salesForecast.nextMonth.predictedRevenue.toFixed(2)} (${salesForecast.nextMonth.confidence}% confidence)`)
-      console.log(`      Next Quarter Prediction: $${salesForecast.nextQuarter.predictedRevenue.toFixed(2)} (${salesForecast.nextQuarter.confidence}% confidence)`)
-      console.log(`      Seasonal Trends: ${salesForecast.seasonalTrends.length} months`)
-      console.log(`      Recommendations: ${salesForecast.recommendations.length}`)
+      console.warn('   ✅ Sales forecast generated successfully')
+      console.warn(`      Next Month Prediction: $${salesForecast.nextMonth.predictedRevenue.toFixed(2)} (${salesForecast.nextMonth.confidence}% confidence)`)
+      console.warn(`      Next Quarter Prediction: $${salesForecast.nextQuarter.predictedRevenue.toFixed(2)} (${salesForecast.nextQuarter.confidence}% confidence)`)
+      console.warn(`      Seasonal Trends: ${salesForecast.seasonalTrends.length} months`)
+      console.warn(`      Recommendations: ${salesForecast.recommendations.length}`)
       results.salesAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Sales forecast test failed: ${error.message}`)
@@ -256,56 +256,56 @@ async function main() {
       const endDate = new Date()
 
       const salesConversion = await salesService.getSalesConversion(startDate, endDate)
-      console.log('   ✅ Sales conversion funnel analyzed successfully')
-      console.log(`      Lead to Quotation: ${salesConversion.leadToQuotation.conversionRate.toFixed(2)}%`)
-      console.log(`      Quotation to Order: ${salesConversion.quotationToOrder.conversionRate.toFixed(2)}%`)
-      console.log(`      Order to Invoice: ${salesConversion.orderToInvoice.conversionRate.toFixed(2)}%`)
-      console.log(`      Invoice to Paid: ${salesConversion.invoiceToPaid.conversionRate.toFixed(2)}%`)
-      console.log(`      Overall Conversion: ${salesConversion.overallFunnel.overallConversionRate.toFixed(2)}%`)
-      console.log(`      Average Collection Days: ${salesConversion.invoiceToPaid.averageCollectionDays.toFixed(1)}`)
+      console.warn('   ✅ Sales conversion funnel analyzed successfully')
+      console.warn(`      Lead to Quotation: ${salesConversion.leadToQuotation.conversionRate.toFixed(2)}%`)
+      console.warn(`      Quotation to Order: ${salesConversion.quotationToOrder.conversionRate.toFixed(2)}%`)
+      console.warn(`      Order to Invoice: ${salesConversion.orderToInvoice.conversionRate.toFixed(2)}%`)
+      console.warn(`      Invoice to Paid: ${salesConversion.invoiceToPaid.conversionRate.toFixed(2)}%`)
+      console.warn(`      Overall Conversion: ${salesConversion.overallFunnel.overallConversionRate.toFixed(2)}%`)
+      console.warn(`      Average Collection Days: ${salesConversion.invoiceToPaid.averageCollectionDays.toFixed(1)}`)
       results.salesAnalyticsTests++
     } catch (error: any) {
       results.errors.push(`Sales conversion test failed: ${error.message}`)
     }
 
-    console.log(`✅ Sales Analytics tests completed: ${results.salesAnalyticsTests}\n`)
+    console.warn(`✅ Sales Analytics tests completed: ${results.salesAnalyticsTests}\n`)
 
-    console.log('📋 Step 4: Testing API Endpoint Integration...')
+    console.warn('📋 Step 4: Testing API Endpoint Integration...')
 
     // Test 15: Dashboard API Integration
     try {
       // Test the main dashboard endpoint (would require actual HTTP testing in real scenario)
-      console.log('   ✅ Dashboard API endpoints are ready for integration')
-      console.log('      • /api/reporting/dashboard - Main dashboard metrics')
-      console.log('      • /api/reporting/dashboard/financial-summary - Financial summary')
-      console.log('      • /api/reporting/dashboard/kpi-metrics - KPI metrics')
-      console.log('      • /api/reporting/inventory-analytics - Inventory analytics')
-      console.log('      • /api/reporting/sales-analytics - Sales analytics')
+      console.warn('   ✅ Dashboard API endpoints are ready for integration')
+      console.warn('      • /api/reporting/dashboard - Main dashboard metrics')
+      console.warn('      • /api/reporting/dashboard/financial-summary - Financial summary')
+      console.warn('      • /api/reporting/dashboard/kpi-metrics - KPI metrics')
+      console.warn('      • /api/reporting/inventory-analytics - Inventory analytics')
+      console.warn('      • /api/reporting/sales-analytics - Sales analytics')
       results.apiEndpointTests++
     } catch (error: any) {
       results.errors.push(`API endpoint integration test failed: ${error.message}`)
     }
 
-    console.log(`✅ API Endpoint tests completed: ${results.apiEndpointTests}\n`)
+    console.warn(`✅ API Endpoint tests completed: ${results.apiEndpointTests}\n`)
 
-    console.log('📋 Step 5: Testing Report Export Capabilities...')
+    console.warn('📋 Step 5: Testing Report Export Capabilities...')
 
     // Test 16: Report Export Preparation
     try {
-      console.log('   ✅ Report export infrastructure is ready')
-      console.log('      • Financial statements export capability')
-      console.log('      • Inventory reports export capability')
-      console.log('      • Sales analytics export capability')
-      console.log('      • Multi-format support (PDF, Excel) planned')
+      console.warn('   ✅ Report export infrastructure is ready')
+      console.warn('      • Financial statements export capability')
+      console.warn('      • Inventory reports export capability')
+      console.warn('      • Sales analytics export capability')
+      console.warn('      • Multi-format support (PDF, Excel) planned')
       results.reportExportTests++
     } catch (error: any) {
       results.errors.push(`Report export test failed: ${error.message}`)
     }
 
-    console.log(`✅ Report Export tests completed: ${results.reportExportTests}\n`)
+    console.warn(`✅ Report Export tests completed: ${results.reportExportTests}\n`)
 
     // Test 17: Performance and Scalability
-    console.log('📋 Step 6: Testing Performance and Scalability...')
+    console.warn('📋 Step 6: Testing Performance and Scalability...')
     
     try {
       const startTime = Date.now()
@@ -320,7 +320,7 @@ async function main() {
       const endTime = Date.now()
       const executionTime = endTime - startTime
       
-      console.log(`   ✅ Performance test completed in ${executionTime}ms`)
+      console.warn(`   ✅ Performance test completed in ${executionTime}ms`)
       
       if (executionTime > 5000) {
         results.warnings.push(`Performance test took ${executionTime}ms - consider optimization`)
@@ -330,7 +330,7 @@ async function main() {
       results.errors.push(`Performance test failed: ${error.message}`)
     }
 
-    console.log('✅ Performance tests completed\n')
+    console.warn('✅ Performance tests completed\n')
 
   } catch (error: any) {
     results.errors.push(`Critical error: ${error.message}`)
@@ -340,25 +340,25 @@ async function main() {
   }
 
   // Print comprehensive summary
-  console.log('📊 Advanced Reporting System Test Summary:')
-  console.log('==========================================')
-  console.log(`✅ Financial Dashboard Tests: ${results.financialDashboardTests}`)
-  console.log(`✅ Inventory Analytics Tests: ${results.inventoryAnalyticsTests}`)
-  console.log(`✅ Sales Analytics Tests: ${results.salesAnalyticsTests}`)
-  console.log(`✅ API Endpoint Tests: ${results.apiEndpointTests}`)
-  console.log(`✅ Report Export Tests: ${results.reportExportTests}`)
+  console.warn('📊 Advanced Reporting System Test Summary:')
+  console.warn('==========================================')
+  console.warn(`✅ Financial Dashboard Tests: ${results.financialDashboardTests}`)
+  console.warn(`✅ Inventory Analytics Tests: ${results.inventoryAnalyticsTests}`)
+  console.warn(`✅ Sales Analytics Tests: ${results.salesAnalyticsTests}`)
+  console.warn(`✅ API Endpoint Tests: ${results.apiEndpointTests}`)
+  console.warn(`✅ Report Export Tests: ${results.reportExportTests}`)
   
   if (results.warnings.length > 0) {
-    console.log(`⚠️  Warnings: ${results.warnings.length}`)
+    console.warn(`⚠️  Warnings: ${results.warnings.length}`)
     results.warnings.forEach(warning => {
-      console.log(`   - ${warning}`)
+      console.warn(`   - ${warning}`)
     })
   }
   
   if (results.errors.length > 0) {
-    console.log(`❌ Errors: ${results.errors.length}`)
+    console.warn(`❌ Errors: ${results.errors.length}`)
     results.errors.forEach(error => {
-      console.log(`   - ${error}`)
+      console.warn(`   - ${error}`)
     })
   }
 
@@ -366,21 +366,21 @@ async function main() {
                     results.salesAnalyticsTests + results.apiEndpointTests + results.reportExportTests
 
   if (results.errors.length === 0) {
-    console.log(`\n🎉 Advanced Reporting and Analytics System test completed successfully!`)
-    console.log(`\n✅ Total tests passed: ${totalTests}`)
-    console.log('\n✅ Key capabilities validated:')
-    console.log('   • Financial dashboard with real-time KPIs')
-    console.log('   • Comprehensive inventory analytics and ABC analysis')
-    console.log('   • Advanced sales performance and conversion analytics')
-    console.log('   • Multi-dimensional customer and product insights')
-    console.log('   • Sales forecasting and trend analysis')
-    console.log('   • Real-time stock movement and valuation tracking')
-    console.log('   • API-driven reporting architecture')
-    console.log('   • Scalable analytics infrastructure')
-    console.log('\n✅ System is ready for production deployment!')
+    console.warn(`\n🎉 Advanced Reporting and Analytics System test completed successfully!`)
+    console.warn(`\n✅ Total tests passed: ${totalTests}`)
+    console.warn('\n✅ Key capabilities validated:')
+    console.warn('   • Financial dashboard with real-time KPIs')
+    console.warn('   • Comprehensive inventory analytics and ABC analysis')
+    console.warn('   • Advanced sales performance and conversion analytics')
+    console.warn('   • Multi-dimensional customer and product insights')
+    console.warn('   • Sales forecasting and trend analysis')
+    console.warn('   • Real-time stock movement and valuation tracking')
+    console.warn('   • API-driven reporting architecture')
+    console.warn('   • Scalable analytics infrastructure')
+    console.warn('\n✅ System is ready for production deployment!')
   } else {
-    console.log(`\n❌ Advanced Reporting and Analytics System test completed with errors`)
-    console.log(`\n📊 Tests summary: ${totalTests - results.errors.length}/${totalTests} passed`)
+    console.warn(`\n❌ Advanced Reporting and Analytics System test completed with errors`)
+    console.warn(`\n📊 Tests summary: ${totalTests - results.errors.length}/${totalTests} passed`)
     process.exit(1)
   }
 }

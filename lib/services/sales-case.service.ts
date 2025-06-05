@@ -69,8 +69,8 @@ export interface SalesCaseMetrics {
 
 export interface SalesCaseWithDetails extends SalesCase {
   customer: Customer
-  quotations: any[]
-  salesOrders: any[]
+  quotations: Record<string, unknown>[]
+  salesOrders: Record<string, unknown>[]
   expenses: CaseExpense[]
   _count?: {
     quotations: number
@@ -158,7 +158,7 @@ export class SalesCaseService {
     }
 
     // Handle status transitions
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...data,
       profitMargin,
       updatedAt: new Date()
@@ -358,7 +358,7 @@ export class SalesCaseService {
     )
   }
 
-  async getSalesCaseTimeline(id: string): Promise<any[]> {
+  async getSalesCaseTimeline(id: string): Promise<Record<string, unknown>[]> {
     const salesCase = await this.getSalesCase(id)
     if (!salesCase) {
       throw new Error('Sales case not found')
@@ -567,11 +567,11 @@ export class SalesCaseService {
     }
     
     // Calculate revenue from different stages
-    const quotedAmount = salesCase.quotations
+    const _quotedAmount = salesCase.quotations
       .filter(q => q.status === 'SENT' || q.status === 'ACCEPTED')
       .reduce((sum, q) => sum + q.totalAmount, 0)
     
-    const orderedAmount = salesCase.salesOrders
+    const _orderedAmount = salesCase.salesOrders
       .filter(o => o.status !== 'CANCELLED')
       .reduce((sum, o) => sum + o.totalAmount, 0)
     
@@ -600,7 +600,7 @@ export class SalesCaseService {
     // Calculate profitability
     const actualRevenue = paidAmount > 0 ? paidAmount : invoicedAmount
     const grossProfit = actualRevenue - productCost
-    const grossMargin = actualRevenue > 0 ? (grossProfit / actualRevenue) * 100 : 0
+    const _grossMargin = actualRevenue > 0 ? (grossProfit / actualRevenue) * 100 : 0
     const netProfit = actualRevenue - totalCost
     const netMargin = actualRevenue > 0 ? (netProfit / actualRevenue) * 100 : 0
     
@@ -635,7 +635,7 @@ export class SalesCaseService {
     count: number
     totalAmount: number
   }>> {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
     
     if (filters.category) where.category = filters.category
     if (filters.status) where.status = filters.status
@@ -678,7 +678,7 @@ export class SalesCaseService {
     return `CASE-${newNumber.toString().padStart(4, '0')}`
   }
 
-  private async updateCaseCosts(salesCaseId: string, updatedBy: string): Promise<void> {
+  private async updateCaseCosts(salesCaseId: string, _updatedBy: string): Promise<void> {
     // Calculate total approved expenses
     const result = await prisma.caseExpense.aggregate({
       where: {

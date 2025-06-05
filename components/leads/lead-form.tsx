@@ -12,12 +12,12 @@ import {
   Text
 } from '@/components/design-system'
 import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
-import { LeadResponse } from '@/lib/types/lead.types'
+import { LeadResponse, CreateLeadData, UpdateLeadData } from '@/lib/types/lead.types'
 import { AlertCircle } from 'lucide-react'
 
 interface LeadFormProps {
   initialData?: Partial<LeadResponse>
-  onSubmit: (data: any) => Promise<void>
+  onSubmit: (data: CreateLeadData | UpdateLeadData) => Promise<void>
   isEdit?: boolean
 }
 
@@ -70,8 +70,7 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
       
       await onSubmit(submitData)
     } catch (error) {
-      console.error('Form submission error:', error)
-      setErrors({ general: 'Failed to save lead. Please try again.' })
+      console.error('Error submitting lead:', error)
     } finally {
       setIsLoading(false)
     }

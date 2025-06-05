@@ -6,11 +6,11 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting Simple Comprehensive Seed...\n')
+  console.warn('🌱 Starting Simple Comprehensive Seed...\n')
 
   try {
     // Step 1: Create admin user
-    console.log('👥 Creating admin user...')
+    console.warn('👥 Creating admin user...')
     const hashedPassword = await bcrypt.hash('demo123', 10)
     
     const admin = await prisma.user.create({
@@ -22,10 +22,10 @@ async function main() {
         isActive: true
       }
     })
-    console.log('✅ Admin user created')
+    console.warn('✅ Admin user created')
 
     // Step 2: Create basic chart of accounts
-    console.log('💰 Creating chart of accounts...')
+    console.warn('💰 Creating chart of accounts...')
     const cash = await prisma.account.create({
       data: {
         code: '1000',
@@ -80,10 +80,10 @@ async function main() {
         createdBy: admin.id
       }
     })
-    console.log('✅ Chart of accounts created')
+    console.warn('✅ Chart of accounts created')
 
     // Step 3: Create customers
-    console.log('🏢 Creating customers...')
+    console.warn('🏢 Creating customers...')
     const customer1 = await prisma.customer.create({
       data: {
         customerNumber: 'CUST-001',
@@ -139,10 +139,10 @@ async function main() {
       },
       include: { account: true }
     })
-    console.log('✅ Customers created with AR accounts')
+    console.warn('✅ Customers created with AR accounts')
 
     // Step 4: Create inventory items
-    console.log('📦 Creating inventory items...')
+    console.warn('📦 Creating inventory items...')
     const pieces = await prisma.unitOfMeasure.create({
       data: {
         code: 'PCS',
@@ -207,10 +207,10 @@ async function main() {
         createdBy: admin.id
       }
     })
-    console.log('✅ Inventory items created')
+    console.warn('✅ Inventory items created')
 
     // Step 5: Create opening stock
-    console.log('📊 Creating opening stock...')
+    console.warn('📊 Creating opening stock...')
     await prisma.stockMovement.create({
       data: {
         movementNumber: 'OPEN-001',
@@ -264,10 +264,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Opening stock created')
+    console.warn('✅ Opening stock created')
 
     // Step 6: Create a sales case
-    console.log('💼 Creating sales case...')
+    console.warn('💼 Creating sales case...')
     const salesCase = await prisma.salesCase.create({
       data: {
         caseNumber: 'SC-2024-001',
@@ -285,10 +285,10 @@ async function main() {
         createdBy: admin.id
       }
     })
-    console.log('✅ Sales case created')
+    console.warn('✅ Sales case created')
 
     // Step 7: Create quotation
-    console.log('📋 Creating quotation...')
+    console.warn('📋 Creating quotation...')
     const quotation = await prisma.quotation.create({
       data: {
         quotationNumber: 'Q-2024-001',
@@ -337,10 +337,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Quotation created')
+    console.warn('✅ Quotation created')
 
     // Step 8: Create sales order
-    console.log('📝 Creating sales order...')
+    console.warn('📝 Creating sales order...')
     const salesOrder = await prisma.salesOrder.create({
       data: {
         orderNumber: 'SO-2024-001',
@@ -389,10 +389,10 @@ async function main() {
         }
       })
     ])
-    console.log('✅ Sales order created')
+    console.warn('✅ Sales order created')
 
     // Step 9: Create invoice
-    console.log('🧾 Creating invoice...')
+    console.warn('🧾 Creating invoice...')
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber: 'INV-2024-001',
@@ -451,10 +451,10 @@ async function main() {
         }
       })
     ])
-    console.log('✅ Invoice created')
+    console.warn('✅ Invoice created')
 
     // Step 10: Create payment
-    console.log('💳 Creating payment...')
+    console.warn('💳 Creating payment...')
     const payment = await prisma.payment.create({
       data: {
         paymentNumber: 'PAY-2024-001',
@@ -479,12 +479,12 @@ async function main() {
         paidAt: new Date()
       }
     })
-    console.log('✅ Payment created and invoice marked as paid')
+    console.warn('✅ Payment created and invoice marked as paid')
 
     // Final summary
-    console.log('\n' + '='.repeat(60))
-    console.log('📊 SEED SUMMARY')
-    console.log('='.repeat(60))
+    console.warn('\n' + '='.repeat(60))
+    console.warn('📊 SEED SUMMARY')
+    console.warn('='.repeat(60))
 
     const counts = await Promise.all([
       prisma.user.count(),
@@ -499,31 +499,29 @@ async function main() {
       prisma.stockMovement.count()
     ])
 
-    console.log('\n📈 DATA CREATED:')
-    console.log(`   👥 Users: ${counts[0]}`)
-    console.log(`   💰 Accounts: ${counts[1]}`)
-    console.log(`   🏢 Customers: ${counts[2]}`)
-    console.log(`   📦 Items: ${counts[3]}`)
-    console.log(`   💼 Sales Cases: ${counts[4]}`)
-    console.log(`   📋 Quotations: ${counts[5]}`)
-    console.log(`   📝 Sales Orders: ${counts[6]}`)
-    console.log(`   🧾 Invoices: ${counts[7]}`)
-    console.log(`   💳 Payments: ${counts[8]}`)
-    console.log(`   📊 Stock Movements: ${counts[9]}`)
+    console.warn('\n📈 DATA CREATED:')
+    console.warn(`   👥 Users: ${counts[0]}`)
+    console.warn(`   💰 Accounts: ${counts[1]}`)
+    console.warn(`   🏢 Customers: ${counts[2]}`)
+    console.warn(`   📦 Items: ${counts[3]}`)
+    console.warn(`   💼 Sales Cases: ${counts[4]}`)
+    console.warn(`   📋 Quotations: ${counts[5]}`)
+    console.warn(`   📝 Sales Orders: ${counts[6]}`)
+    console.warn(`   🧾 Invoices: ${counts[7]}`)
+    console.warn(`   💳 Payments: ${counts[8]}`)
+    console.warn(`   📊 Stock Movements: ${counts[9]}`)
 
-    console.log('\n🔑 LOGIN CREDENTIALS:')
-    console.log('   Username: admin')
-    console.log('   Password: demo123')
+    console.warn('\n🔑 LOGIN CREDENTIALS:')
+    console.warn('   Username: admin')
+    console.warn('   Password: demo123')
 
-    console.log('\n🎉 Comprehensive seed completed successfully!')
-    console.log('🚀 Ready to test the complete ERP workflow!')
+    console.warn('\n🎉 Comprehensive seed completed successfully!')
+    console.warn('🚀 Ready to test the complete ERP workflow!')
 
-  } catch (error) {
-    console.error('❌ Seed error:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

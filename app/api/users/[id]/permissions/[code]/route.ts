@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { UserService } from '@/lib/services/user.service'
 
@@ -32,14 +32,13 @@ export const DELETE = createProtectedHandler(
       await userService.removeUserPermission(userId, permissionCode, currentUser.id)
 
       return NextResponse.json({ success: true })
-    } catch (error) {
-      console.error('Error removing user permission:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to remove permission' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { permissions: ['users.permissions'] }
 )

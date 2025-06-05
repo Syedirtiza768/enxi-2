@@ -12,28 +12,28 @@ export async function POST(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
     const journalEntryService = new JournalEntryService()
     
-    const journalEntry = await journalEntryService.postJournalEntry(params.id, user.id)
+    const journalEntry = await journalEntryService.postJournalEntry(params.id, _user.id)
 
     return NextResponse.json({
       success: true,
       data: journalEntry,
       message: 'Journal entry posted successfully'
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error posting journal entry:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('Only draft journal entries can be posted')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Only draft journal entries can be posted')) {
       return NextResponse.json(
         { error: 'Only draft journal entries can be posted' },
         { status: 400 }

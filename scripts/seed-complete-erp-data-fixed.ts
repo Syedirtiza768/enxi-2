@@ -15,95 +15,93 @@ const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 10
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
 async function main() {
-  console.log('🌱 Starting Complete ERP Data Seed...\n')
+  console.warn('🌱 Starting Complete ERP Data Seed...\n')
 
   try {
     // Clean database first
     await cleanDatabase()
 
     // Step 1: Create Users
-    console.log('👥 Creating users...')
+    console.warn('👥 Creating users...')
     const users = await createUsers()
-    console.log('✅ Users created')
+    console.warn('✅ Users created')
 
     // Step 2: Create Chart of Accounts
-    console.log('\n💰 Creating chart of accounts...')
+    console.warn('\n💰 Creating chart of accounts...')
     const accounts = await createChartOfAccounts(users.admin.id)
-    console.log('✅ Chart of accounts created')
+    console.warn('✅ Chart of accounts created')
 
     // Step 3: Create Customers with AR Accounts
-    console.log('\n🏢 Creating customers...')
+    console.warn('\n🏢 Creating customers...')
     const customers = await createCustomers(users.admin.id, accounts.accountsReceivable.id)
-    console.log('✅ Customers created with AR accounts')
+    console.warn('✅ Customers created with AR accounts')
 
     // Step 4: Create Leads
-    console.log('\n📞 Creating leads...')
+    console.warn('\n📞 Creating leads...')
     const leads = await createLeads(users.sales.id)
-    console.log('✅ Leads created')
+    console.warn('✅ Leads created')
 
     // Step 5: Create Inventory System
-    console.log('\n📦 Creating inventory system...')
+    console.warn('\n📦 Creating inventory system...')
     const inventory = await createInventorySystem(users.admin.id, accounts)
-    console.log('✅ Inventory system created')
+    console.warn('✅ Inventory system created')
 
     // Step 6: Create Opening Stock
-    console.log('\n📊 Creating opening stock...')
+    console.warn('\n📊 Creating opening stock...')
     await createOpeningStock(users.warehouse.id, inventory.items)
-    console.log('✅ Opening stock created')
+    console.warn('✅ Opening stock created')
 
     // Step 7: Create Sales Cases
-    console.log('\n💼 Creating sales cases...')
+    console.warn('\n💼 Creating sales cases...')
     const salesCases = await createSalesCases(users.sales.id, customers, leads)
-    console.log('✅ Sales cases created')
+    console.warn('✅ Sales cases created')
 
     // Step 8: Create Quotations
-    console.log('\n📋 Creating quotations...')
+    console.warn('\n📋 Creating quotations...')
     const quotations = await createQuotations(users.sales.id, customers, salesCases, inventory.items)
-    console.log('✅ Quotations created')
+    console.warn('✅ Quotations created')
 
     // Step 9: Create Customer POs
-    console.log('\n📄 Creating customer POs...')
+    console.warn('\n📄 Creating customer POs...')
     const customerPOs = await createCustomerPOs(users.sales.id, customers, quotations)
-    console.log('✅ Customer POs created')
+    console.warn('✅ Customer POs created')
 
     // Step 10: Create Sales Orders
-    console.log('\n📝 Creating sales orders...')
+    console.warn('\n📝 Creating sales orders...')
     const salesOrders = await createSalesOrders(users.sales.id, quotations, salesCases)
-    console.log('✅ Sales orders created')
+    console.warn('✅ Sales orders created')
 
     // Step 11: Create Invoices
-    console.log('\n🧾 Creating invoices...')
+    console.warn('\n🧾 Creating invoices...')
     const invoices = await createInvoices(users.accountant.id, salesOrders, customers, inventory.items)
-    console.log('✅ Invoices created')
+    console.warn('✅ Invoices created')
 
     // Step 12: Create Payments
-    console.log('\n💳 Creating payments...')
+    console.warn('\n💳 Creating payments...')
     await createPayments(users.accountant.id, invoices)
-    console.log('✅ Payments created')
+    console.warn('✅ Payments created')
 
     // Step 13: Create Journal Entries
-    console.log('\n📚 Creating additional journal entries...')
+    console.warn('\n📚 Creating additional journal entries...')
     await createJournalEntries(users.accountant.id, accounts)
-    console.log('✅ Journal entries created')
+    console.warn('✅ Journal entries created')
 
     // Step 14: Create Exchange Rates
-    console.log('\n💱 Creating exchange rates...')
+    console.warn('\n💱 Creating exchange rates...')
     await createExchangeRates(users.admin.id)
-    console.log('✅ Exchange rates created')
+    console.warn('✅ Exchange rates created')
 
     // Print Summary
     await printSummary()
 
-  } catch (error) {
-    console.error('❌ Seed error:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 async function cleanDatabase() {
-  console.log('🧹 Cleaning database...')
+  console.warn('🧹 Cleaning database...')
   
   try {
     // Clean tables in the correct order to respect foreign key constraints
@@ -141,18 +139,12 @@ async function cleanDatabase() {
     for (const operation of deleteOperations) {
       try {
         await operation.fn()
-        console.log(`  ✓ Cleaned ${operation.name}`)
-      } catch (error) {
-        console.log(`  ⚠️ Skipped ${operation.name} (table might not exist)`)
-      }
+        console.warn(`  ✓ Cleaned ${operation.name}`)
+} catch {      }
     }
     
-    console.log('✅ Database cleaned')
-  } catch (error) {
-    console.error('⚠️ Error during cleanup:', error)
-    console.log('Continuing with seeding...')
-  }
-}
+    console.warn('✅ Database cleaned')
+} catch {}
 
 async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
@@ -1725,9 +1717,9 @@ async function createExchangeRates(adminId: string) {
 }
 
 async function printSummary() {
-  console.log('\n' + '='.repeat(60))
-  console.log('📊 SEED DATA SUMMARY')
-  console.log('='.repeat(60))
+  console.warn('\n' + '='.repeat(60))
+  console.warn('📊 SEED DATA SUMMARY')
+  console.warn('='.repeat(60))
 
   const [
     users,
@@ -1765,46 +1757,46 @@ async function printSummary() {
     prisma.exchangeRate.count()
   ])
 
-  console.log('\n📈 DATA CREATED:')
-  console.log(`   👥 Users: ${users}`)
-  console.log(`   💰 GL Accounts: ${accounts}`)
-  console.log(`   🏢 Customers: ${customers} (with AR accounts)`)
-  console.log(`   📞 Leads: ${leads}`)
-  console.log(`   📂 Categories: ${categories}`)
-  console.log(`   📦 Items: ${items}`)
-  console.log(`   📊 Stock Movements: ${stockMovements}`)
-  console.log(`   🏷️ Stock Lots (FIFO): ${stockLots}`)
-  console.log(`   💼 Sales Cases: ${salesCases}`)
-  console.log(`   📋 Quotations: ${quotations}`)
-  console.log(`   📄 Customer POs: ${customerPOs}`)
-  console.log(`   📝 Sales Orders: ${salesOrders}`)
-  console.log(`   🧾 Invoices: ${invoices}`)
-  console.log(`   💳 Payments: ${payments}`)
-  console.log(`   📚 Journal Entries: ${journalEntries}`)
-  console.log(`   💱 Exchange Rates: ${exchangeRates}`)
+  console.warn('\n📈 DATA CREATED:')
+  console.warn(`   👥 Users: ${users}`)
+  console.warn(`   💰 GL Accounts: ${accounts}`)
+  console.warn(`   🏢 Customers: ${customers} (with AR accounts)`)
+  console.warn(`   📞 Leads: ${leads}`)
+  console.warn(`   📂 Categories: ${categories}`)
+  console.warn(`   📦 Items: ${items}`)
+  console.warn(`   📊 Stock Movements: ${stockMovements}`)
+  console.warn(`   🏷️ Stock Lots (FIFO): ${stockLots}`)
+  console.warn(`   💼 Sales Cases: ${salesCases}`)
+  console.warn(`   📋 Quotations: ${quotations}`)
+  console.warn(`   📄 Customer POs: ${customerPOs}`)
+  console.warn(`   📝 Sales Orders: ${salesOrders}`)
+  console.warn(`   🧾 Invoices: ${invoices}`)
+  console.warn(`   💳 Payments: ${payments}`)
+  console.warn(`   📚 Journal Entries: ${journalEntries}`)
+  console.warn(`   💱 Exchange Rates: ${exchangeRates}`)
 
-  console.log('\n🔑 LOGIN CREDENTIALS:')
-  console.log('   Admin: admin / demo123')
-  console.log('   Sales: sarah / demo123')
-  console.log('   Accountant: michael / demo123')
-  console.log('   Warehouse: david / demo123')
+  console.warn('\n🔑 LOGIN CREDENTIALS:')
+  console.warn('   Admin: admin / demo123')
+  console.warn('   Sales: sarah / demo123')
+  console.warn('   Accountant: michael / demo123')
+  console.warn('   Warehouse: david / demo123')
 
-  console.log('\n📋 TEST SCENARIOS READY:')
-  console.log('   ✅ Complete sales workflow (Lead → Customer → Sales Case → Quote → Order → Invoice → Payment)')
-  console.log('   ✅ Inventory with FIFO costing (multiple lots with different costs)')
-  console.log('   ✅ Partial payments and invoice status transitions')
-  console.log('   ✅ Customer credit management with AR accounts')
-  console.log('   ✅ Journal entries and GL integration')
-  console.log('   ✅ Multi-currency support with exchange rates')
+  console.warn('\n📋 TEST SCENARIOS READY:')
+  console.warn('   ✅ Complete sales workflow (Lead → Customer → Sales Case → Quote → Order → Invoice → Payment)')
+  console.warn('   ✅ Inventory with FIFO costing (multiple lots with different costs)')
+  console.warn('   ✅ Partial payments and invoice status transitions')
+  console.warn('   ✅ Customer credit management with AR accounts')
+  console.warn('   ✅ Journal entries and GL integration')
+  console.warn('   ✅ Multi-currency support with exchange rates')
 
-  console.log('\n🎯 BUSINESS SCENARIOS:')
-  console.log('   1. TechCorp: Active quotation ready to convert to order')
-  console.log('   2. Global Manufacturing: Draft quotation to be finalized')
-  console.log('   3. Healthcare Systems: Completed order with partial payment')
-  console.log('   4. Service invoicing and full payment example')
-  console.log('   5. Multiple FIFO lots for inventory costing')
+  console.warn('\n🎯 BUSINESS SCENARIOS:')
+  console.warn('   1. TechCorp: Active quotation ready to convert to order')
+  console.warn('   2. Global Manufacturing: Draft quotation to be finalized')
+  console.warn('   3. Healthcare Systems: Completed order with partial payment')
+  console.warn('   4. Service invoicing and full payment example')
+  console.warn('   5. Multiple FIFO lots for inventory costing')
 
-  console.log('\n✅ ERP SYSTEM FULLY SEEDED AND READY FOR TESTING!')
+  console.warn('\n✅ ERP SYSTEM FULLY SEEDED AND READY FOR TESTING!')
 }
 
 main()

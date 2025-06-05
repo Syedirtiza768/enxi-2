@@ -22,10 +22,10 @@ const createInvoiceSchema = z.object({
   })).min(1)
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const invoiceService = new InvoiceService()
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     
     const filters = {
       status: searchParams.get('status') as InvoiceStatus || undefined,
@@ -40,20 +40,20 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(invoices)
   } catch (error) {
-    console.error('Error fetching invoices:', error)
+    console.error('Error getting invoices:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch invoices' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await request.json()
+    const body = await _request.json()
     const data = createInvoiceSchema.parse(body)
     
     const invoiceService = new InvoiceService()
@@ -68,13 +68,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(invoice, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error creating invoice:', error)
     return NextResponse.json(
       { error: 'Failed to create invoice' },

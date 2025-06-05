@@ -20,7 +20,7 @@ export interface SelectOption {
 /**
  * Type guard to validate SelectOption arrays
  */
-export function isValidSelectOption(option: any): option is SelectOption {
+export function isValidSelectOption(option: unknown): option is SelectOption {
   return (
     typeof option === 'object' &&
     option !== null &&
@@ -33,7 +33,7 @@ export function isValidSelectOption(option: any): option is SelectOption {
 /**
  * Validates an array of select options
  */
-export function validateSelectOptions(options: any[]): SelectOption[] {
+export function validateSelectOptions(options: unknown[]): SelectOption[] {
   const validOptions = options.filter(isValidSelectOption)
   
   if (validOptions.length !== options.length) {

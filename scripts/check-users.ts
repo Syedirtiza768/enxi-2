@@ -3,7 +3,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🔍 Checking users in database...\n')
+  console.warn('🔍 Checking users in database...\n')
 
   try {
     const users = await prisma.user.findMany({
@@ -16,25 +16,24 @@ async function main() {
       }
     })
     
-    console.log(`Total users: ${users.length}`)
+    console.warn(`Total users: ${users.length}`)
     if (users.length > 0) {
       users.forEach(user => {
-        console.log(`\n👤 User:`)
-        console.log(`  - Username: ${user.username}`)
-        console.log(`  - Email: ${user.email}`)
-        console.log(`  - Role: ${user.role}`)
-        console.log(`  - Active: ${user.isActive}`)
-        console.log(`  - ID: ${user.id}`)
+        console.warn(`\n👤 User:`)
+        console.warn(`  - Username: ${user.username}`)
+        console.warn(`  - Email: ${user.email}`)
+        console.warn(`  - Role: ${user.role}`)
+        console.warn(`  - Active: ${user.isActive}`)
+        console.warn(`  - ID: ${user.id}`)
       })
     } else {
-      console.log('No users found!')
+      console.warn('No users found!')
     }
 
-  } catch (error) {
-    console.error('❌ Error checking users:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

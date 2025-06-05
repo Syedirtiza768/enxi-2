@@ -22,12 +22,10 @@ import {
   Package, 
   Calendar, 
   CheckCircle,
-  AlertCircle,
   Clock,
   Eye,
   FileText,
-  TrendingDown,
-  User
+  TrendingDown
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -70,7 +68,7 @@ interface GoodsReceiptStats {
 }
 
 export default function GoodsReceiptsPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([])
   const [stats, setStats] = useState<GoodsReceiptStats>({
     totalReceipts: 0,
@@ -112,9 +110,8 @@ export default function GoodsReceiptsPage() {
           sum + gr.items.reduce((itemSum, item) => itemSum + item.quantityRejected, 0), 0)
       }
       setStats(stats)
-    } catch (error) {
-      console.error('Error fetching goods receipts:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load goods receipts')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

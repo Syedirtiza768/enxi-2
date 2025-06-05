@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 // GET /api/three-way-matching/export - Export matching exceptions report
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -60,10 +60,10 @@ export async function GET(request: NextRequest) {
         'Content-Disposition': `attachment; filename="three-way-matching-exceptions-${new Date().toISOString().split('T')[0]}.csv"`
       }
     })
-  } catch (error) {
-    console.error('Error exporting three-way matching report:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to export report' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

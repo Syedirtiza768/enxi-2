@@ -2,37 +2,36 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LeadService } from '@/lib/services/lead.service'
 import { createLeadSchema, leadListQuerySchema } from '@/lib/validators/lead.validator'
 import { getUserFromRequest } from '@/lib/utils/auth'
-import { z } from 'zod'
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper'
 
-const postHandler = async (request: NextRequest) => {
-  console.log('[API] Lead POST handler started')
+const postHandler = async (_request: NextRequest) => {
+  console.warn('[API] Lead POST handler started')
   
   // Authenticate user
-  const user = await getUserFromRequest(request)
-  console.log('[API] Authenticated user:', user.id)
+  const _user = await getUserFromRequest(_request)
+  console.warn('[API] Authenticated user:', _user.id)
   
   // Parse and validate request body
-  const body = await request.json()
-  console.log('[API] Request body:', body)
+  const body = await _request.json()
+  console.warn('[API] Request body:', body)
   
   const validatedData = createLeadSchema.parse(body)
-  console.log('[API] Validated data:', validatedData)
+  console.warn('[API] Validated data:', validatedData)
   
   // Create lead
   const leadService = new LeadService()
-  const lead = await leadService.createLead(validatedData, user.id)
+  const lead = await leadService.createLead(validatedData, _user.id)
   
   return NextResponse.json(lead, { status: 201 })
 }
 
 export const POST = withUniversalErrorHandling(postHandler, '/api/leads', { operation: 'POST createLead' })
 
-const getHandler = async (request: NextRequest) => {
+const getHandler = async (_request: NextRequest) => {
   // Try to authenticate user but don't fail hard
-  let user
+  let _user
   try {
-    user = await getUserFromRequest(request)
+    _user = await getUserFromRequest(_request)
   } catch (authError) {
     console.warn('Auth check failed in leads route', {
       error: authError instanceof Error ? authError.message : 'Unknown auth error'
@@ -41,7 +40,7 @@ const getHandler = async (request: NextRequest) => {
   }
   
   // Parse query parameters
-  const { searchParams } = new URL(request.url)
+  const { searchParams } = new URL(_request.url)
   const queryData = {
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '10'),

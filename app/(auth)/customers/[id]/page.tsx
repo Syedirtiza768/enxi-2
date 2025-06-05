@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CustomerDetailTabs } from '@/components/customers/customer-detail-tabs'
 
@@ -28,7 +27,7 @@ interface Customer {
     id: string
     name: string
   }
-  salesCases?: any[]
+  salesCases?: SalesCase[]
 }
 
 interface CreditCheck {
@@ -41,9 +40,16 @@ interface CreditCheck {
   overdueAmount: number
 }
 
+interface SalesCase {
+  id: string
+  caseNumber: string
+  title: string
+  status: 'OPEN' | 'WON' | 'LOST'
+  estimatedValue: number
+}
+
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const router = useRouter()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [creditCheck, setCreditCheck] = useState<CreditCheck | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,7 +62,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     fetchCustomer()
     fetchCreditCheck()
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCustomer = async () => {
     try {
@@ -66,6 +72,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       setCustomer(data.data)
     } catch (error) {
       console.error('Error fetching customer:', error)
+      setError('Failed to load customer')
     } finally {
       setLoading(false)
     }
@@ -101,8 +108,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
       setShowCreditModal(false)
       fetchCustomer()
       fetchCreditCheck()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error))
     } finally {
       setSubmitting(false)
     }

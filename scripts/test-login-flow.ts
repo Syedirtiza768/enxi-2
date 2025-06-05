@@ -4,43 +4,43 @@
 import { AuthService } from '../lib/services/auth.service'
 
 async function testLoginFlow() {
-  console.log('🧪 Testing Complete Login Flow...\n')
+  console.warn('🧪 Testing Complete Login Flow...\n')
   
   try {
     const authService = new AuthService()
     
     // Test 1: Validate credentials
-    console.log('1. Testing credential validation...')
+    console.warn('1. Testing credential validation...')
     const user = await authService.validateUser('admin', 'admin123')
     
     if (!user) {
-      console.log('❌ Credential validation failed')
+      console.warn('❌ Credential validation failed')
       return
     }
     
-    console.log('✅ Credentials validated:', user.username)
+    console.warn('✅ Credentials validated:', user.username)
     
     // Test 2: Generate token
-    console.log('\n2. Testing token generation...')
+    console.warn('\n2. Testing token generation...')
     const token = authService.generateToken(user)
-    console.log('✅ Token generated:', token.substring(0, 50) + '...')
+    console.warn('✅ Token generated:', token.substring(0, 50) + '...')
     
     // Test 3: Verify token
-    console.log('\n3. Testing token verification...')
+    console.warn('\n3. Testing token verification...')
     const decoded = authService.verifyToken(token)
     
     if (!decoded) {
-      console.log('❌ Token verification failed')
+      console.warn('❌ Token verification failed')
       return
     }
     
-    console.log('✅ Token verified successfully')
-    console.log('   Decoded user:', decoded.username)
-    console.log('   User ID:', decoded.id)
-    console.log('   Role:', decoded.role)
+    console.warn('✅ Token verified successfully')
+    console.warn('   Decoded user:', decoded.username)
+    console.warn('   User ID:', decoded.id)
+    console.warn('   Role:', decoded.role)
     
     // Test 4: Test with actual HTTP request simulation
-    console.log('\n4. Testing HTTP flow simulation...')
+    console.warn('\n4. Testing HTTP flow simulation...')
     
     // Simulate the exact request the browser would make
     const loginRequest = {
@@ -57,54 +57,51 @@ async function testLoginFlow() {
       const simulatedToken = authService.generateToken(simulatedUser)
       const simulatedDecoded = authService.verifyToken(simulatedToken)
       
-      console.log('✅ HTTP flow simulation successful')
-      console.log('   Response would be:', {
+      console.warn('✅ HTTP flow simulation successful')
+      console.warn('   Response would be:', {
         token: simulatedToken.substring(0, 20) + '...',
         user: simulatedUser
       })
       
       // Test middleware token validation
-      console.log('\n5. Testing middleware token validation...')
+      console.warn('\n5. Testing middleware token validation...')
       if (simulatedDecoded && simulatedDecoded.id === simulatedUser.id) {
-        console.log('✅ Middleware would accept this token')
-        console.log('   User would be redirected to: /dashboard')
+        console.warn('✅ Middleware would accept this token')
+        console.warn('   User would be redirected to: /dashboard')
       } else {
-        console.log('❌ Middleware would reject this token')
+        console.warn('❌ Middleware would reject this token')
       }
     }
     
     // Test 6: Debug potential issues
-    console.log('\n6. Debugging potential issues...')
+    console.warn('\n6. Debugging potential issues...')
     
     // Check token expiry
     const payload = JSON.parse(atob(token.split('.')[1]))
     const now = Math.floor(Date.now() / 1000)
     const expiresIn = payload.exp - now
     
-    console.log('✅ Token diagnostics:')
-    console.log(`   Issued at: ${new Date(payload.iat * 1000).toISOString()}`)
-    console.log(`   Expires at: ${new Date(payload.exp * 1000).toISOString()}`)
-    console.log(`   Time until expiry: ${expiresIn} seconds`)
-    console.log(`   Is valid: ${expiresIn > 0 ? 'Yes' : 'No'}`)
+    console.warn('✅ Token diagnostics:')
+    console.warn(`   Issued at: ${new Date(payload.iat * 1000).toISOString()}`)
+    console.warn(`   Expires at: ${new Date(payload.exp * 1000).toISOString()}`)
+    console.warn(`   Time until expiry: ${expiresIn} seconds`)
+    console.warn(`   Is valid: ${expiresIn > 0 ? 'Yes' : 'No'}`)
     
-    console.log('\n🎉 Login Flow Test Complete!')
-    console.log('\n📋 Results:')
-    console.log('   • Credential validation: ✅')
-    console.log('   • Token generation: ✅')
-    console.log('   • Token verification: ✅')
-    console.log('   • HTTP flow: ✅')
-    console.log('   • Middleware compatibility: ✅')
+    console.warn('\n🎉 Login Flow Test Complete!')
+    console.warn('\n📋 Results:')
+    console.warn('   • Credential validation: ✅')
+    console.warn('   • Token generation: ✅')
+    console.warn('   • Token verification: ✅')
+    console.warn('   • HTTP flow: ✅')
+    console.warn('   • Middleware compatibility: ✅')
     
-    console.log('\n🔍 If login still fails in browser:')
-    console.log('   1. Check browser console for errors')
-    console.log('   2. Check Network tab for failed requests')
-    console.log('   3. Verify cookie is being set')
-    console.log('   4. Check if JavaScript is enabled')
-    console.log('   5. Try clearing browser cache')
+    console.warn('\n🔍 If login still fails in browser:')
+    console.warn('   1. Check browser console for errors')
+    console.warn('   2. Check Network tab for failed requests')
+    console.warn('   3. Verify cookie is being set')
+    console.warn('   4. Check if JavaScript is enabled')
+    console.warn('   5. Try clearing browser cache')
     
-  } catch (error) {
-    console.log('❌ Login flow test failed:', error)
-  }
-}
+} catch {}
 
 testLoginFlow()

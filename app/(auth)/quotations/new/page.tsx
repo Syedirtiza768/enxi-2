@@ -6,10 +6,27 @@ import { ArrowLeft } from 'lucide-react'
 import { QuotationForm } from '@/components/quotations/quotation-form'
 import { apiClient } from '@/lib/api/client'
 
-export default function NewQuotationPage() {
-  const router = useRouter()
+interface QuotationFormData {
+  salesCaseId: string
+  validUntil: string
+  paymentTerms: string
+  deliveryTerms?: string
+  notes: string
+  internalNotes?: string
+  items: Array<{
+    itemCode: string
+    description: string
+    quantity: number
+    unitPrice: number
+    discount?: number
+    taxRate?: number
+  }>
+}
 
-  const handleSubmit = async (quotationData: any) => {
+export default function NewQuotationPage() {
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+
+  const handleSubmit = async (quotationData: QuotationFormData) => {
     try {
       const response = await apiClient('/api/quotations', {
         method: 'POST',
@@ -25,8 +42,7 @@ export default function NewQuotationPage() {
       // Navigate to the new quotation detail page
       router.push(`/quotations/${result.id}`)
     } catch (error) {
-      console.error('Error creating quotation:', error)
-      throw error // Re-throw to let form handle error display
+      console.error('Error:', error)
     }
   }
 

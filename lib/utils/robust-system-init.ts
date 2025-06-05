@@ -1,11 +1,10 @@
 import { globalErrorHandler } from './global-error-handler';
-import { routeHealthMonitor } from '../middleware/route-health-monitor';
 
 let isInitialized = false;
 
 export function initializeRobustSystem() {
   if (isInitialized) {
-    console.debug('Robust system already initialized');
+    console.warn('Robust system already initialized');
     return;
   }
 
@@ -16,7 +15,7 @@ export function initializeRobustSystem() {
     // Periodic health checks disabled
     
     isInitialized = true;
-    console.log('Robust error handling and monitoring system initialized', {
+    console.warn('Robust error handling and monitoring system initialized', {
       environment: process.env.NODE_ENV,
       features: [
         'Global error handling',
@@ -26,7 +25,7 @@ export function initializeRobustSystem() {
     });
 
   } catch (error) {
-    console.error('Failed to initialize robust system', error);
+    console.error('Error initializing robust system:', error);
   }
 }
 

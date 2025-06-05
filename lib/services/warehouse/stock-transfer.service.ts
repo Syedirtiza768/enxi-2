@@ -691,7 +691,7 @@ export class StockTransferService extends BaseService {
   private async updateTransferStatus(
     id: string,
     status: TransferStatus,
-    additionalData: Record<string, any>
+    additionalData: Record<string, unknown>
   ): Promise<StockTransferWithDetails> {
     const updatedTransfer = await prisma.stockTransfer.update({
       where: { id },

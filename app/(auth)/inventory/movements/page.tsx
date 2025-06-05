@@ -21,7 +21,6 @@ import {
   ArrowDownRight, 
   Package, 
   Search, 
-  Filter,
   Calendar,
   TrendingUp,
   TrendingDown,
@@ -91,6 +90,7 @@ export default function StockMovementsPage() {
   useEffect(() => {
     fetchMovements()
     fetchLocations()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeFilter, dateFilter, locationFilter])
 
   const fetchLocations = async () => {
@@ -132,7 +132,7 @@ export default function StockMovementsPage() {
       setStats(stats)
     } catch (error) {
       console.error('Error fetching movements:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load stock movements')
+      setError('Failed to load stock movements')
     } finally {
       setLoading(false)
     }

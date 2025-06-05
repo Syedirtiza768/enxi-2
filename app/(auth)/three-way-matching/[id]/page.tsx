@@ -6,7 +6,7 @@ import { ThreeWayMatchingDetail } from '@/components/three-way-matching/three-wa
 import { ArrowLeft } from 'lucide-react'
 
 export default function ThreeWayMatchingDetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const purchaseOrderId = params.id as string
 

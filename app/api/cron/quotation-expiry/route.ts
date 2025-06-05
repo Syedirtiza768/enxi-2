@@ -3,10 +3,10 @@ import { QuotationService } from '@/lib/services/quotation.service'
 import { AuditService } from '@/lib/services/audit.service'
 
 // GET /api/cron/quotation-expiry - Check and mark expired quotations
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify this is running from cron (basic security)
-    const authHeader = request.headers.get('authorization')
+    const authHeader = _request.headers.get('authorization')
     const expectedToken = process.env.CRON_SECRET || 'default-cron-secret'
     
     if (authHeader !== `Bearer ${expectedToken}`) {
@@ -55,22 +55,9 @@ export async function GET(request: NextRequest) {
       expiredQuotations: toExpire.map(q => q.quotationNumber)
     })
   } catch (error) {
-    console.error('Error in quotation expiry cron job:', error)
-    
-    // Log the error
-    const auditService = new AuditService()
-    await auditService.logAction({
-      userId: 'system',
-      action: 'ERROR',
-      entityType: 'System',
-      entityId: 'quotation-expiry-job',
-      metadata: {
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
-    })
-
+    console.error('Error in quotation expiry cron:', error)
     return NextResponse.json(
-      { error: 'Failed to process quotation expiry check' },
+      { success: false, error: 'Failed to process quotation expiry' },
       { status: 500 }
     )
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,7 @@ import {
 
 interface ShipmentFormProps {
   salesOrderId: string
-  onSuccess?: (shipment: any) => void
+  onSuccess?: (shipment: Record<string, unknown>) => void
   onCancel?: () => void
 }
 
@@ -81,9 +81,9 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
 
   useEffect(() => {
     fetchSalesOrder()
-  }, [salesOrderId])
+  }, [fetchSalesOrder])
 
-  const fetchSalesOrder = async () => {
+  const fetchSalesOrder = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -104,7 +104,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     } finally {
       setLoading(false)
     }
-  }
+  }, [salesOrderId])
 
   const getAvailableQuantity = (item: SalesOrderItem) => {
     return item.quantity - item.quantityShipped

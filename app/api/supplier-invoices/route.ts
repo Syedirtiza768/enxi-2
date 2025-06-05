@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierInvoiceService } from '@/lib/services/purchase/supplier-invoice.service'
 
 // GET /api/supplier-invoices - Get all supplier invoices
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -33,17 +33,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: invoices })
-  } catch (error) {
-    console.error('Error fetching supplier invoices:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier invoices' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/supplier-invoices - Create supplier invoice
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       invoiceDate: new Date(invoiceDate),
       dueDate: new Date(dueDate),
       currency: currency || 'USD',
-      items: items.map((item: any) => ({
+      items: items.map((item: unknown) => ({
         goodsReceiptItemId: item.goodsReceiptItemId,
         description: item.description,
         quantity: parseFloat(item.quantity),
@@ -103,29 +103,29 @@ export async function POST(request: NextRequest) {
       totalAmount: parseFloat(totalAmount),
       taxAccountId: taxAccountId || undefined,
       notes: notes || undefined,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const supplierInvoiceService = new SupplierInvoiceService()
     const invoice = await supplierInvoiceService.createSupplierInvoice(invoiceData)
 
     return NextResponse.json({ data: invoice }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating supplier invoice:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('already exists') || 
-        error.message?.includes('exceeds received quantity') ||
-        error.message?.includes('Three-way matching failed') ||
-        error.message?.includes('does not have an AP account')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists') || 
+        error instanceof Error ? error.message : String(error)?.includes('exceeds received quantity') ||
+        error instanceof Error ? error.message : String(error)?.includes('Three-way matching failed') ||
+        error instanceof Error ? error.message : String(error)?.includes('does not have an AP account')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

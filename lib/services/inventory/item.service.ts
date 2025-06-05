@@ -394,7 +394,7 @@ export class ItemService {
     }
 
     // Map fields appropriately  
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: new Date()
     }
@@ -926,7 +926,7 @@ export class ItemService {
   async getItemById(id: string): Promise<(ItemWithDetails & { 
     currentStock: number
     stockValue: number 
-    movements?: any[]
+    movements?: StockMovement[]
     isLowStock?: boolean
     trackStock?: boolean
   }) | null> {

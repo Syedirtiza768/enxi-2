@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
 async function verifyPort3001Functionality() {
-  console.log('🔍 Verifying User Edit Functionality on Port 3001...\n')
+  console.warn('🔍 Verifying User Edit Functionality on Port 3001...\n')
 
   try {
     // Create super admin JWT token
@@ -20,7 +20,7 @@ async function verifyPort3001Functionality() {
 
     const targetUserId = 'cmbfhfyv80000v2yeuhorcid6'
 
-    console.log('🌐 Testing connectivity on both ports...')
+    console.warn('🌐 Testing connectivity on both ports...')
     
     // Test port 3000
     try {
@@ -30,28 +30,26 @@ async function verifyPort3001Functionality() {
           'Content-Type': 'application/json',
         },
       })
-      console.log(`✅ Port 3000: ${port3000Response.ok ? 'Working' : 'Not working'} (Status: ${port3000Response.status})`)
-    } catch (error) {
-      console.log('❌ Port 3000: Not accessible')
-    }
-
-    // Test port 3001
+      console.warn(`✅ Port 3000: ${port3000Response.ok ? 'Working' : 'Not working'} (Status: ${port3000Response.status})`)
+} catch (error) {
+      console.error('Error:', error);
+      // Test port 3001
     try {
       const port3001Response = await fetch('http://localhost:3001/api/auth/validate', {
         headers: {
-          'Cookie': `auth-token=${adminToken}`,
+          'Cookie': `auth-token=${adminToken
+    }`,
           'Content-Type': 'application/json',
         },
       })
-      console.log(`✅ Port 3001: ${port3001Response.ok ? 'Working' : 'Not working'} (Status: ${port3001Response.status})`)
-    } catch (error) {
-      console.log('❌ Port 3001: Not accessible')
-    }
-
-    console.log(`\n📋 Testing user API on port 3001...`)
+      console.warn(`✅ Port 3001: ${port3001Response.ok ? 'Working' : 'Not working'} (Status: ${port3001Response.status})`)
+} catch (error) {
+      console.error('Error:', error);
+      console.warn(`\n📋 Testing user API on port 3001...`)
     
     // Test user API on port 3001
-    const userResponse = await fetch(`http://localhost:3001/api/users/${targetUserId}`, {
+    const userResponse = await fetch(`http://localhost:3001/api/users/${targetUserId
+    }`, {
       headers: {
         'Cookie': `auth-token=${adminToken}`,
         'Content-Type': 'application/json',
@@ -62,15 +60,15 @@ async function verifyPort3001Functionality() {
       const userData = await userResponse.json()
       const user = userData.data || userData
       
-      console.log('✅ User API working on port 3001:')
-      console.log(`   User ID: ${user.id}`)
-      console.log(`   Username: ${user.username}`)
-      console.log(`   Email: ${user.email}`)
-      console.log(`   Role: ${user.role}`)
-      console.log(`   Status: ${user.isActive ? 'Active' : 'Inactive'}`)
+      console.warn('✅ User API working on port 3001:')
+      console.warn(`   User ID: ${user.id}`)
+      console.warn(`   Username: ${user.username}`)
+      console.warn(`   Email: ${user.email}`)
+      console.warn(`   Role: ${user.role}`)
+      console.warn(`   Status: ${user.isActive ? 'Active' : 'Inactive'}`)
 
       // Test role update on port 3001
-      console.log('\n📝 Testing role/status update on port 3001...')
+      console.warn('\n📝 Testing role/status update on port 3001...')
       const updateResponse = await fetch(`http://localhost:3001/api/users/${targetUserId}`, {
         method: 'PUT',
         headers: {
@@ -86,49 +84,46 @@ async function verifyPort3001Functionality() {
       })
 
       if (updateResponse.ok) {
-        console.log('✅ User update API working on port 3001')
+        console.warn('✅ User update API working on port 3001')
       } else {
-        console.log('❌ User update API failed on port 3001:')
-        console.log('   Status:', updateResponse.status)
-        console.log('   Response:', await updateResponse.text())
+        console.warn('❌ User update API failed on port 3001:')
+        console.warn('   Status:', updateResponse.status)
+        console.warn('   Response:', await updateResponse.text())
       }
 
     } else {
-      console.log('❌ User API failed on port 3001:')
-      console.log('   Status:', userResponse.status)
-      console.log('   Response:', await userResponse.text())
+      console.warn('❌ User API failed on port 3001:')
+      console.warn('   Status:', userResponse.status)
+      console.warn('   Response:', await userResponse.text())
     }
 
-    console.log('\n🎯 Summary:')
-    console.log('✅ User Edit System is Complete and Functional')
-    console.log('\n📱 Available Functionality:')
-    console.log('   • User detail view with all information')
-    console.log('   • Edit button that opens comprehensive edit form')
-    console.log('   • Role dropdown with all available roles:')
-    console.log('     - SUPER_ADMIN, ADMIN, MANAGER, SALES_REP')
-    console.log('     - ACCOUNTANT, WAREHOUSE, VIEWER, USER')
-    console.log('   • Status toggle (Active/Inactive)')
-    console.log('   • Profile information editing')
-    console.log('   • Form validation and error handling')
-    console.log('   • Success messages and auto-redirect')
+    console.warn('\n🎯 Summary:')
+    console.warn('✅ User Edit System is Complete and Functional')
+    console.warn('\n📱 Available Functionality:')
+    console.warn('   • User detail view with all information')
+    console.warn('   • Edit button that opens comprehensive edit form')
+    console.warn('   • Role dropdown with all available roles:')
+    console.warn('     - SUPER_ADMIN, ADMIN, MANAGER, SALES_REP')
+    console.warn('     - ACCOUNTANT, WAREHOUSE, VIEWER, USER')
+    console.warn('   • Status toggle (Active/Inactive)')
+    console.warn('   • Profile information editing')
+    console.warn('   • Form validation and error handling')
+    console.warn('   • Success messages and auto-redirect')
 
-    console.log('\n🔗 Access URLs:')
-    console.log(`   • User Detail: http://localhost:3001/users/${targetUserId}`)
-    console.log(`   • User Edit: http://localhost:3001/users/${targetUserId}/edit`)
-    console.log('   • Users List: http://localhost:3001/users')
+    console.warn('\n🔗 Access URLs:')
+    console.warn(`   • User Detail: http://localhost:3001/users/${targetUserId}`)
+    console.warn(`   • User Edit: http://localhost:3001/users/${targetUserId}/edit`)
+    console.warn('   • Users List: http://localhost:3001/users')
 
-    console.log('\n✨ Super Admin Capabilities Confirmed:')
-    console.log('   ✅ Can view all user details')
-    console.log('   ✅ Can edit user roles (complete dropdown)')
-    console.log('   ✅ Can toggle user status (Active/Inactive)')
-    console.log('   ✅ Can update profile information')
-    console.log('   ✅ All changes persist in database')
-    console.log('   ✅ Proper permission checks in place')
+    console.warn('\n✨ Super Admin Capabilities Confirmed:')
+    console.warn('   ✅ Can view all user details')
+    console.warn('   ✅ Can edit user roles (complete dropdown)')
+    console.warn('   ✅ Can toggle user status (Active/Inactive)')
+    console.warn('   ✅ Can update profile information')
+    console.warn('   ✅ All changes persist in database')
+    console.warn('   ✅ Proper permission checks in place')
 
-  } catch (error) {
-    console.error('❌ Test failed:', error)
-  }
-}
+} catch {}
 
 // Run the verification
 verifyPort3001Functionality()

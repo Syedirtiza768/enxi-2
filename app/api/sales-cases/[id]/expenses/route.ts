@@ -26,14 +26,6 @@ export async function GET(
     return NextResponse.json(expenses)
   } catch (error) {
     console.error('Error getting expenses:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to get expenses' },
       { status: 500 }
@@ -68,13 +60,6 @@ export async function POST(
     
     return NextResponse.json(expense, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error creating expense:', error)
     
     if (error instanceof Error) {

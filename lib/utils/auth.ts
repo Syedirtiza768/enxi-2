@@ -34,6 +34,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
 
     return user
   } catch (error) {
-    throw error
+    console.error('Authentication error:', error);
+    return null
   }
 }

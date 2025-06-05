@@ -11,14 +11,14 @@ const dashboardMetricsSchema = z.object({
   includeSales: z.string().optional()
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const user = await verifyJWTFromRequest(_request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     const asOfDateParam = searchParams.get('asOfDate')
     const includeInventoryParam = searchParams.get('includeInventory')
     const includeSalesParam = searchParams.get('includeSales')
@@ -61,24 +61,10 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({ data: response })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error getting dashboard metrics:', error)
     
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
-      { error: 'Failed to get dashboard metrics' },
+      { error: error instanceof Error ? error.message : 'Failed to get dashboard metrics' },
       { status: 500 }
     )
   }

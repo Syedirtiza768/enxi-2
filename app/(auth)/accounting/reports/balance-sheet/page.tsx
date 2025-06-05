@@ -49,8 +49,8 @@ export default function BalanceSheetPage() {
       
       const data = await response.json()
       setBalanceSheet(data.data)
-    } catch (error: any) {
-      setError(error.message)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -58,6 +58,7 @@ export default function BalanceSheetPage() {
 
   useEffect(() => {
     fetchBalanceSheet()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleGenerateReport = (e: React.FormEvent) => {

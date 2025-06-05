@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ShipmentForm } from '@/components/shipments/shipment-form'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Search, ArrowLeft } from 'lucide-react'
 
-export default function NewShipmentPage() {
-  const router = useRouter()
+function NewShipmentContent() {
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
   const orderIdFromParams = searchParams.get('orderId')
   
@@ -23,7 +23,7 @@ export default function NewShipmentPage() {
     }
   }
 
-  const handleShipmentCreated = (shipment: any) => {
+  const handleShipmentCreated = (shipment: { id: string }) => {
     router.push(`/shipments/${shipment.id}`)
   }
 
@@ -119,5 +119,13 @@ export default function NewShipmentPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function NewShipmentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewShipmentContent />
+    </Suspense>
   )
 }

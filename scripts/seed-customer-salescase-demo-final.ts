@@ -6,7 +6,7 @@ import { SalesCaseService } from '@/lib/services/sales-case.service'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting Customer & SalesCase demo seeding...')
+  console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {
     // Get admin user (assuming it exists)
@@ -18,7 +18,7 @@ async function main() {
       throw new Error('Admin user not found. Please run seed-admin.ts first.')
     }
 
-    console.log('✅ Found admin user:', adminUser.email)
+    console.warn('✅ Found admin user:', adminUser.email)
 
     // Initialize services
     const leadService = new LeadService()
@@ -26,7 +26,7 @@ async function main() {
     const salesCaseService = new SalesCaseService()
 
     // 1. Create a lead that will be converted to customer
-    console.log('\n📊 Creating lead for conversion...')
+    console.warn('\n📊 Creating lead for conversion...')
     const lead = await leadService.createLead({
       firstName: 'Sarah',
       lastName: 'Johnson',
@@ -38,10 +38,10 @@ async function main() {
       status: LeadStatus.CONTACTED,
       notes: 'Interested in our enterprise ERP solution. Looking to replace their current system by Q2.'
     }, adminUser.id)
-    console.log('✅ Created lead:', lead.firstName, lead.lastName)
+    console.warn('✅ Created lead:', lead.firstName, lead.lastName)
 
     // 2. Convert lead to customer
-    console.log('\n🔄 Converting lead to customer...')
+    console.warn('\n🔄 Converting lead to customer...')
     const customerFromLead = await leadService.convertToCustomer({
       leadId: lead.id,
       customerData: {
@@ -59,11 +59,11 @@ async function main() {
       createSalesCase: true,
       salesCaseTitle: 'Enterprise ERP Implementation - Phase 1'
     })
-    console.log('✅ Converted lead to customer:', customerFromLead.customer.customerNumber)
-    console.log('✅ Created sales case:', customerFromLead.salesCase?.caseNumber)
+    console.warn('✅ Converted lead to customer:', customerFromLead.customer.customerNumber)
+    console.warn('✅ Created sales case:', customerFromLead.salesCase?.caseNumber)
 
     // 3. Create another customer directly (manual form)
-    console.log('\n👤 Creating customer via manual form...')
+    console.warn('\n👤 Creating customer via manual form...')
     const manualCustomer = await customerService.createCustomer({
       name: 'Global Manufacturing Inc',
       email: 'contact@globalmanufacturing.com',
@@ -77,10 +77,10 @@ async function main() {
       paymentTerms: 45,
       createdBy: adminUser.id
     })
-    console.log('✅ Created manual customer:', manualCustomer.customerNumber)
+    console.warn('✅ Created manual customer:', manualCustomer.customerNumber)
 
     // 4. Create quotation for the sales case
-    console.log('\n📄 Creating quotation...')
+    console.warn('\n📄 Creating quotation...')
     const quotation = await prisma.$transaction(async (tx) => {
       const quote = await tx.quotation.create({
         data: {
@@ -148,10 +148,10 @@ async function main() {
 
       return quote
     })
-    console.log('✅ Created quotation:', quotation.quotationNumber)
+    console.warn('✅ Created quotation:', quotation.quotationNumber)
 
     // 5. Add expenses to sales case
-    console.log('\n💰 Adding expenses...')
+    console.warn('\n💰 Adding expenses...')
     const expense1 = await salesCaseService.addExpense(customerFromLead.salesCase!.id, {
       description: 'Travel to client site for initial assessment',
       amount: 1500,
@@ -182,10 +182,10 @@ async function main() {
       needsApproval: true
     }, adminUser.id)
 
-    console.log('✅ Added 3 expenses (1 approved, 1 auto-approved, 1 pending)')
+    console.warn('✅ Added 3 expenses (1 approved, 1 auto-approved, 1 pending)')
 
     // 6. Create customer PO
-    console.log('\n📑 Creating customer PO...')
+    console.warn('\n📑 Creating customer PO...')
     const customerPO = await prisma.customerPO.create({
       data: {
         customerId: customerFromLead.customer.id,
@@ -204,7 +204,7 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created customer PO:', customerPO.poNumber)
+    console.warn('✅ Created customer PO:', customerPO.poNumber)
 
     // Update sales case status
     await prisma.salesCase.update({
@@ -213,31 +213,29 @@ async function main() {
     })
 
     // Display summary
-    console.log('\n📊 Demo Data Summary:')
-    console.log('====================')
-    console.log('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
-    console.log('2. Customer from lead:', customerFromLead.customer.name, '-', customerFromLead.customer.customerNumber)
-    console.log('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
-    console.log('4. Sales case:', customerFromLead.salesCase?.caseNumber, '-', customerFromLead.salesCase?.title)
-    console.log('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
-    console.log('6. Expenses: 3 expenses added (2 approved, 1 pending)')
-    console.log('7. Customer PO:', customerPO.poNumber)
-    console.log('8. Sales case status: PO_RECEIVED')
+    console.warn('\n📊 Demo Data Summary:')
+    console.warn('====================')
+    console.warn('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
+    console.warn('2. Customer from lead:', customerFromLead.customer.name, '-', customerFromLead.customer.customerNumber)
+    console.warn('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
+    console.warn('4. Sales case:', customerFromLead.salesCase?.caseNumber, '-', customerFromLead.salesCase?.title)
+    console.warn('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
+    console.warn('6. Expenses: 3 expenses added (2 approved, 1 pending)')
+    console.warn('7. Customer PO:', customerPO.poNumber)
+    console.warn('8. Sales case status: PO_RECEIVED')
     
-    console.log('\n✅ Demo seeding completed successfully!')
-    console.log('\nYou can now:')
-    console.log('- View customers at /customers')
-    console.log('- See customer details with Payments, Ledger, and Open Invoices tabs')
-    console.log('- View the sales case at /sales-cases')
-    console.log('- See quotations, expenses, and profitability analysis')
-    console.log('- Track the complete workflow from lead → customer → sales case → quotation → PO')
+    console.warn('\n✅ Demo seeding completed successfully!')
+    console.warn('\nYou can now:')
+    console.warn('- View customers at /customers')
+    console.warn('- See customer details with Payments, Ledger, and Open Invoices tabs')
+    console.warn('- View the sales case at /sales-cases')
+    console.warn('- See quotations, expenses, and profitability analysis')
+    console.warn('- Track the complete workflow from lead → customer → sales case → quotation → PO')
 
-  } catch (error) {
-    console.error('❌ Error during seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

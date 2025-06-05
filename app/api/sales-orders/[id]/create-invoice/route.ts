@@ -19,7 +19,7 @@ export async function POST(
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await request.json()
+    const body = await _request.json()
     const data = createInvoiceFromOrderSchema.parse(body)
     
     const invoiceService = new InvoiceService()
@@ -37,24 +37,9 @@ export async function POST(
     
     return NextResponse.json(invoice, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error creating invoice from sales order:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
-      { error: 'Failed to create invoice from sales order' },
+      { error: error instanceof Error ? error.message : 'Failed to create invoice from sales order' },
       { status: 500 }
     )
   }

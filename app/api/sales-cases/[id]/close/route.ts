@@ -13,9 +13,9 @@ export async function POST(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
-    const body = await request.json()
+    const body = await _request.json()
     
     const { status, actualValue, cost } = body
 
@@ -47,7 +47,7 @@ export async function POST(
       status,
       actualValue,
       cost,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({
@@ -55,19 +55,19 @@ export async function POST(
       data: salesCase,
       message: `Sales case closed as ${status}`
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error closing sales case:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('already closed')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already closed')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

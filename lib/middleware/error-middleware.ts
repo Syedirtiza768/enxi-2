@@ -9,33 +9,28 @@ import { handleApiError } from '../utils/error-handler'
 // Type for API route handler
 type ApiHandler = (
   request: NextRequest,
-  context?: any
+  context?: unknown
 ) => Promise<NextResponse> | NextResponse
 
 // Type for API route handler with params
 type ApiHandlerWithParams = (
   request: NextRequest,
-  context: { params: any }
+  context: { params: unknown }
 ) => Promise<NextResponse> | NextResponse
 
 /**
  * Wrapper function that adds error handling to API routes
  */
 export function withErrorHandler(handler: ApiHandler): ApiHandler {
-  return async (request: NextRequest, context?: any) => {
+  return async (request: NextRequest, context?: unknown) => {
     try {
       return await handler(request, context)
     } catch (error) {
-      // Add request context for better error logging
       const errorContext = {
-        method: request.method,
         url: request.url,
-        userAgent: request.headers.get('user-agent'),
-        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        timestamp: new Date().toISOString(),
-        params: context?.params
+        method: request.method,
+        context
       }
-      
       return handleApiError(error, errorContext)
     }
   }
@@ -45,20 +40,15 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
  * Wrapper function for API routes with params
  */
 export function withErrorHandlerParams(handler: ApiHandlerWithParams): ApiHandlerWithParams {
-  return async (request: NextRequest, context: { params: any }) => {
+  return async (request: NextRequest, context: { params: unknown }) => {
     try {
       return await handler(request, context)
     } catch (error) {
-      // Add request context for better error logging
       const errorContext = {
-        method: request.method,
         url: request.url,
-        userAgent: request.headers.get('user-agent'),
-        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        timestamp: new Date().toISOString(),
+        method: request.method,
         params: context.params
       }
-      
       return handleApiError(error, errorContext)
     }
   }
@@ -68,7 +58,7 @@ export function withErrorHandlerParams(handler: ApiHandlerWithParams): ApiHandle
  * Performance monitoring wrapper
  */
 export function withPerformanceMonitoring(handler: ApiHandler): ApiHandler {
-  return async (request: NextRequest, context?: any) => {
+  return async (request: NextRequest, context?: unknown) => {
     const startTime = Date.now()
     
     try {
@@ -90,11 +80,7 @@ export function withPerformanceMonitoring(handler: ApiHandler): ApiHandler {
       
       return response
     } catch (error) {
-      const duration = Date.now() - startTime
-      console.error('❌ API request failed:', {
-        method: request.method,
-        url: request.url,
-        duration: `${duration}ms`,
+      console.error('API Error:', {
         error: (error as Error).message,
         timestamp: new Date().toISOString()
       })

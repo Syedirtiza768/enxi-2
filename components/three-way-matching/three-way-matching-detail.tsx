@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   VStack, 
   HStack, 
@@ -23,8 +23,6 @@ import {
   TrendingDown,
   Minus,
   ShoppingCart,
-  Building2,
-  Calendar
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -118,9 +116,9 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     if (purchaseOrderId) {
       fetchAnalysis()
     }
-  }, [purchaseOrderId])
+  }, [purchaseOrderId, fetchAnalysis])
 
-  const fetchAnalysis = async () => {
+  const fetchAnalysis = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -134,13 +132,12 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
       }
 
       setAnalysis(response.data)
-    } catch (error) {
-      console.error('Error fetching analysis:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load analysis')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [purchaseOrderId])
 
   const getMatchingStatusBadge = (status: string) => {
     const config = {

@@ -4,7 +4,7 @@ import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.se
 import { TransferStatus } from '@/lib/generated/prisma'
 
 // GET /api/stock-transfers - Get all stock transfers
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -34,17 +34,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: transfers })
-  } catch (error) {
-    console.error('Error fetching stock transfers:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stock transfers' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/stock-transfers - Create stock transfer
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -106,20 +106,20 @@ export async function POST(request: NextRequest) {
       reason,
       notes,
       items,
-      requestedBy: user.id
+      requestedBy: _user.id
     })
 
     return NextResponse.json({ data: transfer }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating stock transfer:', error)
     
-    if (error.message?.includes('not found') || 
-        error.message?.includes('must be different') ||
-        error.message?.includes('must be active') ||
-        error.message?.includes('Insufficient stock') ||
-        error.message?.includes('does not track')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || 
+        error instanceof Error ? error.message : String(error)?.includes('must be different') ||
+        error instanceof Error ? error.message : String(error)?.includes('must be active') ||
+        error instanceof Error ? error.message : String(error)?.includes('Insufficient stock') ||
+        error instanceof Error ? error.message : String(error)?.includes('does not track')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

@@ -1,6 +1,16 @@
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from './audit.service'
 import { CustomerService } from './customer.service'
+import { SalesCaseWithDetails } from './sales-case.service'
+
+export interface TimelineEvent {
+  type: string
+  action: string
+  timestamp: Date
+  data?: Record<string, unknown>
+  userId?: string
+  description?: string
+}
 import { 
   CreateLeadData, 
   UpdateLeadData, 
@@ -71,8 +81,8 @@ export class LeadService {
   
   async createLead(data: CreateLeadData, userId: string): Promise<LeadResponse> {
     try {
-      console.log('[LeadService] Creating lead with data:', data)
-      console.log('[LeadService] User ID:', userId)
+      console.warn('[LeadService] Creating lead with data:', data)
+      console.warn('[LeadService] User ID:', userId)
       
       // Validate input data
       const validatedData = createLeadSchema.parse(data)
@@ -104,7 +114,7 @@ export class LeadService {
 
       return lead
     } catch (error) {
-      console.error('[LeadService] Error creating lead:', error)
+      console.error('Error creating lead:', error);
       throw error;
     }
   }
@@ -116,8 +126,8 @@ export class LeadService {
       
       const skip = (page - 1) * limit
     
-    // Build where clause
-    const where: any = {}
+    // Build where clause  
+    const where: Prisma.LeadWhereInput = {}
     
     if (status) {
       where.status = status
@@ -166,6 +176,7 @@ export class LeadService {
         limit,
       }
     } catch (error) {
+      console.error('Error getting leads:', error);
       throw error;
     }
   }
@@ -261,7 +272,8 @@ export class LeadService {
 
       return true
     } catch (error) {
-      return false
+      console.error('Error updating lead status:', error);
+      throw error;
     }
   }
 
@@ -269,7 +281,7 @@ export class LeadService {
     data: ConvertLeadInput & { convertedBy: string }
   ): Promise<{
     customer: Customer
-    salesCase?: any
+    salesCase?: SalesCaseWithDetails
   }> {
     const lead = await this.getLeadById(data.leadId)
     
@@ -303,7 +315,7 @@ export class LeadService {
       // Create sales case if requested
       let salesCase
       if (data.createSalesCase) {
-        const SalesCaseService = require('./sales-case.service').SalesCaseService
+        const { SalesCaseService } = await import('./sales-case.service')
         const salesCaseService = new SalesCaseService()
         
         salesCase = await salesCaseService.createSalesCase({
@@ -352,7 +364,7 @@ export class LeadService {
   }
 
   async getLeadStats(): Promise<LeadStats> {
-    const stats = await (prisma.lead as any).groupBy({
+    const stats = await prisma.lead.groupBy({
       by: ['status'],
       _count: true,
     })
@@ -370,7 +382,7 @@ export class LeadService {
     }
 
     // Fill in actual counts
-    stats.forEach((stat: any) => {
+    stats.forEach((stat: { status: LeadStatus; _count: number }) => {
       result[stat.status as keyof LeadStats] = stat._count
     })
 
@@ -457,7 +469,7 @@ export class LeadService {
     }
   }
 
-  async getLeadTimeline(id: string): Promise<any[]> {
+  async getLeadTimeline(id: string): Promise<TimelineEvent[]> {
     const lead = await this.getLeadById(id)
     if (!lead) {
       throw new Error('Lead not found')
@@ -467,7 +479,7 @@ export class LeadService {
     const auditLogs = await this.auditService.getEntityHistory('Lead', id)
 
     // Get related customer and sales cases if converted
-    let customerEvents: any[] = []
+    let customerEvents: TimelineEvent[] = []
     if (lead.customer) {
       const salesCases = await prisma.salesCase.findMany({
         where: { customerId: lead.customer.id },

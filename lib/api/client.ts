@@ -4,9 +4,9 @@
  * All API calls should go through this client to ensure proper auth handling
  */
 
-import { redirect } from 'next/navigation'
 
-interface ApiError extends Error {
+// API Error interface for enhanced error handling
+export interface ApiError extends Error {
   status: number
   statusText: string
 }
@@ -19,7 +19,7 @@ interface ApiOptions extends RequestInit {
 /**
  * Enhanced API response type
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T
   error?: string
   status: number
@@ -48,36 +48,12 @@ function getAuthToken(): string | null {
   return null
 }
 
-/**
- * Handle authentication errors
- */
-function handleAuthError() {
-  // Clear stored tokens
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token')
-    document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-  }
 
-  // Redirect to login (client-side only)
-  if (typeof window !== 'undefined') {
-    window.location.href = '/login'
-  }
-}
-
-/**
- * Create API error with enhanced information
- */
-function createApiError(response: Response, message?: string): ApiError {
-  const error = new Error(message || `API Error: ${response.status} ${response.statusText}`) as ApiError
-  error.status = response.status
-  error.statusText = response.statusText
-  return error
-}
 
 /**
  * Main API client function
  */
-export async function apiClient<T = any>(
+export async function apiClient<T = unknown>(
   url: string, 
   options: ApiOptions = {}
 ): Promise<ApiResponse<T>> {
@@ -92,7 +68,7 @@ export async function apiClient<T = any>(
   const startTime = Date.now()
   const method = fetchOptions.method || 'GET'
   
-  console.log(`API Request: ${method} ${url}`, {
+  console.warn(`API Request: ${method} ${url}`, {
     method,
     url,
     hasBody: !!fetchOptions.body
@@ -123,7 +99,7 @@ export async function apiClient<T = any>(
     const duration = Date.now() - startTime
 
     // Log response
-    console.log(`API Response: ${response.status} ${method} ${url}`, {
+    console.warn(`API Response: ${response.status} ${method} ${url}`, {
       status: response.status,
       duration: `${duration}ms`,
       method,
@@ -179,7 +155,8 @@ export async function apiClient<T = any>(
     }
   } catch (error) {
     const duration = Date.now() - startTime
-    console.error(`API Network Error: ${method} ${url}`, error, {
+    console.error(`API Network Error: ${method} ${url}`, {
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: `${duration}ms`,
       networkError: true
     })
@@ -195,24 +172,24 @@ export async function apiClient<T = any>(
  * Convenience methods for common HTTP verbs
  */
 export const api = {
-  get: <T = any>(url: string, options?: Omit<ApiOptions, 'method'>) =>
+  get: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>) =>
     apiClient<T>(url, { ...options, method: 'GET' }),
 
-  post: <T = any>(url: string, data?: any, options?: Omit<ApiOptions, 'method' | 'body'>) =>
+  post: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>) =>
     apiClient<T>(url, { 
       ...options, 
       method: 'POST', 
       body: data ? JSON.stringify(data) : undefined 
     }),
 
-  put: <T = any>(url: string, data?: any, options?: Omit<ApiOptions, 'method' | 'body'>) =>
+  put: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>) =>
     apiClient<T>(url, { 
       ...options, 
       method: 'PUT', 
       body: data ? JSON.stringify(data) : undefined 
     }),
 
-  delete: <T = any>(url: string, options?: Omit<ApiOptions, 'method'>) =>
+  delete: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>) =>
     apiClient<T>(url, { ...options, method: 'DELETE' }),
 }
 

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
+import { PaymentMethod } from '@/lib/generated/prisma'
 
 // GET /api/supplier-payments - Get all supplier payments
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams
     const supplierId = searchParams.get('supplierId')
-    const paymentMethod = searchParams.get('paymentMethod') as any
+    const paymentMethod = searchParams.get('paymentMethod') as PaymentMethod | null
     const dateFrom = searchParams.get('dateFrom')
     const dateTo = searchParams.get('dateTo')
     const search = searchParams.get('search')
@@ -31,17 +32,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: payments })
-  } catch (error) {
-    console.error('Error fetching supplier payments:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier payments' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/supplier-payments - Create supplier payment
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -99,31 +100,31 @@ export async function POST(request: NextRequest) {
       currency: currency || undefined,
       exchangeRate: rate,
       bankAccountId,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const supplierPaymentService = new SupplierPaymentService()
     const payment = await supplierPaymentService.createSupplierPayment(paymentData)
 
     return NextResponse.json({ data: payment }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating supplier payment:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('exceeds') || 
-        error.message?.includes('positive') ||
-        error.message?.includes('inactive') ||
-        error.message?.includes('cancelled') ||
-        error.message?.includes('does not have') ||
-        error.message?.includes('not a bank')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('exceeds') || 
+        error instanceof Error ? error.message : String(error)?.includes('positive') ||
+        error instanceof Error ? error.message : String(error)?.includes('inactive') ||
+        error instanceof Error ? error.message : String(error)?.includes('cancelled') ||
+        error instanceof Error ? error.message : String(error)?.includes('does not have') ||
+        error instanceof Error ? error.message : String(error)?.includes('not a bank')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

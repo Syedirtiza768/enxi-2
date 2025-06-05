@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { CustomerService } from '@/lib/services/customer.service'
 
 // GET /api/customers - List all customers with search
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const customerService = new CustomerService()
     const searchParams = request.nextUrl.searchParams
     
@@ -22,19 +22,19 @@ export async function GET(request: NextRequest) {
       success: true,
       data: customers
     })
-  } catch (error) {
-    console.error('Error fetching customers:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch customers' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/customers - Create new customer
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { 
@@ -72,19 +72,19 @@ export async function POST(request: NextRequest) {
       creditLimit,
       paymentTerms,
       leadId,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: customer
     }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating customer:', error)
     
-    if (error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 409 }
       )
     }

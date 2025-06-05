@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   PageLayout,
   PageHeader,
@@ -10,7 +9,6 @@ import {
   HStack,
   Grid,
   Card,
-  CardHeader,
   CardContent,
   Heading,
   Text,
@@ -20,7 +18,7 @@ import {
   Badge
 } from '@/components/design-system'
 import { 
-  Plus, Search, Filter, Package, Clock, CheckCircle, 
+  Plus, Search, Package, Clock, CheckCircle, 
   XCircle, AlertCircle, ChevronRight 
 } from 'lucide-react'
 
@@ -49,7 +47,6 @@ interface SalesOrder {
 }
 
 export default function SalesOrdersPage() {
-  const router = useRouter()
   const [orders, setOrders] = useState<SalesOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -211,7 +208,7 @@ export default function SalesOrdersPage() {
             <Button
               variant="primary"
               leftIcon={<Plus />}
-              onClick={() => router.push('/sales-orders/new')}
+              onClick={() => window.location.href = '/sales-orders/new'}
             >
               New Order
             </Button>
@@ -365,7 +362,7 @@ export default function SalesOrdersPage() {
                   <Button
                     variant="primary"
                     leftIcon={<Plus />}
-                    onClick={() => router.push('/sales-orders/new')}
+                    onClick={() => window.location.href = '/sales-orders/new'}
                   >
                     New Order
                   </Button>
@@ -407,7 +404,7 @@ export default function SalesOrdersPage() {
                 <tr 
                   key={order.id} 
                   className="hover:bg-[var(--bg-secondary)] cursor-pointer transition-colors duration-[var(--transition-fast)]"
-                  onClick={() => router.push(`/sales-orders/${order.id}`)}
+                  onClick={() => window.location.href = `/sales-orders/${order.id}`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-[var(--text-primary)]">{order.orderNumber}</div>

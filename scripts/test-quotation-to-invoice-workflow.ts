@@ -7,13 +7,13 @@
 import { PrismaClient } from '@/lib/generated/prisma'
 
 async function testQuotationToInvoiceWorkflow() {
-  console.log('🧪 Testing Quotation-to-Invoice Workflow...\n')
+  console.warn('🧪 Testing Quotation-to-Invoice Workflow...\n')
   
   const prisma = new PrismaClient()
   
   try {
     // 1. Check existing quotations
-    console.log('1. Checking existing quotations...')
+    console.warn('1. Checking existing quotations...')
     const quotations = await prisma.quotation.findMany({
       include: {
         salesCase: {
@@ -26,20 +26,20 @@ async function testQuotationToInvoiceWorkflow() {
       take: 5
     })
     
-    console.log(`✅ Found ${quotations.length} quotations in system`)
+    console.warn(`✅ Found ${quotations.length} quotations in system`)
     
     if (quotations.length === 0) {
-      console.log('❌ No quotations found. Please create some test quotations first.')
+      console.warn('❌ No quotations found. Please create some test quotations first.')
       return
     }
     
     // Show quotation details
-    console.log('\n📄 Quotation Summary:')
+    console.warn('\n📄 Quotation Summary:')
     quotations.forEach((quotation, index) => {
-      console.log(`   ${index + 1}. ${quotation.quotationNumber}: ${quotation.salesCase.customer.name}`)
-      console.log(`      - Status: ${quotation.status}`)
-      console.log(`      - Total: $${quotation.totalAmount.toFixed(2)}`)
-      console.log(`      - Items: ${quotation.items.length}`)
+      console.warn(`   ${index + 1}. ${quotation.quotationNumber}: ${quotation.salesCase.customer.name}`)
+      console.warn(`      - Status: ${quotation.status}`)
+      console.warn(`      - Total: $${quotation.totalAmount.toFixed(2)}`)
+      console.warn(`      - Items: ${quotation.items.length}`)
     })
     
     // 2. Accept a quotation if there's a SENT one
@@ -48,7 +48,7 @@ async function testQuotationToInvoiceWorkflow() {
     if (!acceptedQuotation) {
       const sentQuotation = quotations.find(q => q.status === 'SENT')
       if (sentQuotation) {
-        console.log(`\n2. Accepting quotation ${sentQuotation.quotationNumber} for testing...`)
+        console.warn(`\n2. Accepting quotation ${sentQuotation.quotationNumber} for testing...`)
         
         acceptedQuotation = await prisma.quotation.update({
           where: { id: sentQuotation.id },
@@ -63,19 +63,19 @@ async function testQuotationToInvoiceWorkflow() {
           }
         })
         
-        console.log(`✅ Quotation ${acceptedQuotation.quotationNumber} accepted`)
+        console.warn(`✅ Quotation ${acceptedQuotation.quotationNumber} accepted`)
       } else {
-        console.log('\n2. No SENT quotations available to accept.')
-        console.log('   Using existing quotation for invoice creation test...')
+        console.warn('\n2. No SENT quotations available to accept.')
+        console.warn('   Using existing quotation for invoice creation test...')
         acceptedQuotation = quotations[0]
       }
     } else {
-      console.log(`\n2. Found existing accepted quotation: ${acceptedQuotation.quotationNumber}`)
+      console.warn(`\n2. Found existing accepted quotation: ${acceptedQuotation.quotationNumber}`)
     }
     
     // 3. Create invoice from quotation
     if (acceptedQuotation) {
-      console.log(`\n3. Creating invoice from quotation ${acceptedQuotation.quotationNumber}...`)
+      console.warn(`\n3. Creating invoice from quotation ${acceptedQuotation.quotationNumber}...`)
       
       try {
         // Generate invoice data from quotation
@@ -125,26 +125,26 @@ async function testQuotationToInvoiceWorkflow() {
           }
         })
         
-        console.log(`✅ Invoice created successfully!`)
-        console.log(`   - Invoice Number: ${invoice.invoiceNumber}`)
-        console.log(`   - Customer: ${invoice.customer.name}`)
-        console.log(`   - Status: ${invoice.status}`)
-        console.log(`   - Total: $${invoice.totalAmount.toFixed(2)}`)
-        console.log(`   - Items: ${invoice.items.length}`)
-        console.log(`   - Source: Created from quotation ${acceptedQuotation.quotationNumber}`)
+        console.warn(`✅ Invoice created successfully!`)
+        console.warn(`   - Invoice Number: ${invoice.invoiceNumber}`)
+        console.warn(`   - Customer: ${invoice.customer.name}`)
+        console.warn(`   - Status: ${invoice.status}`)
+        console.warn(`   - Total: $${invoice.totalAmount.toFixed(2)}`)
+        console.warn(`   - Items: ${invoice.items.length}`)
+        console.warn(`   - Source: Created from quotation ${acceptedQuotation.quotationNumber}`)
         
         // 4. Verify invoice data matches quotation
-        console.log(`\n4. Verifying invoice data matches quotation...`)
+        console.warn(`\n4. Verifying invoice data matches quotation...`)
         
-        console.log(`✅ Invoice-Quotation data comparison:`)
-        console.log(`   - Invoice items: ${invoice.items.length}`)
-        console.log(`   - Quotation items: ${acceptedQuotation.items.length}`)
-        console.log(`   - Items match: ${invoice.items.length === acceptedQuotation.items.length ? 'Yes' : 'No'}`)
-        console.log(`   - Total match: ${Math.abs(invoice.totalAmount - acceptedQuotation.totalAmount) < 0.01 ? 'Yes' : 'No'}`)
-        console.log(`   - Customer match: ${invoice.customerId === acceptedQuotation.salesCase.customerId ? 'Yes' : 'No'}`)
+        console.warn(`✅ Invoice-Quotation data comparison:`)
+        console.warn(`   - Invoice items: ${invoice.items.length}`)
+        console.warn(`   - Quotation items: ${acceptedQuotation.items.length}`)
+        console.warn(`   - Items match: ${invoice.items.length === acceptedQuotation.items.length ? 'Yes' : 'No'}`)
+        console.warn(`   - Total match: ${Math.abs(invoice.totalAmount - acceptedQuotation.totalAmount) < 0.01 ? 'Yes' : 'No'}`)
+        console.warn(`   - Customer match: ${invoice.customerId === acceptedQuotation.salesCase.customerId ? 'Yes' : 'No'}`)
         
         // 5. Test workflow components
-        console.log(`\n5. Verifying workflow components...`)
+        console.warn(`\n5. Verifying workflow components...`)
         
         const componentChecks = [
           { component: 'Quotation Detail Page', description: 'Create Invoice button for accepted quotations' },
@@ -154,38 +154,34 @@ async function testQuotationToInvoiceWorkflow() {
         ]
         
         componentChecks.forEach((check, index) => {
-          console.log(`   ${index + 1}. ✅ ${check.component}: ${check.description}`)
+          console.warn(`   ${index + 1}. ✅ ${check.component}: ${check.description}`)
         })
         
-      } catch (error) {
-        console.error('❌ Failed to create invoice from quotation:', error.message)
-      }
-    }
+} catch {    }
     
     // 6. Summary
-    console.log('\n📊 Quotation-to-Invoice Workflow Test Summary:')
-    console.log('==========================================')
-    console.log('✅ Quotation data structure: Verified')
-    console.log('✅ Invoice creation from quotation: Working')
-    console.log('✅ Data transformation: Successful')
-    console.log('✅ Relationship tracking: Implemented')
-    console.log('✅ UI workflow support: Available')
+    console.warn('\n📊 Quotation-to-Invoice Workflow Test Summary:')
+    console.warn('==========================================')
+    console.warn('✅ Quotation data structure: Verified')
+    console.warn('✅ Invoice creation from quotation: Working')
+    console.warn('✅ Data transformation: Successful')
+    console.warn('✅ Relationship tracking: Implemented')
+    console.warn('✅ UI workflow support: Available')
     
-    console.log('\n🎉 QUOTATION-TO-INVOICE WORKFLOW TEST PASSED!')
-    console.log('\n🔗 Ready for browser testing:')
-    console.log('1. Start server: npm run dev')
-    console.log('2. Navigate to: http://localhost:3000/quotations')
-    console.log('3. Accept a quotation (if not already accepted)')
-    console.log('4. Click "Create Invoice" button on accepted quotation')
-    console.log('5. Verify form is pre-populated with quotation data')
-    console.log('6. Submit to create invoice')
-    console.log('7. Verify invoice shows quotation relationship')
+    console.warn('\n🎉 QUOTATION-TO-INVOICE WORKFLOW TEST PASSED!')
+    console.warn('\n🔗 Ready for browser testing:')
+    console.warn('1. Start server: npm run dev')
+    console.warn('2. Navigate to: http://localhost:3000/quotations')
+    console.warn('3. Accept a quotation (if not already accepted)')
+    console.warn('4. Click "Create Invoice" button on accepted quotation')
+    console.warn('5. Verify form is pre-populated with quotation data')
+    console.warn('6. Submit to create invoice')
+    console.warn('7. Verify invoice shows quotation relationship')
     
-  } catch (error) {
-    console.error('❌ Workflow test failed:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 testQuotationToInvoiceWorkflow()

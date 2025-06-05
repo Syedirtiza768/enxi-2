@@ -22,14 +22,11 @@ import {
   FileText, 
   Calendar, 
   DollarSign,
-  Building2,
   CheckCircle,
   AlertTriangle,
   Clock,
   Eye,
-  Edit,
-  X,
-  TrendingUp
+  Edit
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -71,7 +68,7 @@ interface SupplierInvoiceStats {
 }
 
 export default function SupplierInvoicesPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [supplierInvoices, setSupplierInvoices] = useState<SupplierInvoice[]>([])
   const [stats, setStats] = useState<SupplierInvoiceStats>({
     totalInvoices: 0,
@@ -118,9 +115,8 @@ export default function SupplierInvoicesPage() {
         ).length
       }
       setStats(stats)
-    } catch (error) {
-      console.error('Error fetching supplier invoices:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier invoices')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

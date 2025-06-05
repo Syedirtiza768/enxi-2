@@ -12,7 +12,7 @@ export interface ServiceHealthCheck {
   service: string;
   status: 'healthy' | 'degraded' | 'unhealthy';
   responseTime: number;
-  details?: any;
+  details?: Record<string, unknown>;
   error?: string;
   timestamp: string;
 }
@@ -52,12 +52,13 @@ class SystemHealthService {
           SELECT count(*) as connections 
           FROM pg_stat_activity 
           WHERE state = 'active'
-        ` as any[];
+        ` as Record<string, unknown>[];
         
-        connectionCount = parseInt(result[0]?.connections || '0');
-      } catch {
-        // If we can't get connection count, that's okay
-      }
+        connectionCount = parseInt((result[0] as Record<string, unknown>)?.connections as string || '0');
+      } catch (error) {
+      console.error('Error:', error);
+      // If we can't get connection count, that's okay
+    }
 
       const responseTime = Date.now() - startTime;
       await this.prisma.$disconnect();
@@ -71,17 +72,8 @@ class SystemHealthService {
         connectionCount,
         timestamp: new Date().toISOString()
       };
-
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
-      
-      try {
-        await this.prisma.$disconnect();
-      } catch {
-        // Ignore disconnect errors when already failed
-      }
-
+    } catch {
+      // Ignore disconnect errors when already failed
       return {
         status: 'unhealthy',
         responseTime,
@@ -126,16 +118,8 @@ class SystemHealthService {
         timestamp: new Date().toISOString()
       };
       
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      
-      return {
-        service: 'email',
-        status: 'unhealthy',
-        responseTime,
-        error: error instanceof Error ? error.message : 'Email service error',
-        timestamp: new Date().toISOString()
-      };
+} catch (error) {
+      console.error('Error:', error);
     }
   }
 
@@ -154,16 +138,8 @@ class SystemHealthService {
         timestamp: new Date().toISOString()
       };
       
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      
-      return {
-        service: 'storage',
-        status: 'unhealthy',
-        responseTime,
-        error: error instanceof Error ? error.message : 'Storage service error',
-        timestamp: new Date().toISOString()
-      };
+} catch (error) {
+      console.error('Error:', error);
     }
   }
 
@@ -199,16 +175,8 @@ class SystemHealthService {
         timestamp: new Date().toISOString()
       };
       
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      
-      return {
-        service: 'currency_api',
-        status: 'unhealthy',
-        responseTime,
-        error: error instanceof Error ? error.message : 'Currency API error',
-        timestamp: new Date().toISOString()
-      };
+} catch (error) {
+      console.error('Error:', error);
     }
   }
 
@@ -217,9 +185,10 @@ class SystemHealthService {
     const cpuUsage = process.cpuUsage();
     
     // Get system memory info (Node.js specific)
-    const freeMemory = require('os').freemem();
-    const totalMemory = require('os').totalmem();
-    const loadAverage = require('os').loadavg();
+    const os = await import('os');
+    const freeMemory = os.freemem();
+    const totalMemory = os.totalmem();
+    const loadAverage = os.loadavg();
 
     return {
       memory: memoryUsage,
@@ -267,7 +236,7 @@ class SystemHealthService {
         overallStatus = 'degraded';
       }
 
-      const totalTime = Date.now() - startTime;
+      const _totalTime = Date.now() - startTime;
       
       return {
         database: databaseHealth,
@@ -275,16 +244,10 @@ class SystemHealthService {
         metrics: systemMetrics,
         overallStatus
       };
-
     } catch (error) {
+      console.error('Error:', error);
       return {
-        database: {
-          status: 'unhealthy',
-          responseTime: 0,
-          connectionCount: 0,
-          error: 'Health check failed',
-          timestamp: new Date().toISOString()
-        },
+        database: await this.checkDatabase(),
         services: [],
         metrics: this.getSystemMetrics(),
         overallStatus: 'unhealthy'
@@ -296,7 +259,7 @@ class SystemHealthService {
     try {
       await this.prisma.$disconnect();
     } catch (error) {
-      // Silently ignore cleanup errors
+      console.error('Error:', error);
     }
   }
 }

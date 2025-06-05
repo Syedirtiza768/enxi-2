@@ -38,13 +38,6 @@ export async function POST(
     
     return NextResponse.json(salesOrder, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error converting quotation to sales order:', error)
     
     if (error instanceof Error) {

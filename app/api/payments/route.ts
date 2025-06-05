@@ -3,7 +3,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const customerId = searchParams.get('customerId')
@@ -49,20 +49,16 @@ export async function GET(request: NextRequest) {
       count: payments.length
     })
 
-  } catch (error) {
-    console.error('Error fetching payments:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch payments',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const body = await request.json()
     const {
@@ -196,14 +192,10 @@ export async function POST(request: NextRequest) {
       message: 'Payment recorded successfully'
     })
 
-  } catch (error) {
-    console.error('Error creating payment:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create payment',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

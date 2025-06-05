@@ -4,7 +4,7 @@ import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.ser
 import { POStatus } from '@/lib/generated/prisma'
 
 // GET /api/purchase-orders - Get all purchase orders
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -32,17 +32,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: purchaseOrders })
-  } catch (error) {
-    console.error('Error fetching purchase orders:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch purchase orders' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/purchase-orders - Create purchase order
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -117,19 +117,19 @@ export async function POST(request: NextRequest) {
       currency,
       exchangeRate,
       items,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({ data: purchaseOrder }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating purchase order:', error)
     
-    if (error.message?.includes('not found') || 
-        error.message?.includes('inactive supplier') ||
-        error.message?.includes('quantity must be') ||
-        error.message?.includes('price cannot be')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || 
+        error instanceof Error ? error.message : String(error)?.includes('inactive supplier') ||
+        error instanceof Error ? error.message : String(error)?.includes('quantity must be') ||
+        error instanceof Error ? error.message : String(error)?.includes('price cannot be')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

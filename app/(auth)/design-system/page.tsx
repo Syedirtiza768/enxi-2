@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import {
   Container,
   Grid,
@@ -10,7 +9,6 @@ import {
   CardHeader,
   CardContent,
   CardFooter,
-  Stack,
   VStack,
   HStack,
   Heading,
@@ -30,8 +28,7 @@ import {
 import { 
   ArrowRight, 
   Download, 
-  Plus, 
-  Search,
+  Plus,
   Mail,
   Lock,
   User,
@@ -267,7 +264,7 @@ export default function DesignSystemPage() {
                         { value: 'guest', label: 'Guest', disabled: true }
                       ]}
                       value={formData.role}
-                      onValueChange={(value) => setFormData({ ...formData, role: value })}
+                      onValueChange={(value: string) => setFormData({ ...formData, role: value })}
                       placeholder="Select a role"
                     />
                   </GridItem>
@@ -328,7 +325,7 @@ export default function DesignSystemPage() {
                       label="Country"
                       options={[{ value: 'us', label: 'United States' }]}
                       value=""
-                      onValueChange={() => {}} // Read-only for demo
+                      onValueChange={(_value: string) => {}} // Read-only for demo
                       error="Please select your country"
                     />
                     <Textarea

@@ -21,13 +21,9 @@ import {
   Search, 
   DollarSign, 
   Calendar, 
-  Building2,
-  CreditCard,
   TrendingUp,
-  FileText,
   Eye,
-  Edit,
-  Filter
+  Edit
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -66,7 +62,7 @@ interface PaymentStats {
 }
 
 export default function SupplierPaymentsPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [payments, setPayments] = useState<SupplierPayment[]>([])
   const [stats, setStats] = useState<PaymentStats>({
     totalPayments: 0,
@@ -117,9 +113,8 @@ export default function SupplierPaymentsPage() {
         pendingCount: 0 // Supplier payments don't have pending status like invoices
       }
       setStats(stats)
-    } catch (error) {
-      console.error('Error fetching supplier payments:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier payments')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { UserService } from '@/lib/services/user.service'
 import { Role } from '@/lib/generated/prisma'
@@ -9,7 +9,7 @@ const userService = new UserService()
  * GET /api/roles/permissions - Get all role permissions
  */
 export const GET = createProtectedHandler(
-  async (request) => {
+  async (_request) => {
     try {
       // Get all role permissions
       const rolePermissions: Record<Role, string[]> = {} as Record<Role, string[]>
@@ -20,14 +20,13 @@ export const GET = createProtectedHandler(
       }
 
       return NextResponse.json(rolePermissions)
-    } catch (error) {
-      console.error('Error fetching role permissions:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to fetch role permissions' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { roles: ['SUPER_ADMIN', 'ADMIN'] }
 )

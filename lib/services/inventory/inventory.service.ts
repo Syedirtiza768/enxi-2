@@ -249,7 +249,7 @@ export class InventoryService {
     dateTo?: Date
     location?: string
   } = {}): Promise<StockMovementWithDetails[]> {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (filters.itemId) where.itemId = filters.itemId
     if (filters.movementType) where.movementType = filters.movementType

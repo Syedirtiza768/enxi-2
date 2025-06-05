@@ -7,11 +7,11 @@ import {
 } from '@/lib/generated/prisma'
 
 // GET /api/accounting/accounts - List all accounts with filtering
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const chartOfAccountsService = new ChartOfAccountsService()
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = _request.nextUrl.searchParams
     
     const options: {
       type?: AccountType
@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: accounts
     })
-  } catch (error) {
-    console.error('Error fetching accounts:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch accounts' },
       { status: 500 }
@@ -50,9 +50,9 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/accounting/accounts - Create new account
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     const { code, name, type, currency, description, parentId } = body
 
@@ -79,31 +79,31 @@ export async function POST(request: NextRequest) {
       currency: currency || 'USD',
       description,
       parentId,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: account
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating account:', error)
     
-    if (error.message === 'Account code already exists') {
+    if (error instanceof Error ? error.message : String(error) === 'Account code already exists') {
       return NextResponse.json(
         { error: 'Account code already exists' },
         { status: 400 }
       )
     }
     
-    if (error.message === 'Parent account not found') {
+    if (error instanceof Error ? error.message : String(error) === 'Parent account not found') {
       return NextResponse.json(
         { error: 'Parent account not found' },
         { status: 404 }
       )
     }
     
-    if (error.message === 'Account type must match parent account type') {
+    if (error instanceof Error ? error.message : String(error) === 'Account type must match parent account type') {
       return NextResponse.json(
         { error: 'Account type must match parent account type' },
         { status: 400 }
@@ -114,5 +114,5 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create account' },
       { status: 500 }
     )
-  }
+}
 }

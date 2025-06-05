@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/api/client'
 
 async function main() {
-  console.log('Testing categories tree API...\n')
+  console.warn('Testing categories tree API...\n')
   
   try {
     // Mock the browser environment for apiClient
@@ -28,16 +28,13 @@ async function main() {
       }
     })
     
-    console.log('Direct DB query - Root categories:', categories.length)
+    console.warn('Direct DB query - Root categories:', categories.length)
     categories.forEach(cat => {
-      console.log(`- ${cat.name} (${cat.code}): ${cat._count.children} children, ${cat._count.items} items`)
+      console.warn(`- ${cat.name} (${cat.code}): ${cat._count.children} children, ${cat._count.items} items`)
     })
     
     await prisma.$disconnect()
     
-  } catch (error) {
-    console.error('Error:', error)
-  }
-}
+} catch {}
 
 main()

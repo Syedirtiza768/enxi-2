@@ -93,14 +93,14 @@ export default function SystemHealthPage() {
         setErrorReports(data.errorReports);
       }
 
-      console.log('Health data fetched', {
+      console.warn('Health data fetched', {
         status: data.status,
         totalRoutes: data.routes?.totalRoutes,
         totalErrors: data.errors?.total
       });
 
-    } catch (error) {
-      console.error('Failed to fetch health data', error);
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -112,9 +112,9 @@ export default function SystemHealthPage() {
       const response = await fetch('/api/system/health?checks=true');
       const data = await response.json();
       setHealthData(data);
-      console.log('Active health checks completed');
-    } catch (error) {
-      console.error('Failed to perform health checks', error);
+      console.warn('Active health checks completed');
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -132,10 +132,10 @@ export default function SystemHealthPage() {
             error.id === errorId ? { ...error, resolved: true } : error
           )
         );
-        console.log('Error marked as resolved', { errorId });
+        console.warn('Error marked as resolved', { errorId });
       }
-    } catch (error) {
-      console.error('Failed to mark error as resolved', error);
+} catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -163,7 +163,7 @@ export default function SystemHealthPage() {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const _getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low': return 'bg-blue-500';
       case 'medium': return 'bg-yellow-500';
@@ -352,7 +352,7 @@ export default function SystemHealthPage() {
                                     {new Date(error.timestamp).toLocaleString()}
                                   </span>
                                 </div>
-                                <div className="text-gray-700">{error.message}</div>
+                                <div className="text-gray-700">{error instanceof Error ? error.message : String(error)}</div>
                               </div>
                             ))}
                           </div>

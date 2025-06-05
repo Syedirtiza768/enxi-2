@@ -100,7 +100,7 @@ interface InvoiceData {
 }
 
 async function createComprehensiveUsers() {
-  console.log('🔧 Creating comprehensive user accounts...')
+  console.warn('🔧 Creating comprehensive user accounts...')
   
   const users = [
     // Admin users
@@ -138,17 +138,15 @@ async function createComprehensiveUsers() {
         }
       })
       createdUsers.push(user)
-    } catch (error) {
-      console.log(`User ${userData.email} might already exist, continuing...`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${createdUsers.length} users`)
+  console.warn(`✅ Created ${createdUsers.length} users`)
   return createdUsers
 }
 
 async function createExtensiveCustomers(): Promise<CustomerData[]> {
-  console.log('👥 Creating extensive customer base...')
+  console.warn('👥 Creating extensive customer base...')
   
   const customers: CustomerData[] = []
   const totalCustomers = 150 // Large customer base
@@ -222,17 +220,15 @@ async function createExtensiveCustomers(): Promise<CustomerData[]> {
           updatedAt: customer.createdAt
         }
       })
-    } catch (error) {
-      console.log(`Customer ${customer.name} might already exist, continuing...`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${customers.length} customers across ${INDUSTRIES.length} industries`)
+  console.warn(`✅ Created ${customers.length} customers across ${INDUSTRIES.length} industries`)
   return customers
 }
 
 async function createExtensiveInvoices(customers: CustomerData[], users: any[]): Promise<InvoiceData[]> {
-  console.log('📄 Creating extensive invoice history...')
+  console.warn('📄 Creating extensive invoice history...')
   
   const invoices: InvoiceData[] = []
   const accountants = users.filter(u => u.role === 'accountant' || u.role === 'admin')
@@ -326,17 +322,15 @@ async function createExtensiveInvoices(customers: CustomerData[], users: any[]):
           createdBy: accountant.id
         }
       })
-    } catch (error) {
-      console.log(`Invoice ${invoice.number} might already exist, continuing...`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${invoices.length} invoices`)
+  console.warn(`✅ Created ${invoices.length} invoices`)
   return invoices
 }
 
 async function createExtensivePayments(customers: CustomerData[], invoices: InvoiceData[], users: any[]) {
-  console.log('💳 Creating extensive payment history...')
+  console.warn('💳 Creating extensive payment history...')
   
   const accountants = users.filter(u => u.role === 'accountant' || u.role === 'admin')
   let paymentCounter = 1
@@ -387,9 +381,7 @@ async function createExtensivePayments(customers: CustomerData[], invoices: Invo
             customerBalances[customer.id] -= pattern.amount
             totalPayments++
             paymentCounter++
-          } catch (error) {
-            console.log(`Payment ${paymentCounter} might already exist, continuing...`)
-          }
+} catch {          }
         }
       }
     }
@@ -402,12 +394,10 @@ async function createExtensivePayments(customers: CustomerData[], invoices: Invo
         where: { id: customerId },
         data: { currentBalance: Math.max(0, balance) }
       })
-    } catch (error) {
-      console.log(`Error updating balance for customer ${customerId}`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${totalPayments} payments`)
+  console.warn(`✅ Created ${totalPayments} payments`)
 }
 
 function generatePaymentPatterns(invoice: InvoiceData, profile: typeof CUSTOMER_PROFILES[0]) {
@@ -540,7 +530,7 @@ function generatePaymentPatterns(invoice: InvoiceData, profile: typeof CUSTOMER_
 }
 
 async function createBusinessRelationshipEvents(customers: CustomerData[], users: any[]) {
-  console.log('📊 Creating business relationship events...')
+  console.warn('📊 Creating business relationship events...')
   
   const eventTypes = [
     'credit_limit_increase', 'credit_limit_decrease', 'payment_plan_setup',
@@ -586,17 +576,15 @@ async function createBusinessRelationshipEvents(customers: CustomerData[], users
           }
         })
         eventCounter++
-      } catch (error) {
-        console.log(`Event ${eventCounter} might already exist, continuing...`)
-      }
+} catch {      }
     }
   }
   
-  console.log(`✅ Created ${eventCounter} business relationship events`)
+  console.warn(`✅ Created ${eventCounter} business relationship events`)
 }
 
 async function createCustomerSupport(customers: CustomerData[], users: any[]) {
-  console.log('🎧 Creating customer support interactions...')
+  console.warn('🎧 Creating customer support interactions...')
   
   const supportUsers = users.filter(u => u.role === 'support' || u.role === 'admin')
   const interactionTypes = [
@@ -642,17 +630,15 @@ async function createCustomerSupport(customers: CustomerData[], users: any[]) {
           }
         })
         interactionCounter++
-      } catch (error) {
-        console.log(`Support interaction ${interactionCounter} might already exist, continuing...`)
-      }
+} catch {      }
     }
   }
   
-  console.log(`✅ Created ${interactionCounter} customer support interactions`)
+  console.warn(`✅ Created ${interactionCounter} customer support interactions`)
 }
 
 async function createSeasonalTrends(customers: CustomerData[], users: any[]) {
-  console.log('📈 Creating seasonal business trends...')
+  console.warn('📈 Creating seasonal business trends...')
   
   const seasonalEvents = [
     { month: 1, type: 'new_year_promotion', multiplier: 0.8 },
@@ -703,19 +689,17 @@ async function createSeasonalTrends(customers: CustomerData[], users: any[]) {
               }
             })
             trendCounter++
-          } catch (error) {
-            console.log(`Seasonal trend ${trendCounter} might already exist, continuing...`)
-          }
+} catch {          }
         }
       }
     }
   }
   
-  console.log(`✅ Created ${trendCounter} seasonal trend records`)
+  console.warn(`✅ Created ${trendCounter} seasonal trend records`)
 }
 
 async function generateComprehensiveReports() {
-  console.log('📊 Generating comprehensive business reports...')
+  console.warn('📊 Generating comprehensive business reports...')
   
   // Customer summary statistics
   const customerStats = await prisma.customer.aggregate({
@@ -752,32 +736,32 @@ async function generateComprehensiveReports() {
     _avg: { currentBalance: true }
   })
   
-  console.log('\n📋 COMPREHENSIVE SEED DATA SUMMARY')
-  console.log('=' * 50)
-  console.log(`👥 Customers: ${customerStats._count.id}`)
-  console.log(`💰 Total Outstanding: $${customerStats._sum.currentBalance?.toLocaleString()}`)
-  console.log(`💳 Total Credit Limits: $${customerStats._sum.creditLimit?.toLocaleString()}`)
-  console.log(`📄 Total Invoices: ${invoiceStats._count.id}`)
-  console.log(`💵 Total Invoice Value: $${invoiceStats._sum.amount?.toLocaleString()}`)
-  console.log(`💸 Total Payments: ${paymentStats._count.id}`)
-  console.log(`💰 Total Payment Value: $${paymentStats._sum.amount?.toLocaleString()}`)
+  console.warn('\n📋 COMPREHENSIVE SEED DATA SUMMARY')
+  console.warn('=' * 50)
+  console.warn(`👥 Customers: ${customerStats._count.id}`)
+  console.warn(`💰 Total Outstanding: $${customerStats._sum.currentBalance?.toLocaleString()}`)
+  console.warn(`💳 Total Credit Limits: $${customerStats._sum.creditLimit?.toLocaleString()}`)
+  console.warn(`📄 Total Invoices: ${invoiceStats._count.id}`)
+  console.warn(`💵 Total Invoice Value: $${invoiceStats._sum.amount?.toLocaleString()}`)
+  console.warn(`💸 Total Payments: ${paymentStats._count.id}`)
+  console.warn(`💰 Total Payment Value: $${paymentStats._sum.amount?.toLocaleString()}`)
   
-  console.log('\n🏭 INDUSTRY BREAKDOWN:')
+  console.warn('\n🏭 INDUSTRY BREAKDOWN:')
   industryBreakdown.forEach(industry => {
-    console.log(`  ${industry.industry}: ${industry._count.industry} customers, $${industry._sum.currentBalance?.toLocaleString()} outstanding`)
+    console.warn(`  ${industry.industry}: ${industry._count.industry} customers, $${industry._sum.currentBalance?.toLocaleString()} outstanding`)
   })
   
-  console.log('\n📊 LEAD SOURCE PERFORMANCE:')
+  console.warn('\n📊 LEAD SOURCE PERFORMANCE:')
   leadSourceStats.forEach(source => {
-    console.log(`  ${source.leadSource}: ${source._count.leadSource} customers, $${source._avg.currentBalance?.toLocaleString()} avg balance`)
+    console.warn(`  ${source.leadSource}: ${source._count.leadSource} customers, $${source._avg.currentBalance?.toLocaleString()} avg balance`)
   })
   
-  console.log('\n✅ EXTENSIVE SEEDING COMPLETED SUCCESSFULLY!')
+  console.warn('\n✅ EXTENSIVE SEEDING COMPLETED SUCCESSFULLY!')
 }
 
 export async function seedExtensiveComprehensive() {
   try {
-    console.log('🚀 Starting extensive and comprehensive database seeding...')
+    console.warn('🚀 Starting extensive and comprehensive database seeding...')
     
     // Step 1: Create users
     const users = await createComprehensiveUsers()
@@ -803,12 +787,10 @@ export async function seedExtensiveComprehensive() {
     // Step 8: Generate comprehensive reports
     await generateComprehensiveReports()
     
-  } catch (error) {
-    console.error('❌ Error during comprehensive seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Run if called directly

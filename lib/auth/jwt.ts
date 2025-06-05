@@ -19,7 +19,7 @@ export async function authenticateUser(request: NextRequest): Promise<AuthUser |
     const token = authHeader.substring(7)
     const jwtSecret = process.env.JWT_SECRET || 'test-secret'
     
-    const decoded = jwt.verify(token, jwtSecret) as any
+    const decoded = jwt.verify(token, jwtSecret) as { userId?: string }
     
     if (!decoded.userId) {
       return null

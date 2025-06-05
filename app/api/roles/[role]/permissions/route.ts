@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { UserService } from '@/lib/services/user.service'
 import { Role } from '@/lib/generated/prisma'
@@ -57,14 +57,6 @@ export const POST = createProtectedHandler(
       return NextResponse.json({ success: true })
     } catch (error) {
       console.error('Error updating role permission:', error)
-      
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Validation error', details: error.errors },
-          { status: 400 }
-        )
-      }
-      
       return NextResponse.json(
         { error: 'Failed to update role permission' },
         { status: 500 }

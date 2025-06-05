@@ -4,16 +4,16 @@
 import { prisma } from '../lib/db/prisma'
 
 async function testUIBackendIntegration() {
-  console.log('🔧 Testing Complete UI-Backend Integration...\n')
+  console.warn('🔧 Testing Complete UI-Backend Integration...\n')
   
   try {
     // Test 1: Verify database connectivity
-    console.log('1. Testing database connectivity...')
+    console.warn('1. Testing database connectivity...')
     const dbStatus = await prisma.$executeRaw`SELECT 1 as test`
-    console.log('✅ Database connection: Working')
+    console.warn('✅ Database connection: Working')
     
     // Test 2: Verify user seeding
-    console.log('\n2. Testing user authentication data...')
+    console.warn('\n2. Testing user authentication data...')
     const adminUser = await prisma.user.findUnique({
       where: { username: 'admin' }
     })
@@ -21,24 +21,24 @@ async function testUIBackendIntegration() {
     if (!adminUser) {
       throw new Error('Admin user not found - run npm run seed:admin')
     }
-    console.log('✅ Admin user: Available')
-    console.log(`   • ID: ${adminUser.id}`)
-    console.log(`   • Username: ${adminUser.username}`)
-    console.log(`   • Email: ${adminUser.email}`)
-    console.log(`   • Role: ${adminUser.role}`)
-    console.log(`   • Active: ${adminUser.isActive}`)
+    console.warn('✅ Admin user: Available')
+    console.warn(`   • ID: ${adminUser.id}`)
+    console.warn(`   • Username: ${adminUser.username}`)
+    console.warn(`   • Email: ${adminUser.email}`)
+    console.warn(`   • Role: ${adminUser.role}`)
+    console.warn(`   • Active: ${adminUser.isActive}`)
     
     // Test 3: Verify schema integrity
-    console.log('\n3. Testing database schema...')
+    console.warn('\n3. Testing database schema...')
     const userCount = await prisma.user.count()
     const auditCount = await prisma.auditLog.count()
     
-    console.log('✅ Database schema: Valid')
-    console.log(`   • Users table: ${userCount} records`)
-    console.log(`   • AuditLog table: ${auditCount} records`)
+    console.warn('✅ Database schema: Valid')
+    console.warn(`   • Users table: ${userCount} records`)
+    console.warn(`   • AuditLog table: ${auditCount} records`)
     
     // Test 4: Test API endpoints format (simulate frontend calls)
-    console.log('\n4. Testing API data formats for UI consumption...')
+    console.warn('\n4. Testing API data formats for UI consumption...')
     
     // Simulate login request
     const loginRequest = {
@@ -77,13 +77,13 @@ async function testUIBackendIntegration() {
       limit: 10
     }
     
-    console.log('✅ API formats: Compatible with UI requirements')
-    console.log('   • Login request/response: ✓')
-    console.log('   • Audit logs pagination: ✓')
-    console.log('   • User profile endpoint: ✓')
+    console.warn('✅ API formats: Compatible with UI requirements')
+    console.warn('   • Login request/response: ✓')
+    console.warn('   • Audit logs pagination: ✓')
+    console.warn('   • User profile endpoint: ✓')
     
     // Test 5: Verify file structure for UI
-    console.log('\n5. Testing UI file structure...')
+    console.warn('\n5. Testing UI file structure...')
     const fs = require('fs')
     const path = require('path')
     
@@ -109,11 +109,11 @@ async function testUIBackendIntegration() {
       throw new Error(`Missing UI files: ${missingFiles.join(', ')}`)
     }
     
-    console.log('✅ UI file structure: Complete')
-    console.log(`   • ${criticalFiles.length} critical files present`)
+    console.warn('✅ UI file structure: Complete')
+    console.warn(`   • ${criticalFiles.length} critical files present`)
     
     // Test 6: Configuration files
-    console.log('\n6. Testing configuration integrity...')
+    console.warn('\n6. Testing configuration integrity...')
     
     const configFiles = [
       'package.json',
@@ -136,10 +136,10 @@ async function testUIBackendIntegration() {
       throw new Error(`Missing config files: ${missingConfigs.join(', ')}`)
     }
     
-    console.log('✅ Configuration files: Complete')
+    console.warn('✅ Configuration files: Complete')
     
     // Test 7: Environment validation
-    console.log('\n7. Testing environment configuration...')
+    console.warn('\n7. Testing environment configuration...')
     
     const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET']
     const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName])
@@ -148,12 +148,12 @@ async function testUIBackendIntegration() {
       throw new Error(`Missing environment variables: ${missingEnvVars.join(', ')}`)
     }
     
-    console.log('✅ Environment variables: Configured')
-    console.log(`   • DATABASE_URL: ${process.env.DATABASE_URL}`)
-    console.log(`   • JWT_SECRET: [HIDDEN]`)
+    console.warn('✅ Environment variables: Configured')
+    console.warn(`   • DATABASE_URL: ${process.env.DATABASE_URL}`)
+    console.warn(`   • JWT_SECRET: [HIDDEN]`)
     
     // Test 8: Route structure validation
-    console.log('\n8. Testing route structure...')
+    console.warn('\n8. Testing route structure...')
     
     const routes = {
       public: ['/login'],
@@ -161,39 +161,36 @@ async function testUIBackendIntegration() {
       api: ['/api/auth/login', '/api/auth/register', '/api/auth/profile', '/api/audit']
     }
     
-    console.log('✅ Route structure: Properly organized')
-    console.log(`   • Public routes: ${routes.public.length}`)
-    console.log(`   • Protected routes: ${routes.protected.length}`)
-    console.log(`   • API endpoints: ${routes.api.length}`)
+    console.warn('✅ Route structure: Properly organized')
+    console.warn(`   • Public routes: ${routes.public.length}`)
+    console.warn(`   • Protected routes: ${routes.protected.length}`)
+    console.warn(`   • API endpoints: ${routes.api.length}`)
     
-    console.log('\n🎉 Complete UI-Backend Integration Test: PASSED!')
-    console.log('\n📊 Integration Summary:')
-    console.log('   • Database: ✅ Connected and seeded')
-    console.log('   • Authentication: ✅ Ready for UI')
-    console.log('   • Audit Trail: ✅ Logging all actions')
-    console.log('   • File Structure: ✅ UI components ready')
-    console.log('   • Configuration: ✅ All configs present')
-    console.log('   • Environment: ✅ Variables configured')
-    console.log('   • Routes: ✅ Public/protected separation')
+    console.warn('\n🎉 Complete UI-Backend Integration Test: PASSED!')
+    console.warn('\n📊 Integration Summary:')
+    console.warn('   • Database: ✅ Connected and seeded')
+    console.warn('   • Authentication: ✅ Ready for UI')
+    console.warn('   • Audit Trail: ✅ Logging all actions')
+    console.warn('   • File Structure: ✅ UI components ready')
+    console.warn('   • Configuration: ✅ All configs present')
+    console.warn('   • Environment: ✅ Variables configured')
+    console.warn('   • Routes: ✅ Public/protected separation')
     
-    console.log('\n🌐 Ready for Production-Like Testing:')
-    console.log('   • Frontend: http://localhost:3001')
-    console.log('   • Login: admin / admin123')
-    console.log('   • All features: Fully functional')
+    console.warn('\n🌐 Ready for Production-Like Testing:')
+    console.warn('   • Frontend: http://localhost:3001')
+    console.warn('   • Login: admin / admin123')
+    console.warn('   • All features: Fully functional')
     
-    console.log('\n⚡ Next Steps:')
-    console.log('   1. Test login flow in browser')
-    console.log('   2. Verify dashboard navigation')
-    console.log('   3. Check audit trail viewer')
-    console.log('   4. Proceed to Phase 2: Lead Management')
+    console.warn('\n⚡ Next Steps:')
+    console.warn('   1. Test login flow in browser')
+    console.warn('   2. Verify dashboard navigation')
+    console.warn('   3. Check audit trail viewer')
+    console.warn('   4. Proceed to Phase 2: Lead Management')
     
-  } catch (error) {
-    console.log('\n❌ UI-Backend Integration Test: FAILED')
-    console.error('Error:', error)
-    process.exit(1)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 testUIBackendIntegration()

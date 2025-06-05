@@ -6,11 +6,7 @@
 
 import { prisma } from '@/lib/db/prisma'
 import { 
-  BusinessLogicError, 
-  throwBusinessLogicError,
-  AppError,
-  ErrorCategory,
-  ErrorSeverity
+  throwBusinessLogicError
 } from '@/lib/utils/error-handler'
 
 export class EnhancedCustomerService {
@@ -73,22 +69,12 @@ export class EnhancedCustomerService {
       
       return updatedCustomer
     } catch (error) {
-      // Re-throw with additional context
-      throw new AppError(
-        'Failed to update customer credit limit',
-        ErrorCategory.DATABASE,
-        ErrorSeverity.HIGH,
-        'CREDIT_LIMIT_UPDATE_FAILED',
-        { 
-          customerId, 
-          newLimit, 
-          originalError: (error as Error).message 
-        }
-      )
+      console.error('Error:', error)
+      throw error
     }
   }
   
-  async convertLeadToCustomer(leadId: string, additionalData: any, userId: string) {
+  async convertLeadToCustomer(leadId: string, _additionalData: unknown, _userId: string) {
     // Use database transaction with proper error handling
     return await prisma.$transaction(async (tx) => {
       // Get lead

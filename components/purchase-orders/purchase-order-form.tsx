@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { VStack, HStack, Input, Textarea, Button, Select, Text, Card, CardContent } from '@/components/design-system'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -56,7 +56,7 @@ interface PurchaseOrderFormProps {
 }
 
 export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -86,7 +86,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
 
   useEffect(() => {
     calculateTotals()
-  }, [formData.items, formData.taxAmount, formData.shippingAmount])
+  }, [calculateTotals])
 
   const fetchSuppliers = async () => {
     try {
@@ -110,7 +110,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     }
   }
 
-  const calculateTotals = () => {
+  const calculateTotals = useCallback(() => {
     const subtotal = formData.items.reduce((sum, item) => sum + item.totalPrice, 0)
     const totalAmount = subtotal + formData.taxAmount + formData.shippingAmount
     
@@ -119,7 +119,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
       subtotal,
       totalAmount
     }))
-  }
+  }, [formData.items, formData.taxAmount, formData.shippingAmount])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -161,7 +161,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     setItemSearch('')
   }
 
-  const updateItem = (index: number, field: keyof PurchaseOrderItem, value: any) => {
+  const updateItem = (index: number, field: keyof PurchaseOrderItem, value: string | number) => {
     const updatedItems = [...formData.items]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     

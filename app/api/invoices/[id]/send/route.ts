@@ -15,14 +15,6 @@ export async function POST(
     return NextResponse.json(invoice)
   } catch (error) {
     console.error('Error sending invoice:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to send invoice' },
       { status: 500 }

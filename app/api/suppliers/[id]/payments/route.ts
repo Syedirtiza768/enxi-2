@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = _request.nextUrl.searchParams
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
 
@@ -27,10 +27,10 @@ export async function GET(
     )
 
     return NextResponse.json({ data: payments })
-  } catch (error) {
-    console.error('Error fetching supplier payments:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier payments' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

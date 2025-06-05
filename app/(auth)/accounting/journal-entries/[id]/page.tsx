@@ -1,14 +1,13 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { apiClient } from '@/lib/api/client'
-import { ArrowLeft, Edit, Trash2, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Trash2, CheckCircle } from 'lucide-react'
 
 interface Account {
   id: string
@@ -62,11 +61,7 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
   const [error, setError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
 
-  useEffect(() => {
-    loadJournalEntry()
-  }, [resolvedParams.id])
-
-  const loadJournalEntry = async () => {
+  const loadJournalEntry = useCallback(async () => {
     try {
       setLoading(true)
       const response = await apiClient(`/api/accounting/journal-entries/${resolvedParams.id}`, {
@@ -80,12 +75,17 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
         setError('Failed to load journal entry')
       }
     } catch (error) {
-      console.error('Error loading journal entry:', error)
-      setError('Error loading journal entry')
+      console.error('Error:', error)
+      setError('Failed to load journal entry')
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams.id])
+
+  useEffect(() => {
+    loadJournalEntry()
+  }, [loadJournalEntry])
+
 
   const handlePost = async () => {
     if (!journalEntry || journalEntry.status !== 'DRAFT') return
@@ -101,10 +101,8 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
       } else {
         setError('Failed to post journal entry')
       }
-    } catch (error) {
-      console.error('Error posting journal entry:', error)
-      setError('Error posting journal entry')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setProcessing(false)
     }
   }
@@ -123,10 +121,8 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
       } else {
         setError('Failed to cancel journal entry')
       }
-    } catch (error) {
-      console.error('Error cancelling journal entry:', error)
-      setError('Error cancelling journal entry')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setProcessing(false)
     }
   }

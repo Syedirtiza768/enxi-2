@@ -12,7 +12,7 @@ interface RequirementStatus {
 }
 
 async function comprehensiveBusinessAnalysis() {
-  console.log('🔍 Comprehensive Business Requirements Analysis\n');
+  console.warn('🔍 Comprehensive Business Requirements Analysis\n');
   
   const requirements: RequirementStatus[] = [];
   
@@ -25,9 +25,10 @@ async function comprehensiveBusinessAnalysis() {
         if (stats.isFile()) {
           foundFiles.push(pattern);
         }
-      } catch {
-        // File doesn't exist
-      }
+      } catch (error) {
+      console.error('Error:', error);
+      // File doesn't exist
+    }
     }
     return foundFiles;
   };
@@ -37,12 +38,13 @@ async function comprehensiveBusinessAnalysis() {
     try {
       const content = await readFile(filePath, 'utf8');
       return searchTerms.some(term => content.toLowerCase().includes(term.toLowerCase()));
-    } catch {
+    } catch (error) {
+      console.error('Error:', error);
       return false;
     }
   };
 
-  console.log('📋 1. LEAD TO SALES CASE RELATIONSHIP');
+  console.warn('📋 1. LEAD TO SALES CASE RELATIONSHIP');
   // Check lead to sales case relationship
   const leadSalesCaseFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/leads/[id]/convert/route.ts',
@@ -65,7 +67,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'critical'
   });
 
-  console.log('📋 2. INVENTORY MANAGEMENT');
+  console.warn('📋 2. INVENTORY MANAGEMENT');
   // Check inventory categories
   const inventoryFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/inventory/categories/route.ts',
@@ -105,7 +107,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'critical'
   });
 
-  console.log('📋 3. ACCOUNTING SYSTEM');
+  console.warn('📋 3. ACCOUNTING SYSTEM');
   // Check accounting modules
   const accountingFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/accounting/accounts/route.ts',
@@ -138,7 +140,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'high'
   });
 
-  console.log('📋 4. QUOTATIONS SYSTEM');
+  console.warn('📋 4. QUOTATIONS SYSTEM');
   // Check quotations
   const quotationFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/quotations/route.ts',
@@ -178,7 +180,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'high'
   });
 
-  console.log('📋 5. CUSTOMER PO & ORDERS');
+  console.warn('📋 5. CUSTOMER PO & ORDERS');
   // Check customer PO system
   const customerPoFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/customer-pos/route.ts',
@@ -219,7 +221,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'critical'
   });
 
-  console.log('📋 6. INVOICING & PAYMENTS');
+  console.warn('📋 6. INVOICING & PAYMENTS');
   // Check invoicing
   const invoiceFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/invoices/route.ts',
@@ -241,7 +243,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'critical'
   });
 
-  console.log('📋 7. AUDIT TRAIL');
+  console.warn('📋 7. AUDIT TRAIL');
   // Check audit system
   const auditFiles = await checkFiles([
     '/Users/irtizahassan/apps/enxi/enxi-erp/app/api/audit/route.ts',
@@ -261,7 +263,7 @@ async function comprehensiveBusinessAnalysis() {
     priority: 'high'
   });
 
-  console.log('📋 8. ADVANCED FEATURES');
+  console.warn('📋 8. ADVANCED FEATURES');
   // Check FIFO inventory costing
   let fifoImplemented = false;
   try {
@@ -306,58 +308,58 @@ async function comprehensiveBusinessAnalysis() {
   });
 
   // Generate comprehensive report
-  console.log('\n' + '='.repeat(80));
-  console.log('📊 COMPREHENSIVE BUSINESS REQUIREMENTS ANALYSIS REPORT');
-  console.log('='.repeat(80));
+  console.warn('\n' + '='.repeat(80));
+  console.warn('📊 COMPREHENSIVE BUSINESS REQUIREMENTS ANALYSIS REPORT');
+  console.warn('='.repeat(80));
 
   const implemented = requirements.filter(r => r.status === 'implemented').length;
   const partial = requirements.filter(r => r.status === 'partial').length;
   const missing = requirements.filter(r => r.status === 'missing').length;
   const total = requirements.length;
 
-  console.log(`\n📈 OVERALL STATUS:`);
-  console.log(`   ✅ Implemented: ${implemented}/${total} (${Math.round(implemented/total*100)}%)`);
-  console.log(`   🔄 Partial: ${partial}/${total} (${Math.round(partial/total*100)}%)`);
-  console.log(`   ❌ Missing: ${missing}/${total} (${Math.round(missing/total*100)}%)`);
+  console.warn(`\n📈 OVERALL STATUS:`);
+  console.warn(`   ✅ Implemented: ${implemented}/${total} (${Math.round(implemented/total*100)}%)`);
+  console.warn(`   🔄 Partial: ${partial}/${total} (${Math.round(partial/total*100)}%)`);
+  console.warn(`   ❌ Missing: ${missing}/${total} (${Math.round(missing/total*100)}%)`);
 
-  console.log(`\n🎯 IMPLEMENTATION STATUS BY PRIORITY:`);
+  console.warn(`\n🎯 IMPLEMENTATION STATUS BY PRIORITY:`);
   
   ['critical', 'high', 'medium', 'low'].forEach(priority => {
     const priorityReqs = requirements.filter(r => r.priority === priority);
     const priorityImplemented = priorityReqs.filter(r => r.status === 'implemented').length;
-    console.log(`\n🔥 ${priority.toUpperCase()} PRIORITY (${priorityImplemented}/${priorityReqs.length}):`);
+    console.warn(`\n🔥 ${priority.toUpperCase()} PRIORITY (${priorityImplemented}/${priorityReqs.length}):`);
     
     priorityReqs.forEach(req => {
       const statusIcon = req.status === 'implemented' ? '✅' : 
                         req.status === 'partial' ? '🔄' : '❌';
-      console.log(`   ${statusIcon} ${req.requirement}`);
-      req.details.forEach(detail => console.log(`      - ${detail}`));
+      console.warn(`   ${statusIcon} ${req.requirement}`);
+      req.details.forEach(detail => console.warn(`      - ${detail}`));
     });
   });
 
-  console.log(`\n🚀 NEXT STEPS - CRITICAL MISSING ITEMS:`);
+  console.warn(`\n🚀 NEXT STEPS - CRITICAL MISSING ITEMS:`);
   const criticalMissing = requirements.filter(r => r.priority === 'critical' && r.status === 'missing');
   criticalMissing.forEach((req, index) => {
-    console.log(`\n${index + 1}. ${req.requirement}`);
-    req.details.forEach(detail => console.log(`   - ${detail}`));
+    console.warn(`\n${index + 1}. ${req.requirement}`);
+    req.details.forEach(detail => console.warn(`   - ${detail}`));
   });
 
-  console.log(`\n📋 READY FOR IMPLEMENTATION:`);
+  console.warn(`\n📋 READY FOR IMPLEMENTATION:`);
   const readyItems = requirements.filter(r => r.status === 'implemented');
-  console.log(`The following ${readyItems.length} modules are ready for use:`);
-  readyItems.forEach(req => console.log(`   ✅ ${req.requirement}`));
+  console.warn(`The following ${readyItems.length} modules are ready for use:`);
+  readyItems.forEach(req => console.warn(`   ✅ ${req.requirement}`));
 
-  console.log(`\n⚠️ NEEDS COMPLETION:`);
+  console.warn(`\n⚠️ NEEDS COMPLETION:`);
   const partialItems = requirements.filter(r => r.status === 'partial');
   partialItems.forEach(req => {
-    console.log(`   🔄 ${req.requirement}`);
-    req.details.forEach(detail => console.log(`      - ${detail}`));
+    console.warn(`   🔄 ${req.requirement}`);
+    req.details.forEach(detail => console.warn(`      - ${detail}`));
   });
 
-  console.log('\n' + '='.repeat(80));
-  console.log('🎯 CONCLUSION: System is significantly implemented but needs critical gaps filled');
-  console.log('🔧 RECOMMENDATION: Focus on missing critical items first, then complete partial implementations');
-  console.log('='.repeat(80));
+  console.warn('\n' + '='.repeat(80));
+  console.warn('🎯 CONCLUSION: System is significantly implemented but needs critical gaps filled');
+  console.warn('🔧 RECOMMENDATION: Focus on missing critical items first, then complete partial implementations');
+  console.warn('='.repeat(80));
 }
 
 comprehensiveBusinessAnalysis();

@@ -15,18 +15,10 @@ export async function POST(
     
     return NextResponse.json(expense)
   } catch (error) {
-    console.error('Error approving expense:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to approve expense' },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 400 }
     )
   }
 }

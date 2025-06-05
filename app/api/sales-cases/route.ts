@@ -5,9 +5,9 @@ import { SalesCaseStatus } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/db/prisma'
 
 // GET /api/sales-cases - List all sales cases with filtering
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const salesCaseService = new SalesCaseService()
     const searchParams = request.nextUrl.searchParams
     
@@ -51,20 +51,20 @@ export async function GET(request: NextRequest) {
     // Apply role-based visibility rules
     if (user.role === 'SALES_REP') {
       // Sales reps can only see their own sales cases
-      options.assignedTo = user.id
+      options.assignedTo = _user.id
     } else if (user.role === 'MANAGER') {
       // Managers can see their team's sales cases
       // If no specific assignedTo is provided, we'll let the service handle team filtering
       if (!options.assignedTo) {
         // Get team members under this manager
         const teamMembers = await prisma.user.findMany({
-          where: { managerId: user.id },
+          where: { managerId: _user.id },
           select: { id: true }
         })
         
         // Include the manager themselves and their team members
-        const teamIds = [user.id, ...teamMembers.map(m => m.id)]
-        options.assignedTo = teamIds.length > 1 ? teamIds.join(',') : user.id
+        const teamIds = [_user.id, ...teamMembers.map(m => m.id)]
+        options.assignedTo = teamIds.length > 1 ? teamIds.join(',') : _user.id
       }
     }
     // SUPER_ADMIN, ADMIN can see all sales cases (no restrictions)
@@ -75,19 +75,19 @@ export async function GET(request: NextRequest) {
       success: true,
       data: salesCases
     })
-  } catch (error) {
-    console.error('Error fetching sales cases:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sales cases' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/sales-cases - Create new sales case
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { customerId, title, description, estimatedValue, assignedTo } = body
@@ -107,19 +107,19 @@ export async function POST(request: NextRequest) {
       description,
       estimatedValue,
       assignedTo,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: salesCase
     }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating sales case:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

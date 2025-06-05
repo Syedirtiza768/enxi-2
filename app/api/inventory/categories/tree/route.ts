@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { CategoryService } from '@/lib/services/inventory/category.service'
 
 // GET /api/inventory/categories/tree - Get category hierarchy tree
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
       data: categoryTree,
       total: categoryTree.length
     })
-  } catch (error) {
-    console.error('Error fetching category tree:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch category tree' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

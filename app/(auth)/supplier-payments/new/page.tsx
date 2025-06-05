@@ -1,12 +1,20 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { PageLayout, PageHeader, VStack } from '@/components/design-system'
-import { SupplierPaymentForm } from '@/components/supplier-payments/supplier-payment-form'
+import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { PageLayout, PageHeader, VStack, Button } from '@/components/design-system'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/design-system'
 
-export default function NewSupplierPaymentPage() {
+const SupplierPaymentForm = dynamic(
+  () => import('@/components/supplier-payments/supplier-payment-form').then(mod => ({ default: mod.SupplierPaymentForm })),
+  { 
+    ssr: false,
+    loading: () => <div className="p-4">Loading form...</div>
+  }
+)
+
+function NewSupplierPaymentContent() {
   const router = useRouter()
 
   const handleSuccess = () => {
@@ -38,5 +46,13 @@ export default function NewSupplierPaymentPage() {
         <SupplierPaymentForm onSuccess={handleSuccess} />
       </VStack>
     </PageLayout>
+  )
+}
+
+export default function NewSupplierPaymentPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading supplier payment form...</div>}>
+      <NewSupplierPaymentContent />
+    </Suspense>
   )
 }

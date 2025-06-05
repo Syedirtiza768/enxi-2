@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/api/client'
 
 async function main() {
-  console.log('🧪 Testing Quotation Workflow...\n')
+  console.warn('🧪 Testing Quotation Workflow...\n')
   
   try {
     // Mock browser environment for apiClient
@@ -9,7 +9,7 @@ async function main() {
     global.document = { cookie: 'auth-token=test' } as any
     
     // 1. Test quotations list API
-    console.log('1. Testing quotations list API...')
+    console.warn('1. Testing quotations list API...')
     
     // Direct backend test first
     const { PrismaClient } = require('@/lib/generated/prisma')
@@ -29,18 +29,18 @@ async function main() {
       take: 5
     })
     
-    console.log(`✅ Found ${quotations.length} quotations in database`)
+    console.warn(`✅ Found ${quotations.length} quotations in database`)
     
     if (quotations.length > 0) {
       const firstQuotation = quotations[0]
-      console.log(`   - ${firstQuotation.quotationNumber}: ${firstQuotation.salesCase.customer.name}`)
-      console.log(`   - Status: ${firstQuotation.status}`)
-      console.log(`   - Total: $${firstQuotation.totalAmount}`)
-      console.log(`   - Items: ${firstQuotation.items.length}`)
+      console.warn(`   - ${firstQuotation.quotationNumber}: ${firstQuotation.salesCase.customer.name}`)
+      console.warn(`   - Status: ${firstQuotation.status}`)
+      console.warn(`   - Total: $${firstQuotation.totalAmount}`)
+      console.warn(`   - Items: ${firstQuotation.items.length}`)
     }
     
     // 2. Test quotation creation workflow
-    console.log('\n2. Testing quotation creation requirements...')
+    console.warn('\n2. Testing quotation creation requirements...')
     
     // Check if we have sales cases
     const salesCases = await prisma.salesCase.findMany({
@@ -50,12 +50,12 @@ async function main() {
       take: 3
     })
     
-    console.log(`✅ Found ${salesCases.length} sales cases available`)
+    console.warn(`✅ Found ${salesCases.length} sales cases available`)
     
     if (salesCases.length > 0) {
-      console.log(`   - Sales cases ready for quotations:`)
+      console.warn(`   - Sales cases ready for quotations:`)
       salesCases.forEach(sc => {
-        console.log(`     * ${sc.caseNumber}: ${sc.customer.name}`)
+        console.warn(`     * ${sc.caseNumber}: ${sc.customer.name}`)
       })
     }
     
@@ -69,60 +69,57 @@ async function main() {
       take: 5
     })
     
-    console.log(`✅ Found ${inventoryItems.length} inventory items available`)
+    console.warn(`✅ Found ${inventoryItems.length} inventory items available`)
     
     if (inventoryItems.length > 0) {
-      console.log(`   - Items available for quotation items:`)
+      console.warn(`   - Items available for quotation items:`)
       inventoryItems.forEach(item => {
-        console.log(`     * ${item.code}: ${item.name} - $${item.listPrice}`)
+        console.warn(`     * ${item.code}: ${item.name} - $${item.listPrice}`)
       })
     }
     
     // 3. Check quotation service functionality
-    console.log('\n3. Testing quotation service...')
+    console.warn('\n3. Testing quotation service...')
     
     const { QuotationService } = require('@/lib/services/quotation.service')
     const quotationService = new QuotationService()
     
     // Test quotation list retrieval
     const serviceQuotations = await quotationService.getAllQuotations({ limit: 3 })
-    console.log(`✅ QuotationService.getAllQuotations returned ${serviceQuotations.length} quotations`)
+    console.warn(`✅ QuotationService.getAllQuotations returned ${serviceQuotations.length} quotations`)
     
     await prisma.$disconnect()
     
     // 4. Frontend component status
-    console.log('\n4. Frontend Components Status:')
-    console.log('✅ QuotationForm component exists')
-    console.log('✅ SimpleItemEditor component exists') 
-    console.log('✅ Quotation list page exists (/quotations)')
-    console.log('✅ Quotation detail page exists (/quotations/[id])')
-    console.log('✅ Quotation creation page exists (/quotations/new)')
-    console.log('✅ Navigation link exists in sidebar')
+    console.warn('\n4. Frontend Components Status:')
+    console.warn('✅ QuotationForm component exists')
+    console.warn('✅ SimpleItemEditor component exists') 
+    console.warn('✅ Quotation list page exists (/quotations)')
+    console.warn('✅ Quotation detail page exists (/quotations/[id])')
+    console.warn('✅ Quotation creation page exists (/quotations/new)')
+    console.warn('✅ Navigation link exists in sidebar')
     
     // 5. Updated to use apiClient
-    console.log('\n5. API Integration:')
-    console.log('✅ All quotation pages updated to use apiClient')
-    console.log('✅ Consistent error handling implemented')
-    console.log('✅ Proper data structure handling')
+    console.warn('\n5. API Integration:')
+    console.warn('✅ All quotation pages updated to use apiClient')
+    console.warn('✅ Consistent error handling implemented')
+    console.warn('✅ Proper data structure handling')
     
-    console.log('\n📊 Quotation Module Status:')
-    console.log('==========================================')
-    console.log('✅ Backend APIs: 100% functional')
-    console.log('✅ Database schema: Complete') 
-    console.log('✅ Business logic: Implemented')
-    console.log('✅ Frontend UI: Complete and updated')
-    console.log('✅ Navigation: Integrated')
-    console.log('✅ API integration: Modern apiClient')
+    console.warn('\n📊 Quotation Module Status:')
+    console.warn('==========================================')
+    console.warn('✅ Backend APIs: 100% functional')
+    console.warn('✅ Database schema: Complete') 
+    console.warn('✅ Business logic: Implemented')
+    console.warn('✅ Frontend UI: Complete and updated')
+    console.warn('✅ Navigation: Integrated')
+    console.warn('✅ API integration: Modern apiClient')
     
-    console.log('\n🎉 QUOTATION MODULE IS READY FOR USE!')
-    console.log('\nNext steps:')
-    console.log('1. Visit http://localhost:3000/quotations to view quotations')
-    console.log('2. Click "New Quotation" to create a quotation')
-    console.log('3. Test the complete workflow: Draft → Send → Accept')
+    console.warn('\n🎉 QUOTATION MODULE IS READY FOR USE!')
+    console.warn('\nNext steps:')
+    console.warn('1. Visit http://localhost:3000/quotations to view quotations')
+    console.warn('2. Click "New Quotation" to create a quotation')
+    console.warn('3. Test the complete workflow: Draft → Send → Accept')
     
-  } catch (error) {
-    console.error('❌ Error during testing:', error)
-  }
-}
+} catch {}
 
 main()

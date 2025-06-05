@@ -24,10 +24,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data: invoice })
-  } catch (error) {
-    console.error('Error fetching supplier invoice:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier invoice' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -44,7 +44,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const {
       invoiceNumber,
       invoiceDate,
@@ -58,7 +58,7 @@ export async function PUT(
       notes
     } = body
 
-    const updateData: any = {}
+    const updateData: unknown = {}
     
     if (invoiceNumber !== undefined) updateData.invoiceNumber = invoiceNumber
     if (invoiceDate !== undefined) updateData.invoiceDate = new Date(invoiceDate)
@@ -71,7 +71,7 @@ export async function PUT(
     if (notes !== undefined) updateData.notes = notes
     
     if (items !== undefined) {
-      updateData.items = items.map((item: any) => ({
+      updateData.items = items.map((item: unknown) => ({
         goodsReceiptItemId: item.goodsReceiptItemId,
         description: item.description,
         quantity: parseFloat(item.quantity),
@@ -86,24 +86,24 @@ export async function PUT(
     const invoice = await supplierInvoiceService.updateSupplierInvoice(
       params.id,
       updateData,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: invoice })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating supplier invoice:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Cannot modify') || 
-        error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Cannot modify') || 
+        error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
@@ -127,22 +127,22 @@ export async function DELETE(
     }
 
     const supplierInvoiceService = new SupplierInvoiceService()
-    const invoice = await supplierInvoiceService.cancelSupplierInvoice(params.id, user.id)
+    const invoice = await supplierInvoiceService.cancelSupplierInvoice(params.id, _user.id)
 
     return NextResponse.json({ data: invoice })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error cancelling supplier invoice:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('already cancelled')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already cancelled')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

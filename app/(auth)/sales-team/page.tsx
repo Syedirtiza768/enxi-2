@@ -11,12 +11,9 @@ import {
   Users, 
   UserPlus, 
   Building, 
-  TrendingUp,
   Search,
   ChevronRight,
-  UserCheck,
-  Target,
-  DollarSign
+  UserCheck
 } from 'lucide-react'
 
 interface TeamMember {
@@ -51,11 +48,11 @@ interface UnassignedCustomer {
 }
 
 export default function SalesTeamPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [hierarchy, setHierarchy] = useState<TeamHierarchy>({ manager: null, teamMembers: [] })
   const [unassignedCustomers, setUnassignedCustomers] = useState<UnassignedCustomer[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, _setError] = useState<string | null>(null)
   const [searchUnassigned, setSearchUnassigned] = useState('')
   const [selectedTab, setSelectedTab] = useState<'team' | 'unassigned'>('team')
 
@@ -67,7 +64,7 @@ export default function SalesTeamPage() {
     if (selectedTab === 'unassigned') {
       fetchUnassignedCustomers()
     }
-  }, [selectedTab, searchUnassigned])
+  }, [selectedTab, searchUnassigned]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = async () => {
     try {
@@ -80,7 +77,7 @@ export default function SalesTeamPage() {
       }
     } catch (err) {
       console.error('Error fetching team data:', err)
-      setError('Failed to load sales team data')
+      _setError('Failed to load sales team data')
     } finally {
       setLoading(false)
     }

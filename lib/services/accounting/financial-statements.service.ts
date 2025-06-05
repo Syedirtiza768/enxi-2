@@ -315,8 +315,8 @@ export class FinancialStatementsService {
         balanceSheetBalanced: balanceSheet.isBalanced,
         trialBalanceBalanced: trialBalanceValidation.isValid
       }
-    } catch (error) {
-      errors.push(`Error validating financial statements: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } catch {
+      errors.push('Error validating financial statements');
       
       return {
         isValid: false,

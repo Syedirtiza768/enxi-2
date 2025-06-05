@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 interface TrialBalanceAccount {
@@ -24,7 +23,6 @@ interface TrialBalance {
 }
 
 export default function TrialBalancePage() {
-  const router = useRouter()
   const [trialBalance, setTrialBalance] = useState<TrialBalance | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -49,8 +47,8 @@ export default function TrialBalancePage() {
       
       const data = await response.json()
       setTrialBalance(data.data)
-    } catch (error: any) {
-      setError(error.message)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -58,6 +56,7 @@ export default function TrialBalancePage() {
 
   useEffect(() => {
     fetchTrialBalance()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleGenerateReport = (e: React.FormEvent) => {
@@ -155,8 +154,8 @@ export default function TrialBalancePage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {Object.entries(groupAccountsByType(trialBalance.accounts)).map(([type, accounts]) => (
-                  <>
-                    <tr key={type} className="bg-gray-50">
+                  <React.Fragment key={type}>
+                    <tr className="bg-gray-50">
                       <td colSpan={4} className="px-6 py-2 text-sm font-medium text-gray-900">
                         {type}
                       </td>
@@ -177,7 +176,7 @@ export default function TrialBalancePage() {
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </React.Fragment>
                 ))}
                 <tr className="bg-gray-100 font-medium">
                   <td colSpan={2} className="px-6 py-4 text-sm text-gray-900 text-right">

@@ -44,8 +44,8 @@ export async function GET(
     }
 
     return NextResponse.json(shipment)
-  } catch (error) {
-    console.error('Error fetching shipment:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -58,7 +58,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
+    const body = await _request.json()
     const validatedData = updateShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
@@ -66,13 +66,6 @@ export async function PUT(
     
     return NextResponse.json(shipment)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error updating shipment:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

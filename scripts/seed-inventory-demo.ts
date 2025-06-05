@@ -14,7 +14,7 @@ function generateMovementNumber(): string {
 }
 
 async function main() {
-  console.log('🌱 Starting inventory demo seeding...')
+  console.warn('🌱 Starting inventory demo seeding...')
 
   try {
     // Get admin user
@@ -26,10 +26,10 @@ async function main() {
       throw new Error('Admin user not found. Please run seed-admin.ts first.')
     }
 
-    console.log('✅ Found admin user:', adminUser.email)
+    console.warn('✅ Found admin user:', adminUser.email)
 
     // 1. Create units of measure
-    console.log('\n📏 Creating units of measure...')
+    console.warn('\n📏 Creating units of measure...')
     
     const piece = await prisma.unitOfMeasure.create({
       data: {
@@ -72,10 +72,10 @@ async function main() {
       }
     })
 
-    console.log('✅ Created units of measure')
+    console.warn('✅ Created units of measure')
 
     // 2. Create categories
-    console.log('\n📁 Creating categories...')
+    console.warn('\n📁 Creating categories...')
     
     const electronics = await prisma.category.create({
       data: {
@@ -104,10 +104,10 @@ async function main() {
       }
     })
 
-    console.log('✅ Created categories')
+    console.warn('✅ Created categories')
 
     // 3. Create GL accounts for inventory
-    console.log('\n💰 Creating GL accounts...')
+    console.warn('\n💰 Creating GL accounts...')
     
     const inventoryAccount = await prisma.account.create({
       data: {
@@ -129,10 +129,10 @@ async function main() {
       }
     })
 
-    console.log('✅ Created GL accounts')
+    console.warn('✅ Created GL accounts')
 
     // 4. Create inventory items
-    console.log('\n📦 Creating inventory items...')
+    console.warn('\n📦 Creating inventory items...')
     
     const items = []
 
@@ -244,10 +244,10 @@ async function main() {
     })
     items.push(cardboardBox)
 
-    console.log(`✅ Created ${items.length} inventory items`)
+    console.warn(`✅ Created ${items.length} inventory items`)
 
     // 5. Create opening stock movements
-    console.log('\n📊 Creating opening stock...')
+    console.warn('\n📊 Creating opening stock...')
     
     // Add opening stock for laptop
     await prisma.stockMovement.create({
@@ -329,35 +329,33 @@ async function main() {
       }
     })
 
-    console.log('✅ Created opening stock movements')
+    console.warn('✅ Created opening stock movements')
 
     // Display summary
-    console.log('\n📊 Demo Data Summary:')
-    console.log('====================')
-    console.log('1. Units of Measure: 4 units created (PCS, KG, M, BOX)')
-    console.log('2. Categories: 3 categories (Electronics, Raw Materials, Packaging)')
-    console.log('3. GL Accounts: Inventory and COGS accounts')
-    console.log('4. Items: 5 items with different types')
-    console.log('5. Opening Stock:')
-    console.log('   - Business Laptop: 20 pcs @ $800')
-    console.log('   - 24" LED Monitor: 35 pcs @ $150')
-    console.log('   - Steel Sheet: 500 kg @ $2.50')
-    console.log('   - Copper Wire: 2000 m @ $0.80')
-    console.log('   - Cardboard Box: 200 pcs @ $1.50')
+    console.warn('\n📊 Demo Data Summary:')
+    console.warn('====================')
+    console.warn('1. Units of Measure: 4 units created (PCS, KG, M, BOX)')
+    console.warn('2. Categories: 3 categories (Electronics, Raw Materials, Packaging)')
+    console.warn('3. GL Accounts: Inventory and COGS accounts')
+    console.warn('4. Items: 5 items with different types')
+    console.warn('5. Opening Stock:')
+    console.warn('   - Business Laptop: 20 pcs @ $800')
+    console.warn('   - 24" LED Monitor: 35 pcs @ $150')
+    console.warn('   - Steel Sheet: 500 kg @ $2.50')
+    console.warn('   - Copper Wire: 2000 m @ $0.80')
+    console.warn('   - Cardboard Box: 200 pcs @ $1.50')
     
-    console.log('\n✅ Inventory demo seeding completed successfully!')
-    console.log('\nYou can now:')
-    console.log('- View items at /inventory/items')
-    console.log('- Record stock receipts at /inventory/stock-in')
-    console.log('- Record stock issues at /inventory/stock-out')
-    console.log('- Track all movements at /inventory/movements')
+    console.warn('\n✅ Inventory demo seeding completed successfully!')
+    console.warn('\nYou can now:')
+    console.warn('- View items at /inventory/items')
+    console.warn('- Record stock receipts at /inventory/stock-in')
+    console.warn('- Record stock issues at /inventory/stock-out')
+    console.warn('- Track all movements at /inventory/movements')
 
-  } catch (error) {
-    console.error('❌ Error during seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

@@ -112,7 +112,7 @@ export class StockMovementService {
     }
 
     // Validate unit of measure
-    let unitOfMeasureId = data.unitOfMeasureId || item.unitOfMeasureId
+    const unitOfMeasureId = data.unitOfMeasureId || item.unitOfMeasureId
     const unitOfMeasure = await prisma.unitOfMeasure.findUnique({
       where: { id: unitOfMeasureId }
     })
@@ -323,8 +323,8 @@ export class StockMovementService {
   }
 
   private async createInventoryJournalEntry(
-    stockMovement: any,
-    item: any,
+    stockMovement: StockMovement & { totalCost: number },
+    item: { id: string; name: string; inventoryAccount: { id: string } },
     userId: string,
     tx: Prisma.TransactionClient
   ) {
@@ -771,7 +771,7 @@ export class StockMovementService {
       offset = 0
     } = options
 
-    const where: any = {}
+    const where: Record<string, unknown> = {}
     
     if (type) {
       where.movementType = type

@@ -12,9 +12,9 @@ export async function PUT(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
-    const body = await request.json()
+    const body = await _request.json()
     
     const { creditLimit } = body
 
@@ -29,7 +29,7 @@ export async function PUT(
     const customer = await customerService.updateCreditLimit(
       params.id,
       creditLimit,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({
@@ -37,19 +37,19 @@ export async function PUT(
       data: customer,
       message: 'Credit limit updated successfully'
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating credit limit:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('below current used credit')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('below current used credit')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

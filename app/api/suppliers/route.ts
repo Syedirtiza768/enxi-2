@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierService } from '@/lib/services/purchase/supplier.service'
 
 // GET /api/suppliers - Get all suppliers
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -27,17 +27,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: suppliers })
-  } catch (error) {
-    console.error('Error fetching suppliers:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch suppliers' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/suppliers - Create supplier
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -93,17 +93,17 @@ export async function POST(request: NextRequest) {
       contactEmail,
       contactPhone,
       isPreferred,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({ data: supplier }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating supplier:', error)
     
-    if (error.message?.includes('already exists') || 
-        error.message?.includes('unique constraint')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists') || 
+        error instanceof Error ? error.message : String(error)?.includes('unique constraint')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

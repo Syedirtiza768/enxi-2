@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   PageLayout,
   PageHeader,
@@ -22,7 +21,6 @@ import {
   FileText, 
   Calendar, 
   DollarSign,
-  Building2,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -74,7 +72,6 @@ interface PurchaseOrderStats {
 }
 
 export default function PurchaseOrdersPage() {
-  const router = useRouter()
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
   const [stats, setStats] = useState<PurchaseOrderStats>({
     totalOrders: 0,
@@ -116,8 +113,7 @@ export default function PurchaseOrdersPage() {
       }
       setStats(stats)
     } catch (error) {
-      console.error('Error fetching purchase orders:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load purchase orders')
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -133,7 +129,7 @@ export default function PurchaseOrdersPage() {
         await fetchPurchaseOrders()
       }
     } catch (error) {
-      console.error('Error sending purchase order:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -147,7 +143,7 @@ export default function PurchaseOrdersPage() {
         await fetchPurchaseOrders()
       }
     } catch (error) {
-      console.error('Error approving purchase order:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -236,7 +232,7 @@ export default function PurchaseOrdersPage() {
             <Button
               variant="primary"
               leftIcon={<Plus />}
-              onClick={() => router.push('/purchase-orders/new')}
+              onClick={() => window.location.href = '/purchase-orders/new'}
             >
               New Purchase Order
             </Button>
@@ -361,7 +357,7 @@ export default function PurchaseOrdersPage() {
                     <Button
                       variant="primary"
                       leftIcon={<Plus />}
-                      onClick={() => router.push('/purchase-orders/new')}
+                      onClick={() => window.location.href = '/purchase-orders/new'}
                     >
                       New Purchase Order
                     </Button>
@@ -422,7 +418,7 @@ export default function PurchaseOrdersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push(`/purchase-orders/${po.id}`)}
+                            onClick={() => window.location.href = `/purchase-orders/${po.id}`}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -431,7 +427,7 @@ export default function PurchaseOrdersPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => router.push(`/purchase-orders/${po.id}/edit`)}
+                                onClick={() => window.location.href = `/purchase-orders/${po.id}/edit`}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>

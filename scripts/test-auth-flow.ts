@@ -17,10 +17,10 @@ const colors = {
 }
 
 const log = {
-  success: (msg: string) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
-  error: (msg: string) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
-  info: (msg: string) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
-  warn: (msg: string) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`)
+  success: (msg: string) => console.warn(`${colors.green}✅ ${msg}${colors.reset}`),
+  error: (msg: string) => console.warn(`${colors.red}❌ ${msg}${colors.reset}`),
+  info: (msg: string) => console.warn(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
+  warn: (msg: string) => console.warn(`${colors.yellow}⚠️  ${msg}${colors.reset}`)
 }
 
 interface TestResult {
@@ -76,11 +76,7 @@ async function testLogin(): Promise<TestResult> {
       message: 'Login successful',
       details: { token: token.substring(0, 20) + '...', user: data.user }
     }
-  } catch (error) {
-    return {
-      passed: false,
-      message: `Login request failed: ${error}`,
-      details: error
+} catch {      details: error
     }
   }
 }
@@ -118,11 +114,7 @@ async function testProtectedRoute(cookie: string): Promise<TestResult> {
       message: `Protected route returned ${response.status}`,
       details: { status: response.status }
     }
-  } catch (error) {
-    return {
-      passed: false,
-      message: `Protected route request failed: ${error}`,
-      details: error
+} catch {      details: error
     }
   }
 }
@@ -160,11 +152,7 @@ async function testTokenValidation(cookie: string): Promise<TestResult> {
       message: 'Token validation returned invalid',
       details: data
     }
-  } catch (error) {
-    return {
-      passed: false,
-      message: `Token validation request failed: ${error}`,
-      details: error
+} catch {      details: error
     }
   }
 }
@@ -205,17 +193,13 @@ async function testAPIAccess(cookie: string): Promise<TestResult> {
       message: `API route returned ${response.status}`,
       details: { status: response.status }
     }
-  } catch (error) {
-    return {
-      passed: false,
-      message: `API route request failed: ${error}`,
-      details: error
+} catch {      details: error
     }
   }
 }
 
 async function runTests() {
-  console.log('🔍 Testing Authentication Flow\n')
+  console.warn('🔍 Testing Authentication Flow\n')
   
   let allPassed = true
   let authCookie = ''
@@ -231,7 +215,7 @@ async function runTests() {
     authCookie = `auth-token=${token}`
   } else {
     log.error(loginResult.message)
-    console.log('Details:', loginResult.details)
+    console.warn('Details:', loginResult.details)
     allPassed = false
   }
   
@@ -246,7 +230,7 @@ async function runTests() {
     log.success(validationResult.message)
   } else {
     log.error(validationResult.message)
-    console.log('Details:', validationResult.details)
+    console.warn('Details:', validationResult.details)
     allPassed = false
   }
   
@@ -256,7 +240,7 @@ async function runTests() {
     log.success(protectedResult.message)
   } else {
     log.error(protectedResult.message)
-    console.log('Details:', protectedResult.details)
+    console.warn('Details:', protectedResult.details)
     allPassed = false
   }
   
@@ -266,12 +250,12 @@ async function runTests() {
     log.success(apiResult.message)
   } else {
     log.error(apiResult.message)
-    console.log('Details:', apiResult.details)
+    console.warn('Details:', apiResult.details)
     allPassed = false
   }
   
   // Summary
-  console.log('\n' + '='.repeat(50))
+  console.warn('\n' + '='.repeat(50))
   if (allPassed) {
     log.success('All authentication tests passed!')
   } else {

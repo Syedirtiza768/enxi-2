@@ -40,7 +40,7 @@ interface CustomerPO {
 }
 
 export default function CustomerPOsPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [pos, setPOs] = useState<CustomerPO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

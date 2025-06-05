@@ -5,11 +5,11 @@ import { Role, QuotationStatus, OrderStatus } from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 
 async function createTestWorkflowData() {
-  console.log('🛠️  Creating test data for sales workflow automation...\n')
+  console.warn('🛠️  Creating test data for sales workflow automation...\n')
 
   try {
     // Step 1: Ensure we have test inventory items with stock
-    console.log('📦 Setting up inventory items...')
+    console.warn('📦 Setting up inventory items...')
     
     const testCategory = await prisma.category.upsert({
       where: { code: 'TEST-CAT' },
@@ -96,10 +96,10 @@ async function createTestWorkflowData() {
       }
     })
 
-    console.log(`✅ Created item: ${testItem.code} with ${stockLot.availableQty} units in stock (lot: ${stockLot.lotNumber})`)
+    console.warn(`✅ Created item: ${testItem.code} with ${stockLot.availableQty} units in stock (lot: ${stockLot.lotNumber})`)
 
     // Step 2: Create a test customer
-    console.log('\n👤 Setting up test customer...')
+    console.warn('\n👤 Setting up test customer...')
     
     const testCustomer = await prisma.customer.upsert({
       where: { email: 'workflow-test@example.com' },
@@ -116,10 +116,10 @@ async function createTestWorkflowData() {
       }
     })
 
-    console.log(`✅ Created customer: ${testCustomer.name} (${testCustomer.customerNumber})`)
+    console.warn(`✅ Created customer: ${testCustomer.name} (${testCustomer.customerNumber})`)
 
     // Step 3: Create a sales case
-    console.log('\n📋 Setting up sales case...')
+    console.warn('\n📋 Setting up sales case...')
     
     const salesCase = await prisma.salesCase.upsert({
       where: { caseNumber: 'CASE-WF-001' },
@@ -136,10 +136,10 @@ async function createTestWorkflowData() {
       }
     })
 
-    console.log(`✅ Created sales case: ${salesCase.caseNumber}`)
+    console.warn(`✅ Created sales case: ${salesCase.caseNumber}`)
 
     // Step 4: Create a quotation
-    console.log('\n💰 Creating quotation...')
+    console.warn('\n💰 Creating quotation...')
     
     const quotation = await prisma.quotation.create({
       data: {
@@ -176,10 +176,10 @@ async function createTestWorkflowData() {
       }
     })
 
-    console.log(`✅ Created quotation: ${quotation.quotationNumber}`)
+    console.warn(`✅ Created quotation: ${quotation.quotationNumber}`)
 
     // Step 5: Convert quotation to sales order
-    console.log('\n📝 Converting quotation to sales order...')
+    console.warn('\n📝 Converting quotation to sales order...')
     
     const orderNumber = `SO-${Date.now().toString().slice(-6)}`
     const salesOrder = await prisma.salesOrder.create({
@@ -221,24 +221,23 @@ async function createTestWorkflowData() {
       }
     })
 
-    console.log(`✅ Created sales order: ${salesOrder.orderNumber}`)
+    console.warn(`✅ Created sales order: ${salesOrder.orderNumber}`)
 
-    console.log('\n🎯 Test Data Creation Complete!')
-    console.log('\n📊 Summary:')
-    console.log(`   • Item: ${testItem.code} (${stockLot.availableQty} units available)`)
-    console.log(`   • Customer: ${testCustomer.name}`)
-    console.log(`   • Sales Case: ${salesCase.caseNumber}`)
-    console.log(`   • Quotation: ${quotation.quotationNumber}`)
-    console.log(`   • Sales Order: ${salesOrder.orderNumber} (Status: ${salesOrder.status})`)
+    console.warn('\n🎯 Test Data Creation Complete!')
+    console.warn('\n📊 Summary:')
+    console.warn(`   • Item: ${testItem.code} (${stockLot.availableQty} units available)`)
+    console.warn(`   • Customer: ${testCustomer.name}`)
+    console.warn(`   • Sales Case: ${salesCase.caseNumber}`)
+    console.warn(`   • Quotation: ${quotation.quotationNumber}`)
+    console.warn(`   • Sales Order: ${salesOrder.orderNumber} (Status: ${salesOrder.status})`)
 
-    console.log('\n🚀 Ready to test workflow automation!')
-    console.log('   Run: npx tsx scripts/test-sales-workflow-automation.ts')
+    console.warn('\n🚀 Ready to test workflow automation!')
+    console.warn('   Run: npx tsx scripts/test-sales-workflow-automation.ts')
 
-  } catch (error) {
-    console.error('❌ Error creating test data:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 createTestWorkflowData()

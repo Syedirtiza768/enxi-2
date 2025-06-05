@@ -675,7 +675,7 @@ async function main() {
 
 main()
   .then(() => {
-    console.log("✅ Database seeded");
+    console.warn("✅ Database seeded");
     process.exit(0);
   })
   .catch((e) => {

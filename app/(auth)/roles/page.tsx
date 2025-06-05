@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,9 +15,7 @@ import {
   CheckSquare,
   Square,
   ChevronDown,
-  ChevronRight,
-  Users,
-  Settings
+  ChevronRight
 } from 'lucide-react'
 import { Role } from '@/lib/generated/prisma'
 
@@ -29,12 +26,6 @@ interface Permission {
   module: string
   action: string
   description: string
-}
-
-interface RolePermission {
-  roleId: string
-  permissionId: string
-  permission: Permission
 }
 
 const roleDescriptions: Record<Role, string> = {
@@ -49,7 +40,6 @@ const roleDescriptions: Record<Role, string> = {
 }
 
 export default function RolesPage() {
-  const router = useRouter()
   const [selectedRole, setSelectedRole] = useState<Role>(Role.ADMIN)
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [rolePermissions, setRolePermissions] = useState<Record<Role, string[]>>({} as Record<Role, string[]>)

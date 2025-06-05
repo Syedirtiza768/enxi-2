@@ -3,15 +3,15 @@
 import { readFile, writeFile } from 'fs/promises';
 
 async function fixSalesCasesPage() {
-  console.log('🔧 Fixing Sales Cases Page toFixed Error\n');
+  console.warn('🔧 Fixing Sales Cases Page toFixed Error\n');
   
   const filePath = '/Users/irtizahassan/apps/enxi/enxi-erp/app/(auth)/sales-cases/page.tsx';
   
   try {
-    console.log('1. Reading current file...');
+    console.warn('1. Reading current file...');
     const content = await readFile(filePath, 'utf8');
     
-    console.log('2. Identifying problematic lines...');
+    console.warn('2. Identifying problematic lines...');
     const problematicLines = [
       'metrics.averageWinRate.toFixed(1)',
       'metrics.averageMargin.toFixed(1)',
@@ -21,7 +21,7 @@ async function fixSalesCasesPage() {
     let fixedContent = content;
     let fixCount = 0;
     
-    console.log('3. Applying null-safe fixes...');
+    console.warn('3. Applying null-safe fixes...');
     
     // Fix 1: averageWinRate.toFixed(1)
     const winRatePattern = /metrics\.averageWinRate\.toFixed\(1\)/g;
@@ -31,7 +31,7 @@ async function fixSalesCasesPage() {
         '(metrics.averageWinRate ?? 0).toFixed(1)'
       );
       fixCount++;
-      console.log('   ✅ Fixed averageWinRate.toFixed()');
+      console.warn('   ✅ Fixed averageWinRate.toFixed()');
     }
     
     // Fix 2: averageMargin.toFixed(1)
@@ -42,7 +42,7 @@ async function fixSalesCasesPage() {
         '(metrics.averageMargin ?? 0).toFixed(1)'
       );
       fixCount++;
-      console.log('   ✅ Fixed averageMargin.toFixed()');
+      console.warn('   ✅ Fixed averageMargin.toFixed()');
     }
     
     // Fix 3: profitMargin.toFixed(1) 
@@ -53,11 +53,11 @@ async function fixSalesCasesPage() {
         '(salesCase.profitMargin ?? 0).toFixed(1)'
       );
       fixCount++;
-      console.log('   ✅ Fixed profitMargin.toFixed()');
+      console.warn('   ✅ Fixed profitMargin.toFixed()');
     }
     
     // Additional safety checks - make sure all numeric fields have fallbacks
-    console.log('4. Adding additional safety checks...');
+    console.warn('4. Adding additional safety checks...');
     
     // Check for other potential null numeric operations
     const additionalFixes = [
@@ -87,44 +87,44 @@ async function fixSalesCasesPage() {
       if (fix.pattern.test(fixedContent)) {
         fixedContent = fixedContent.replace(fix.pattern, fix.replacement);
         fixCount++;
-        console.log(`   ✅ Added null safety for ${fix.name}`);
+        console.warn(`   ✅ Added null safety for ${fix.name}`);
       }
     });
     
     if (fixCount > 0) {
-      console.log('\n5. Creating backup...');
+      console.warn('\n5. Creating backup...');
       const backupPath = filePath + '.backup.' + new Date().toISOString().replace(/[:.]/g, '-');
       await writeFile(backupPath, content, 'utf8');
-      console.log(`   📄 Backup created: ${backupPath}`);
+      console.warn(`   📄 Backup created: ${backupPath}`);
       
-      console.log('\n6. Writing fixed file...');
+      console.warn('\n6. Writing fixed file...');
       await writeFile(filePath, fixedContent, 'utf8');
-      console.log('   ✅ File updated successfully');
+      console.warn('   ✅ File updated successfully');
       
-      console.log(`\n🎉 FIXED ${fixCount} ISSUES:`);
-      console.log('   - Added null safety to .toFixed() calls');
-      console.log('   - Added fallbacks for numeric metrics');
-      console.log('   - Prevented "Cannot read properties of null" errors');
+      console.warn(`\n🎉 FIXED ${fixCount} ISSUES:`);
+      console.warn('   - Added null safety to .toFixed() calls');
+      console.warn('   - Added fallbacks for numeric metrics');
+      console.warn('   - Prevented "Cannot read properties of null" errors');
       
-      console.log('\n📋 CHANGES MADE:');
-      console.log('   - metrics.averageWinRate.toFixed(1) → (metrics.averageWinRate ?? 0).toFixed(1)');
-      console.log('   - metrics.averageMargin.toFixed(1) → (metrics.averageMargin ?? 0).toFixed(1)');
-      console.log('   - salesCase.profitMargin.toFixed(1) → (salesCase.profitMargin ?? 0).toFixed(1)');
-      console.log('   - Added null safety for other numeric fields');
+      console.warn('\n📋 CHANGES MADE:');
+      console.warn('   - metrics.averageWinRate.toFixed(1) → (metrics.averageWinRate ?? 0).toFixed(1)');
+      console.warn('   - metrics.averageMargin.toFixed(1) → (metrics.averageMargin ?? 0).toFixed(1)');
+      console.warn('   - salesCase.profitMargin.toFixed(1) → (salesCase.profitMargin ?? 0).toFixed(1)');
+      console.warn('   - Added null safety for other numeric fields');
       
-      console.log('\n🔍 WHY THIS FIXES THE ISSUE:');
-      console.log('   - The error occurred because API returned null values');
-      console.log('   - ?? 0 provides a default value of 0 when the property is null/undefined');
-      console.log('   - This prevents the "Cannot read properties of null" error');
-      console.log('   - Numbers display as "0.0%" instead of crashing');
+      console.warn('\n🔍 WHY THIS FIXES THE ISSUE:');
+      console.warn('   - The error occurred because API returned null values');
+      console.warn('   - ?? 0 provides a default value of 0 when the property is null/undefined');
+      console.warn('   - This prevents the "Cannot read properties of null" error');
+      console.warn('   - Numbers display as "0.0%" instead of crashing');
       
-      console.log('\n✅ SOLUTION COMPLETE!');
-      console.log('   The page should now load without errors.');
-      console.log('   Visit: http://localhost:3000/sales-cases');
+      console.warn('\n✅ SOLUTION COMPLETE!');
+      console.warn('   The page should now load without errors.');
+      console.warn('   Visit: http://localhost:3000/sales-cases');
       
     } else {
-      console.log('\n🤔 No toFixed() issues found in the file.');
-      console.log('   The error might be in a different location or already fixed.');
+      console.warn('\n🤔 No toFixed() issues found in the file.');
+      console.warn('   The error might be in a different location or already fixed.');
     }
     
   } catch (error: any) {

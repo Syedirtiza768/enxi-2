@@ -101,7 +101,7 @@ export class UserService extends BaseService {
 
       const result = await prisma.$transaction(async (tx) => {
         // Update user
-        const user = await tx.user.update({
+        await tx.user.update({
           where: { id: userId },
           data: {
             username: data.username,
@@ -130,7 +130,7 @@ export class UserService extends BaseService {
         return tx.user.findUnique({
           where: { id: userId },
           include: { profile: true },
-        }) as any
+        })
       })
 
       // Audit log
@@ -643,9 +643,9 @@ export class UserService extends BaseService {
     action: string
     entityType: string
     entityId: string
-    metadata?: any
-    beforeData?: any
-    afterData?: any
+    metadata?: Record<string, unknown>
+    beforeData?: Record<string, unknown>
+    afterData?: Record<string, unknown>
   }) {
     await prisma.auditLog.create({
       data: {

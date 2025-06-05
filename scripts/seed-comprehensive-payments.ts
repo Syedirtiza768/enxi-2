@@ -18,7 +18,7 @@ const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 
 const randomAmount = (min: number, max: number) => Math.round((Math.random() * (max - min) + min) * 100) / 100
 
 async function main() {
-  console.log('🌱 Starting Comprehensive Payment & Customer Ledger Seed...\n')
+  console.warn('🌱 Starting Comprehensive Payment & Customer Ledger Seed...\n')
 
   try {
     // Clean and recreate base data
@@ -26,33 +26,31 @@ async function main() {
     const baseData = await createBaseData()
     
     // Create comprehensive customer transaction histories
-    console.log('\n💰 Creating comprehensive payment transactions...')
+    console.warn('\n💰 Creating comprehensive payment transactions...')
     await createComprehensivePaymentHistory(baseData)
-    console.log('✅ Payment transactions created')
+    console.warn('✅ Payment transactions created')
 
     // Create customer business relationships
-    console.log('\n🤝 Creating customer business relationships...')
+    console.warn('\n🤝 Creating customer business relationships...')
     await createCustomerBusinessHistory(baseData)
-    console.log('✅ Customer business history created')
+    console.warn('✅ Customer business history created')
 
     // Create aging analysis data
-    console.log('\n📊 Creating aging analysis data...')
+    console.warn('\n📊 Creating aging analysis data...')
     await createAgingData(baseData)
-    console.log('✅ Aging data created')
+    console.warn('✅ Aging data created')
 
     // Print comprehensive summary
     await printComprehensiveSummary()
 
-  } catch (error) {
-    console.error('❌ Seed error:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 async function cleanDatabase() {
-  console.log('🧹 Cleaning database...')
+  console.warn('🧹 Cleaning database...')
   
   const cleanupOperations = [
     { name: 'AuditLog', fn: () => prisma.auditLog.deleteMany() },
@@ -83,17 +81,15 @@ async function cleanDatabase() {
   for (const operation of cleanupOperations) {
     try {
       await operation.fn()
-      console.log(`  ✓ Cleaned ${operation.name}`)
-    } catch (error) {
-      console.log(`  ⚠️ Skipped ${operation.name}`)
-    }
+      console.warn(`  ✓ Cleaned ${operation.name}`)
+} catch {    }
   }
   
-  console.log('✅ Database cleaned')
+  console.warn('✅ Database cleaned')
 }
 
 async function createBaseData() {
-  console.log('👥 Creating base users and accounts...')
+  console.warn('👥 Creating base users and accounts...')
   
   const hashedPassword = await bcrypt.hash('demo123', 10)
   
@@ -441,7 +437,7 @@ async function createBaseData() {
     })
   ])
 
-  console.log('✅ Base data created')
+  console.warn('✅ Base data created')
 
   return {
     users: { admin, sales, accountant, manager },
@@ -458,7 +454,7 @@ async function createComprehensivePaymentHistory(baseData: any) {
   for (let customerIndex = 0; customerIndex < customers.length; customerIndex++) {
     const customer = customers[customerIndex]
     
-    console.log(`  💳 Creating payment history for ${customer.name}...`)
+    console.warn(`  💳 Creating payment history for ${customer.name}...`)
     
     // Create 6-12 invoices per customer with varying payment patterns
     const invoiceCount = 6 + Math.floor(Math.random() * 7) // 6-12 invoices
@@ -911,9 +907,9 @@ async function createAgingData(baseData: any) {
 }
 
 async function printComprehensiveSummary() {
-  console.log('\n' + '='.repeat(70))
-  console.log('📊 COMPREHENSIVE PAYMENT & CUSTOMER LEDGER SEED SUMMARY')
-  console.log('='.repeat(70))
+  console.warn('\n' + '='.repeat(70))
+  console.warn('📊 COMPREHENSIVE PAYMENT & CUSTOMER LEDGER SEED SUMMARY')
+  console.warn('='.repeat(70))
 
   const [
     users,
@@ -955,49 +951,49 @@ async function printComprehensiveSummary() {
     _sum: { balanceAmount: true }
   })
 
-  console.log('\n📈 DATA CREATED:')
-  console.log(`   👥 Users: ${users}`)
-  console.log(`   🏢 Customers: ${customers} (with full transaction history)`)
-  console.log(`   💼 Sales Cases: ${salesCases}`)
-  console.log(`   📋 Quotations: ${quotations}`)
-  console.log(`   📝 Sales Orders: ${salesOrders}`)
-  console.log(`   🧾 Invoices: ${invoices}`)
-  console.log(`   💳 Payments: ${payments}`)
+  console.warn('\n📈 DATA CREATED:')
+  console.warn(`   👥 Users: ${users}`)
+  console.warn(`   🏢 Customers: ${customers} (with full transaction history)`)
+  console.warn(`   💼 Sales Cases: ${salesCases}`)
+  console.warn(`   📋 Quotations: ${quotations}`)
+  console.warn(`   📝 Sales Orders: ${salesOrders}`)
+  console.warn(`   🧾 Invoices: ${invoices}`)
+  console.warn(`   💳 Payments: ${payments}`)
 
-  console.log('\n💰 FINANCIAL SUMMARY:')
-  console.log(`   Total Invoiced: $${invoiceStats._sum.totalAmount?.toLocaleString() || '0'}`)
-  console.log(`   Total Paid: $${invoiceStats._sum.paidAmount?.toLocaleString() || '0'}`)
-  console.log(`   Outstanding AR: $${invoiceStats._sum.balanceAmount?.toLocaleString() || '0'}`)
-  console.log(`   Average Payment: $${paymentStats._avg.amount?.toLocaleString() || '0'}`)
+  console.warn('\n💰 FINANCIAL SUMMARY:')
+  console.warn(`   Total Invoiced: $${invoiceStats._sum.totalAmount?.toLocaleString() || '0'}`)
+  console.warn(`   Total Paid: $${invoiceStats._sum.paidAmount?.toLocaleString() || '0'}`)
+  console.warn(`   Outstanding AR: $${invoiceStats._sum.balanceAmount?.toLocaleString() || '0'}`)
+  console.warn(`   Average Payment: $${paymentStats._avg.amount?.toLocaleString() || '0'}`)
 
-  console.log('\n📊 INVOICE STATUS BREAKDOWN:')
+  console.warn('\n📊 INVOICE STATUS BREAKDOWN:')
   for (const status of invoiceStatusBreakdown) {
-    console.log(`   ${status.status}: ${status._count.status} invoices, $${status._sum.balanceAmount?.toLocaleString() || '0'} outstanding`)
+    console.warn(`   ${status.status}: ${status._count.status} invoices, $${status._sum.balanceAmount?.toLocaleString() || '0'} outstanding`)
   }
 
-  console.log('\n🔑 LOGIN CREDENTIALS:')
-  console.log('   Admin: admin / demo123')
-  console.log('   Sales: sarah / demo123')
-  console.log('   Accountant: michael / demo123')
-  console.log('   Manager: emma / demo123')
+  console.warn('\n🔑 LOGIN CREDENTIALS:')
+  console.warn('   Admin: admin / demo123')
+  console.warn('   Sales: sarah / demo123')
+  console.warn('   Accountant: michael / demo123')
+  console.warn('   Manager: emma / demo123')
 
-  console.log('\n🎯 PAYMENT TESTING SCENARIOS:')
-  console.log('   ✅ Multiple payment methods (Bank Transfer, Check, Cash, Credit Card)')
-  console.log('   ✅ Various payment patterns (Full, Partial, Late, Outstanding)')
-  console.log('   ✅ Aging analysis data (Current, 1-30, 31-60, 61-90, 90+ days)')
-  console.log('   ✅ Customer payment history spanning 12 months')
-  console.log('   ✅ Mixed customer credit statuses and payment behaviors')
-  console.log('   ✅ Comprehensive customer ledger data')
+  console.warn('\n🎯 PAYMENT TESTING SCENARIOS:')
+  console.warn('   ✅ Multiple payment methods (Bank Transfer, Check, Cash, Credit Card)')
+  console.warn('   ✅ Various payment patterns (Full, Partial, Late, Outstanding)')
+  console.warn('   ✅ Aging analysis data (Current, 1-30, 31-60, 61-90, 90+ days)')
+  console.warn('   ✅ Customer payment history spanning 12 months')
+  console.warn('   ✅ Mixed customer credit statuses and payment behaviors')
+  console.warn('   ✅ Comprehensive customer ledger data')
 
-  console.log('\n📋 READY FOR TESTING:')
-  console.log('   • Payment recording forms')
-  console.log('   • Customer ledger views')
-  console.log('   • Aging reports')
-  console.log('   • Payment allocation workflows')
-  console.log('   • Customer credit management')
-  console.log('   • Payment reconciliation')
+  console.warn('\n📋 READY FOR TESTING:')
+  console.warn('   • Payment recording forms')
+  console.warn('   • Customer ledger views')
+  console.warn('   • Aging reports')
+  console.warn('   • Payment allocation workflows')
+  console.warn('   • Customer credit management')
+  console.warn('   • Payment reconciliation')
 
-  console.log('\n✅ COMPREHENSIVE PAYMENT MODULE DATA SEEDED SUCCESSFULLY!')
+  console.warn('\n✅ COMPREHENSIVE PAYMENT MODULE DATA SEEDED SUCCESSFULLY!')
 }
 
 main()

@@ -56,8 +56,8 @@ export default function IncomeStatementPage() {
       
       const data = await response.json()
       setIncomeStatement(data.data)
-    } catch (error: any) {
-      setError(error.message)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -65,6 +65,7 @@ export default function IncomeStatementPage() {
 
   useEffect(() => {
     fetchIncomeStatement()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleGenerateReport = (e: React.FormEvent) => {

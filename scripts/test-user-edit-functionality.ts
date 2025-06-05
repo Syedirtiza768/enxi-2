@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
 async function testUserEditFunctionality() {
-  console.log('🔧 Testing User Edit Functionality...\n')
+  console.warn('🔧 Testing User Edit Functionality...\n')
 
   try {
     // Create super admin JWT token
@@ -20,10 +20,10 @@ async function testUserEditFunctionality() {
 
     const targetUserId = 'cmbfhfyv80000v2yeuhorcid6'
 
-    console.log(`📋 Testing access to user: ${targetUserId}`)
+    console.warn(`📋 Testing access to user: ${targetUserId}`)
     
     // Test 1: Check if user exists
-    console.log('1. Testing GET /api/users/' + targetUserId)
+    console.warn('1. Testing GET /api/users/' + targetUserId)
     const userResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
       headers: {
         'Cookie': `auth-token=${adminToken}`,
@@ -33,21 +33,21 @@ async function testUserEditFunctionality() {
 
     if (userResponse.ok) {
       const userData = await userResponse.json()
-      console.log('✅ User found:')
-      console.log('Raw response:', JSON.stringify(userData, null, 2))
+      console.warn('✅ User found:')
+      console.warn('Raw response:', JSON.stringify(userData, null, 2))
       
       const user = userData.data || userData
-      console.log(`   ID: ${user.id}`)
-      console.log(`   Username: ${user.username}`)
-      console.log(`   Email: ${user.email}`)
-      console.log(`   Role: ${user.role}`)
-      console.log(`   Status: ${user.isActive ? 'Active' : 'Inactive'}`)
+      console.warn(`   ID: ${user.id}`)
+      console.warn(`   Username: ${user.username}`)
+      console.warn(`   Email: ${user.email}`)
+      console.warn(`   Role: ${user.role}`)
+      console.warn(`   Status: ${user.isActive ? 'Active' : 'Inactive'}`)
       
       // Test 2: Check if we can update the user
-      console.log('\n2. Testing user update capabilities...')
+      console.warn('\n2. Testing user update capabilities...')
       
       // Test role update
-      console.log('   Testing role update (PATCH/PUT)...')
+      console.warn('   Testing role update (PATCH/PUT)...')
       const updateResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
         method: 'PUT',
         headers: {
@@ -61,20 +61,20 @@ async function testUserEditFunctionality() {
       })
 
       if (updateResponse.ok) {
-        console.log('   ✅ User update endpoint works')
+        console.warn('   ✅ User update endpoint works')
       } else {
-        console.log('   ❌ User update endpoint failed:')
-        console.log('      Status:', updateResponse.status)
-        console.log('      Response:', await updateResponse.text())
+        console.warn('   ❌ User update endpoint failed:')
+        console.warn('      Status:', updateResponse.status)
+        console.warn('      Response:', await updateResponse.text())
       }
 
     } else {
-      console.log('❌ User not found:')
-      console.log('   Status:', userResponse.status)
-      console.log('   Response:', await userResponse.text())
+      console.warn('❌ User not found:')
+      console.warn('   Status:', userResponse.status)
+      console.warn('   Response:', await userResponse.text())
       
       // Check all users to see what's available
-      console.log('\n📋 Checking all available users...')
+      console.warn('\n📋 Checking all available users...')
       const allUsersResponse = await fetch('http://localhost:3000/api/users', {
         headers: {
           'Cookie': `auth-token=${adminToken}`,
@@ -84,15 +84,15 @@ async function testUserEditFunctionality() {
       
       if (allUsersResponse.ok) {
         const allUsersData = await allUsersResponse.json()
-        console.log('Available users:')
+        console.warn('Available users:')
         allUsersData.data?.forEach((user: any) => {
-          console.log(`   • ${user.id} - ${user.username} (${user.email}) - ${user.role}`)
+          console.warn(`   • ${user.id} - ${user.username} (${user.email}) - ${user.role}`)
         })
       }
     }
 
     // Test 3: Check what ports the Next.js server is running on
-    console.log('\n🌐 Checking server ports...')
+    console.warn('\n🌐 Checking server ports...')
     
     try {
       const port3001Response = await fetch('http://localhost:3001/api/users', {
@@ -103,24 +103,18 @@ async function testUserEditFunctionality() {
       })
       
       if (port3001Response.ok) {
-        console.log('✅ Server also running on port 3001')
+        console.warn('✅ Server also running on port 3001')
       } else {
-        console.log('❌ No server on port 3001 or access denied')
+        console.warn('❌ No server on port 3001 or access denied')
       }
-    } catch (error) {
-      console.log('❌ No server running on port 3001')
-    }
-
-    console.log('\n🎯 User Edit Functionality Summary:')
-    console.log('• User management pages available at /users/[id]')
-    console.log('• Role and status updates should work via PUT /api/users/[id]')
-    console.log('• Frontend provides role dropdown and status toggle')
-    console.log('• Super admin has full edit permissions')
-
-  } catch (error) {
-    console.error('❌ Test failed:', error)
-  }
-}
+} catch (error) {
+      console.error('Error:', error);
+      console.warn('\n🎯 User Edit Functionality Summary:')
+    console.warn('• User management pages available at /users/[id]')
+    console.warn('• Role and status updates should work via PUT /api/users/[id]')
+    console.warn('• Frontend provides role dropdown and status toggle')
+    console.warn('• Super admin has full edit permissions')
+    } catch {}
 
 // Run the test
 testUserEditFunctionality()

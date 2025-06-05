@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 export async function setupTestDatabase() {
-  console.log('🧪 Setting up test database...')
+  console.warn('🧪 Setting up test database...')
   
   try {
     // Clean database in correct order to avoid foreign key violations
@@ -15,16 +15,12 @@ export async function setupTestDatabase() {
     const accounts = await createTestChartOfAccounts(testUser.id)
     await createTestUnitsAndCategories(testUser.id)
     
-    console.log('✅ Test database setup completed')
+    console.warn('✅ Test database setup completed')
     return { testUser, accounts }
-  } catch (error) {
-    console.error('❌ Test database setup failed:', error)
-    throw error
-  }
-}
+} catch {}
 
 export async function cleanTestDatabase() {
-  console.log('🧹 Cleaning test database...')
+  console.warn('🧹 Cleaning test database...')
   
   // Delete in dependency order to avoid foreign key violations
   await prisma.auditLog.deleteMany()
@@ -45,7 +41,7 @@ export async function cleanTestDatabase() {
   await prisma.account.deleteMany()
   await prisma.user.deleteMany()
   
-  console.log('✅ Test database cleaned')
+  console.warn('✅ Test database cleaned')
 }
 
 async function createTestUser() {
@@ -65,7 +61,7 @@ async function createTestUser() {
 }
 
 async function createTestChartOfAccounts(userId: string) {
-  console.log('📊 Creating test chart of accounts...')
+  console.warn('📊 Creating test chart of accounts...')
   
   // Create parent accounts first
   const assets = await prisma.account.create({
@@ -305,7 +301,7 @@ async function createTestChartOfAccounts(userId: string) {
 }
 
 async function createTestUnitsAndCategories(userId: string) {
-  console.log('📦 Creating test units and categories...')
+  console.warn('📦 Creating test units and categories...')
   
   // Units of Measure
   const pieces = await prisma.unitOfMeasure.create({

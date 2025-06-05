@@ -26,7 +26,7 @@ const convertCurrencySchema = z.object({
   toCurrency: z.string().length(3)
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const currencyService = new CurrencyService()
     const { searchParams } = new URL(request.url)
@@ -81,16 +81,16 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         )
     }
-  } catch (error) {
-    console.error('Error fetching exchange rates:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch exchange rates' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // TODO: Add authentication
     const userId = 'system' // Replace with actual user authentication
@@ -135,18 +135,11 @@ export async function POST(request: NextRequest) {
         })
         return NextResponse.json(exchangeRate, { status: 201 })
     }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
+} catch (error) {
     console.error('Error managing exchange rates:', error)
     return NextResponse.json(
       { error: 'Failed to manage exchange rates' },
       { status: 500 }
     )
-  }
+}
 }

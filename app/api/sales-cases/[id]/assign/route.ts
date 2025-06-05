@@ -12,9 +12,9 @@ export async function PUT(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
-    const body = await request.json()
+    const body = await _request.json()
     
     const { assignedTo } = body
 
@@ -29,7 +29,7 @@ export async function PUT(
     const salesCase = await salesCaseService.assignSalesCase(
       params.id,
       assignedTo,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({
@@ -37,12 +37,12 @@ export async function PUT(
       data: salesCase,
       message: 'Sales case assigned successfully'
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error assigning sales case:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

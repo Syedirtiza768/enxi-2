@@ -22,24 +22,24 @@ export async function POST(
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.approveStockTransfer(
       params.id,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: transfer })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error approving stock transfer:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Can only approve') ||
-        error.message?.includes('Insufficient stock')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only approve') ||
+        error instanceof Error ? error.message : String(error)?.includes('Insufficient stock')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

@@ -50,10 +50,10 @@ export async function GET(
       headers
     })
 
-  } catch (error) {
-    console.error('PDF generation error:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate PDF' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

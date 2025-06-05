@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { prisma } from '@/lib/db/prisma'
 
@@ -6,12 +6,12 @@ import { prisma } from '@/lib/db/prisma'
  * GET /api/permissions - List all available permissions
  */
 export const GET = createProtectedHandler(
-  async (request) => {
+  async (_request) => {
     try {
-      const { searchParams } = new URL(request.url)
-      const module = searchParams.get('module')
+      const { searchParams } = new URL(_request.url)
+      const moduleParam = searchParams.get('module')
 
-      const where = module ? { module } : {}
+      const where = moduleParam ? { module: moduleParam } : {}
 
       const permissions = await prisma.permission.findMany({
         where,
@@ -35,14 +35,13 @@ export const GET = createProtectedHandler(
         groupedPermissions,
         modules: Object.keys(groupedPermissions),
       })
-    } catch (error) {
-      console.error('Error listing permissions:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to list permissions' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { roles: ['SUPER_ADMIN', 'ADMIN'] }
 )

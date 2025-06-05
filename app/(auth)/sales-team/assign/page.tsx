@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
@@ -16,9 +16,7 @@ import {
 } from '@/components/ui/select'
 import { 
   ArrowLeft, 
-  Users, 
   Building,
-  UserPlus,
   Link
 } from 'lucide-react'
 import { Role } from '@/lib/generated/prisma'
@@ -47,8 +45,8 @@ interface Customer {
   }
 }
 
-export default function SalesTeamAssignPage() {
-  const router = useRouter()
+function SalesTeamAssignContent() {
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
   const preselectedCustomerId = searchParams.get('customerId')
   
@@ -400,5 +398,13 @@ export default function SalesTeamAssignPage() {
         </Card>
       </form>
     </div>
+  )
+}
+
+export default function SalesTeamAssignPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SalesTeamAssignContent />
+    </Suspense>
   )
 }

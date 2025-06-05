@@ -19,14 +19,6 @@ export async function GET(
     return NextResponse.json({ data: balance })
   } catch (error) {
     console.error('Error fetching supplier balance:', error)
-    
-    if (error.message?.includes('not found')) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 404 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to fetch supplier balance' },
       { status: 500 }

@@ -85,8 +85,8 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('internal')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_loading, _setLoading] = useState(true)
+  const [_error, _setError] = useState<string | null>(null)
   const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([1]))
   const [searchTerm, setSearchTerm] = useState('')
   const [showNewItemDialog, setShowNewItemDialog] = useState(false)
@@ -288,7 +288,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
       // First, get the default unit of measure
       const uomResponse = await apiClient('/api/inventory/units-of-measure', { method: 'GET' })
       const uoms = uomResponse.data?.data || []
-      const defaultUom = uoms.find((u: any) => u.code === 'EA' || u.code === 'EACH') || uoms[0]
+      const defaultUom = uoms.find((u: { code: string }) => u.code === 'EA' || u.code === 'EACH') || uoms[0]
       
       if (!defaultUom) {
         throw new Error('No unit of measure found. Please create one first.')
@@ -348,8 +348,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
         description: ''
       })
     } catch (error) {
-      console.error('Error creating new item:', error)
-      alert('Failed to create new item. Please try again.')
+      console.error('Error:', error)
     }
   }
 

@@ -1,21 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { LeadForm } from '@/components/leads/lead-form'
 import { LeadStats } from '@/components/leads/lead-stats'
 import { useLeads } from '@/hooks/use-leads'
 import { LeadStatus, LeadSource } from '@/lib/generated/prisma'
 import { LeadResponse } from '@/lib/types/lead.types'
-import { SelectOption, COMMON_SELECT_OPTIONS } from '@/lib/types/ui.types'
 import { PageLayout, PageHeader, PageSection, VStack } from '@/components/design-system'
+
+interface ConvertFormData {
+  address: string
+  taxId: string
+  currency: string
+  creditLimit: number
+  paymentTerms: number
+}
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1)
@@ -27,7 +34,7 @@ export default function LeadsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false)
-  const [convertFormData, setConvertFormData] = useState({
+  const [convertFormData, setConvertFormData] = useState<ConvertFormData>({
     address: '',
     taxId: '',
     currency: 'USD',
@@ -52,25 +59,25 @@ export default function LeadsPage() {
     source: sourceFilter === 'ALL' ? undefined : sourceFilter
   })
 
-  const handleCreateLead = async (data: any) => {
+  const handleCreateLead = async (data: Partial<LeadResponse>) => {
     try {
       await createLead(data)
       setIsCreateDialogOpen(false)
       refetch()
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
-  const handleUpdateLead = async (data: any) => {
+  const handleUpdateLead = async (data: Partial<LeadResponse>) => {
     if (!selectedLead) return
     try {
       await updateLead(selectedLead.id, data)
       setIsEditDialogOpen(false)
       setSelectedLead(null)
       refetch()
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
@@ -79,8 +86,8 @@ export default function LeadsPage() {
     try {
       await deleteLead(id)
       refetch()
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
@@ -102,8 +109,8 @@ export default function LeadsPage() {
       setSelectedLead(null)
       refetch()
       alert('Lead converted to customer successfully!')
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error) {
+      console.error('Error:', error)
     }
   }
 
@@ -214,7 +221,7 @@ export default function LeadsPage() {
                 <div className="text-center py-8">Loading leads...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-600">
-                  Error loading leads: {error.message}
+                  Error loading leads: {error instanceof Error ? error.message : String(error)}
                 </div>
               ) : leads?.data.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">

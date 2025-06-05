@@ -3,7 +3,7 @@ import { PrismaClient, LeadStatus, LeadSource, SalesCaseStatus, QuotationStatus,
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting Customer & SalesCase demo seeding...')
+  console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {
     // Get admin user (assuming it exists)
@@ -15,10 +15,10 @@ async function main() {
       throw new Error('Admin user not found. Please run seed-admin.ts first.')
     }
 
-    console.log('✅ Found admin user:', adminUser.email)
+    console.warn('✅ Found admin user:', adminUser.email)
 
     // 1. Create a lead that will be converted to customer
-    console.log('\n📊 Creating lead for conversion...')
+    console.warn('\n📊 Creating lead for conversion...')
     const lead = await prisma.lead.create({
       data: {
         firstName: 'Sarah',
@@ -35,10 +35,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created lead:', lead.firstName, lead.lastName)
+    console.warn('✅ Created lead:', lead.firstName, lead.lastName)
 
     // 2. Convert lead to customer
-    console.log('\n🔄 Converting lead to customer...')
+    console.warn('\n🔄 Converting lead to customer...')
     const customerFromLead = await prisma.$transaction(async (tx) => {
       // Create customer from lead
       const customer = await tx.customer.create({
@@ -90,10 +90,10 @@ async function main() {
 
       return customer
     })
-    console.log('✅ Converted lead to customer:', customerFromLead.customerNumber)
+    console.warn('✅ Converted lead to customer:', customerFromLead.customerNumber)
 
     // 3. Create another customer directly (manual form)
-    console.log('\n👤 Creating customer via manual form...')
+    console.warn('\n👤 Creating customer via manual form...')
     const manualCustomer = await prisma.$transaction(async (tx) => {
       const customer = await tx.customer.create({
         data: {
@@ -133,10 +133,10 @@ async function main() {
 
       return customer
     })
-    console.log('✅ Created manual customer:', manualCustomer.customerNumber)
+    console.warn('✅ Created manual customer:', manualCustomer.customerNumber)
 
     // 4. Create sales case with full workflow
-    console.log('\n📋 Creating sales case...')
+    console.warn('\n📋 Creating sales case...')
     const salesCase = await prisma.salesCase.create({
       data: {
         customerId: customerFromLead.id,
@@ -150,10 +150,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created sales case:', salesCase.caseNumber)
+    console.warn('✅ Created sales case:', salesCase.caseNumber)
 
     // 5. Create quotation
-    console.log('\n📄 Creating quotation...')
+    console.warn('\n📄 Creating quotation...')
     const quotation = await prisma.$transaction(async (tx) => {
       const quote = await tx.quotation.create({
         data: {
@@ -221,10 +221,10 @@ async function main() {
 
       return quote
     })
-    console.log('✅ Created quotation:', quotation.quotationNumber)
+    console.warn('✅ Created quotation:', quotation.quotationNumber)
 
     // 6. Add expenses to sales case
-    console.log('\n💰 Adding expenses...')
+    console.warn('\n💰 Adding expenses...')
     const expenses = await prisma.caseExpense.createMany({
       data: [
         {
@@ -264,10 +264,10 @@ async function main() {
         }
       ]
     })
-    console.log('✅ Added', expenses.count, 'expenses')
+    console.warn('✅ Added', expenses.count, 'expenses')
 
     // 7. Create customer PO (simpler flow)
-    console.log('\n📑 Creating customer PO...')
+    console.warn('\n📑 Creating customer PO...')
     const customerPO = await prisma.customerPO.create({
       data: {
         customerId: customerFromLead.id,
@@ -286,7 +286,7 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created customer PO:', customerPO.poNumber)
+    console.warn('✅ Created customer PO:', customerPO.poNumber)
 
     // Update sales case status
     await prisma.salesCase.update({
@@ -295,29 +295,27 @@ async function main() {
     })
 
     // Display summary
-    console.log('\n📊 Demo Data Summary:')
-    console.log('====================')
-    console.log('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
-    console.log('2. Customer from lead:', customerFromLead.name, '-', customerFromLead.customerNumber)
-    console.log('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
-    console.log('4. Sales case:', salesCase.caseNumber, '-', salesCase.title)
-    console.log('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
-    console.log('6. Expenses: 3 expenses added (1 pending approval)')
-    console.log('7. Customer PO:', customerPO.poNumber)
-    console.log('8. Sales case status: PO_RECEIVED')
+    console.warn('\n📊 Demo Data Summary:')
+    console.warn('====================')
+    console.warn('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
+    console.warn('2. Customer from lead:', customerFromLead.name, '-', customerFromLead.customerNumber)
+    console.warn('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
+    console.warn('4. Sales case:', salesCase.caseNumber, '-', salesCase.title)
+    console.warn('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
+    console.warn('6. Expenses: 3 expenses added (1 pending approval)')
+    console.warn('7. Customer PO:', customerPO.poNumber)
+    console.warn('8. Sales case status: PO_RECEIVED')
     
-    console.log('\n✅ Demo seeding completed successfully!')
-    console.log('\nYou can now:')
-    console.log('- View customers and their details including tabs')
-    console.log('- See the sales case with quotations, expenses, and profitability')
-    console.log('- Track the complete workflow from lead to PO')
+    console.warn('\n✅ Demo seeding completed successfully!')
+    console.warn('\nYou can now:')
+    console.warn('- View customers and their details including tabs')
+    console.warn('- See the sales case with quotations, expenses, and profitability')
+    console.warn('- Track the complete workflow from lead to PO')
 
-  } catch (error) {
-    console.error('❌ Error during seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

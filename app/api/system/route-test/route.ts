@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     let user;
     try {
       user = await getUserFromRequest(request);
-      console.log('Route testing initiated by user', { userId: user.id });
+      console.warn('Route testing initiated by user', { userId: user.id });
     } catch {
       // Allow in development mode
       if (process.env.NODE_ENV !== 'development') {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
           message: 'Route testing requires authentication'
         }, { status: 401 });
       }
-      console.log('Route testing initiated in development mode');
+      console.warn('Route testing initiated in development mode');
     }
 
     const { searchParams } = new URL(request.url);
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const includePages = searchParams.get('includePages') === 'true';
     const category = searchParams.get('category'); // Filter by category
 
-    console.log('Starting comprehensive route testing', {
+    console.warn('Starting comprehensive route testing', {
       mode,
       includePages,
       category,
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log('Route discovery completed', {
+    console.warn('Route discovery completed', {
       totalRoutes: allRoutes.length,
       routesToTest: routesToTest.length,
       mode,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     // Phase 2: Testing
     const testSummary = await routeTester.testAllRoutes(routesToTest);
     
-    let response: any = {
+    const response: unknown = {
       discovery: {
         totalRoutes: allRoutes.length,
         apiRoutes: allRoutes.filter(r => r.type === 'api').length,
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Phase 3: Fixing (if requested)
     if ((mode === 'fix' || mode === 'full') && testSummary.failed > 0) {
-      console.log('Starting automatic fixing phase', {
+      console.warn('Starting automatic fixing phase', {
         failedTests: testSummary.failed
       });
 
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
 
         // Re-test fixed routes
         if (response.fixing.successfulFixes > 0) {
-          console.log('Re-testing fixed routes', {
+          console.warn('Re-testing fixed routes', {
             fixedRoutes: response.fixing.successfulFixes
           });
 
@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
       }));
     }
 
-    console.log('Route testing completed successfully', {
+    console.warn('Route testing completed successfully', {
       mode,
       totalTests: response.testing.totalTests,
       successRate: response.testing.successRate,
@@ -202,19 +202,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
 
-  } catch (error) {
-    console.error('Route testing failed', error);
-    
-    return NextResponse.json({
-      error: 'Route testing failed',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, { status: 500 });
-  }
+} catch (error) {
+      console.error('Error:', error);
+    }
 }
 
 // Get route testing status and configuration
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const routes = await routeDiscovery.discoverAllRoutes();
     const categorizedRoutes = routeDiscovery.getRoutesByCategory();
@@ -260,11 +254,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Failed to get route testing info', error);
-    
-    return NextResponse.json({
-      error: 'Failed to get route testing information',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Route test failed' },
+      { status: 500 }
+    );
   }
 }

@@ -40,7 +40,7 @@ interface UserEditFormProps {
 }
 
 export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)

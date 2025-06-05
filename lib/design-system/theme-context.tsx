@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { designTokens } from './tokens'
 
 export type Theme = 'light' | 'dark' | 'system'
@@ -43,12 +43,12 @@ export function ThemeProvider({
   }
 
   // Resolve the actual theme based on user preference
-  const resolveTheme = (theme: Theme): 'light' | 'dark' => {
+  const resolveTheme = useCallback((theme: Theme): 'light' | 'dark' => {
     if (theme === 'system') {
       return getSystemTheme()
     }
     return theme
-  }
+  }, [])
 
   // Apply theme to document
   const applyTheme = (resolvedTheme: 'light' | 'dark') => {
@@ -91,7 +91,7 @@ export function ThemeProvider({
     
     // Store preference
     localStorage.setItem(storageKey, theme)
-  }, [theme, storageKey])
+  }, [theme, storageKey, resolveTheme])
 
   // Listen for system theme changes
   useEffect(() => {
@@ -113,7 +113,7 @@ export function ThemeProvider({
       mediaQuery.addListener(handleChange)
       return () => mediaQuery.removeListener(handleChange)
     }
-  }, [theme])
+  }, [theme, resolveTheme])
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)

@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 
 // GET /api/inventory/stock-lots - Get stock lots for an item
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -35,10 +35,10 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(stockLots)
-  } catch (error) {
-    console.error('Error fetching stock lots:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stock lots' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

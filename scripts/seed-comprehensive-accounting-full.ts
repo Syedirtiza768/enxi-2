@@ -4,10 +4,10 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting comprehensive accounting seed...')
+  console.warn('🌱 Starting comprehensive accounting seed...')
 
   // Clear existing data in correct order to avoid foreign key constraints
-  console.log('🧹 Clearing existing data...')
+  console.warn('🧹 Clearing existing data...')
   
   // Clear payment related data first
   await prisma.supplierPayment.deleteMany()
@@ -68,7 +68,7 @@ async function main() {
   await prisma.user.deleteMany()
 
   // 1. Create base users with proper roles
-  console.log('👤 Creating users...')
+  console.warn('👤 Creating users...')
   const hashedPassword = await bcrypt.hash('password123', 10)
 
   const users = await Promise.all([
@@ -190,7 +190,7 @@ async function main() {
   ])
 
   // 2. Create Chart of Accounts
-  console.log('📊 Creating chart of accounts...')
+  console.warn('📊 Creating chart of accounts...')
   
   // Assets (1000-1999)
   const cashAccount = await prisma.account.create({
@@ -449,7 +449,7 @@ async function main() {
   })
 
   // 3. Create Exchange Rates
-  console.log('💱 Creating exchange rates...')
+  console.warn('💱 Creating exchange rates...')
   const exchangeRates = await Promise.all([
     prisma.exchangeRate.create({
       data: {
@@ -484,7 +484,7 @@ async function main() {
   ])
 
   // 4. Create Units of Measure
-  console.log('📏 Creating units of measure...')
+  console.warn('📏 Creating units of measure...')
   
   // Create base units first
   const eaUnit = await prisma.unitOfMeasure.create({
@@ -540,7 +540,7 @@ async function main() {
   const units = [eaUnit, boxUnit, kgUnit, mUnit]
 
   // 5. Create Locations/Warehouses
-  console.log('🏭 Creating locations...')
+  console.warn('🏭 Creating locations...')
   const locations = await Promise.all([
     prisma.location.create({
       data: {
@@ -596,7 +596,7 @@ async function main() {
   const [mainWarehouse, westWarehouse, nyStore] = locations
 
   // 6. Create Categories
-  console.log('📁 Creating categories...')
+  console.warn('📁 Creating categories...')
   const electronicsCategory = await prisma.category.create({
     data: {
       code: 'ELEC',
@@ -654,7 +654,7 @@ async function main() {
   })
 
   // 7. Create Items
-  console.log('📦 Creating items...')
+  console.warn('📦 Creating items...')
   const items = await Promise.all([
     // Electronics - Computers
     prisma.item.create({
@@ -874,7 +874,7 @@ async function main() {
   ])
 
   // 8. Create Suppliers
-  console.log('🏢 Creating suppliers...')
+  console.warn('🏢 Creating suppliers...')
   const suppliers = await Promise.all([
     prisma.supplier.create({
       data: {
@@ -934,7 +934,7 @@ async function main() {
   const [techProSupplier, officeWorldSupplier, furnitureMastersSupplier] = suppliers
 
   // 9. Create Initial Stock (Opening Balances)
-  console.log('📈 Creating opening stock...')
+  console.warn('📈 Creating opening stock...')
   
   // Create opening balance journal entry
   const openingJournal = await prisma.journalEntry.create({
@@ -1067,7 +1067,7 @@ async function main() {
   }
 
   // 10. Create Leads
-  console.log('👥 Creating leads...')
+  console.warn('👥 Creating leads...')
   const leads = await Promise.all([
     prisma.lead.create({
       data: {
@@ -1142,7 +1142,7 @@ async function main() {
   ])
 
   // 11. Create Customers (from converted leads)
-  console.log('🏢 Creating customers...')
+  console.warn('🏢 Creating customers...')
   const customers = await Promise.all([
     prisma.customer.create({
       data: {
@@ -1207,7 +1207,7 @@ async function main() {
   const [techCorpCustomer, innovateCustomer, globalFinanceCustomer] = customers
 
   // 12. Create Sales Cases
-  console.log('💼 Creating sales cases...')
+  console.warn('💼 Creating sales cases...')
   const salesCases = await Promise.all([
     prisma.salesCase.create({
       data: {
@@ -1275,17 +1275,17 @@ async function main() {
 
   const [techCorpCase1, innovateCase, globalFinanceCase, techCorpCase2] = salesCases
 
-  console.log('✅ Comprehensive accounting seed completed successfully!')
-  console.log('📊 Summary:')
-  console.log(`- Users: ${users.length}`)
-  console.log(`- Accounts: 25+ chart of accounts`)
-  console.log(`- Categories: 6`)
-  console.log(`- Items: ${items.length}`)
-  console.log(`- Suppliers: ${suppliers.length}`)
-  console.log(`- Customers: ${customers.length}`)
-  console.log(`- Locations: ${locations.length}`)
-  console.log(`- Opening Stock: ${stockLots.length} lots`)
-  console.log(`- Sales Cases: ${salesCases.length}`)
+  console.warn('✅ Comprehensive accounting seed completed successfully!')
+  console.warn('📊 Summary:')
+  console.warn(`- Users: ${users.length}`)
+  console.warn(`- Accounts: 25+ chart of accounts`)
+  console.warn(`- Categories: 6`)
+  console.warn(`- Items: ${items.length}`)
+  console.warn(`- Suppliers: ${suppliers.length}`)
+  console.warn(`- Customers: ${customers.length}`)
+  console.warn(`- Locations: ${locations.length}`)
+  console.warn(`- Opening Stock: ${stockLots.length} lots`)
+  console.warn(`- Sales Cases: ${salesCases.length}`)
 }
 
 main()

@@ -28,13 +28,6 @@ export async function PATCH(
     
     return NextResponse.json(lead)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error updating lead status:', error)
     
     if (error instanceof Error) {

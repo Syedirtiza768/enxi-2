@@ -33,7 +33,7 @@ export interface ErrorResponse {
   category: ErrorCategory
   severity: ErrorSeverity
   code?: string
-  details?: any
+  details?: unknown
   timestamp: string
   requestId?: string
   suggestions?: string[]
@@ -46,7 +46,7 @@ export class AppError extends Error {
     public category: ErrorCategory = ErrorCategory.SYSTEM,
     public severity: ErrorSeverity = ErrorSeverity.MEDIUM,
     public code?: string,
-    public details?: any,
+    public details?: unknown,
     public suggestions?: string[]
   ) {
     super(message)
@@ -56,7 +56,7 @@ export class AppError extends Error {
 
 // Business logic specific errors
 export class BusinessLogicError extends AppError {
-  constructor(message: string, code?: string, details?: any, suggestions?: string[]) {
+  constructor(message: string, code?: string, details?: unknown, suggestions?: string[]) {
     super(message, ErrorCategory.BUSINESS_LOGIC, ErrorSeverity.MEDIUM, code, details, suggestions)
     this.name = 'BusinessLogicError'
   }
@@ -98,7 +98,7 @@ export class ErrorHandler {
   /**
    * Log error with context information
    */
-  private logError(error: Error, context?: any): void {
+  private logError(error: Error, context?: unknown): void {
     const logData = {
       timestamp: new Date().toISOString(),
       error: {
@@ -110,7 +110,7 @@ export class ErrorHandler {
     }
     
     // In production, you might want to use a proper logging service
-    console.error('🔴 Error logged:', JSON.stringify(logData, null, 2))
+    console.error('Error logged:', JSON.stringify(logData, null, 2))
   }
   
   /**
@@ -215,7 +215,7 @@ export class ErrorHandler {
   /**
    * Convert any error to standardized ErrorResponse
    */
-  public parseError(error: unknown, context?: any): ErrorResponse {
+  public parseError(error: unknown, context?: unknown): ErrorResponse {
     this.logError(error as Error, context)
     
     // Handle our custom AppError
@@ -283,7 +283,7 @@ export class ErrorHandler {
   /**
    * Create Next.js response from error
    */
-  public createErrorResponse(error: unknown, context?: any): NextResponse {
+  public createErrorResponse(error: unknown, context?: unknown): NextResponse {
     const errorResponse = this.parseError(error, context)
     
     // Map severity to HTTP status codes
@@ -327,11 +327,11 @@ export class ErrorHandler {
 export const errorHandler = ErrorHandler.getInstance()
 
 // Utility functions for common error scenarios
-export const handleApiError = (error: unknown, context?: any) => {
+export const handleApiError = (error: unknown, context?: unknown) => {
   return errorHandler.createErrorResponse(error, context)
 }
 
-export const throwBusinessLogicError = (message: string, code?: string, details?: any, suggestions?: string[]) => {
+export const throwBusinessLogicError = (message: string, code?: string, details?: unknown, suggestions?: string[]) => {
   throw new BusinessLogicError(message, code, details, suggestions)
 }
 

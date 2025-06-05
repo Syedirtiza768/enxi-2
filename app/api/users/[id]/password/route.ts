@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { z } from 'zod'
@@ -55,13 +55,6 @@ export const PUT = createProtectedHandler(
     } catch (error) {
       console.error('Error updating password:', error)
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid password data', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         if (error.message === 'User not found') {
           return NextResponse.json(

@@ -1,5 +1,5 @@
 import { BaseService } from '@/lib/services/base.service'
-import { PrismaClient, Prisma } from '@/lib/generated/prisma'
+import { PrismaClient } from '@/lib/generated/prisma'
 import { getAuditedPrisma } from '@/lib/utils/get-audited-prisma'
 
 interface MatchingTolerance {
@@ -390,7 +390,7 @@ export class ThreeWayMatchingService extends BaseService {
   }> {
     return this.withLogging('generateExceptionsReport', async () => {
       // Build where clause for filtering
-      const where: any = {}
+      const where: Record<string, unknown> = {}
       
       if (filters.dateFrom || filters.dateTo) {
         where.createdAt = {}
@@ -429,7 +429,7 @@ export class ThreeWayMatchingService extends BaseService {
       })
 
       // Analyze each invoice for detailed exceptions
-      const exceptions: any[] = []
+      const exceptions: Record<string, unknown>[] = []
       let totalVarianceAmount = 0
 
       for (const invoice of invoicesWithDiscrepancies) {
@@ -479,7 +479,7 @@ export class ThreeWayMatchingService extends BaseService {
     supplierId?: string
   }): Promise<MatchingMetrics> {
     return this.withLogging('getMatchingMetrics', async () => {
-      const where: any = {}
+      const where: Record<string, unknown> = {}
       
       if (filters.dateFrom || filters.dateTo) {
         where.createdAt = {}
@@ -579,9 +579,9 @@ export class ThreeWayMatchingService extends BaseService {
   }
 
   private async analyzeDiscrepancies(
-    purchaseOrder: any,
-    goodsReceipts: any[],
-    supplierInvoices: any[]
+    purchaseOrder: { items: Array<{ id: string; item: { id: string; code: string; name: string } }> },
+    goodsReceipts: Array<{ items: Array<{ id: string; item: { id: string; code: string; name: string } }> }>,
+    supplierInvoices: Array<{ items: Array<{ goodsReceiptItem?: { id: string } }> }>
   ): Promise<MatchingDiscrepancy[]> {
     const discrepancies: MatchingDiscrepancy[] = []
 
@@ -607,7 +607,7 @@ export class ThreeWayMatchingService extends BaseService {
     // Check for missing invoices
     const invoicedItemIds = new Set(
       supplierInvoices.flatMap(inv => 
-        inv.items.map((item: any) => item.goodsReceiptItem?.id)
+        inv.items.map((item) => item.goodsReceiptItem?.id)
       ).filter(Boolean)
     )
 
@@ -711,9 +711,9 @@ export class ThreeWayMatchingService extends BaseService {
   }
 
   private calculateSummary(
-    poItems: any[],
-    goodsReceipts: any[],
-    supplierInvoices: any[],
+    poItems: Array<{ id: string }>,
+    goodsReceipts: Array<{ id: string }>,
+    supplierInvoices: Array<{ id: string }>,
     discrepancies: MatchingDiscrepancy[]
   ): ThreeWayMatchingSummary {
     const totalItems = poItems.length

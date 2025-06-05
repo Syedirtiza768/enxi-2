@@ -4,10 +4,10 @@ export interface TestScenario {
   name: string;
   method: string;
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
   expectedStatus?: number;
   requiresAuth?: boolean;
-  testData?: Record<string, any>;
+  testData?: Record<string, unknown>;
 }
 
 export interface RouteTestResult {
@@ -17,7 +17,7 @@ export interface RouteTestResult {
   statusCode: number;
   responseTime: number;
   error?: string;
-  response?: any;
+  response?: unknown;
   timestamp: string;
 }
 
@@ -42,7 +42,7 @@ export class RouteTester {
 
   async authenticate(): Promise<boolean> {
     try {
-      console.log('Attempting authentication for route testing');
+      console.warn('Attempting authentication for route testing');
       
       const response = await fetch(`${this.baseUrl}/api/auth/login`, {
         method: 'POST',
@@ -56,14 +56,14 @@ export class RouteTester {
       if (response.ok) {
         const data = await response.json();
         this.authToken = data.token;
-        console.log('Authentication successful for route testing');
+        console.warn('Authentication successful for route testing');
         return true;
       } else {
         console.warn('Authentication failed for route testing', { status: response.status });
         return false;
       }
     } catch (error) {
-      console.error('Authentication error during route testing', error);
+      console.error('Error authenticating:', error);
       return false;
     }
   }
@@ -101,9 +101,10 @@ export class RouteTester {
       let responseData;
       try {
         responseData = await response.json();
-      } catch {
-        responseData = await response.text();
-      }
+      } catch (error) {
+      console.error('Error:', error);
+      responseData = await response.text();
+    }
 
       // Determine success
       const expectedStatus = scenario.expectedStatus || (scenario.requiresAuth && !this.authToken ? 401 : 200);
@@ -126,7 +127,7 @@ export class RouteTester {
 
       this.testResults.push(result);
       
-      console.log('Route test completed', {
+      console.warn('Route test completed', {
         path: route.path,
         method: scenario.method,
         success,
@@ -136,20 +137,7 @@ export class RouteTester {
 
       return result;
 
-    } catch (error) {
-      const responseTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      const result: RouteTestResult = {
-        route,
-        scenario,
-        success: false,
-        statusCode: 0,
-        responseTime,
-        error: errorMessage,
-        timestamp: new Date().toISOString()
-      };
-
+} catch {
       this.testResults.push(result);
       
       console.warn('Route test failed with exception', {
@@ -236,8 +224,8 @@ export class RouteTester {
     return scenarios;
   }
 
-  private generateTestData(route: RouteInfo): Record<string, any> {
-    const testData: Record<string, any> = {};
+  private generateTestData(route: RouteInfo): Record<string, unknown> {
+    const testData: Record<string, unknown> = {};
     
     route.parameters.forEach(param => {
       switch (param) {
@@ -258,7 +246,7 @@ export class RouteTester {
     return testData;
   }
 
-  private generateValidRequestBody(route: RouteInfo, method: string): any {
+  private generateValidRequestBody(route: RouteInfo, _method: string): unknown {
     const path = route.path.toLowerCase();
     
     // Generate realistic test data based on route path
@@ -327,7 +315,7 @@ export class RouteTester {
     const startTime = Date.now();
     this.testResults = [];
     
-    console.log('Starting comprehensive route testing', {
+    console.warn('Starting comprehensive route testing', {
       totalRoutes: routes.length
     });
 
@@ -343,7 +331,7 @@ export class RouteTester {
       
       for (const scenario of scenarios) {
         testCount++;
-        console.log(`Testing ${testCount}: ${scenario.name}`);
+        console.warn(`Testing ${testCount}: ${scenario.name}`);
         
         await this.testRoute(route, scenario);
         
@@ -355,7 +343,7 @@ export class RouteTester {
     const totalTime = Date.now() - startTime;
     const summary = this.generateTestSummary(totalTime);
     
-    console.log('Route testing completed', {
+    console.warn('Route testing completed', {
       totalTests: summary.totalTests,
       passed: summary.passed,
       failed: summary.failed,

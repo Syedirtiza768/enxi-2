@@ -4,7 +4,7 @@ import { GoodsReceiptService } from '@/lib/services/purchase/goods-receipt.servi
 import { ReceiptStatus } from '@/lib/generated/prisma'
 
 // GET /api/goods-receipts - Get all goods receipts
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -32,17 +32,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: receipts })
-  } catch (error) {
-    console.error('Error fetching goods receipts:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch goods receipts' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/goods-receipts - Create goods receipt
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -97,19 +97,19 @@ export async function POST(request: NextRequest) {
       condition,
       notes,
       items,
-      receivedBy: user.id
+      receivedBy: _user.id
     })
 
     return NextResponse.json({ data: receipt }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating goods receipt:', error)
     
-    if (error.message?.includes('not found') || 
-        error.message?.includes('must be ordered') ||
-        error.message?.includes('Cannot receive') ||
-        error.message?.includes('remaining')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || 
+        error instanceof Error ? error.message : String(error)?.includes('must be ordered') ||
+        error instanceof Error ? error.message : String(error)?.includes('Cannot receive') ||
+        error instanceof Error ? error.message : String(error)?.includes('remaining')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

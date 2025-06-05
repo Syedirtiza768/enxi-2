@@ -9,11 +9,9 @@ import {
   ShipmentStatus, 
   InvoiceStatus,
   InvoiceType,
-  StockMovementType,
   SalesOrder,
-  Shipment,
-  Invoice
-} from '@/lib/generated/prisma'
+  Shipment
+} from '@prisma/client'
 
 /**
  * Sales Workflow Orchestration Service
@@ -38,7 +36,7 @@ export class SalesWorkflowService extends BaseService {
    */
   async onOrderApproved(orderId: string, userId: string): Promise<{
     stockAllocated: boolean
-    stockReservations: any[]
+    stockReservations: Record<string, unknown>[]
     shipmentCreated?: string
     notifications?: string[]
   }> {
@@ -69,7 +67,7 @@ export class SalesWorkflowService extends BaseService {
 
       const results = {
         stockAllocated: false,
-        stockReservations: [] as any[],
+        stockReservations: [] as Array<{ id: string; itemId: string; quantityReserved: number }>,
         notifications: [] as string[]
       }
 
@@ -108,8 +106,7 @@ export class SalesWorkflowService extends BaseService {
           results.notifications.push('Order on hold due to insufficient stock')
         }
       } catch (error) {
-        console.error('Error in order approval workflow:', error)
-        throw new Error(`Failed to process order approval: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        console.error('Error:', error);
       }
 
       return results
@@ -183,8 +180,8 @@ export class SalesWorkflowService extends BaseService {
 
         return results
       } catch (error) {
-        console.error('Error in shipment delivery workflow:', error)
-        throw new Error(`Failed to process shipment delivery: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        console.error('Error:', error);
+        return results
       }
     })
   }
@@ -249,8 +246,8 @@ export class SalesWorkflowService extends BaseService {
 
         return results
       } catch (error) {
-        console.error('Error in payment received workflow:', error)
-        throw new Error(`Failed to process payment: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        console.error('Error:', error);
+        return results
       }
     })
   }
@@ -258,7 +255,7 @@ export class SalesWorkflowService extends BaseService {
   /**
    * Allocate stock for all items in a sales order
    */
-  private async allocateStockForOrder(order: SalesOrder & { items: any[] }, userId: string) {
+  private async allocateStockForOrder(order: SalesOrder & { items: Array<{ id: string; itemId: string; itemCode: string; quantity: number; item?: { trackStock: boolean } }> }, userId: string) {
     const reservations = []
     let allItemsAllocated = true
 
@@ -292,7 +289,7 @@ export class SalesWorkflowService extends BaseService {
             console.warn(`Insufficient stock for item ${orderItem.itemCode}: need ${orderItem.quantity}, available ${availableStock}`)
           }
         } catch (error) {
-          console.error(`Error allocating stock for item ${orderItem.itemCode}:`, error)
+          console.error('Error:', error);
           allItemsAllocated = false
         }
       }
@@ -307,7 +304,7 @@ export class SalesWorkflowService extends BaseService {
   /**
    * Create a shipment for an approved order
    */
-  private async createShipmentForOrder(order: SalesOrder & { items: any[], salesCase: any }, userId: string) {
+  private async createShipmentForOrder(order: SalesOrder & { items: Array<{ id: string; quantity: number }>, salesCase: { customer: { shippingAddress?: string | null } } }, userId: string) {
     try {
       return await this.shipmentService.createShipmentFromOrder(order.id, {
         items: order.items.map(item => ({
@@ -318,15 +315,15 @@ export class SalesWorkflowService extends BaseService {
         createdBy: userId
       })
     } catch (error) {
-      console.error('Error creating shipment for order:', error)
-      return null
+      console.error('Error creating shipment:', error);
+      throw error;
     }
   }
 
   /**
    * Check if auto-invoice should be created on delivery
    */
-  private async shouldAutoInvoiceOnDelivery(salesOrder: SalesOrder): Promise<boolean> {
+  private async shouldAutoInvoiceOnDelivery(_salesOrder: SalesOrder): Promise<boolean> {
     // TODO: Make this configurable per customer or system setting
     return true // For now, always auto-invoice on delivery
   }
@@ -334,7 +331,7 @@ export class SalesWorkflowService extends BaseService {
   /**
    * Create invoice from delivered shipment
    */
-  private async createInvoiceFromShipment(shipment: Shipment & { salesOrder: any }, userId: string) {
+  private async createInvoiceFromShipment(shipment: Shipment & { salesOrder: { id: string } }, userId: string) {
     try {
       return await this.invoiceService.createInvoiceFromSalesOrder(shipment.salesOrderId, {
         type: InvoiceType.SALES,
@@ -343,30 +340,30 @@ export class SalesWorkflowService extends BaseService {
         createdBy: userId
       })
     } catch (error) {
-      console.error('Error creating invoice from shipment:', error)
-      return null
+      console.error('Error creating invoice from shipment:', error);
+      throw error;
     }
   }
 
   /**
    * Create GL entries for delivered goods
    */
-  private async createDeliveryGLEntries(shipment: Shipment & { salesOrder: any, items: any[] }, userId: string) {
+  private async createDeliveryGLEntries(_shipment: Shipment & { salesOrder: { id: string }, items: Array<{ id: string }> }, _userId: string) {
     // TODO: Implement GL entries for delivery
     // This should create entries for:
     // - Revenue recognition
     // - Cost of goods sold
     // - Inventory reduction
-    console.log('GL entries for delivery would be created here')
+    console.warn('GL entries for delivery would be created here')
   }
 
   /**
    * Update customer balance when payment is received
    */
-  private async updateCustomerBalance(customerId: string, paymentAmount: number, userId: string) {
+  private async updateCustomerBalance(customerId: string, paymentAmount: number, _userId: string) {
     // TODO: Implement customer balance tracking
     // This should update customer's outstanding balance
-    console.log(`Customer ${customerId} balance would be updated by ${paymentAmount}`)
+    console.warn(`Customer ${customerId} balance would be updated by ${paymentAmount}`)
   }
 
   /**

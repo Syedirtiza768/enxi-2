@@ -27,15 +27,7 @@ export async function GET(
     
     return NextResponse.json(customerPO)
   } catch (error) {
-    console.error('Error getting customer PO:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
+    console.error('Error:', error);
     return NextResponse.json(
       { error: 'Failed to get customer PO' },
       { status: 500 }
@@ -61,25 +53,10 @@ export async function PATCH(
     
     return NextResponse.json(customerPO)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
-    console.error('Error updating customer PO:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to update customer PO' },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 400 }
     )
   }
 }

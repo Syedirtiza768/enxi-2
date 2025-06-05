@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -70,9 +70,9 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
 
   useEffect(() => {
     fetchExpenses()
-  }, [salesCaseId])
+  }, [salesCaseId, fetchExpenses])
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/sales-cases/${salesCaseId}/expenses`, { method: 'GET' })
@@ -80,14 +80,14 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
         const expensesData = response.data.data || response.data
         setExpenses(Array.isArray(expensesData) ? expensesData : [])
       }
-    } catch (error) {
-      console.error('Error fetching expenses:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [salesCaseId])
 
-  const handleChange = (field: keyof CreateExpenseData, value: any) => {
+  const handleChange = (field: keyof CreateExpenseData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field
     if (errors[field]) {
@@ -130,18 +130,19 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
       })
       fetchExpenses()
       if (onExpenseUpdate) onExpenseUpdate()
-    } catch (error: any) {
-      if (error.errors) {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error) {
         // Zod validation errors
         const fieldErrors: Record<string, string> = {}
-        error.errors.forEach((err: any) => {
+        const zodError = error as { errors: { path: (string | number)[]; message: string }[] }
+        zodError.errors.forEach((err: { path: (string | number)[]; message: string }) => {
           if (err.path[0]) {
             fieldErrors[err.path[0]] = err.message
           }
         })
         setErrors(fieldErrors)
       } else {
-        setErrors({ general: error.message || 'Failed to create expense' })
+        setErrors({ general: error instanceof Error ? error.message : 'Failed to create expense' })
       }
     } finally {
       setSubmitting(false)
@@ -162,10 +163,10 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
         fetchExpenses()
         if (onExpenseUpdate) onExpenseUpdate()
       }
-    } catch (error) {
-      console.error('Error approving expense:', error)
+} catch (error) {
+      console.error('Error:', error);
     }
-  }
+    }
 
   const handleReject = async (expenseId: string, reason: string) => {
     try {
@@ -181,10 +182,10 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
         fetchExpenses()
         if (onExpenseUpdate) onExpenseUpdate()
       }
-    } catch (error) {
-      console.error('Error rejecting expense:', error)
+} catch (error) {
+      console.error('Error:', error);
     }
-  }
+    }
 
   const formatCurrency = (amount: number, currency: string = salesCaseCurrency) => {
     return new Intl.NumberFormat('en-US', {

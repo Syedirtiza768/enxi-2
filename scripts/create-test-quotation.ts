@@ -7,7 +7,7 @@
 import { PrismaClient } from '@/lib/generated/prisma'
 
 async function createTestQuotation() {
-  console.log('🚀 Creating test quotation...\n')
+  console.warn('🚀 Creating test quotation...\n')
   
   const prisma = new PrismaClient()
   
@@ -35,8 +35,8 @@ async function createTestQuotation() {
       return
     }
     
-    console.log(`📋 Using sales case: ${salesCase.caseNumber} (${salesCase.customer.name})`)
-    console.log(`📦 Using ${items.length} inventory items`)
+    console.warn(`📋 Using sales case: ${salesCase.caseNumber} (${salesCase.customer.name})`)
+    console.warn(`📦 Using ${items.length} inventory items`)
     
     // Create quotation payload
     const validUntil = new Date()
@@ -73,11 +73,11 @@ async function createTestQuotation() {
     
     const totalAmount = subtotal - discountAmount + taxAmount
     
-    console.log(`💰 Quotation totals:`)
-    console.log(`   - Subtotal: $${subtotal.toFixed(2)}`)
-    console.log(`   - Discount: $${discountAmount.toFixed(2)}`)
-    console.log(`   - Tax: $${taxAmount.toFixed(2)}`)
-    console.log(`   - Total: $${totalAmount.toFixed(2)}`)
+    console.warn(`💰 Quotation totals:`)
+    console.warn(`   - Subtotal: $${subtotal.toFixed(2)}`)
+    console.warn(`   - Discount: $${discountAmount.toFixed(2)}`)
+    console.warn(`   - Tax: $${taxAmount.toFixed(2)}`)
+    console.warn(`   - Total: $${totalAmount.toFixed(2)}`)
     
     // Create quotation via service directly 
     const { QuotationService } = require('@/lib/services/quotation.service')
@@ -94,41 +94,40 @@ async function createTestQuotation() {
       createdBy: 'test-user'
     })
     
-    console.log('\n✅ Quotation created successfully!')
-    console.log(`   - ID: ${createdQuotation.id}`)
-    console.log(`   - Number: ${createdQuotation.quotationNumber}`)
-    console.log(`   - Status: ${createdQuotation.status}`)
-    console.log(`   - Items: ${createdQuotation.items.length}`)
+    console.warn('\n✅ Quotation created successfully!')
+    console.warn(`   - ID: ${createdQuotation.id}`)
+    console.warn(`   - Number: ${createdQuotation.quotationNumber}`)
+    console.warn(`   - Status: ${createdQuotation.status}`)
+    console.warn(`   - Items: ${createdQuotation.items.length}`)
     
     // Test retrieving the quotation
     const fetchedQuotation = await quotationService.getQuotation(createdQuotation.id)
     
     if (fetchedQuotation) {
-      console.log('\n✅ Quotation retrieved successfully!')
-      console.log(`   - Retrieved ${fetchedQuotation.items.length} items`)
-      console.log(`   - Total matches: $${fetchedQuotation.totalAmount.toFixed(2)}`)
+      console.warn('\n✅ Quotation retrieved successfully!')
+      console.warn(`   - Retrieved ${fetchedQuotation.items.length} items`)
+      console.warn(`   - Total matches: $${fetchedQuotation.totalAmount.toFixed(2)}`)
       
       // Show item details
-      console.log('\n📦 Quotation Items:')
+      console.warn('\n📦 Quotation Items:')
       fetchedQuotation.items.forEach((item, index) => {
-        console.log(`   ${index + 1}. ${item.itemCode}: ${item.description}`)
-        console.log(`      - Qty: ${item.quantity} × $${item.unitPrice} = $${item.totalAmount}`)
+        console.warn(`   ${index + 1}. ${item.itemCode}: ${item.description}`)
+        console.warn(`      - Qty: ${item.quantity} × $${item.unitPrice} = $${item.totalAmount}`)
       })
     }
     
-    console.log('\n🎉 Schema alignment test completed successfully!')
-    console.log('\n📋 Test Summary:')
-    console.log('✅ QuotationItem schema matches frontend components')
-    console.log('✅ API endpoints work with corrected schema')
-    console.log('✅ CRUD operations functional')
-    console.log('✅ Calculation logic verified')
-    console.log('\n🔗 View the quotation at: http://localhost:3001/quotations')
+    console.warn('\n🎉 Schema alignment test completed successfully!')
+    console.warn('\n📋 Test Summary:')
+    console.warn('✅ QuotationItem schema matches frontend components')
+    console.warn('✅ API endpoints work with corrected schema')
+    console.warn('✅ CRUD operations functional')
+    console.warn('✅ Calculation logic verified')
+    console.warn('\n🔗 View the quotation at: http://localhost:3001/quotations')
     
-  } catch (error) {
-    console.error('❌ Error:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 createTestQuotation()

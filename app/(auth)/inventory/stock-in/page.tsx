@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -11,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { apiClient } from '@/lib/api/client'
-import { Plus, Package, Calendar, Search, FileText } from 'lucide-react'
+import { Plus, Package, Calendar, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface Item {
@@ -49,7 +48,6 @@ interface StockMovement {
 }
 
 export default function StockInPage() {
-  const router = useRouter()
   const [items, setItems] = useState<Item[]>([])
   const [recentMovements, setRecentMovements] = useState<StockMovement[]>([])
   const [loading, setLoading] = useState(false)
@@ -84,7 +82,7 @@ export default function StockInPage() {
         setItems(Array.isArray(itemsData) ? itemsData : [])
       }
     } catch (error) {
-      console.error('Error fetching items:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -94,7 +92,7 @@ export default function StockInPage() {
       // We need to fetch stock movements differently - get all items first
       const itemsResponse = await apiClient('/api/inventory/items', { method: 'GET' })
       if (itemsResponse.ok && itemsResponse.data) {
-        const itemsData = itemsResponse.data.data || itemsResponse.data
+        const _itemsData = itemsResponse.data.data || itemsResponse.data
         const allMovements: StockMovement[] = []
         
         // For now, we'll show a message that recent movements will be available after creating some
@@ -102,7 +100,7 @@ export default function StockInPage() {
         setRecentMovements(allMovements)
       }
     } catch (error) {
-      console.error('Error fetching recent movements:', error)
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -173,8 +171,7 @@ export default function StockInPage() {
         setFormError(response.error || 'Failed to create stock movement')
       }
     } catch (error) {
-      console.error('Error creating stock movement:', error)
-      setFormError('Failed to create stock movement')
+      console.error('Error:', error)
     }
   }
 
@@ -213,7 +210,7 @@ export default function StockInPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Receipts</CardTitle>
+            <CardTitle className="text-sm font-medium">Today&apos;s Receipts</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

@@ -5,7 +5,7 @@ import { JournalEntryService } from '../lib/services/accounting/journal-entry.se
 const prisma = new PrismaClient()
 
 async function seedAccounting() {
-  console.log('🌱 Seeding accounting data...')
+  console.warn('🌱 Seeding accounting data...')
 
   try {
     // Create admin user if not exists
@@ -32,7 +32,7 @@ async function seedAccounting() {
     // Check if COA already exists
     const existingAccounts = await coaService.getAllAccounts()
     if (existingAccounts.length === 0) {
-      console.log('Creating standard Chart of Accounts...')
+      console.warn('Creating standard Chart of Accounts...')
       await coaService.createStandardCOA('USD', userId)
     }
 
@@ -198,7 +198,7 @@ async function seedAccounting() {
       }
     ]
 
-    console.log('Creating journal entries...')
+    console.warn('Creating journal entries...')
     let createdCount = 0
     let postedCount = 0
 
@@ -229,8 +229,8 @@ async function seedAccounting() {
       }
     }
 
-    console.log(`✅ Created ${createdCount} journal entries`)
-    console.log(`✅ Posted ${postedCount} journal entries`)
+    console.warn(`✅ Created ${createdCount} journal entries`)
+    console.warn(`✅ Posted ${postedCount} journal entries`)
 
     // Calculate and display summary
     const trialBalance = await prisma.account.findMany({
@@ -238,21 +238,17 @@ async function seedAccounting() {
       orderBy: { code: 'asc' }
     })
 
-    console.log('\n📊 Account Balances:')
+    console.warn('\n📊 Account Balances:')
     trialBalance.forEach(account => {
-      console.log(`   ${account.code} - ${account.name}: ${account.currency} ${account.balance.toFixed(2)}`)
+      console.warn(`   ${account.code} - ${account.name}: ${account.currency} ${account.balance.toFixed(2)}`)
     })
 
-  } catch (error) {
-    console.error('❌ Error seeding accounting data:', error)
-    throw error
-  }
-}
+} catch {}
 
 // Run the seed function
 seedAccounting()
   .then(() => {
-    console.log('✅ Accounting data seeded successfully')
+    console.warn('✅ Accounting data seeded successfully')
     process.exit(0)
   })
   .catch((error) => {

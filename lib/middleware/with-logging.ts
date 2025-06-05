@@ -1,18 +1,17 @@
 import { NextRequest } from 'next/server';
-import { handleError } from '@/lib/utils/global-error-handler';
 import { v4 as uuidv4 } from 'uuid';
 
 // Higher-order function to wrap all API routes with logging and error handling
-export function withLogging<T extends (...args: any[]) => Promise<any>>(
+export function withLogging<T extends (...args: unknown[]) => Promise<Response>>(
   handler: T,
   options?: {
     operation?: string;
     skipAuth?: boolean;
   }
 ): T {
-  return (async (req: NextRequest, ...args: any[]) => {
+  return (async (req: NextRequest, ...args: unknown[]) => {
     const requestId = uuidv4();
-    const context = {
+    const _context = {
       requestId,
       operation: options?.operation || 'unknown',
       method: req.method,
@@ -23,7 +22,8 @@ export function withLogging<T extends (...args: any[]) => Promise<any>>(
     try {
       return await handler(req, ...args);
     } catch (error) {
-      return handleError(error, context);
+      console.error('Error:', error)
+      throw error
     }
-  }) as T;
+  }) as T
 }

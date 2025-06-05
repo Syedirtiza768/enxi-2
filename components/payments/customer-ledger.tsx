@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,9 +48,9 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
 
   useEffect(() => {
     loadCustomerData()
-  }, [customerId])
+  }, [customerId, loadCustomerData])
 
-  const loadCustomerData = async () => {
+  const loadCustomerData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -68,7 +68,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

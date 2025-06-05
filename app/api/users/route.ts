@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { z } from 'zod'
@@ -49,15 +49,7 @@ export const GET = createProtectedHandler(
 
       return NextResponse.json(result)
     } catch (error) {
-      console.error('Error listing users:', error)
-      
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid parameters', details: error.errors },
-          { status: 400 }
-        )
-      }
-
+      console.error('Error listing users:', error);
       return NextResponse.json(
         { error: 'Failed to list users' },
         { status: 500 }
@@ -79,19 +71,12 @@ export const POST = createProtectedHandler(
       const user = await userService.createUser(data, request.user!.id)
 
       // Remove password from response
-      const { password, ...userResponse } = user as any
+      const { password: _password, ...userResponse } = user as Record<string, unknown> & { password: string }
       
       return NextResponse.json(userResponse, { status: 201 })
     } catch (error) {
-      console.error('Error creating user:', error)
+      console.error('Error creating user:', error);
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid user data', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         if (error.message.includes('Unique constraint')) {
           return NextResponse.json(

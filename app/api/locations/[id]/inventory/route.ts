@@ -20,7 +20,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = _request.nextUrl.searchParams
     const itemId = searchParams.get('itemId')
     const hasStock = searchParams.get('hasStock')
     const lowStock = searchParams.get('lowStock')
@@ -63,10 +63,10 @@ export async function GET(
 
       return NextResponse.json({ data: inventory })
     }
-  } catch (error) {
-    console.error('Error fetching location inventory:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch location inventory' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

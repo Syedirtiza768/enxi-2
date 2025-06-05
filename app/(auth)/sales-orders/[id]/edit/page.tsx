@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeft, Package, AlertTriangle, Plus, Minus, 
-  Calendar, MapPin, CreditCard, Truck, FileText
+  Calendar
 } from 'lucide-react'
 
 interface SalesOrderItem {
@@ -71,7 +71,7 @@ interface FormData {
 }
 
 export default function SalesOrderEditPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const orderId = params.id as string
 
@@ -301,9 +301,7 @@ export default function SalesOrderEditPage() {
       router.push(`/sales-orders/${orderId}`)
     } catch (error) {
       console.error('Error updating sales order:', error)
-      setErrors({
-        submit: `Failed to update sales order: ${error instanceof Error ? error.message : 'Unknown error'}`
-      })
+      alert(error instanceof Error ? error.message : 'Failed to update sales order')
     } finally {
       setSaving(false)
     }

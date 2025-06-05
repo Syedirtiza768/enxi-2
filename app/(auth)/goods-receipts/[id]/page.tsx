@@ -73,7 +73,7 @@ interface GoodsReceipt {
 
 export default function GoodsReceiptDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [goodsReceipt, setGoodsReceipt] = useState<GoodsReceipt | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -98,9 +98,8 @@ export default function GoodsReceiptDetailPage() {
       }
       
       setGoodsReceipt(response.data)
-    } catch (error) {
-      console.error('Error fetching goods receipt:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load goods receipt')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

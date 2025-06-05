@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface Account {
@@ -32,7 +31,6 @@ interface JournalEntry {
 }
 
 export default function JournalEntriesPage() {
-  const router = useRouter()
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
@@ -61,7 +59,7 @@ export default function JournalEntriesPage() {
       const data = await response.json()
       setEntries(data.data || [])
     } catch (error) {
-      console.error('Error fetching entries:', error)
+      console.error('Failed to fetch entries:', error)
     } finally {
       setLoading(false)
     }
@@ -74,7 +72,7 @@ export default function JournalEntriesPage() {
       const data = await response.json()
       setAccounts(data.data || [])
     } catch (error) {
-      console.error('Error fetching accounts:', error)
+      console.error('Failed to fetch accounts:', error)
     }
   }
 
@@ -88,7 +86,7 @@ export default function JournalEntriesPage() {
     }
   }
 
-  const updateLine = (index: number, field: keyof typeof lines[0], value: any) => {
+  const updateLine = (index: number, field: keyof typeof lines[0], value: string | number) => {
     const updatedLines = [...lines]
     updatedLines[index] = { ...updatedLines[index], [field]: value }
     setLines(updatedLines)
@@ -133,8 +131,8 @@ export default function JournalEntriesPage() {
       setShowForm(false)
       resetForm()
       fetchEntries()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to create journal entry')
     } finally {
       setSubmitting(false)
     }
@@ -159,7 +157,7 @@ export default function JournalEntriesPage() {
       if (!response.ok) throw new Error('Failed to post entry')
       fetchEntries()
     } catch (error) {
-      console.error('Error posting entry:', error)
+      console.error('Failed to post entry:', error)
     }
   }
 

@@ -9,7 +9,7 @@ async function seedAdmin() {
     })
 
     if (existingAdmin) {
-      console.log('Admin user already exists')
+      console.warn('Admin user already exists')
       return
     }
 
@@ -25,17 +25,16 @@ async function seedAdmin() {
       },
     })
 
-    console.log('Admin user created successfully:', {
+    console.warn('Admin user created successfully:', {
       id: admin.id,
       username: admin.username,
       email: admin.email,
       role: admin.role,
     })
-  } catch (error) {
-    console.error('Error seeding admin user:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 seedAdmin()

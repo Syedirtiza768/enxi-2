@@ -12,7 +12,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const body = await request.json()
+    const body = await _request.json()
     const validatedData = cancelShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
@@ -20,28 +20,23 @@ export async function POST(
     
     return NextResponse.json(shipment)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
-        { status: 400 }
-      )
-    }
+    console.error('Error cancelling shipment:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     
-    if (error instanceof Error && error.message.includes('not found')) {
+    if (errorMessage.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: errorMessage },
         { status: 404 }
       )
     }
     
-    if (error instanceof Error && error.message.includes('Cannot cancel shipment')) {
+    if (errorMessage.includes('Cannot cancel shipment')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: errorMessage },
         { status: 400 }
       )
     }
     
-    console.error('Error cancelling shipment:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

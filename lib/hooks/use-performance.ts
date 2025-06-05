@@ -10,19 +10,19 @@ export function usePerformance(componentName: string) {
     // Track component mount time
     const mountDuration = Date.now() - mountTime.current;
     if (renderCount.current === 1) {
-      console.log(`${componentName}_mount`, mountDuration);
+      console.warn(`${componentName}_mount`, mountDuration);
     }
 
     // Track re-renders
     if (renderCount.current > 1) {
-      console.log(`${componentName}_rerender`, renderCount.current, 'count');
+      console.warn(`${componentName}_rerender`, renderCount.current, 'count');
     }
-  });
+  }, [componentName]);
 
   // Return a function to track custom metrics
   return {
     trackMetric: (metric: string, value: number, unit?: string) => {
-      console.log(`${componentName}_${metric}`, value, unit);
+      console.warn(`${componentName}_${metric}`, value, unit);
     },
     trackOperation: async <T,>(
       operationName: string,
@@ -32,11 +32,11 @@ export function usePerformance(componentName: string) {
       try {
         const result = await operation();
         const duration = Date.now() - startTime;
-        console.log(`${componentName}_${operationName}`, duration);
+        console.warn(`${componentName}_${operationName}`, duration);
         return result;
       } catch (error) {
         const duration = Date.now() - startTime;
-        console.log(`${componentName}_${operationName}_error`, duration);
+        console.warn(`${componentName}_${operationName}_error`, duration);
         throw error;
       }
     }

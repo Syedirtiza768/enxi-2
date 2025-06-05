@@ -1,13 +1,21 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { PageLayout, PageHeader, VStack } from '@/components/design-system'
-import { SupplierInvoiceForm } from '@/components/supplier-invoices/supplier-invoice-form'
+import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { PageLayout, PageHeader, VStack, Button } from '@/components/design-system'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/design-system'
 
-export default function NewSupplierInvoicePage() {
-  const router = useRouter()
+const SupplierInvoiceForm = dynamic(
+  () => import('@/components/supplier-invoices/supplier-invoice-form').then(mod => ({ default: mod.SupplierInvoiceForm })),
+  { 
+    ssr: false,
+    loading: () => <div className="p-4">Loading form...</div>
+  }
+)
+
+function NewSupplierInvoiceContent() {
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const handleSuccess = () => {
     router.push('/supplier-invoices')
@@ -38,5 +46,13 @@ export default function NewSupplierInvoicePage() {
         <SupplierInvoiceForm onSuccess={handleSuccess} />
       </VStack>
     </PageLayout>
+  )
+}
+
+export default function NewSupplierInvoicePage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading supplier invoice form...</div>}>
+      <NewSupplierInvoiceContent />
+    </Suspense>
   )
 }

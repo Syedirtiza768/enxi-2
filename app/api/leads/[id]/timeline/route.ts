@@ -13,14 +13,6 @@ export async function GET(
     return NextResponse.json(timeline)
   } catch (error) {
     console.error('Error getting lead timeline:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to get lead timeline' },
       { status: 500 }

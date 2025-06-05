@@ -89,7 +89,7 @@ export const Text = forwardRef<HTMLElement, TextProps>(
   ) => {
     return (
       <Component
-        ref={ref as any}
+        ref={ref as React.Ref<HTMLElement>}
         className={cn(
           size && sizeClasses[size],
           weight && weightClasses[weight],

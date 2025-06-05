@@ -1,13 +1,13 @@
 #!/usr/bin/env npx tsx
 
 async function testAuthFix() {
-  console.log('🔧 Testing Authentication Fix\n');
+  console.warn('🔧 Testing Authentication Fix\n');
 
   const BASE_URL = 'http://localhost:3000';
 
   try {
     // Step 1: Login to get token
-    console.log('1. Logging in...');
+    console.warn('1. Logging in...');
     const loginResponse = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,10 +19,10 @@ async function testAuthFix() {
 
     const loginData = await loginResponse.json();
     const token = loginData.token;
-    console.log(`✅ Login successful. Token: ${token.substring(0, 30)}...`);
+    console.warn(`✅ Login successful. Token: ${token.substring(0, 30)}...`);
 
     // Step 2: Test auth endpoint directly
-    console.log('\n2. Testing auth endpoint...');
+    console.warn('\n2. Testing auth endpoint...');
     const authTestResponse = await fetch(`${BASE_URL}/api/test-auth`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -30,18 +30,18 @@ async function testAuthFix() {
       }
     });
 
-    console.log(`Auth test status: ${authTestResponse.status}`);
+    console.warn(`Auth test status: ${authTestResponse.status}`);
     const authTestData = await authTestResponse.json();
-    console.log('Auth test response:', authTestData);
+    console.warn('Auth test response:', authTestData);
 
     if (authTestResponse.ok) {
-      console.log('✅ Bearer token authentication is working!');
+      console.warn('✅ Bearer token authentication is working!');
     } else {
-      console.log('❌ Bearer token authentication failed');
+      console.warn('❌ Bearer token authentication failed');
     }
 
     // Step 3: Test lead creation
-    console.log('\n3. Testing lead creation...');
+    console.warn('\n3. Testing lead creation...');
     const leadResponse = await fetch(`${BASE_URL}/api/leads`, {
       method: 'POST',
       headers: {
@@ -58,24 +58,24 @@ async function testAuthFix() {
       })
     });
 
-    console.log(`Lead creation status: ${leadResponse.status}`);
+    console.warn(`Lead creation status: ${leadResponse.status}`);
     const leadData = await leadResponse.json();
-    console.log('Lead creation response:', leadData);
+    console.warn('Lead creation response:', leadData);
 
     if (leadResponse.ok) {
-      console.log('✅ Lead creation is working!');
+      console.warn('✅ Lead creation is working!');
     } else {
-      console.log('❌ Lead creation failed');
+      console.warn('❌ Lead creation failed');
     }
 
     // Step 4: Test debug logs
-    console.log('\n4. Testing debug logs...');
+    console.warn('\n4. Testing debug logs...');
     const debugResponse = await fetch(`${BASE_URL}/api/debug-logs?limit=5`);
     
-    console.log(`Debug logs status: ${debugResponse.status}`);
+    console.warn(`Debug logs status: ${debugResponse.status}`);
     if (debugResponse.ok) {
       const debugData = await debugResponse.json();
-      console.log(`✅ Debug logs accessible! Found ${debugData.count} logs`);
+      console.warn(`✅ Debug logs accessible! Found ${debugData.count} logs`);
       
       // Show recent errors
       const recentErrors = debugData.logs.filter((log: any) => 
@@ -83,13 +83,13 @@ async function testAuthFix() {
       );
       
       if (recentErrors.length > 0) {
-        console.log('\nRecent errors/warnings:');
+        console.warn('\nRecent errors/warnings:');
         recentErrors.slice(0, 3).forEach((log: any) => {
-          console.log(`[${log.level}] ${log.message}`);
+          console.warn(`[${log.level}] ${log.message}`);
         });
       }
     } else {
-      console.log('❌ Debug logs still not accessible');
+      console.warn('❌ Debug logs still not accessible');
     }
 
   } catch (error: any) {

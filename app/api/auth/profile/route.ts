@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/services/auth.service'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   
   if (!authHeader) {

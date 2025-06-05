@@ -72,8 +72,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
       }
-    } catch (error: any) {
-      if (error.message?.includes('Unique constraint failed')) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message?.includes('Unique constraint failed')) {
         throw new Error('Username already exists')
       }
       throw error

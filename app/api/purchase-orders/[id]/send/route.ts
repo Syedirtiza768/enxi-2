@@ -22,23 +22,23 @@ export async function POST(
     const purchaseOrderService = new PurchaseOrderService()
     const purchaseOrder = await purchaseOrderService.sendToSupplier(
       params.id,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: purchaseOrder })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error sending purchase order:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Can only send approved')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only send approved')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

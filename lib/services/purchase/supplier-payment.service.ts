@@ -200,7 +200,7 @@ export class SupplierPaymentService extends BaseService {
     })
   }
 
-  async updateSupplierPayment(paymentId: string, data: UpdateSupplierPaymentInput, updatedBy: string) {
+  async updateSupplierPayment(paymentId: string, data: UpdateSupplierPaymentInput, _updatedBy: string) {
     return this.withLogging('updateSupplierPayment', async () => {
       const payment = await this.auditedPrisma.supplierPayment.findUnique({
         where: { id: paymentId }
@@ -211,7 +211,7 @@ export class SupplierPaymentService extends BaseService {
       }
 
       // Prevent modification of financial data
-      const updateData: any = {}
+      const updateData: Record<string, unknown> = {}
       if (data.reference !== undefined) updateData.reference = data.reference
       if (data.notes !== undefined) updateData.notes = data.notes
       if (data.paymentMethod !== undefined) updateData.paymentMethod = data.paymentMethod
@@ -427,9 +427,9 @@ export class SupplierPaymentService extends BaseService {
 
   private async createPaymentJournalEntry(
     prisma: PrismaClient,
-    payment: any,
-    apAccount: any,
-    bankAccount: any,
+    payment: { paymentNumber: string; paymentDate: Date; baseAmount: number; supplierInvoiceId?: string; supplierInvoice?: { invoiceNumber: string }; supplier?: { name: string } },
+    apAccount: { id: string },
+    bankAccount: { id: string },
     createdBy: string
   ) {
     const description = payment.supplierInvoiceId

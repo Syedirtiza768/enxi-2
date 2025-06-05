@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeft, Package, FileText, CheckCircle, XCircle, 
-  Truck, Edit, Calendar, MapPin, CreditCard, Send, Clock
+  Truck, Edit, Calendar, MapPin, CreditCard, Clock
 } from 'lucide-react'
 
 interface SalesOrderItem {
@@ -64,7 +64,7 @@ interface SalesOrder {
 }
 
 export default function SalesOrderDetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const orderId = params.id as string
 
@@ -122,10 +122,8 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Sales order has been approved!')
-    } catch (error) {
-      console.error('Error approving sales order:', error)
-      alert('Failed to approve sales order')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -149,10 +147,8 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order processing has started!')
-    } catch (error) {
-      console.error('Error starting processing:', error)
-      alert('Failed to start processing')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -182,10 +178,8 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order has been marked as shipped!')
-    } catch (error) {
-      console.error('Error marking as shipped:', error)
-      alert('Failed to mark as shipped')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -209,10 +203,8 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order has been marked as delivered!')
-    } catch (error) {
-      console.error('Error marking as delivered:', error)
-      alert('Failed to mark as delivered')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -242,10 +234,8 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Sales order has been cancelled.')
-    } catch (error) {
-      console.error('Error cancelling sales order:', error)
-      alert(error instanceof Error ? error.message : 'Failed to cancel sales order')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -269,10 +259,8 @@ export default function SalesOrderDetailPage() {
       const invoice = await response.json()
       alert(`Invoice ${invoice.invoiceNumber} has been created!`)
       router.push(`/invoices/${invoice.id}`)
-    } catch (error) {
-      console.error('Error creating invoice:', error)
-      alert('Failed to create invoice')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }

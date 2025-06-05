@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SalesAnalyticsService } from '@/lib/services/reporting/sales-analytics.service'
 
 // GET /api/reporting/sales-analytics
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -73,10 +73,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ data: response })
-  } catch (error) {
-    console.error('Error fetching sales analytics:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sales analytics' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

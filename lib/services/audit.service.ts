@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
-import { AuditLog, AuditFilter, Pagination, AuditAction } from '@/lib/validators/audit.validator'
+import { AuditLog, AuditFilter, Pagination, AuditAction as _AuditAction } from '@/lib/validators/audit.validator'
 
 export class AuditService {
   async logAction(data: AuditLog) {
@@ -18,9 +18,8 @@ export class AuditService {
         },
       })
     } catch (error) {
-      // Log error but don't throw - audit failures shouldn't break operations
-      console.error('Failed to create audit log:', error)
-      return null
+      console.error('Error logging action:', error);
+      throw error;
     }
   }
 
@@ -28,7 +27,7 @@ export class AuditService {
     filters: AuditFilter = {},
     pagination: Pagination = { page: 1, limit: 10 }
   ) {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (filters.userId) where.userId = filters.userId
     if (filters.entityType) where.entityType = filters.entityType

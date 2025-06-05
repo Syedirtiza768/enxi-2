@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { ItemService } from '@/lib/services/inventory/item.service'
-import { UpdateItemInput } from '@/lib/services/inventory/item.service'
+import { ItemService, UpdateItemInput } from '@/lib/services/inventory/item.service'
 
 type RouteParams = {
   params: Promise<{
@@ -29,10 +28,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json(item)
-  } catch (error) {
-    console.error('Error fetching item:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch item' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -60,7 +59,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     
     fieldsToUpdate.forEach(field => {
       if (body[field] !== undefined) {
-        (updateData as any)[field] = body[field]
+        (updateData as Record<string, unknown>)[field] = body[field]
       }
     })
 
@@ -72,22 +71,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     )
 
     return NextResponse.json(item)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating item:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('already exists') || 
-        error.message?.includes('inactive') ||
-        error.message?.includes('stock movements') ||
-        error.message?.includes('must be')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists') || 
+        error instanceof Error ? error.message : String(error)?.includes('inactive') ||
+        error instanceof Error ? error.message : String(error)?.includes('stock movements') ||
+        error instanceof Error ? error.message : String(error)?.includes('must be')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
@@ -112,20 +111,20 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     await itemService.deleteItem(id, user.id)
 
     return NextResponse.json({ message: 'Item deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting item:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('existing stock') || 
-        error.message?.includes('movement history')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('existing stock') || 
+        error instanceof Error ? error.message : String(error)?.includes('movement history')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

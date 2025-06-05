@@ -29,7 +29,7 @@ interface Supplier {
 
 export default function SupplierDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -54,9 +54,8 @@ export default function SupplierDetailPage() {
       }
       
       setSupplier(response.data)
-    } catch (error) {
-      console.error('Error fetching supplier:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

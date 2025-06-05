@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { TrialBalanceService } from '@/lib/services/accounting/trial-balance.service'
 
 // GET /api/accounting/reports/trial-balance - Generate trial balance
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const searchParams = request.nextUrl.searchParams
     
     const asOfDateParam = searchParams.get('asOfDate')
@@ -33,10 +33,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: trialBalance
     })
-  } catch (error) {
-    console.error('Error generating trial balance:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate trial balance' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

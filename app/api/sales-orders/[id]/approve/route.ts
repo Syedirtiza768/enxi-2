@@ -19,7 +19,7 @@ export const POST = createProtectedHandler(
     try {
       const { id: orderId } = await params
       const body = await request.json()
-      const { notes } = approveOrderSchema.parse(body)
+      const { notes: _notes } = approveOrderSchema.parse(body)
       const userId = request.user!.id
 
       // Step 1: Approve the sales order
@@ -43,13 +43,6 @@ export const POST = createProtectedHandler(
     } catch (error) {
       console.error('Error approving sales order:', error)
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Validation failed', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         return NextResponse.json(
           { error: error.message },

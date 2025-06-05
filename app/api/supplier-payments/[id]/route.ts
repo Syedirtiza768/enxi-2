@@ -24,10 +24,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data: payment })
-  } catch (error) {
-    console.error('Error fetching supplier payment:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier payment' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -44,7 +44,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const { reference, notes, paymentMethod, amount } = body
 
     // Prevent modification of amount and other critical fields
@@ -55,7 +55,7 @@ export async function PUT(
       )
     }
 
-    const updateData: any = {}
+    const updateData: unknown = {}
     if (reference !== undefined) updateData.reference = reference
     if (notes !== undefined) updateData.notes = notes
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod
@@ -64,16 +64,16 @@ export async function PUT(
     const payment = await supplierPaymentService.updateSupplierPayment(
       params.id,
       updateData,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: payment })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating supplier payment:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

@@ -33,7 +33,7 @@ interface TestResults {
 }
 
 async function main() {
-  console.log('🚀 Starting Purchase Order Management System Test...\n')
+  console.warn('🚀 Starting Purchase Order Management System Test...\n')
   
   const results: TestResults = {
     suppliersCreated: 0,
@@ -54,7 +54,7 @@ async function main() {
     const stockMovementService = new StockMovementService()
     const chartOfAccountsService = new ChartOfAccountsService()
 
-    console.log('📋 Step 1: Setting up test data...')
+    console.warn('📋 Step 1: Setting up test data...')
     
     // Get admin user
     const adminUser = await prisma.user.findFirst({
@@ -68,7 +68,7 @@ async function main() {
     // Ensure chart of accounts exists
     const existingAccounts = await prisma.account.findMany()
     if (existingAccounts.length === 0) {
-      console.log('   Creating standard chart of accounts...')
+      console.warn('   Creating standard chart of accounts...')
       await chartOfAccountsService.createStandardCOA('USD', adminUser.id)
     }
 
@@ -78,7 +78,7 @@ async function main() {
     })
 
     if (!rawMaterialsCategory) {
-      console.log('   Creating raw materials category...')
+      console.warn('   Creating raw materials category...')
       rawMaterialsCategory = await categoryService.createCategory({
         code: 'RAW-MAT',
         name: 'Raw Materials',
@@ -146,7 +146,7 @@ async function main() {
           throw new Error('Inventory account not found. Please run seed script first.')
         }
 
-        console.log(`   Creating test item: ${itemData.name}...`)
+        console.warn(`   Creating test item: ${itemData.name}...`)
         item = await itemService.createItem({
           ...itemData,
           categoryId: rawMaterialsCategory.id,
@@ -158,10 +158,10 @@ async function main() {
       createdItems.push(item)
     }
 
-    console.log('✅ Test data setup complete\n')
+    console.warn('✅ Test data setup complete\n')
 
     // Test 1: Create Suppliers
-    console.log('📋 Step 2: Creating test suppliers...')
+    console.warn('📋 Step 2: Creating test suppliers...')
     
     const supplierData = [
       {
@@ -211,10 +211,10 @@ async function main() {
         })
         createdSuppliers.push(newSupplier)
         results.suppliersCreated++
-        console.log(`   ✅ Created supplier: ${newSupplier.name} (${newSupplier.supplierNumber})`)
+        console.warn(`   ✅ Created supplier: ${newSupplier.name} (${newSupplier.supplierNumber})`)
       } catch (error: any) {
         if (error.message.includes('already exists')) {
-          console.log(`   ⚠️  Supplier ${supplier.name} already exists, using existing`)
+          console.warn(`   ⚠️  Supplier ${supplier.name} already exists, using existing`)
           const existingSupplier = await supplierService.getAllSuppliers({
             search: supplier.name
           })
@@ -227,10 +227,10 @@ async function main() {
       }
     }
 
-    console.log(`✅ Suppliers created: ${results.suppliersCreated}\n`)
+    console.warn(`✅ Suppliers created: ${results.suppliersCreated}\n`)
 
     // Test 2: Create Purchase Orders
-    console.log('📋 Step 3: Creating purchase orders...')
+    console.warn('📋 Step 3: Creating purchase orders...')
 
     const purchaseOrderData = [
       {
@@ -292,36 +292,36 @@ async function main() {
         })
         createdPurchaseOrders.push(newPO)
         results.purchaseOrdersCreated++
-        console.log(`   ✅ Created PO: ${newPO.poNumber} for ${newPO.supplier.name}`)
-        console.log(`      Total Amount: $${newPO.totalAmount.toFixed(2)}`)
+        console.warn(`   ✅ Created PO: ${newPO.poNumber} for ${newPO.supplier.name}`)
+        console.warn(`      Total Amount: $${newPO.totalAmount.toFixed(2)}`)
       } catch (error: any) {
         results.errors.push(`Failed to create purchase order ${index + 1}: ${error.message}`)
       }
     }
 
-    console.log(`✅ Purchase orders created: ${results.purchaseOrdersCreated}\n`)
+    console.warn(`✅ Purchase orders created: ${results.purchaseOrdersCreated}\n`)
 
     // Test 3: Approve and Send Purchase Orders
-    console.log('📋 Step 4: Approving and sending purchase orders...')
+    console.warn('📋 Step 4: Approving and sending purchase orders...')
 
     for (const po of createdPurchaseOrders) {
       try {
         // Approve PO
         const approvedPO = await purchaseOrderService.approvePurchaseOrder(po.id, adminUser.id)
-        console.log(`   ✅ Approved PO: ${approvedPO.poNumber}`)
+        console.warn(`   ✅ Approved PO: ${approvedPO.poNumber}`)
 
         // Send to supplier
         const sentPO = await purchaseOrderService.sendToSupplier(po.id, adminUser.id)
-        console.log(`   ✅ Sent PO: ${sentPO.poNumber} to supplier`)
+        console.warn(`   ✅ Sent PO: ${sentPO.poNumber} to supplier`)
       } catch (error: any) {
         results.errors.push(`Failed to approve/send PO ${po.poNumber}: ${error.message}`)
       }
     }
 
-    console.log('✅ Purchase orders approved and sent\n')
+    console.warn('✅ Purchase orders approved and sent\n')
 
     // Test 4: Create Goods Receipts
-    console.log('📋 Step 5: Creating goods receipts...')
+    console.warn('📋 Step 5: Creating goods receipts...')
 
     for (const [index, po] of createdPurchaseOrders.entries()) {
       try {
@@ -346,8 +346,8 @@ async function main() {
         })
 
         results.goodsReceiptsCreated++
-        console.log(`   ✅ Created goods receipt: ${goodsReceipt.receiptNumber}`)
-        console.log(`      Received ${receiveQuantity} units of ${po.items[0].itemCode}`)
+        console.warn(`   ✅ Created goods receipt: ${goodsReceipt.receiptNumber}`)
+        console.warn(`      Received ${receiveQuantity} units of ${po.items[0].itemCode}`)
 
         // Count stock movements created
         const stockMovements = await stockMovementService.getItemStockHistory(
@@ -364,46 +364,46 @@ async function main() {
       }
     }
 
-    console.log(`✅ Goods receipts created: ${results.goodsReceiptsCreated}\n`)
+    console.warn(`✅ Goods receipts created: ${results.goodsReceiptsCreated}\n`)
 
     // Test 5: Validate Inventory Updates
-    console.log('📋 Step 6: Validating inventory updates...')
+    console.warn('📋 Step 6: Validating inventory updates...')
 
     for (const item of createdItems) {
       try {
         const currentStock = await stockMovementService.getAvailableStock(item.id)
         const stockValue = await stockMovementService.getStockValue(item.id)
         
-        console.log(`   📦 ${item.name}:`)
-        console.log(`      Current Stock: ${currentStock} ${item.unitOfMeasure?.symbol || 'units'}`)
-        console.log(`      Stock Value: $${stockValue.toFixed(2)}`)
+        console.warn(`   📦 ${item.name}:`)
+        console.warn(`      Current Stock: ${currentStock} ${item.unitOfMeasure?.symbol || 'units'}`)
+        console.warn(`      Stock Value: $${stockValue.toFixed(2)}`)
 
         const stockHistory = await stockMovementService.getItemStockHistory(item.id, { limit: 5 })
-        console.log(`      Recent Movements: ${stockHistory.length}`)
+        console.warn(`      Recent Movements: ${stockHistory.length}`)
         
         if (stockHistory.length > 0) {
           const latestMovement = stockHistory[0]
-          console.log(`      Latest: ${latestMovement.movementType} - ${latestMovement.quantity} units`)
+          console.warn(`      Latest: ${latestMovement.movementType} - ${latestMovement.quantity} units`)
         }
       } catch (error: any) {
         results.warnings.push(`Could not validate inventory for ${item.name}: ${error.message}`)
       }
     }
 
-    console.log('✅ Inventory validation complete\n')
+    console.warn('✅ Inventory validation complete\n')
 
     // Test 6: Validate Purchase Order Status Updates
-    console.log('📋 Step 7: Validating purchase order status updates...')
+    console.warn('📋 Step 7: Validating purchase order status updates...')
 
     for (const po of createdPurchaseOrders) {
       try {
         const updatedPO = await purchaseOrderService.getPurchaseOrder(po.id)
         if (updatedPO) {
-          console.log(`   📄 PO ${updatedPO.poNumber}:`)
-          console.log(`      Status: ${updatedPO.status}`)
-          console.log(`      Total Amount: $${updatedPO.totalAmount.toFixed(2)}`)
-          console.log(`      Received Amount: $${updatedPO.receivedAmount.toFixed(2)}`)
-          console.log(`      Receipt Progress: ${((updatedPO.receivedAmount / updatedPO.totalAmount) * 100).toFixed(1)}%`)
+          console.warn(`   📄 PO ${updatedPO.poNumber}:`)
+          console.warn(`      Status: ${updatedPO.status}`)
+          console.warn(`      Total Amount: $${updatedPO.totalAmount.toFixed(2)}`)
+          console.warn(`      Received Amount: $${updatedPO.receivedAmount.toFixed(2)}`)
+          console.warn(`      Receipt Progress: ${((updatedPO.receivedAmount / updatedPO.totalAmount) * 100).toFixed(1)}%`)
           
           // Check if PO status is correct based on receipts
           const expectedStatus = updatedPO.receivedAmount >= updatedPO.totalAmount ? 
@@ -419,23 +419,23 @@ async function main() {
       }
     }
 
-    console.log('✅ Purchase order status validation complete\n')
+    console.warn('✅ Purchase order status validation complete\n')
 
     // Test 7: Test Supplier Management Features
-    console.log('📋 Step 8: Testing supplier management features...')
+    console.warn('📋 Step 8: Testing supplier management features...')
 
     try {
       // Test supplier balance check
       for (const supplier of createdSuppliers) {
         const balance = await supplierService.getSupplierBalance(supplier.id)
-        console.log(`   💰 ${supplier.name} Balance: $${balance.toFixed(2)}`)
+        console.warn(`   💰 ${supplier.name} Balance: $${balance.toFixed(2)}`)
       }
 
       // Test preferred suppliers
       const preferredSuppliers = await supplierService.getPreferredSuppliers()
-      console.log(`   ⭐ Preferred Suppliers: ${preferredSuppliers.length}`)
+      console.warn(`   ⭐ Preferred Suppliers: ${preferredSuppliers.length}`)
       preferredSuppliers.forEach(supplier => {
-        console.log(`      - ${supplier.name}`)
+        console.warn(`      - ${supplier.name}`)
       })
 
       // Test supplier search
@@ -443,13 +443,13 @@ async function main() {
         search: 'Steel',
         isActive: true
       })
-      console.log(`   🔍 Search for 'Steel': ${searchResults.length} results`)
+      console.warn(`   🔍 Search for 'Steel': ${searchResults.length} results`)
 
     } catch (error: any) {
       results.warnings.push(`Supplier management test warning: ${error.message}`)
     }
 
-    console.log('✅ Supplier management tests complete\n')
+    console.warn('✅ Supplier management tests complete\n')
 
   } catch (error: any) {
     results.errors.push(`Critical error: ${error.message}`)
@@ -459,32 +459,32 @@ async function main() {
   }
 
   // Print summary
-  console.log('📊 Test Summary:')
-  console.log('================')
-  console.log(`✅ Suppliers Created: ${results.suppliersCreated}`)
-  console.log(`✅ Purchase Orders Created: ${results.purchaseOrdersCreated}`)
-  console.log(`✅ Goods Receipts Created: ${results.goodsReceiptsCreated}`)
-  console.log(`✅ Stock Movements Created: ${results.stockMovementsCreated}`)
+  console.warn('📊 Test Summary:')
+  console.warn('================')
+  console.warn(`✅ Suppliers Created: ${results.suppliersCreated}`)
+  console.warn(`✅ Purchase Orders Created: ${results.purchaseOrdersCreated}`)
+  console.warn(`✅ Goods Receipts Created: ${results.goodsReceiptsCreated}`)
+  console.warn(`✅ Stock Movements Created: ${results.stockMovementsCreated}`)
   
   if (results.warnings.length > 0) {
-    console.log(`⚠️  Warnings: ${results.warnings.length}`)
+    console.warn(`⚠️  Warnings: ${results.warnings.length}`)
     results.warnings.forEach(warning => {
-      console.log(`   - ${warning}`)
+      console.warn(`   - ${warning}`)
     })
   }
   
   if (results.errors.length > 0) {
-    console.log(`❌ Errors: ${results.errors.length}`)
+    console.warn(`❌ Errors: ${results.errors.length}`)
     results.errors.forEach(error => {
-      console.log(`   - ${error}`)
+      console.warn(`   - ${error}`)
     })
   }
 
   if (results.errors.length === 0) {
-    console.log('\n🎉 Purchase Order Management System test completed successfully!')
-    console.log('\n✅ Ready for Phase 2.2: Multi-Location Support implementation')
+    console.warn('\n🎉 Purchase Order Management System test completed successfully!')
+    console.warn('\n✅ Ready for Phase 2.2: Multi-Location Support implementation')
   } else {
-    console.log('\n❌ Purchase Order Management System test completed with errors')
+    console.warn('\n❌ Purchase Order Management System test completed with errors')
     process.exit(1)
   }
 }

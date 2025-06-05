@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { FinancialStatementsService } from '@/lib/services/accounting/financial-statements.service'
 
 // GET /api/accounting/reports/income-statement - Generate income statement
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const searchParams = request.nextUrl.searchParams
     
     const fromDateParam = searchParams.get('fromDate')
@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: incomeStatement
     })
-  } catch (error) {
-    console.error('Error generating income statement:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate income statement' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

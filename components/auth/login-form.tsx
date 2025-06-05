@@ -17,7 +17,7 @@ import {
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 
 export function LoginForm() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -61,7 +61,7 @@ export function LoginForm() {
       localStorage.setItem('token', result.token)
       router.push('/dashboard')
       
-    } catch (err) {
+    } catch {
       setError('Login failed. Please try again.')
     } finally {
       setIsLoading(false)

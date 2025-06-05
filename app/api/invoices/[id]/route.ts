@@ -35,9 +35,9 @@ export async function GET(
     
     return NextResponse.json(invoice)
   } catch (error) {
-    console.error('Error fetching invoice:', error)
+    console.error('Error getting invoice:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch invoice' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -66,13 +66,6 @@ export async function PUT(
     
     return NextResponse.json(invoice)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error updating invoice:', error)
     return NextResponse.json(
       { error: 'Failed to update invoice' },

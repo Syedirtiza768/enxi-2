@@ -592,7 +592,7 @@ export class SalesAnalyticsService extends BaseService {
   private async getCustomerSegmentation(startDate: Date, endDate: Date) {
     const customers = await this.getTopCustomers(startDate, endDate)
     const totalCustomers = customers.length
-    const totalRevenue = customers.reduce((sum, c) => sum + c.totalRevenue, 0)
+    const _totalRevenue = customers.reduce((sum, c) => sum + c.totalRevenue, 0)
 
     const segments = [
       { segment: 'VIP', customers: customers.filter(c => c.loyalty === 'vip') },
@@ -659,31 +659,31 @@ export class SalesAnalyticsService extends BaseService {
     }
   }
 
-  private async getGeographicDistribution(startDate: Date, endDate: Date) {
+  private async getGeographicDistribution(_startDate: Date, _endDate: Date) {
     // This would require customer address data
     // For now, return placeholder
     return []
   }
 
-  private async getTopSellingProducts(startDate: Date, endDate: Date) {
+  private async getTopSellingProducts(_startDate: Date, _endDate: Date) {
     // This would require invoice line items
     // For now, return placeholder
     return []
   }
 
-  private async getCategoryPerformance(startDate: Date, endDate: Date) {
+  private async getCategoryPerformance(_startDate: Date, _endDate: Date) {
     // This would require invoice line items and product categories
     // For now, return placeholder
     return []
   }
 
-  private async getProductTrends(startDate: Date, endDate: Date) {
+  private async getProductTrends(_startDate: Date, _endDate: Date) {
     // This would require historical sales data analysis
     // For now, return placeholder
     return []
   }
 
-  private async getSlowMovingProducts(startDate: Date, endDate: Date) {
+  private async getSlowMovingProducts(_startDate: Date, _endDate: Date) {
     // This would require analysis of products with no recent sales
     // For now, return placeholder
     return []

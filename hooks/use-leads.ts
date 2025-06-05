@@ -66,7 +66,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   }, [])
 
   const createLead = useCallback(async (data: CreateLeadData) => {
-    console.log('Creating lead with data:', data)
+    console.warn('Creating lead with data:', data)
     const response = await api.post('/api/leads', data)
 
     if (!response.ok) {

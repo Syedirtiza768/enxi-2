@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
-import { CreateStockMovementInput } from '@/lib/services/inventory/stock-movement.service'
+import { StockMovementService, CreateStockMovementInput } from '@/lib/services/inventory/stock-movement.service'
 import { MovementType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/stock-movements - Get stock movements
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -46,17 +45,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ movements })
-  } catch (error) {
-    console.error('Error fetching stock movements:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stock movements' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/inventory/stock-movements - Create stock movement
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -109,28 +108,28 @@ export async function POST(request: NextRequest) {
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       supplier,
       purchaseRef,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const stockMovementService = new StockMovementService()
     const movement = await stockMovementService.createStockMovement(movementData)
 
     return NextResponse.json(movement, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating stock movement:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Insufficient stock') || 
-        error.message?.includes('does not track') ||
-        error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Insufficient stock') || 
+        error instanceof Error ? error.message : String(error)?.includes('does not track') ||
+        error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

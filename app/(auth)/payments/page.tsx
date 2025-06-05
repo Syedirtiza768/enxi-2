@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { apiClient } from '@/lib/api/client'
-import { DollarSign, Plus, Search, Filter, Eye, Receipt } from 'lucide-react'
+import { DollarSign, Search, Eye, Receipt } from 'lucide-react'
 
 interface Payment {
   id: string
@@ -73,10 +73,8 @@ export default function PaymentsPage() {
         console.error('Failed to load customers:', customersResponse.error)
         setCustomers([])
       }
-    } catch (error) {
-      console.error('Error loading payments:', error)
-      setPayments([])
-      setCustomers([])
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

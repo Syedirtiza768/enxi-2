@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { Role } from '@/lib/generated/prisma'
@@ -61,7 +61,7 @@ interface UserListResponse {
 }
 
 export function UserList() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -78,7 +78,7 @@ export function UserList() {
 
   useEffect(() => {
     fetchUsers()
-  }, [page, roleFilter, statusFilter])
+  }, [page, roleFilter, statusFilter, fetchUsers])
 
   useEffect(() => {
     // Reset to page 1 when search changes
@@ -87,9 +87,9 @@ export function UserList() {
     } else {
       fetchUsers()
     }
-  }, [search])
+  }, [search, page, fetchUsers])
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -118,7 +118,7 @@ export function UserList() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, search, roleFilter, statusFilter, limit])
 
   const getRoleBadge = (role: Role) => {
     const roleConfig = {

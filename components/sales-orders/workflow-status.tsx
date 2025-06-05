@@ -45,7 +45,7 @@ interface WorkflowStatusProps {
 }
 
 export function WorkflowStatus({ salesOrder }: WorkflowStatusProps) {
-  const [loading, setLoading] = useState(false)
+  const [_loading, _setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
 
   const getStatusIcon = (completed: boolean, pending: boolean = false) => {
@@ -73,9 +73,8 @@ export function WorkflowStatus({ salesOrder }: WorkflowStatusProps) {
       } else {
         console.error('Failed to approve order:', response.error)
       }
-    } catch (error) {
-      console.error('Error approving order:', error)
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setApproving(false)
     }
   }

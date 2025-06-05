@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 
@@ -23,14 +23,13 @@ export const GET = createProtectedHandler(
       const sessions = await userService.getUserSessions(userId)
       
       return NextResponse.json({ sessions })
-    } catch (error) {
-      console.error('Error getting user sessions:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to get user sessions' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { permissions: ['users.read'] }
 )
@@ -57,14 +56,13 @@ export const DELETE = createProtectedHandler(
         message: 'All sessions revoked successfully',
         sessionsRevoked: result.count
       })
-    } catch (error) {
-      console.error('Error revoking user sessions:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to revoke user sessions' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { permissions: ['users.update'] }
 )

@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ quotationNumber: string }> }
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
@@ -25,10 +25,10 @@ export async function GET(
       success: true,
       data: quotation
     })
-  } catch (error) {
-    console.error('Error fetching quotation by number:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch quotation' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

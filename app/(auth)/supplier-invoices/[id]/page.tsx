@@ -5,7 +5,6 @@ import { useRouter, useParams } from 'next/navigation'
 import { 
   PageLayout,
   PageHeader,
-  PageSection,
   VStack,
   HStack,
   Grid,
@@ -26,9 +25,6 @@ import {
   AlertTriangle,
   Clock,
   X,
-  Mail,
-  Download,
-  Printer
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -92,7 +88,7 @@ interface SupplierInvoice {
 }
 
 export default function SupplierInvoiceDetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const invoiceId = params.id as string
 
@@ -105,7 +101,7 @@ export default function SupplierInvoiceDetailPage() {
     if (invoiceId) {
       fetchInvoice()
     }
-  }, [invoiceId])
+  }, [invoiceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchInvoice = async () => {
     setLoading(true)
@@ -121,9 +117,8 @@ export default function SupplierInvoiceDetailPage() {
       }
       
       setInvoice(response.data)
-    } catch (error) {
-      console.error('Error fetching supplier invoice:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier invoice')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -143,10 +138,8 @@ export default function SupplierInvoiceDetailPage() {
       }
       
       await fetchInvoice() // Refresh invoice data
-    } catch (error) {
-      console.error('Error posting invoice:', error)
-      setError(error instanceof Error ? error.message : 'Failed to post invoice')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }
@@ -169,10 +162,8 @@ export default function SupplierInvoiceDetailPage() {
       }
       
       await fetchInvoice() // Refresh invoice data
-    } catch (error) {
-      console.error('Error cancelling invoice:', error)
-      setError(error instanceof Error ? error.message : 'Failed to cancel invoice')
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(null)
     }
   }

@@ -228,7 +228,8 @@ export class TrialBalanceService {
         difference
       }
     } catch (error) {
-      errors.push(`Error generating trial balance: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Validation error:', error);
+      errors.push('Error validating trial balance');
       
       return {
         isValid: false,

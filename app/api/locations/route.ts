@@ -4,7 +4,7 @@ import { LocationService } from '@/lib/services/warehouse/location.service'
 import { LocationType } from '@/lib/generated/prisma'
 
 // GET /api/locations - Get all locations
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -28,17 +28,17 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ data: locations })
-  } catch (error) {
-    console.error('Error fetching locations:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch locations' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/locations - Create location
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -88,18 +88,18 @@ export async function POST(request: NextRequest) {
       allowNegativeStock,
       maxCapacity,
       inventoryAccountId,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({ data: location }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating location:', error)
     
-    if (error.message?.includes('already exists') || 
-        error.message?.includes('not found') ||
-        error.message?.includes('must be an asset')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists') || 
+        error instanceof Error ? error.message : String(error)?.includes('not found') ||
+        error instanceof Error ? error.message : String(error)?.includes('must be an asset')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

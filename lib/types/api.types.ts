@@ -7,7 +7,7 @@
 /**
  * Standard API Response wrapper
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T
   error?: string
   status: number
@@ -61,7 +61,7 @@ export interface UserProfile {
 /**
  * Type guard for API responses
  */
-export function isApiResponse<T>(response: any): response is ApiResponse<T> {
+export function isApiResponse<T>(response: unknown): response is ApiResponse<T> {
   return (
     typeof response === 'object' &&
     response !== null &&

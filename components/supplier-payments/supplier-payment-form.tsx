@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   VStack, 
@@ -14,15 +14,13 @@ import {
   CardContent,
   Grid
 } from '@/components/design-system'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { 
   Search, 
   AlertTriangle, 
-  CheckCircle, 
+ 
   DollarSign, 
   Calendar, 
-  Building2,
   CreditCard,
   FileText
 } from 'lucide-react'
@@ -82,7 +80,7 @@ export function SupplierPaymentForm({
   preSelectedInvoiceId,
   onSuccess 
 }: SupplierPaymentFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -115,14 +113,14 @@ export function SupplierPaymentForm({
       fetchSupplier(formData.supplierId)
       fetchSupplierInvoices(formData.supplierId)
     }
-  }, [])
+  }, [fetchSupplier, formData.supplierId])
 
   useEffect(() => {
     if (formData.supplierId && formData.supplierId !== selectedSupplier?.id) {
       fetchSupplier(formData.supplierId)
       fetchSupplierInvoices(formData.supplierId)
     }
-  }, [formData.supplierId])
+  }, [fetchSupplier, formData.supplierId, selectedSupplier?.id])
 
   useEffect(() => {
     if (formData.supplierInvoiceId) {
@@ -138,7 +136,7 @@ export function SupplierPaymentForm({
     } else {
       setSelectedInvoice(null)
     }
-  }, [formData.supplierInvoiceId, supplierInvoices])
+  }, [formData.supplierInvoiceId, formData.amount, supplierInvoices])
 
   const fetchSuppliers = async () => {
     try {
@@ -147,11 +145,11 @@ export function SupplierPaymentForm({
         setSuppliers(response.data?.data || [])
       }
     } catch (error) {
-      console.error('Error fetching suppliers:', error)
+      console.error('Failed to fetch suppliers:', error)
     }
   }
 
-  const fetchSupplier = async (supplierId: string) => {
+  const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
       const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
       if (response.ok) {
@@ -166,9 +164,9 @@ export function SupplierPaymentForm({
         }
       }
     } catch (error) {
-      console.error('Error fetching supplier:', error)
+      console.error('Failed to fetch supplier:', error)
     }
-  }
+  }, [formData.currency])
 
   const fetchSupplierInvoices = async (supplierId: string) => {
     try {
@@ -180,7 +178,7 @@ export function SupplierPaymentForm({
         setSupplierInvoices(unpaidInvoices)
       }
     } catch (error) {
-      console.error('Error fetching supplier invoices:', error)
+      console.error('Failed to fetch supplier invoices:', error)
     }
   }
 
@@ -191,7 +189,7 @@ export function SupplierPaymentForm({
         setBankAccounts(response.data?.data || [])
       }
     } catch (error) {
-      console.error('Error fetching bank accounts:', error)
+      console.error('Failed to fetch bank accounts:', error)
     }
   }
 
@@ -234,10 +232,8 @@ export function SupplierPaymentForm({
       } else {
         router.push('/supplier-payments')
       }
-    } catch (error) {
-      console.error('Error saving supplier payment:', error)
-      setError(error instanceof Error ? error.message : 'Failed to save supplier payment')
-    } finally {
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to process payment')
       setLoading(false)
     }
   }
@@ -460,7 +456,7 @@ export function SupplierPaymentForm({
                   <Text size="sm" weight="medium">Payment Method *</Text>
                   <Select
                     value={formData.paymentMethod}
-                    onValueChange={(value: any) => setFormData(prev => ({ ...prev, paymentMethod: value }))}
+                    onValueChange={(value: string) => setFormData(prev => ({ ...prev, paymentMethod: value }))}
                     required
                   >
                     <option value="BANK_TRANSFER">Bank Transfer</option>

@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 // GET /api/three-way-matching/dashboard - Get three-way matching dashboard data
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -62,10 +62,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(dashboardData)
-  } catch (error) {
-    console.error('Error fetching three-way matching dashboard:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard data' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

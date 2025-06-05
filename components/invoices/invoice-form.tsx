@@ -19,6 +19,19 @@ interface InvoiceItem {
   totalAmount: number
 }
 
+interface QuotationItem {
+  itemCode: string
+  description: string
+  quantity: number
+  unitPrice: number
+  discount?: number
+  taxRate?: number
+  subtotal: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+}
+
 interface Invoice {
   id?: string
   invoiceNumber?: string
@@ -80,7 +93,7 @@ export function InvoiceForm({
   onSubmit, 
   onCancel 
 }: InvoiceFormProps) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth() // eslint-disable-line @typescript-eslint/no-unused-vars
   
   // Form state
   const [formData, setFormData] = useState<Partial<Invoice>>({
@@ -113,7 +126,7 @@ export function InvoiceForm({
   // Reference data
   const [customers, setCustomers] = useState<Customer[]>([])
   const [salesOrders, setSalesOrders] = useState<SalesOrder[]>([])
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
+  const [_inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
 
   // Load reference data
   useEffect(() => {
@@ -168,7 +181,7 @@ export function InvoiceForm({
                 paymentTerms: quotationData.paymentTerms || 'Net 30',
                 dueDate: dueDate.toISOString().split('T')[0],
                 notes: `Invoice created from quotation ${quotationData.quotationNumber}\n\n${quotationData.notes || ''}`,
-                items: quotationData.items.map((item: any) => ({
+                items: quotationData.items.map((item: QuotationItem) => ({
                   itemCode: item.itemCode,
                   description: item.description,
                   quantity: item.quantity,

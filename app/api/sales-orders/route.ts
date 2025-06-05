@@ -26,7 +26,7 @@ const createSalesOrderSchema = z.object({
   })).min(1)
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const salesOrderService = new SalesOrderService()
     const { searchParams } = new URL(request.url)
@@ -45,16 +45,16 @@ export async function GET(request: NextRequest) {
       data: salesOrders,
       total: salesOrders.length
     })
-  } catch (error) {
-    console.error('Error fetching sales orders:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sales orders' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
@@ -75,13 +75,6 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(salesOrder, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error creating sales order:', error)
     return NextResponse.json(
       { error: 'Failed to create sales order' },

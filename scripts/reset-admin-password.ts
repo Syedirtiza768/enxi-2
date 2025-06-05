@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function resetAdminPassword() {
-  console.log('🔐 Resetting admin password...\n')
+  console.warn('🔐 Resetting admin password...\n')
 
   try {
     const newPassword = 'admin123'
@@ -15,16 +15,15 @@ async function resetAdminPassword() {
       data: { password: hashedPassword }
     })
 
-    console.log('✅ Password reset successful!')
-    console.log('  Username:', updatedUser.username)
-    console.log('  Email:', updatedUser.email)
-    console.log('  New password:', newPassword)
+    console.warn('✅ Password reset successful!')
+    console.warn('  Username:', updatedUser.username)
+    console.warn('  Email:', updatedUser.email)
+    console.warn('  New password:', newPassword)
 
-  } catch (error) {
-    console.error('❌ Error resetting password:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 resetAdminPassword()

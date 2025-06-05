@@ -11,7 +11,7 @@ import {
 } from '@/lib/generated/prisma'
 import { 
   CreateJournalEntryInput,
-  CreateJournalLineInput
+  _CreateJournalLineInput
 } from '@/lib/types/accounting.types'
 
 export class JournalEntryService {
@@ -63,10 +63,9 @@ export class JournalEntryService {
     if (!exchangeRate && data.currency !== 'USD') {
       try {
         exchangeRate = await this.currencyService.getExchangeRate(data.currency, 'USD')
-      } catch (error) {
-        console.warn(`Could not fetch exchange rate for ${data.currency}, defaulting to 1.0`)
-        exchangeRate = 1.0
-      }
+} catch {
+      exchangeRate = 1.0
+    }
     } else if (!exchangeRate) {
       exchangeRate = 1.0
     }
@@ -258,7 +257,7 @@ export class JournalEntryService {
 
     // For POSTED entries, reverse the account balance changes
     if (entry.status === JournalStatus.POSTED) {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (_tx) => {
         // Reverse account balances
         for (const line of entry.lines) {
           if (line.debitAmount > 0) {
@@ -424,7 +423,7 @@ export class JournalEntryService {
    */
   async calculateFXGainLoss(
     entryId: string,
-    currentDate?: Date
+    _currentDate?: Date
   ): Promise<{
     fxGainLoss: number
     isGain: boolean

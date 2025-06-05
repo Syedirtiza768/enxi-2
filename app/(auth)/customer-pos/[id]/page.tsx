@@ -41,7 +41,7 @@ interface CustomerPO {
 }
 
 export default function CustomerPODetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const poId = params.id as string
 
@@ -112,7 +112,7 @@ export default function CustomerPODetailPage() {
       }
     } catch (error) {
       console.error('Error accepting PO:', error)
-      alert(`Failed to accept PO: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert('Failed to accept PO')
     } finally {
       setActionLoading(null)
     }

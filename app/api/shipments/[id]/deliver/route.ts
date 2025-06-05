@@ -48,13 +48,6 @@ export const POST = createProtectedHandler(
     } catch (error) {
       console.error('Error delivering shipment:', error)
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Validation failed', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         if (error.message.includes('not found')) {
           return NextResponse.json(

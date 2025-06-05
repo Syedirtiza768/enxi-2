@@ -151,7 +151,7 @@ export class LocationService extends BaseService {
   async updateLocation(
     id: string,
     data: UpdateLocationInput,
-    userId: string
+    _userId: string
   ): Promise<LocationWithDetails> {
     return this.withLogging('updateLocation', async () => {
       const existingLocation = await prisma.location.findUnique({
@@ -512,7 +512,7 @@ export class LocationService extends BaseService {
     })
   }
 
-  async deactivateLocation(id: string, userId: string): Promise<LocationWithDetails> {
+  async deactivateLocation(id: string, _userId: string): Promise<LocationWithDetails> {
     return this.withLogging('deactivateLocation', async () => {
       const location = await this.getLocation(id)
       if (!location) {
@@ -535,7 +535,7 @@ export class LocationService extends BaseService {
         throw new Error('Cannot deactivate location with inventory. Transfer all stock first.')
       }
 
-      return this.updateLocation(id, { isActive: false }, userId)
+      return this.updateLocation(id, { isActive: false }, _userId)
     })
   }
 

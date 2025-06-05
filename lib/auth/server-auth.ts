@@ -21,7 +21,8 @@ export async function getServerUser() {
 
     return user
   } catch (error) {
-    redirect('/login')
+    console.error('Server auth error:', error)
+    return null
   }
 }
 
@@ -52,6 +53,7 @@ export async function verifyJWTFromRequest(request: NextRequest) {
     
     return user || null
   } catch (error) {
+    console.error('Get server user error:', error)
     return null
   }
 }

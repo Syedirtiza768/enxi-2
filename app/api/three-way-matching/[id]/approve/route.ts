@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const { approvalReason, overrideDiscrepancies } = body
 
     if (!approvalReason || !approvalReason.trim()) {
@@ -25,18 +25,18 @@ export async function POST(
 
     const threeWayMatchingService = new ThreeWayMatchingService()
     const result = await threeWayMatchingService.approveMatching(params.id, {
-      approvedBy: user.id,
+      approvedBy: _user.id,
       approvalReason: approvalReason.trim(),
       overrideDiscrepancies: overrideDiscrepancies || false
     })
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error approving matching exception:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

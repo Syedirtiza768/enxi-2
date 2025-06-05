@@ -1,18 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, RefreshCw, Download, Package } from 'lucide-react'
-import { PageLayout, PageHeader, PageSection, VStack, Button, Card, CardContent, CardHeader, CardTitle, Grid } from '@/components/design-system'
+import { Plus, Search, RefreshCw, Download, Package } from 'lucide-react'
+import { PageLayout, PageHeader, PageSection, VStack, Grid } from '@/components/design-system'
 import { ItemList, Item } from '@/components/inventory/item-list'
 import { apiClient } from '@/lib/api/client'
 
-interface ApiResponse<T> {
-  data: T
-  total?: number
-  page?: number
-  limit?: number
-}
 
 interface Category {
   id: string
@@ -20,7 +13,6 @@ interface Category {
 }
 
 export default function ItemsPage() {
-  const router = useRouter()
   
   // State management
   const [items, setItems] = useState<Item[]>([])
@@ -41,7 +33,7 @@ export default function ItemsPage() {
   const limit = 20
   
   // Selection for bulk operations
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [_selectedItems, _setSelectedItems] = useState<string[]>([])
   
   // Reference data
   const [categories, setCategories] = useState<Category[]>([])
@@ -76,7 +68,7 @@ export default function ItemsPage() {
       const itemsData = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])
       
       // Transform items to match expected structure
-      const transformedItems = itemsData.map((item: any) => ({
+      const transformedItems = itemsData.map((item: Record<string, unknown>) => ({
         ...item,
         stockSummary: item.currentStock !== undefined ? {
           totalQuantity: item.currentStock,
@@ -108,7 +100,7 @@ export default function ItemsPage() {
         setCategories(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []))
       }
     } catch (error) {
-      console.error('Failed to fetch categories:', error)
+      console.error('Error fetching categories:', error)
     }
   }
 
@@ -119,15 +111,16 @@ export default function ItemsPage() {
 
   useEffect(() => {
     fetchItems()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, search, categoryFilter, typeFilter, statusFilter, lowStockOnly])
 
   // Event handlers
   const handleItemSelect = (item: Item) => {
-    router.push(`/inventory/items/${item.id}`)
+    window.location.href = `/inventory/items/${item.id}`
   }
 
   const handleItemEdit = (item: Item) => {
-    router.push(`/inventory/items/${item.id}/edit`)
+    window.location.href = `/inventory/items/${item.id}/edit`
   }
 
   const handleItemDelete = async (item: Item) => {
@@ -142,12 +135,13 @@ export default function ItemsPage() {
 
       await fetchItems()
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to delete item')
+      console.error('Error deleting item:', error)
+      alert('Failed to delete item')
     }
   }
 
   const handleCreateNew = () => {
-    router.push('/inventory/items/new')
+    window.location.href = '/inventory/items/new'
   }
 
   const handleExport = () => {
@@ -174,7 +168,7 @@ export default function ItemsPage() {
 
   const handleBulkUpdate = () => {
     // TODO: Implement bulk update functionality
-    console.log('Bulk update for items:', selectedItems)
+    console.warn('Bulk update for items:', _selectedItems)
   }
 
   // Calculate stats
@@ -214,24 +208,24 @@ export default function ItemsPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={3} gap="lg">
-            <Card className="bg-white p-4 rounded-lg border">
+            <div className="bg-white p-4 rounded-lg border">
               <div className="text-sm text-gray-600">Total Items</div>
               <div className="text-2xl font-semibold">{stats.total}</div>
-            </Card>
-            <Card className="bg-white p-4 rounded-lg border">
+            </div>
+            <div className="bg-white p-4 rounded-lg border">
               <div className="text-sm text-gray-600">Low Stock Items</div>
               <div className="text-2xl font-semibold text-yellow-600">{stats.lowStock}</div>
-            </Card>
-            <Card className="bg-white p-4 rounded-lg border">
+            </div>
+            <div className="bg-white p-4 rounded-lg border">
               <div className="text-sm text-gray-600">Out of Stock</div>
               <div className="text-2xl font-semibold text-red-600">{stats.outOfStock}</div>
-            </Card>
+            </div>
           </Grid>
         </PageSection>
 
         {/* Filters and Search */}
         <PageSection>
-          <Card className="bg-white p-4 rounded-lg border space-y-4">
+          <div className="bg-white p-4 rounded-lg border space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -317,10 +311,10 @@ export default function ItemsPage() {
               </label>
 
               {/* Bulk Actions */}
-              {selectedItems.length > 0 && (
+              {_selectedItems.length > 0 && (
                 <div className="flex items-center space-x-2 ml-auto">
                   <span className="text-sm text-gray-600">
-                    {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
+                    {_selectedItems.length} item{_selectedItems.length > 1 ? 's' : ''} selected
                   </span>
                   <button
                     onClick={handleExport}
@@ -338,7 +332,7 @@ export default function ItemsPage() {
               )}
 
               {/* Export Button */}
-              {selectedItems.length === 0 && (
+              {_selectedItems.length === 0 && (
                 <button
                   onClick={handleExport}
                   className="flex items-center px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -348,7 +342,7 @@ export default function ItemsPage() {
                 </button>
               )}
             </div>
-          </Card>
+          </div>
         </PageSection>
 
         {/* Error Message */}
@@ -362,7 +356,7 @@ export default function ItemsPage() {
 
         {/* Items List or Loading */}
         <PageSection>
-          <Card className="bg-white rounded-lg border">
+          <div className="bg-white rounded-lg border">
             {loading && items.length === 0 ? (
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
@@ -395,7 +389,7 @@ export default function ItemsPage() {
                 showStockDetails={true}
               />
             )}
-          </Card>
+          </div>
         </PageSection>
 
         {/* Pagination */}

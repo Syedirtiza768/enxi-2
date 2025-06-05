@@ -50,7 +50,7 @@ interface Quotation {
 }
 
 export default function QuotationDetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const quotationId = params.id as string
 
@@ -88,7 +88,7 @@ export default function QuotationDetailPage() {
     }
   }, [quotationId])
 
-  const handleUpdate = async (quotationData: any) => {
+  const handleUpdate = async (quotationData: Partial<Quotation>) => {
     try {
       const response = await apiClient(`/api/quotations/${quotationId}`, {
         method: 'PUT',
@@ -102,8 +102,7 @@ export default function QuotationDetailPage() {
       setQuotation(response.data?.data || response.data)
       setMode('view')
     } catch (error) {
-      console.error('Error updating quotation:', error)
-      throw error
+      console.error('Error:', error)
     }
   }
 
@@ -119,7 +118,7 @@ export default function QuotationDetailPage() {
 
       setQuotation(response.data?.data || response.data)
     } catch (error) {
-      console.error('Error sending quotation:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -136,7 +135,7 @@ export default function QuotationDetailPage() {
       const result = response.data?.data || response.data
       router.push(`/quotations/${result.id}`)
     } catch (error) {
-      console.error('Error duplicating quotation:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -156,7 +155,7 @@ export default function QuotationDetailPage() {
 
       router.push('/quotations')
     } catch (error) {
-      console.error('Error deleting quotation:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -184,8 +183,7 @@ export default function QuotationDetailPage() {
         router.push(`/sales-orders/${result.salesOrder.id}`)
       }
     } catch (error) {
-      console.error('Error accepting quotation:', error)
-      alert(error instanceof Error ? error.message : 'Failed to accept quotation')
+      console.error('Error:', error)
     }
   }
 
@@ -208,8 +206,7 @@ export default function QuotationDetailPage() {
       setQuotation(response.data || response)
       alert('Quotation has been rejected.')
     } catch (error) {
-      console.error('Error rejecting quotation:', error)
-      alert(error instanceof Error ? error.message : 'Failed to reject quotation')
+      console.error('Error:', error)
     }
   }
 

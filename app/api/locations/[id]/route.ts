@@ -30,10 +30,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data: location })
-  } catch (error) {
-    console.error('Error fetching location:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch location' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const {
       name,
       type,
@@ -89,23 +89,23 @@ export async function PUT(
         maxCapacity,
         inventoryAccountId
       },
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: location })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating location:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('must be an asset')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('must be an asset')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
@@ -129,22 +129,22 @@ export async function DELETE(
     }
 
     const locationService = new LocationService()
-    const location = await locationService.deactivateLocation(params.id, user.id)
+    const location = await locationService.deactivateLocation(params.id, _user.id)
 
     return NextResponse.json({ data: location })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deactivating location:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Cannot deactivate')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Cannot deactivate')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

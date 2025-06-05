@@ -4,11 +4,11 @@ import { LeadSource } from '@/lib/generated/prisma'
 
 const leadService = new LeadService()
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     
-    const filters: any = {}
+    const filters: unknown = {}
     
     const source = searchParams.get('source')
     if (source && Object.values(LeadSource).includes(source as LeadSource)) {
@@ -30,14 +30,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(metrics)
   } catch (error) {
     console.error('Error getting lead metrics:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to get lead metrics' },
       { status: 500 }

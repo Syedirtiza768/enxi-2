@@ -38,7 +38,7 @@ export function prismaWithAudit(auditOptions: AuditOptions) {
           // Fetch before state
           let beforeData = null
           if (model !== 'AuditLog' && args.where) {
-            const findMethod = (prisma as any)[model].findUnique || (prisma as any)[model].findFirst
+            const findMethod = (prisma as Record<string, unknown>)[model].findUnique || (prisma as Record<string, unknown>)[model].findFirst
             beforeData = await findMethod({ where: args.where }).catch(() => null)
           }
           
@@ -66,7 +66,7 @@ export function prismaWithAudit(auditOptions: AuditOptions) {
           // Fetch before state
           let beforeData = null
           if (model !== 'AuditLog' && args.where) {
-            const findMethod = (prisma as any)[model].findUnique || (prisma as any)[model].findFirst
+            const findMethod = (prisma as Record<string, unknown>)[model].findUnique || (prisma as Record<string, unknown>)[model].findFirst
             beforeData = await findMethod({ where: args.where }).catch(() => null)
           }
           

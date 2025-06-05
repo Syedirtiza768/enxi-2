@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { ItemService } from '@/lib/services/inventory/item.service'
-import { CreateItemInput } from '@/lib/services/inventory/item.service'
+import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.service'
 import { ItemType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/items - Get all items with filters
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -44,17 +43,17 @@ export async function GET(request: NextRequest) {
       data: items,
       total: items.length
     })
-  } catch (error) {
-    console.error('Error fetching items:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch items' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/inventory/items - Create new item
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -107,28 +106,28 @@ export async function POST(request: NextRequest) {
       salesAccountId,
       isSaleable: isSaleable ?? true,
       isPurchaseable: isPurchaseable ?? true,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const itemService = new ItemService()
     const item = await itemService.createItem(itemData)
 
     return NextResponse.json(item, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating item:', error)
     
-    if (error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 409 }
       )
     }
     
-    if (error.message?.includes('not found') || 
-        error.message?.includes('inactive') ||
-        error.message?.includes('must be')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || 
+        error instanceof Error ? error.message : String(error)?.includes('inactive') ||
+        error instanceof Error ? error.message : String(error)?.includes('must be')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

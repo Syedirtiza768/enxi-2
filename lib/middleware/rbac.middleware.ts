@@ -87,7 +87,7 @@ export function requirePermission(permission: string) {
       request.user = user
       return null // Continue to handler
     } catch (error) {
-      console.error('Authorization error:', error)
+      console.error('Permission check error:', error)
       return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }
@@ -145,13 +145,13 @@ export function withAuth(...middlewares: Array<(req: AuthenticatedRequest) => Pr
  * Helper function to create protected API route handler
  */
 export function createProtectedHandler(
-  handler: (request: AuthenticatedRequest, ...args: any[]) => Promise<NextResponse>,
+  handler: (request: AuthenticatedRequest, ...args: unknown[]) => Promise<NextResponse>,
   options: {
     permissions?: string[]
     roles?: string[]
   } = {}
 ) {
-  return async (request: NextRequest, ...args: any[]) => {
+  return async (request: NextRequest, ...args: unknown[]) => {
     const authRequest = request as AuthenticatedRequest
 
     // Authenticate user
@@ -278,9 +278,9 @@ export function auditLog(action: string, entityType: string) {
         console.error('Audit log error:', error)
       })
     } catch (error) {
-      console.error('Audit log middleware error:', error)
+      console.error('Error:', error);
     }
-
+    
     return null
   }
 }
@@ -317,7 +317,7 @@ export function requireOwnership(getResourceUserId: (request: AuthenticatedReque
 
       return null
     } catch (error) {
-      console.error('Ownership check error:', error)
+      console.error('Error:', error);
       return NextResponse.json(
         { error: 'Internal server error' },
         { status: 500 }

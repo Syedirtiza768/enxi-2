@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { FinancialStatementsService } from '@/lib/services/accounting/financial-statements.service'
 
 // GET /api/accounting/reports/balance-sheet - Generate balance sheet
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const searchParams = request.nextUrl.searchParams
     
     const asOfDateParam = searchParams.get('asOfDate')
@@ -33,10 +33,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: balanceSheet
     })
-  } catch (error) {
-    console.error('Error generating balance sheet:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate balance sheet' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

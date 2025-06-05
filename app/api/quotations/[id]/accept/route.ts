@@ -8,29 +8,29 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
-    const quotation = await quotationService.acceptQuotation(resolvedParams.id, user.id)
+    const quotation = await quotationService.acceptQuotation(resolvedParams.id, _user.id)
 
     return NextResponse.json({
       success: true,
       data: quotation
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error accepting quotation:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('Only sent quotations') || error.message?.includes('expired')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Only sent quotations') || error instanceof Error ? error.message : String(error)?.includes('expired')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

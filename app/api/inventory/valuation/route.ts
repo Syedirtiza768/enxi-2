@@ -6,12 +6,12 @@ const inventoryValuationSchema = z.object({
   itemId: z.string().optional()
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // TODO: Add proper authentication
-    const userId = 'system' // Replace with actual user authentication
+    const _userId = 'system' // Replace with actual user authentication
     
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = new URL(_request.url)
     const itemIdParam = searchParams.get('itemId')
     
     const data = inventoryValuationSchema.parse({
@@ -23,13 +23,6 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(valuation)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error getting inventory valuation:', error)
     
     if (error instanceof Error) {

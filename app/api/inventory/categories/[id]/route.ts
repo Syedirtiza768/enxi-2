@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { CategoryService } from '@/lib/services/inventory/category.service'
-import { UpdateCategoryInput } from '@/lib/services/inventory/category.service'
+import { CategoryService, UpdateCategoryInput } from '@/lib/services/inventory/category.service'
 
 type RouteParams = {
   params: Promise<{
@@ -29,10 +28,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json(category)
-  } catch (error) {
-    console.error('Error fetching category:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch category' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -47,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const body = await request.json()
+    const body = await _request.json()
     const { code, name, description, parentId, isActive } = body
 
     const updateData: UpdateCategoryInput = {}
@@ -61,26 +60,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const category = await categoryService.updateCategory(
       id,
       updateData,
-      user.id
+      _user.id
     )
 
     return NextResponse.json(category)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating category:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('already exists') || 
-        error.message?.includes('circular') ||
-        error.message?.includes('child category') ||
-        error.message?.includes('inactive')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists') || 
+        error instanceof Error ? error.message : String(error)?.includes('circular') ||
+        error instanceof Error ? error.message : String(error)?.includes('child category') ||
+        error instanceof Error ? error.message : String(error)?.includes('inactive')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
@@ -102,23 +101,23 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
     const categoryService = new CategoryService()
-    await categoryService.deleteCategory(id, user.id)
+    await categoryService.deleteCategory(id, _user.id)
 
     return NextResponse.json({ message: 'Category deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting category:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('child categories') || 
-        error.message?.includes('associated items')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('child categories') || 
+        error instanceof Error ? error.message : String(error)?.includes('associated items')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

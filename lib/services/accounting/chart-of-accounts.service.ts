@@ -158,10 +158,10 @@ export class ChartOfAccountsService {
       .map(account => this.mapToAccountTree(account))
   }
 
-  private mapToAccountTree(account: any): AccountTree {
+  private mapToAccountTree(account: Account & { children?: (Account & { children?: Account[] })[] }): AccountTree {
     return {
       ...account,
-      children: account.children?.map((child: any) => this.mapToAccountTree(child)) || []
+      children: account.children?.map((child) => this.mapToAccountTree(child)) || []
     }
   }
 

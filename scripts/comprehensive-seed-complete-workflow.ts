@@ -35,95 +35,95 @@ import {
 } from '../lib/generated/prisma'
 
 async function main() {
-  console.log('🌱 Starting Comprehensive ERP Seed...\n')
+  console.warn('🌱 Starting Comprehensive ERP Seed...\n')
 
   // Clean existing data
   await cleanDatabase()
 
   // Step 1: Create users and roles
-  console.log('👥 Step 1: Creating users...')
+  console.warn('👥 Step 1: Creating users...')
   const users = await createUsers()
-  console.log('✅ Created users\n')
+  console.warn('✅ Created users\n')
 
   // Step 2: Create comprehensive chart of accounts
-  console.log('💰 Step 2: Creating chart of accounts...')
+  console.warn('💰 Step 2: Creating chart of accounts...')
   const accounts = await createComprehensiveChartOfAccounts(users.admin.id)
-  console.log('✅ Created comprehensive chart of accounts\n')
+  console.warn('✅ Created comprehensive chart of accounts\n')
 
   // Step 3: Create customers with proper AR accounts
-  console.log('🏢 Step 3: Creating customers...')
+  console.warn('🏢 Step 3: Creating customers...')
   const customers = await createCustomersWithAR(users.admin.id, users.sales.id, accounts)
-  console.log('✅ Created customers with AR accounts\n')
+  console.warn('✅ Created customers with AR accounts\n')
 
   // Step 4: Create leads and demonstrate conversion
-  console.log('📞 Step 4: Creating leads...')
+  console.warn('📞 Step 4: Creating leads...')
   const leads = await createLeads(users.sales.id)
-  console.log('✅ Created leads\n')
+  console.warn('✅ Created leads\n')
 
   // Step 5: Create inventory system
-  console.log('📦 Step 5: Creating inventory system...')
+  console.warn('📦 Step 5: Creating inventory system...')
   const inventory = await createComprehensiveInventory(users.admin.id, accounts)
-  console.log('✅ Created inventory system\n')
+  console.warn('✅ Created inventory system\n')
 
   // Step 6: Create sales cases linked to customers and leads
-  console.log('💼 Step 6: Creating sales cases...')
+  console.warn('💼 Step 6: Creating sales cases...')
   const salesCases = await createSalesCases(users.sales.id, customers, leads)
-  console.log('✅ Created sales cases\n')
+  console.warn('✅ Created sales cases\n')
 
   // Step 7: Create quotations with multiple versions
-  console.log('📋 Step 7: Creating quotations...')
+  console.warn('📋 Step 7: Creating quotations...')
   const quotations = await createQuotations(users.sales.id, customers, inventory.items, salesCases)
-  console.log('✅ Created quotations\n')
+  console.warn('✅ Created quotations\n')
 
   // Step 8: Create sales orders from quotations
-  console.log('📝 Step 8: Creating sales orders...')
+  console.warn('📝 Step 8: Creating sales orders...')
   const salesOrders = await createSalesOrders(users.sales.id, customers, quotations, inventory.items)
-  console.log('✅ Created sales orders\n')
+  console.warn('✅ Created sales orders\n')
 
   // Step 9: Create stock movements for inventory
-  console.log('📊 Step 9: Creating stock movements...')
+  console.warn('📊 Step 9: Creating stock movements...')
   await createStockMovements(users.warehouse.id, inventory.items, accounts)
-  console.log('✅ Created stock movements\n')
+  console.warn('✅ Created stock movements\n')
 
   // Step 10: Create invoices from sales orders
-  console.log('🧾 Step 10: Creating invoices...')
+  console.warn('🧾 Step 10: Creating invoices...')
   const invoices = await createInvoices(users.sales.id, customers, salesOrders, inventory.items)
-  console.log('✅ Created invoices\n')
+  console.warn('✅ Created invoices\n')
 
   // Step 11: Create payments for invoices
-  console.log('💳 Step 11: Creating payments...')
+  console.warn('💳 Step 11: Creating payments...')
   await createPayments(users.accountant.id, invoices, accounts)
-  console.log('✅ Created payments\n')
+  console.warn('✅ Created payments\n')
 
   // Step 12: Create customer POs
-  console.log('📄 Step 12: Creating customer POs...')
+  console.warn('📄 Step 12: Creating customer POs...')
   await createCustomerPOs(users.sales.id, customers, quotations)
-  console.log('✅ Created customer POs\n')
+  console.warn('✅ Created customer POs\n')
 
   // Step 13: Create additional journal entries
-  console.log('📚 Step 13: Creating additional journal entries...')
+  console.warn('📚 Step 13: Creating additional journal entries...')
   await createAdditionalJournalEntries(users.accountant.id, accounts)
-  console.log('✅ Created additional journal entries\n')
+  console.warn('✅ Created additional journal entries\n')
 
   // Step 14: Create audit trail examples
-  console.log('🔍 Step 14: Creating audit trail examples...')
+  console.warn('🔍 Step 14: Creating audit trail examples...')
   await createAuditExamples(users)
-  console.log('✅ Created audit trail examples\n')
+  console.warn('✅ Created audit trail examples\n')
 
   // Step 15: Create currency and exchange rate data
-  console.log('💱 Step 15: Creating currency data...')
+  console.warn('💱 Step 15: Creating currency data...')
   await createCurrencyData(users.admin.id)
-  console.log('✅ Created currency data\n')
+  console.warn('✅ Created currency data\n')
 
   // Final summary
   await printSeedSummary()
   
-  console.log('🎉 Comprehensive ERP Seed completed successfully!')
-  console.log('\n🚀 Ready to test complete business workflows!')
+  console.warn('🎉 Comprehensive ERP Seed completed successfully!')
+  console.warn('\n🚀 Ready to test complete business workflows!')
 }
 
 async function cleanDatabase() {
-  console.log('🧹 Cleaning existing data...')
+  console.warn('🧹 Cleaning existing data...')
   
   // Clean in correct order to respect foreign key constraints
   try {
@@ -152,11 +152,8 @@ async function cleanDatabase() {
     await prisma.account.deleteMany()
     await prisma.user.deleteMany()
     
-    console.log('✅ Database cleaned')
-  } catch (error) {
-    console.log('⚠️ Some tables may not exist yet, continuing...')
-  }
-}
+    console.warn('✅ Database cleaned')
+} catch {}
 
 async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
@@ -1878,7 +1875,7 @@ async function createAdditionalJournalEntries(accountantId: string, accounts: an
 async function createAuditExamples(users: any) {
   // Sample audit entries will be created automatically by the system
   // when transactions occur, so we don't need to create them manually
-  console.log('Audit trail will be automatically populated by system transactions')
+  console.warn('Audit trail will be automatically populated by system transactions')
 }
 
 async function createCurrencyData(adminId: string) {
@@ -1918,9 +1915,9 @@ async function createCurrencyData(adminId: string) {
 }
 
 async function printSeedSummary() {
-  console.log('\n' + '='.repeat(60))
-  console.log('📊 COMPREHENSIVE SEED SUMMARY')
-  console.log('='.repeat(60))
+  console.warn('\n' + '='.repeat(60))
+  console.warn('📊 COMPREHENSIVE SEED SUMMARY')
+  console.warn('='.repeat(60))
 
   const counts = await Promise.all([
     prisma.user.count(),
@@ -1939,52 +1936,52 @@ async function printSeedSummary() {
     prisma.auditLog.count()
   ])
 
-  console.log(`\n📈 DATA CREATED:`)
-  console.log(`   👥 Users: ${counts[0]}`)
-  console.log(`   💰 Chart of Accounts: ${counts[1]}`)
-  console.log(`   🏢 Customers: ${counts[2]}`)
-  console.log(`   📞 Leads: ${counts[3]}`)
-  console.log(`   📦 Inventory Items: ${counts[4]}`)
-  console.log(`   📂 Categories: ${counts[5]}`)
-  console.log(`   💼 Sales Cases: ${counts[6]}`)
-  console.log(`   📋 Quotations: ${counts[7]}`)
-  console.log(`   📝 Sales Orders: ${counts[8]}`)
-  console.log(`   🧾 Invoices: ${counts[9]}`)
-  console.log(`   💳 Payments: ${counts[10]}`)
-  console.log(`   📊 Stock Movements: ${counts[11]}`)
-  console.log(`   📚 Journal Entries: ${counts[12]}`)
-  console.log(`   🔍 Audit Logs: ${counts[13]}`)
+  console.warn(`\n📈 DATA CREATED:`)
+  console.warn(`   👥 Users: ${counts[0]}`)
+  console.warn(`   💰 Chart of Accounts: ${counts[1]}`)
+  console.warn(`   🏢 Customers: ${counts[2]}`)
+  console.warn(`   📞 Leads: ${counts[3]}`)
+  console.warn(`   📦 Inventory Items: ${counts[4]}`)
+  console.warn(`   📂 Categories: ${counts[5]}`)
+  console.warn(`   💼 Sales Cases: ${counts[6]}`)
+  console.warn(`   📋 Quotations: ${counts[7]}`)
+  console.warn(`   📝 Sales Orders: ${counts[8]}`)
+  console.warn(`   🧾 Invoices: ${counts[9]}`)
+  console.warn(`   💳 Payments: ${counts[10]}`)
+  console.warn(`   📊 Stock Movements: ${counts[11]}`)
+  console.warn(`   📚 Journal Entries: ${counts[12]}`)
+  console.warn(`   🔍 Audit Logs: ${counts[13]}`)
 
-  console.log(`\n🔑 LOGIN CREDENTIALS:`)
-  console.log(`   Admin: admin / demo123`)
-  console.log(`   Sales: sarah / demo123`)
-  console.log(`   Accountant: michael / demo123`)
-  console.log(`   Warehouse: david / demo123`)
-  console.log(`   Manager: lisa / demo123`)
+  console.warn(`\n🔑 LOGIN CREDENTIALS:`)
+  console.warn(`   Admin: admin / demo123`)
+  console.warn(`   Sales: sarah / demo123`)
+  console.warn(`   Accountant: michael / demo123`)
+  console.warn(`   Warehouse: david / demo123`)
+  console.warn(`   Manager: lisa / demo123`)
 
-  console.log(`\n🚀 READY TO TEST:`)
-  console.log(`   ✅ Complete business workflow from leads to payments`)
-  console.log(`   ✅ Multi-user access with different roles`)
-  console.log(`   ✅ Full GL integration with journal entries`)
-  console.log(`   ✅ Customer AR accounts and credit management`)
-  console.log(`   ✅ FIFO inventory costing with stock lots`)
-  console.log(`   ✅ Sales order to invoice workflow`)
-  console.log(`   ✅ Payment processing and customer ledgers`)
-  console.log(`   ✅ Audit trail for all transactions`)
+  console.warn(`\n🚀 READY TO TEST:`)
+  console.warn(`   ✅ Complete business workflow from leads to payments`)
+  console.warn(`   ✅ Multi-user access with different roles`)
+  console.warn(`   ✅ Full GL integration with journal entries`)
+  console.warn(`   ✅ Customer AR accounts and credit management`)
+  console.warn(`   ✅ FIFO inventory costing with stock lots`)
+  console.warn(`   ✅ Sales order to invoice workflow`)
+  console.warn(`   ✅ Payment processing and customer ledgers`)
+  console.warn(`   ✅ Audit trail for all transactions`)
 
-  console.log(`\n🎯 TEST SCENARIOS:`)
-  console.log(`   1. Login as different users`)
-  console.log(`   2. View financial reports and trial balance`)
-  console.log(`   3. Create new quotations and sales orders`)
-  console.log(`   4. Process invoices and payments`)
-  console.log(`   5. Check inventory levels and stock movements`)
-  console.log(`   6. Review customer balances and credit limits`)
-  console.log(`   7. Examine audit trails and journal entries`)
+  console.warn(`\n🎯 TEST SCENARIOS:`)
+  console.warn(`   1. Login as different users`)
+  console.warn(`   2. View financial reports and trial balance`)
+  console.warn(`   3. Create new quotations and sales orders`)
+  console.warn(`   4. Process invoices and payments`)
+  console.warn(`   5. Check inventory levels and stock movements`)
+  console.warn(`   6. Review customer balances and credit limits`)
+  console.warn(`   7. Examine audit trails and journal entries`)
 }
 
 main()
   .then(() => {
-    console.log('\n✅ Comprehensive ERP Seed completed successfully!')
+    console.warn('\n✅ Comprehensive ERP Seed completed successfully!')
     process.exit(0)
   })
   .catch((e) => {

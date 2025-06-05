@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { globalErrorHandler } from '@/lib/utils/global-error-handler';
+import { globalErrorHandler as _globalErrorHandler } from '@/lib/utils/global-error-handler';
 
 export interface RouteHealthMetrics {
   route: string;
@@ -153,7 +153,7 @@ class RouteHealthMonitor {
       const responseTime = Date.now() - startTime;
       const status = response.ok ? 'healthy' : 'degraded';
 
-      console.log('Health check completed', {
+      console.warn('Health check completed', {
         route,
         method,
         status,
@@ -170,22 +170,13 @@ class RouteHealthMonitor {
       };
 
     } catch (error) {
-      const responseTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      console.error('Health check failed', error, {
-        route,
-        method,
-        responseTime
-      });
-
       return {
         route,
         method,
         status: 'unhealthy',
         responseTime,
         timestamp: new Date().toISOString(),
-        error: errorMessage
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
@@ -221,7 +212,7 @@ class RouteHealthMonitor {
 
     this.healthCheckInterval = setInterval(async () => {
       try {
-        // console.log('Starting periodic health checks');
+        // console.warn('Starting periodic health checks');
         const results = await this.performAllHealthChecks();
         
         const unhealthyRoutes = results.filter(r => r.status === 'unhealthy');
@@ -241,7 +232,7 @@ class RouteHealthMonitor {
           });
         }
 
-        // console.log('Periodic health checks completed', {
+        // console.warn('Periodic health checks completed', {
         //   total: results.length,
         //   healthy: results.filter(r => r.status === 'healthy').length,
         //   degraded: degradedRoutes.length,
@@ -249,11 +240,11 @@ class RouteHealthMonitor {
         // });
 
       } catch (error) {
-        console.error('Failed to perform periodic health checks', error);
+        console.error('Error during health checks:', error);
       }
     }, intervalMs);
 
-    console.log('Route health monitoring started', {
+    console.warn('Route health monitoring started', {
       intervalMinutes,
       totalRoutes: this.routeMetrics.size
     });
@@ -265,7 +256,7 @@ class RouteHealthMonitor {
       this.healthCheckInterval = null;
     }
     this.isMonitoring = false;
-    console.log('Route health monitoring stopped');
+    console.warn('Route health monitoring stopped');
   }
 
   getRouteMetrics(route?: string, method?: string): RouteHealthMetrics[] {
@@ -340,7 +331,7 @@ class RouteHealthMonitor {
     }
 
     if (cleared > 0) {
-      console.log('Cleared old route metrics', {
+      console.warn('Cleared old route metrics', {
         cleared,
         olderThanHours,
         remaining: this.routeMetrics.size
@@ -352,11 +343,11 @@ class RouteHealthMonitor {
 export const routeHealthMonitor = new RouteHealthMonitor();
 
 // Middleware wrapper to automatically monitor route health
-export function withHealthMonitoring<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withHealthMonitoring<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   route: string
 ): T {
-  return (async (request: NextRequest, ...args: any[]) => {
+  return (async (request: NextRequest, ...args: unknown[]) => {
     const method = request.method;
     const startTime = Date.now();
     
@@ -374,18 +365,13 @@ export function withHealthMonitoring<T extends (...args: any[]) => Promise<NextR
       return response;
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      const statusCode = error instanceof Error && 'statusCode' in error 
-        ? (error as any).statusCode 
-        : 500;
-      
       routeHealthMonitor.recordRequest(
         route,
         method,
         responseTime,
-        statusCode,
+        500,
         error as Error
       );
-      
       throw error;
     }
   }) as T;

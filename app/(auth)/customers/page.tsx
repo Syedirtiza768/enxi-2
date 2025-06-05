@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PageLayout, PageHeader, PageSection, VStack, Button, Grid } from '@/components/design-system'
 import { CustomerForm } from '@/components/customers/customer-form'
@@ -35,7 +34,6 @@ interface Customer {
 }
 
 export default function CustomersPage() {
-  const router = useRouter()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -52,8 +50,8 @@ export default function CustomersPage() {
         const customersData = response.data.data || response.data
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
-    } catch (error) {
-      console.error('Error fetching customers:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -72,14 +70,14 @@ export default function CustomersPage() {
         const customersData = response.data.data || response.data
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
-    } catch (error) {
-      console.error('Error searching customers:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCustomerCreated = (customer: any) => {
+  const handleCustomerCreated = (_customer: Customer) => {
     setShowForm(false)
     fetchCustomers()
   }
@@ -91,9 +89,6 @@ export default function CustomersPage() {
     }).format(amount)
   }
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString()
-  }
 
   const filteredCustomers = customers.filter(customer => {
     if (!search) return true

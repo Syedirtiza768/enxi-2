@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = _request.nextUrl.searchParams
     const status = searchParams.get('status')
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
@@ -29,10 +29,10 @@ export async function GET(
     )
 
     return NextResponse.json({ data: invoices })
-  } catch (error) {
-    console.error('Error fetching supplier invoices:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier invoices' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

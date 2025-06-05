@@ -39,10 +39,10 @@ export async function GET(
     }
     
     return NextResponse.json(salesOrder)
-  } catch (error) {
-    console.error('Error fetching sales order:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sales order' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -56,7 +56,7 @@ export async function PUT(
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await request.json()
+    const body = await _request.json()
     const data = updateSalesOrderSchema.parse(body)
     
     const salesOrderService = new SalesOrderService()
@@ -72,13 +72,6 @@ export async function PUT(
     
     return NextResponse.json(salesOrder)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error updating sales order:', error)
     return NextResponse.json(
       { error: 'Failed to update sales order' },

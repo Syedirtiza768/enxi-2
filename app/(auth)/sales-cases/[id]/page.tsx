@@ -4,12 +4,12 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SalesCaseDetailTabs } from '@/components/sales-cases/sales-case-detail-tabs'
 import { apiClient } from '@/lib/api/client'
-import { AlertCircle, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 interface Customer {
   id: string
@@ -36,7 +36,7 @@ interface SalesCase {
   createdAt: string
   updatedAt: string
   closedAt?: string
-  quotations: any[]
+  quotations: Record<string, unknown>[]
 }
 
 interface TimelineEvent {
@@ -44,7 +44,7 @@ interface TimelineEvent {
   action: string
   timestamp: string
   userId: string
-  data: any
+  data: Record<string, unknown>
 }
 
 // Status transition rules
@@ -58,14 +58,14 @@ const statusTransitions: Record<string, string[]> = {
 
 export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const router = useRouter()
+  const _router = useRouter()
   const [salesCase, setSalesCase] = useState<SalesCase | null>(null)
   const [timeline, setTimeline] = useState<TimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [showCloseModal, setShowCloseModal] = useState(false)
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showStatusModal, setShowStatusModal] = useState(false)
-  const [editMode, setEditMode] = useState(false)
+  const [_editMode, _setEditMode] = useState(false)
   
   // Close modal state
   const [closeData, setCloseData] = useState({
@@ -86,7 +86,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
   useEffect(() => {
     fetchSalesCase()
     fetchTimeline()
-  }, [id])
+  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSalesCase = async () => {
     try {
@@ -100,7 +100,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
         cost: 0
       })
     } catch (error) {
-      console.error('Error fetching sales case:', error)
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
       const data = response.data.data || response.data
       setTimeline(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('Error fetching timeline:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -136,8 +136,8 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
       setShowStatusModal(false)
       fetchSalesCase()
       fetchTimeline()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error))
     } finally {
       setSubmitting(false)
     }
@@ -160,8 +160,8 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
       setShowCloseModal(false)
       fetchSalesCase()
       fetchTimeline()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error))
     } finally {
       setSubmitting(false)
     }
@@ -184,8 +184,8 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
       setShowAssignModal(false)
       fetchSalesCase()
       fetchTimeline()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error))
     } finally {
       setSubmitting(false)
     }
@@ -198,7 +198,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     }).format(amount)
   }
 
-  const formatDate = (date: string) => {
+  const _formatDate = (date: string) => {
     return new Date(date).toLocaleDateString()
   }
 

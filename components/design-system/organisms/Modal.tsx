@@ -3,7 +3,6 @@
 import React, { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
-import { Button } from '../atoms/Button'
 import { Heading } from '../atoms/Text'
 
 export interface ModalProps {

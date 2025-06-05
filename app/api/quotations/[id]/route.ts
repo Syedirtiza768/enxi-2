@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
@@ -25,10 +25,10 @@ export async function GET(
       success: true,
       data: quotation
     })
-  } catch (error) {
-    console.error('Error fetching quotation:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch quotation' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -40,8 +40,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUserFromRequest(request)
-    const body = await request.json()
+    const _user = await getUserFromRequest(_request)
+    const body = await _request.json()
     
     const { 
       validUntil,
@@ -63,7 +63,7 @@ export async function PUT(
       }
     }
 
-    const updateData: any = {}
+    const updateData: unknown = {}
     if (validUntil) updateData.validUntil = new Date(validUntil)
     if (paymentTerms !== undefined) updateData.paymentTerms = paymentTerms
     if (deliveryTerms !== undefined) updateData.deliveryTerms = deliveryTerms
@@ -74,19 +74,19 @@ export async function PUT(
     const resolvedParams = await params
     const quotation = await quotationService.createNewVersion(resolvedParams.id, {
       ...updateData,
-      createdBy: user.id
+      createdBy: _user.id
     })
 
     return NextResponse.json({
       success: true,
       data: quotation
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating quotation:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

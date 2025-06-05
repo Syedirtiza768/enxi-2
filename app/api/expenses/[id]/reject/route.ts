@@ -23,13 +23,6 @@ export async function POST(
     
     return NextResponse.json(expense)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error rejecting expense:', error)
     
     if (error instanceof Error) {

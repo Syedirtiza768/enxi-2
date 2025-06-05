@@ -59,7 +59,7 @@ export class CurrencyService {
     this.validateCurrency(toCurrency)
 
     // Try to find direct exchange rate
-    let exchangeRate = await this.findExchangeRate(fromCurrency, toCurrency)
+    const exchangeRate = await this.findExchangeRate(fromCurrency, toCurrency)
     
     if (exchangeRate) {
       return exchangeRate.rate
@@ -252,10 +252,9 @@ export class CurrencyService {
           createdBy
         })
         results.push(exchangeRate)
-      } catch (error) {
-        console.error(`Failed to update rate ${rateData.fromCurrency}/${rateData.toCurrency}:`, error)
-        // Continue with other rates
-      }
+} catch {
+      // Continue with other rates
+    }
     }
 
     return results

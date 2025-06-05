@@ -12,7 +12,7 @@ export async function GET(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
     const journalEntryService = new JournalEntryService()
     const journalEntry = await journalEntryService.getJournalEntry(params.id)
@@ -28,10 +28,10 @@ export async function GET(
       success: true,
       data: journalEntry
     })
-  } catch (error) {
-    console.error('Error fetching journal entry:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch journal entry' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

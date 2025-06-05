@@ -28,7 +28,8 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     },
     ref
   ) => {
-    const checkboxId = id || React.useId()
+    const generatedId = React.useId()
+    const checkboxId = id || generatedId
     const inputRef = React.useRef<HTMLInputElement>(null)
 
     React.useImperativeHandle(ref, () => inputRef.current!)

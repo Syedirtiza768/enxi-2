@@ -64,8 +64,8 @@ export function CategoryForm({
           const data = await response.json()
           setGlAccounts(data.data || [])
         }
-      } catch (error) {
-        console.error('Failed to load GL accounts:', error)
+      } catch {
+        // Ignore error
       }
     }
 
@@ -130,8 +130,8 @@ export function CategoryForm({
     setIsSubmitting(true)
     try {
       await onSubmit(formData)
-    } catch (error) {
-      console.error('Form submission error:', error)
+    } catch {
+      // Handle error
     } finally {
       setIsSubmitting(false)
     }

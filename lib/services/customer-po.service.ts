@@ -1,11 +1,10 @@
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from './audit.service'
 import { QuotationService } from './quotation.service'
-import { SalesOrderService } from './sales-order.service'
+import { SalesOrderService, SalesOrderWithDetails } from './sales-order.service'
 import { 
-  CustomerPO,
-  Prisma
-} from '@/lib/generated/prisma'
+  CustomerPO
+} from '@prisma/client'
 
 export interface CreateCustomerPOInput {
   poNumber: string
@@ -169,7 +168,7 @@ export class CustomerPOService {
     createSalesOrder: boolean = true
   ): Promise<{
     customerPO: CustomerPOWithDetails
-    salesOrder?: any
+    salesOrder?: SalesOrderWithDetails
   }> {
     const customerPO = await this.getCustomerPO(id)
     if (!customerPO) {
@@ -257,7 +256,7 @@ export class CustomerPOService {
     dateFrom?: Date
     dateTo?: Date
   } = {}): Promise<CustomerPOWithDetails[]> {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (filters.customerId) where.customerId = filters.customerId
     if (filters.quotationId) where.quotationId = filters.quotationId
@@ -322,7 +321,7 @@ export class CustomerPOService {
     acceptedValue: number
     averageAcceptanceTime: number
   }> {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (filters.customerId) where.customerId = filters.customerId
     if (filters.dateFrom || filters.dateTo) {

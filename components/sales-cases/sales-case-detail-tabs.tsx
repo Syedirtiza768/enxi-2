@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { apiClient } from '@/lib/api/client'
 import { ExpenseManager } from './expense-manager'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { FileText, Package, DollarSign, TrendingUp } from 'lucide-react'
+import { FileText, DollarSign } from 'lucide-react'
 
 interface SalesCaseDetailTabsProps {
   salesCaseId: string
@@ -64,8 +64,8 @@ interface SalesCaseSummary {
 export function SalesCaseDetailTabs({ 
   salesCaseId, 
   salesCaseCurrency, 
-  salesCaseStatus,
-  onStatusChange 
+  salesCaseStatus: _salesCaseStatus,
+  onStatusChange: _onStatusChange 
 }: SalesCaseDetailTabsProps) {
   const [activeTab, setActiveTab] = useState('quotations')
   const [quotations, setQuotations] = useState<Quotation[]>([])
@@ -81,9 +81,9 @@ export function SalesCaseDetailTabs({
     } else if (activeTab === 'profitability') {
       fetchSummary()
     }
-  }, [activeTab, salesCaseId])
+  }, [activeTab, salesCaseId, fetchQuotations, fetchInvoices, fetchSummary])
 
-  const fetchQuotations = async () => {
+  const fetchQuotations = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/quotations?salesCaseId=${salesCaseId}`, { method: 'GET' })
@@ -91,14 +91,14 @@ export function SalesCaseDetailTabs({
         const quotationsData = response.data.data || response.data
         setQuotations(Array.isArray(quotationsData) ? quotationsData : [])
       }
-    } catch (error) {
-      console.error('Error fetching quotations:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [salesCaseId])
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/invoices?salesCaseId=${salesCaseId}`, { method: 'GET' })
@@ -106,26 +106,26 @@ export function SalesCaseDetailTabs({
         const invoicesData = response.data.data || response.data
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
       }
-    } catch (error) {
-      console.error('Error fetching invoices:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [salesCaseId])
 
-  const fetchSummary = async () => {
+  const fetchSummary = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/sales-cases/${salesCaseId}/summary`, { method: 'GET' })
       if (response.ok && response.data) {
         setSummary(response.data.data || response.data)
       }
-    } catch (error) {
-      console.error('Error fetching summary:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [salesCaseId])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { CategoryService } from '@/lib/services/inventory/category.service'
-import { CreateCategoryInput } from '@/lib/services/inventory/category.service'
+import { CategoryService, CreateCategoryInput } from '@/lib/services/inventory/category.service'
 
 // GET /api/inventory/categories - Get all categories with filters
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -33,17 +32,17 @@ export async function GET(request: NextRequest) {
       data: categories,
       total: categories.length
     })
-  } catch (error) {
-    console.error('Error fetching categories:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch categories' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/inventory/categories - Create new category
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -65,26 +64,26 @@ export async function POST(request: NextRequest) {
       name,
       description,
       parentId,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const categoryService = new CategoryService()
     const category = await categoryService.createCategory(categoryData)
 
     return NextResponse.json(category, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating category:', error)
     
-    if (error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 409 }
       )
     }
     
-    if (error.message?.includes('not found') || error.message?.includes('inactive')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || error instanceof Error ? error.message : String(error)?.includes('inactive')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

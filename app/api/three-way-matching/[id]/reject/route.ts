@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const { rejectionReason, requiredActions } = body
 
     if (!rejectionReason || !rejectionReason.trim()) {
@@ -25,18 +25,18 @@ export async function POST(
 
     const threeWayMatchingService = new ThreeWayMatchingService()
     const result = await threeWayMatchingService.rejectMatching(params.id, {
-      rejectedBy: user.id,
+      rejectedBy: _user.id,
       rejectionReason: rejectionReason.trim(),
       requiredActions: requiredActions || ['Review with supplier', 'Verify documentation']
     })
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error rejecting matching exception:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

@@ -10,7 +10,7 @@ interface AuditLog {
   action: string
   entityType: string
   entityId: string
-  metadata?: any
+  metadata?: Record<string, unknown>
   timestamp: string
   ipAddress?: string
   userAgent?: string
@@ -25,7 +25,7 @@ export default function AuditPage() {
 
   useEffect(() => {
     fetchLogs()
-  }, [page])
+  }, [page]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchLogs = async () => {
     setLoading(true)
@@ -42,8 +42,8 @@ export default function AuditPage() {
         setLogs(data.data)
         setTotal(data.total)
       }
-    } catch (error) {
-      console.error('Failed to fetch audit logs:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

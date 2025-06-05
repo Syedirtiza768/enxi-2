@@ -3,9 +3,9 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
 
 // GET /api/sales-cases/metrics - Get sales case metrics
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(request)
     const salesCaseService = new SalesCaseService()
     const searchParams = request.nextUrl.searchParams
     
@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: metrics
     })
-  } catch (error) {
-    console.error('Error fetching sales case metrics:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch sales case metrics' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

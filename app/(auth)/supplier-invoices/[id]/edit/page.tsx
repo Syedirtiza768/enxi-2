@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { PageLayout, PageHeader, VStack, Text } from '@/components/design-system'
+import { PageLayout, PageHeader, VStack, Text, Button } from '@/components/design-system'
 import { SupplierInvoiceForm } from '@/components/supplier-invoices/supplier-invoice-form'
 import { ArrowLeft, FileText, AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
 
 interface SupplierInvoiceFormData {
@@ -33,7 +32,7 @@ interface SupplierInvoiceFormData {
 }
 
 export default function EditSupplierInvoicePage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const invoiceId = params.id as string
 
@@ -45,7 +44,7 @@ export default function EditSupplierInvoicePage() {
     if (invoiceId) {
       fetchInvoice()
     }
-  }, [invoiceId])
+  }, [invoiceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchInvoice = async () => {
     setLoading(true)
@@ -76,7 +75,7 @@ export default function EditSupplierInvoicePage() {
         dueDate: invoiceData.dueDate,
         status: invoiceData.status,
         currency: invoiceData.currency,
-        items: invoiceData.items.map((item: any) => ({
+        items: invoiceData.items.map((item: Record<string, unknown>) => ({
           goodsReceiptItemId: item.goodsReceiptItemId || item.goodsReceiptItem?.id,
           description: item.description,
           quantity: item.quantity,
@@ -93,9 +92,8 @@ export default function EditSupplierInvoicePage() {
       }
       
       setInvoice(formData)
-    } catch (error) {
-      console.error('Error fetching supplier invoice:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier invoice')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

@@ -48,7 +48,7 @@ export default function CompanySettingsPage() {
           website: savedWebsite || ''
         })
       } catch (error) {
-        console.error('Error loading company settings:', error)
+        console.error('Error loading settings:', error)
       }
     }
 
@@ -74,8 +74,8 @@ export default function CompanySettingsPage() {
 
       // Reset saved state after 3 seconds
       setTimeout(() => setSaved(false), 3000)
-    } catch (error) {
-      console.error('Error saving company settings:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }

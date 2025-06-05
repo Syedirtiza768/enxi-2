@@ -40,14 +40,9 @@ describe('Currency Service - Basic Tests', () => {
           id: testUserId
         }
       })
-    } catch (error) {
-      console.error('Cleanup error:', error)
-      // Continue with global cleanup if needed
-      await prisma.auditLog.deleteMany()
-      await prisma.exchangeRate.deleteMany()
-      await prisma.user.deleteMany()
-    }
-  })
+} catch (error) {
+      console.error('Error:', error);
+    })
 
   describe('Basic Currency Operations', () => {
     it('should return supported currencies', () => {

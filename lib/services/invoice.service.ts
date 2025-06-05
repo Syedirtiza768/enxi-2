@@ -126,8 +126,8 @@ export class InvoiceService extends BaseService {
         })
 
         // Create invoice items
-        const items = await Promise.all(
-          data.items.map(async (itemData, index) => {
+        const _items = await Promise.all(
+          data.items.map(async (itemData, _index) => {
             const itemCalculations = this.calculateItemTotals(itemData)
             
             return await tx.invoiceItem.create({
@@ -232,7 +232,7 @@ export class InvoiceService extends BaseService {
   } = {}): Promise<InvoiceWithDetails[]> {
     return this.withLogging('getAllInvoices', async () => {
 
-      const where: any = {}
+      const where: Record<string, unknown> = {}
 
       if (filters.status) {
         where.status = filters.status
@@ -300,7 +300,7 @@ export class InvoiceService extends BaseService {
     }
 
     return await prisma.$transaction(async (tx) => {
-      let updateData: any = {
+      let updateData: Record<string, unknown> = {
         dueDate: data.dueDate,
         paymentTerms: data.paymentTerms,
         billingAddress: data.billingAddress,
@@ -393,7 +393,7 @@ export class InvoiceService extends BaseService {
         await this.createSalesInvoiceJournalEntry(invoice, userId)
       }
 
-      const updatedInvoice = await prisma.invoice.update({
+      const _updatedInvoice = await prisma.invoice.update({
         where: { id },
         data: {
           status: InvoiceStatus.SENT,

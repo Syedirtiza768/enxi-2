@@ -258,10 +258,10 @@ const rolePermissions: Record<Role, string[]> = {
 
 async function seedPermissions() {
   try {
-    console.log('🌱 Starting permissions seeding...\n');
+    console.warn('🌱 Starting permissions seeding...\n');
 
     // Step 1: Create all permissions
-    console.log('📝 Creating permissions...');
+    console.warn('📝 Creating permissions...');
     for (const permission of permissions) {
       await prisma.permission.upsert({
         where: { code: permission.code },
@@ -273,12 +273,12 @@ async function seedPermissions() {
         },
         create: permission,
       });
-      console.log(`  ✅ Created/Updated permission: ${permission.code}`);
+      console.warn(`  ✅ Created/Updated permission: ${permission.code}`);
     }
-    console.log(`\n✅ Created ${permissions.length} permissions\n`);
+    console.warn(`\n✅ Created ${permissions.length} permissions\n`);
 
     // Step 2: Assign permissions to roles
-    console.log('🔐 Assigning permissions to roles...');
+    console.warn('🔐 Assigning permissions to roles...');
     for (const [role, permissionCodes] of Object.entries(rolePermissions)) {
       // Delete existing role permissions
       await prisma.rolePermission.deleteMany({
@@ -300,11 +300,11 @@ async function seedPermissions() {
           });
         }
       }
-      console.log(`  ✅ Assigned ${permissionCodes.length} permissions to role: ${role}`);
+      console.warn(`  ✅ Assigned ${permissionCodes.length} permissions to role: ${role}`);
     }
 
     // Step 3: Grant direct permissions to super admin user
-    console.log('\n👤 Granting direct permissions to super admin user...');
+    console.warn('\n👤 Granting direct permissions to super admin user...');
     const superAdminUser = await prisma.user.findFirst({
       where: { 
         role: 'SUPER_ADMIN',
@@ -334,32 +334,30 @@ async function seedPermissions() {
           },
         });
       }
-      console.log(`  ✅ Granted ${systemPermissions.length} system permissions directly to super admin`);
+      console.warn(`  ✅ Granted ${systemPermissions.length} system permissions directly to super admin`);
     } else {
-      console.log('  ⚠️  Super admin user not found - skipping direct permissions');
+      console.warn('  ⚠️  Super admin user not found - skipping direct permissions');
     }
 
     // Step 4: Display summary
-    console.log('\n📊 Permission Summary:');
-    console.log('─'.repeat(50));
+    console.warn('\n📊 Permission Summary:');
+    console.warn('─'.repeat(50));
     
     const modules = [...new Set(permissions.map(p => p.module))];
     for (const module of modules) {
       const modulePerms = permissions.filter(p => p.module === module);
-      console.log(`\n${module.toUpperCase()}:`);
+      console.warn(`\n${module.toUpperCase()}:`);
       for (const perm of modulePerms) {
-        console.log(`  - ${perm.name} (${perm.code})`);
+        console.warn(`  - ${perm.name} (${perm.code})`);
       }
     }
 
-    console.log('\n🎉 Permissions seeding completed successfully!');
+    console.warn('\n🎉 Permissions seeding completed successfully!');
     
-  } catch (error) {
-    console.error('❌ Error seeding permissions:', error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect();
+    }
 }
 
 // Run the seeding

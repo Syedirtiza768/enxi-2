@@ -15,19 +15,19 @@ export async function withAudit<T>(
   entityId: string,
   operation: () => Promise<T>,
   options?: {
-    metadata?: Record<string, any>
-    captureBeforeData?: () => Promise<any>
+    metadata?: Record<string, unknown>
+    captureBeforeData?: () => Promise<unknown>
   }
 ): Promise<T> {
   const auditService = new AuditService()
   
   // Capture before state if needed
-  let beforeData: any = undefined
+  let beforeData: unknown = undefined
   if (options?.captureBeforeData && action === AuditAction.UPDATE) {
     try {
       beforeData = await options.captureBeforeData()
     } catch (error) {
-      console.error('Failed to capture before data:', error)
+      console.error('Error capturing before data:', error);
     }
   }
 
@@ -43,28 +43,28 @@ export async function withAudit<T>(
       entityId,
       metadata: options?.metadata,
       beforeData,
-      afterData: action === AuditAction.CREATE || action === AuditAction.UPDATE ? result as Record<string, any> : undefined,
+      afterData: action === AuditAction.CREATE || action === AuditAction.UPDATE ? result as Record<string, unknown> : undefined,
       ipAddress: context.ipAddress,
       userAgent: context.userAgent,
     })
     
     return result
   } catch (error) {
-    // Log failed attempts for critical operations
-    if (action !== AuditAction.READ) {
-      await auditService.logAction({
-        userId: context.userId,
-        action,
-        entityType,
-        entityId,
-        metadata: {
-          ...options?.metadata,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          failed: true,
-        },
-        ipAddress: context.ipAddress,
-        userAgent: context.userAgent,
-      })
+    console.error('Error in audit context:', error);
+    
+    if (context.auditService) {
+      try {
+        await context.auditService.logAction({
+          userId: context.userId,
+          action: context.action,
+          entityType: context.entityType,
+          entityId: context.entityId || 'unknown',
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+        })
+      } catch (auditError) {
+        console.error('Error logging audit action:', auditError);
+      }
     }
     throw error
   }

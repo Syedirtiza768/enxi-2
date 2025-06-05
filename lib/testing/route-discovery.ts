@@ -29,7 +29,7 @@ export class RouteDiscovery {
     this.routes = [];
     await this.scanDirectory(this.appDir, '');
     
-    console.log('Route discovery completed', {
+    console.warn('Route discovery completed', {
       totalRoutes: this.routes.length,
       apiRoutes: this.routes.filter(r => r.type === 'api').length,
       pageRoutes: this.routes.filter(r => r.type === 'page').length,
@@ -54,7 +54,7 @@ export class RouteDiscovery {
             await this.scanDirectory(fullPath, currentPath);
           } else if (item.startsWith('[') && item.endsWith(']')) {
             // Dynamic route parameter
-            const paramName = item.slice(1, -1);
+            const _paramName = item.slice(1, -1);
             const newPath = currentPath + '/' + item;
             await this.scanDirectory(fullPath, newPath);
           } else {
@@ -66,9 +66,7 @@ export class RouteDiscovery {
           await this.processFile(fullPath, currentPath, item);
         }
       }
-    } catch (error) {
-      console.error('Error scanning directory', error, { dir, currentPath });
-    }
+} catch {    }
   }
 
   private async processFile(filePath: string, currentPath: string, fileName: string): Promise<void> {
@@ -113,8 +111,8 @@ export class RouteDiscovery {
         parameters,
         description: this.generateApiDescription(apiPath, methods)
       };
-    } catch (error) {
-      logger.warn('Failed to process API route', { filePath, error: error instanceof Error ? error.message : 'Unknown error' });
+} catch (error) {
+      console.error('Error:', error);
       return null;
     }
   }
@@ -134,8 +132,8 @@ export class RouteDiscovery {
         parameters,
         description: this.generatePageDescription(pagePath)
       };
-    } catch (error) {
-      console.warn('Failed to process page route', { filePath, error: error instanceof Error ? error.message : 'Unknown error' });
+} catch (error) {
+      console.error('Error:', error);
       return null;
     }
   }
@@ -154,8 +152,8 @@ export class RouteDiscovery {
         parameters: [],
         description: `Layout for ${layoutPath}`
       };
-    } catch (error) {
-      console.warn('Failed to process layout route', { filePath, error: error instanceof Error ? error.message : 'Unknown error' });
+} catch (error) {
+      console.error('Error:', error);
       return null;
     }
   }
@@ -184,7 +182,8 @@ export class RouteDiscovery {
              content.includes('verifyJWTFromRequest') ||
              content.includes('requireAuth') ||
              content.includes('withAuth');
-    } catch {
+    } catch (error) {
+      console.error('Error:', error);
       return false;
     }
   }

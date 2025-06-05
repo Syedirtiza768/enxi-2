@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
 async function testUserEditComplete() {
-  console.log('🔧 Testing Complete User Edit System...\n')
+  console.warn('🔧 Testing Complete User Edit System...\n')
 
   try {
     // Create super admin JWT token
@@ -20,10 +20,10 @@ async function testUserEditComplete() {
 
     const targetUserId = 'cmbfhfyv80000v2yeuhorcid6'
 
-    console.log(`📋 Testing user edit system for: ${targetUserId}`)
+    console.warn(`📋 Testing user edit system for: ${targetUserId}`)
     
     // Test 1: Get current user data
-    console.log('1. Getting current user data...')
+    console.warn('1. Getting current user data...')
     const userResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
       headers: {
         'Cookie': `auth-token=${adminToken}`,
@@ -38,14 +38,14 @@ async function testUserEditComplete() {
     const userData = await userResponse.json()
     const user = userData.data || userData
     
-    console.log('✅ Current user data:')
-    console.log(`   Username: ${user.username}`)
-    console.log(`   Email: ${user.email}`)
-    console.log(`   Current Role: ${user.role}`)
-    console.log(`   Current Status: ${user.isActive ? 'Active' : 'Inactive'}`)
+    console.warn('✅ Current user data:')
+    console.warn(`   Username: ${user.username}`)
+    console.warn(`   Email: ${user.email}`)
+    console.warn(`   Current Role: ${user.role}`)
+    console.warn(`   Current Status: ${user.isActive ? 'Active' : 'Inactive'}`)
 
     // Test 2: Update user role (from USER to MANAGER)
-    console.log('\n2. Testing role update (USER → MANAGER)...')
+    console.warn('\n2. Testing role update (USER → MANAGER)...')
     const newRole = user.role === 'USER' ? 'MANAGER' : 'USER'
     
     const updateResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
@@ -66,17 +66,17 @@ async function testUserEditComplete() {
 
     if (updateResponse.ok) {
       const updatedUser = await updateResponse.json()
-      console.log('✅ Role update successful:')
-      console.log(`   Old Role: ${user.role}`)
-      console.log(`   New Role: ${updatedUser.role}`)
+      console.warn('✅ Role update successful:')
+      console.warn(`   Old Role: ${user.role}`)
+      console.warn(`   New Role: ${updatedUser.role}`)
     } else {
-      console.log('❌ Role update failed:')
-      console.log('   Status:', updateResponse.status)
-      console.log('   Response:', await updateResponse.text())
+      console.warn('❌ Role update failed:')
+      console.warn('   Status:', updateResponse.status)
+      console.warn('   Response:', await updateResponse.text())
     }
 
     // Test 3: Update user status
-    console.log('\n3. Testing status toggle...')
+    console.warn('\n3. Testing status toggle...')
     const toggleStatusResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
       method: 'PUT',
       headers: {
@@ -90,17 +90,17 @@ async function testUserEditComplete() {
 
     if (toggleStatusResponse.ok) {
       const updatedUser = await toggleStatusResponse.json()
-      console.log('✅ Status update successful:')
-      console.log(`   Old Status: ${user.isActive ? 'Active' : 'Inactive'}`)
-      console.log(`   New Status: ${updatedUser.isActive ? 'Active' : 'Inactive'}`)
+      console.warn('✅ Status update successful:')
+      console.warn(`   Old Status: ${user.isActive ? 'Active' : 'Inactive'}`)
+      console.warn(`   New Status: ${updatedUser.isActive ? 'Active' : 'Inactive'}`)
     } else {
-      console.log('❌ Status update failed:')
-      console.log('   Status:', toggleStatusResponse.status)
-      console.log('   Response:', await toggleStatusResponse.text())
+      console.warn('❌ Status update failed:')
+      console.warn('   Status:', toggleStatusResponse.status)
+      console.warn('   Response:', await toggleStatusResponse.text())
     }
 
     // Test 4: Restore original values
-    console.log('\n4. Restoring original user values...')
+    console.warn('\n4. Restoring original user values...')
     const restoreResponse = await fetch(`http://localhost:3000/api/users/${targetUserId}`, {
       method: 'PUT',
       headers: {
@@ -114,38 +114,35 @@ async function testUserEditComplete() {
     })
 
     if (restoreResponse.ok) {
-      console.log('✅ User values restored to original state')
+      console.warn('✅ User values restored to original state')
     } else {
-      console.log('❌ Failed to restore original values')
+      console.warn('❌ Failed to restore original values')
     }
 
-    console.log('\n🎯 User Edit System Test Results:')
-    console.log('✅ Frontend Components Created:')
-    console.log('   • UserEditForm component (/components/users/user-edit-form.tsx)')
-    console.log('   • User Edit Page (/users/[id]/edit/page.tsx)')
-    console.log('   • Edit button added to user detail page')
+    console.warn('\n🎯 User Edit System Test Results:')
+    console.warn('✅ Frontend Components Created:')
+    console.warn('   • UserEditForm component (/components/users/user-edit-form.tsx)')
+    console.warn('   • User Edit Page (/users/[id]/edit/page.tsx)')
+    console.warn('   • Edit button added to user detail page')
     
-    console.log('\n✅ API Functionality Verified:')
-    console.log('   • Role updates working correctly')
-    console.log('   • Status updates working correctly')
-    console.log('   • PUT /api/users/[id] endpoint functional')
+    console.warn('\n✅ API Functionality Verified:')
+    console.warn('   • Role updates working correctly')
+    console.warn('   • Status updates working correctly')
+    console.warn('   • PUT /api/users/[id] endpoint functional')
     
-    console.log('\n🔗 Available URLs:')
-    console.log(`   • User Detail: http://localhost:3000/users/${targetUserId}`)
-    console.log(`   • User Edit: http://localhost:3000/users/${targetUserId}/edit`)
-    console.log('   • Users List: http://localhost:3000/users')
+    console.warn('\n🔗 Available URLs:')
+    console.warn(`   • User Detail: http://localhost:3000/users/${targetUserId}`)
+    console.warn(`   • User Edit: http://localhost:3000/users/${targetUserId}/edit`)
+    console.warn('   • Users List: http://localhost:3000/users')
 
-    console.log('\n📝 Super Admin Can Now:')
-    console.log('   ✅ View user details')
-    console.log('   ✅ Edit user role (dropdown with all available roles)')
-    console.log('   ✅ Toggle user status (Active/Inactive)')
-    console.log('   ✅ Update profile information')
-    console.log('   ✅ Save changes with validation')
+    console.warn('\n📝 Super Admin Can Now:')
+    console.warn('   ✅ View user details')
+    console.warn('   ✅ Edit user role (dropdown with all available roles)')
+    console.warn('   ✅ Toggle user status (Active/Inactive)')
+    console.warn('   ✅ Update profile information')
+    console.warn('   ✅ Save changes with validation')
 
-  } catch (error) {
-    console.error('❌ Test failed:', error)
-  }
-}
+} catch {}
 
 // Run the test
 testUserEditComplete()

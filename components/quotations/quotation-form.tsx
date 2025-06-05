@@ -71,7 +71,7 @@ export function QuotationForm({
   mode: initialMode = 'create',
   autoSave = false 
 }: QuotationFormProps) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [mode, setMode] = useState(initialMode)
   
   // Form state
@@ -217,11 +217,10 @@ export function QuotationForm({
           await onSubmit({ ...formData, status: 'DRAFT' })
           setHasUnsavedChanges(false)
           setLastAutoSave(new Date())
-        } catch (error) {
-          console.error('Auto-save failed:', error)
-        } finally {
-          setSaving(false)
-        }
+} catch (error) {
+      console.error('Error:', error);
+      setSaving(false)
+    }
       }, 3000) // Auto-save after 3 seconds of inactivity
 
       setAutoSaveTimer(timer)

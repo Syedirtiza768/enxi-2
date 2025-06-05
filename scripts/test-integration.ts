@@ -6,47 +6,47 @@ import { AuthService } from '../lib/services/auth.service'
 import { AuditService } from '../lib/services/audit.service'
 
 async function testIntegration() {
-  console.log('🧪 Testing Full Integration...\n')
+  console.warn('🧪 Testing Full Integration...\n')
   
   const authService = new AuthService()
   const auditService = new AuditService()
   
   try {
     // Test 1: Verify admin user exists
-    console.log('1. Checking admin user...')
+    console.warn('1. Checking admin user...')
     const adminUser = await prisma.user.findUnique({
       where: { username: 'admin' }
     })
     
     if (!adminUser) {
-      console.log('❌ Admin user not found!')
+      console.warn('❌ Admin user not found!')
       return
     }
-    console.log('✅ Admin user found:', adminUser.username)
+    console.warn('✅ Admin user found:', adminUser.username)
     
     // Test 2: Test authentication
-    console.log('\n2. Testing authentication...')
+    console.warn('\n2. Testing authentication...')
     const validatedUser = await authService.validateUser('admin', 'admin123')
     
     if (!validatedUser) {
-      console.log('❌ Authentication failed!')
+      console.warn('❌ Authentication failed!')
       return
     }
-    console.log('✅ Authentication successful:', validatedUser.username)
+    console.warn('✅ Authentication successful:', validatedUser.username)
     
     // Test 3: Generate and verify token
-    console.log('\n3. Testing JWT tokens...')
+    console.warn('\n3. Testing JWT tokens...')
     const token = authService.generateToken(validatedUser)
     const decodedUser = authService.verifyToken(token)
     
     if (!decodedUser || decodedUser.id !== validatedUser.id) {
-      console.log('❌ Token generation/verification failed!')
+      console.warn('❌ Token generation/verification failed!')
       return
     }
-    console.log('✅ JWT token works correctly')
+    console.warn('✅ JWT token works correctly')
     
     // Test 4: Test audit logging
-    console.log('\n4. Testing audit logging...')
+    console.warn('\n4. Testing audit logging...')
     await auditService.logAction({
       userId: validatedUser.id,
       action: 'LOGIN',
@@ -70,20 +70,20 @@ async function testIntegration() {
     )
     
     if (!testLog) {
-      console.log('❌ Audit logging failed!')
+      console.warn('❌ Audit logging failed!')
       return
     }
-    console.log('✅ Audit logging works correctly')
+    console.warn('✅ Audit logging works correctly')
     
     // Test 5: Test database operations
-    console.log('\n5. Testing database operations...')
+    console.warn('\n5. Testing database operations...')
     const userCount = await prisma.user.count()
     const auditCount = await prisma.auditLog.count()
     
-    console.log(`✅ Database has ${userCount} users and ${auditCount} audit logs`)
+    console.warn(`✅ Database has ${userCount} users and ${auditCount} audit logs`)
     
     // Test 6: Test API endpoint format (simulate what UI would call)
-    console.log('\n6. Testing API data format...')
+    console.warn('\n6. Testing API data format...')
     
     // Simulate login response
     const loginResponse = {
@@ -99,24 +99,23 @@ async function testIntegration() {
       limit: recentLogs.limit
     }
     
-    console.log('✅ API response format is correct for UI consumption')
+    console.warn('✅ API response format is correct for UI consumption')
     
-    console.log('\n🎉 All integration tests passed!')
-    console.log('\n📊 Summary:')
-    console.log(`   • Authentication: Working ✅`)
-    console.log(`   • JWT Tokens: Working ✅`)
-    console.log(`   • Audit Trail: Working ✅`)
-    console.log(`   • Database: Working ✅`)
-    console.log(`   • API Format: Working ✅`)
-    console.log('\n🌐 Ready for UI testing at http://localhost:3000')
-    console.log('   Username: admin')
-    console.log('   Password: admin123')
+    console.warn('\n🎉 All integration tests passed!')
+    console.warn('\n📊 Summary:')
+    console.warn(`   • Authentication: Working ✅`)
+    console.warn(`   • JWT Tokens: Working ✅`)
+    console.warn(`   • Audit Trail: Working ✅`)
+    console.warn(`   • Database: Working ✅`)
+    console.warn(`   • API Format: Working ✅`)
+    console.warn('\n🌐 Ready for UI testing at http://localhost:3000')
+    console.warn('   Username: admin')
+    console.warn('   Password: admin123')
     
-  } catch (error) {
-    console.log('❌ Integration test failed:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 testIntegration()

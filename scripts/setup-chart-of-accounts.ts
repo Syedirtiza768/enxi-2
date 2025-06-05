@@ -13,18 +13,18 @@ const prisma = new PrismaClient()
 const coaService = new ChartOfAccountsService()
 
 async function setupChartOfAccounts() {
-  console.log('🏦 Setting up Chart of Accounts for production...')
+  console.warn('🏦 Setting up Chart of Accounts for production...')
   
   try {
     // Check if COA already exists
     const existingAccounts = await coaService.getAllAccounts()
     if (existingAccounts.length > 0) {
-      console.log(`⚠️  Chart of Accounts already exists (${existingAccounts.length} accounts found)`)
-      console.log('❓ Do you want to proceed anyway? This might create duplicate accounts.')
+      console.warn(`⚠️  Chart of Accounts already exists (${existingAccounts.length} accounts found)`)
+      console.warn('❓ Do you want to proceed anyway? This might create duplicate accounts.')
       
       // In production, we should prompt for confirmation
       // For now, we'll just exit
-      console.log('❌ Exiting to prevent duplicates. Use --force flag to override.')
+      console.warn('❌ Exiting to prevent duplicates. Use --force flag to override.')
       return
     }
     
@@ -39,7 +39,7 @@ async function setupChartOfAccounts() {
     })
     
     if (!adminUser) {
-      console.log('👤 Creating admin user for COA setup...')
+      console.warn('👤 Creating admin user for COA setup...')
       const hashedPassword = await bcrypt.hash('admin123!', 10)
       
       adminUser = await prisma.user.create({
@@ -52,19 +52,19 @@ async function setupChartOfAccounts() {
         }
       })
       
-      console.log('✅ Admin user created')
+      console.warn('✅ Admin user created')
     } else {
-      console.log('✅ Using existing admin user')
+      console.warn('✅ Using existing admin user')
     }
     
     // Create standard Chart of Accounts
-    console.log('📊 Creating standard Chart of Accounts...')
+    console.warn('📊 Creating standard Chart of Accounts...')
     await coaService.createStandardCOA('USD', adminUser.id)
     
     // Verify creation
     const accounts = await coaService.getAllAccounts()
-    console.log(`✅ Chart of Accounts created successfully!`)
-    console.log(`📈 Total accounts created: ${accounts.length}`)
+    console.warn(`✅ Chart of Accounts created successfully!`)
+    console.warn(`📈 Total accounts created: ${accounts.length}`)
     
     // Display account summary by type
     const accountsByType = accounts.reduce((acc, account) => {
@@ -72,26 +72,24 @@ async function setupChartOfAccounts() {
       return acc
     }, {} as Record<string, number>)
     
-    console.log('\n📋 Account Summary:')
+    console.warn('\n📋 Account Summary:')
     Object.entries(accountsByType).forEach(([type, count]) => {
-      console.log(`   ${type}: ${count} accounts`)
+      console.warn(`   ${type}: ${count} accounts`)
     })
     
     // List top-level accounts
     const topLevelAccounts = accounts.filter(a => !a.parentId)
-    console.log('\n🏗️  Top-level accounts created:')
+    console.warn('\n🏗️  Top-level accounts created:')
     topLevelAccounts.forEach(account => {
-      console.log(`   ${account.code} - ${account.name}`)
+      console.warn(`   ${account.code} - ${account.name}`)
     })
     
-    console.log('\n🎉 Chart of Accounts setup completed successfully!')
+    console.warn('\n🎉 Chart of Accounts setup completed successfully!')
     
-  } catch (error) {
-    console.error('❌ Error setting up Chart of Accounts:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Command line handling
@@ -99,13 +97,13 @@ const args = process.argv.slice(2)
 const force = args.includes('--force')
 
 if (force) {
-  console.log('⚠️  Force mode enabled - will create accounts even if they exist')
+  console.warn('⚠️  Force mode enabled - will create accounts even if they exist')
 }
 
 // Run the setup
 setupChartOfAccounts()
   .then(() => {
-    console.log('✅ Setup completed successfully')
+    console.warn('✅ Setup completed successfully')
     process.exit(0)
   })
   .catch((error) => {

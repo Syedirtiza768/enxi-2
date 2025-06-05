@@ -236,7 +236,7 @@ export class SupplierInvoiceService {
   ): Promise<ThreeWayMatchingResult> {
     const errors: string[] = []
     const warnings: string[] = []
-    let totalOrderedQty = 0
+    const _totalOrderedQty = 0
     let totalReceivedQty = 0
     let totalInvoicedQty = 0
     let totalNewInvoiceQty = 0
@@ -270,7 +270,7 @@ export class SupplierInvoiceService {
       }
 
       // Accumulate quantities for overall matching status
-      totalOrderedQty += grItem.purchaseOrderItem?.quantity || 0
+      // totalOrderedQty += grItem.purchaseOrderItem?.quantity || 0
       totalReceivedQty += grItem.quantityReceived
       totalInvoicedQty += currentlyInvoiced
       totalNewInvoiceQty += item.quantity
@@ -309,9 +309,9 @@ export class SupplierInvoiceService {
   }
 
   private async createAPJournalEntry(
-    invoice: any,
-    items: any[],
-    supplier: any,
+    invoice: Record<string, unknown>,
+    items: Record<string, unknown>[],
+    supplier: Record<string, unknown>,
     userId: string,
     tx: Prisma.TransactionClient
   ) {
@@ -426,7 +426,7 @@ export class SupplierInvoiceService {
       offset = 0
     } = options
 
-    const where: any = {}
+    const where: Record<string, unknown> = {}
     
     if (supplierId) {
       where.supplierId = supplierId

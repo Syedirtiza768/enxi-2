@@ -10,12 +10,12 @@ const bulkUpdateStatusSchema = z.object({
 
 const leadService = new LeadService()
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await request.json()
+    const body = await _request.json()
     const { leadIds, status } = bulkUpdateStatusSchema.parse(body)
     
     const updatedCount = await leadService.bulkUpdateLeadStatus(
@@ -30,13 +30,6 @@ export async function POST(request: NextRequest) {
       message: `${updatedCount} leads updated successfully`
     })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error bulk updating lead status:', error)
     
     if (error instanceof Error) {

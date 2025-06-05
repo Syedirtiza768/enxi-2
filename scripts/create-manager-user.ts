@@ -5,7 +5,7 @@ import { Role } from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 
 async function createManagerUser() {
-  console.log('👥 Creating manager user for sales team demo...\n')
+  console.warn('👥 Creating manager user for sales team demo...\n')
   
   try {
     const hashedPassword = await bcrypt.hash('Manager123!', 10)
@@ -43,10 +43,10 @@ async function createManagerUser() {
       },
     })
     
-    console.log(`✓ Created manager user: ${manager.email}`)
-    console.log(`  Username: ${manager.username}`)
-    console.log(`  Password: Manager123!`)
-    console.log(`  Role: ${manager.role}`)
+    console.warn(`✓ Created manager user: ${manager.email}`)
+    console.warn(`  Username: ${manager.username}`)
+    console.warn(`  Password: Manager123!`)
+    console.warn(`  Role: ${manager.role}`)
     
     // Create some sales reps under this manager
     const salesRep1 = await prisma.user.upsert({
@@ -115,9 +115,9 @@ async function createManagerUser() {
       },
     })
     
-    console.log(`\n✓ Created sales team members:`)
-    console.log(`  ${salesRep1.email} (${salesRep1.username})`)
-    console.log(`  ${salesRep2.email} (${salesRep2.username})`)
+    console.warn(`\n✓ Created sales team members:`)
+    console.warn(`  ${salesRep1.email} (${salesRep1.username})`)
+    console.warn(`  ${salesRep2.email} (${salesRep2.username})`)
     
     // Assign some customers to the sales reps
     const customers = await prisma.customer.findMany({
@@ -163,21 +163,19 @@ async function createManagerUser() {
         })
       }
       
-      console.log(`\n✓ Assigned ${Math.min(customers.length, 3)} customers to the sales team`)
+      console.warn(`\n✓ Assigned ${Math.min(customers.length, 3)} customers to the sales team`)
     }
     
-    console.log('\n🏆 Sales team setup completed successfully!')
-    console.log('\n📝 You can now log in as:')
-    console.log('  Manager: manager@enxi.com / Manager123!')
-    console.log('  Sales Rep 1: sales1@enxi.com / Manager123!')
-    console.log('  Sales Rep 2: sales2@enxi.com / Manager123!')
+    console.warn('\n🏆 Sales team setup completed successfully!')
+    console.warn('\n📝 You can now log in as:')
+    console.warn('  Manager: manager@enxi.com / Manager123!')
+    console.warn('  Sales Rep 1: sales1@enxi.com / Manager123!')
+    console.warn('  Sales Rep 2: sales2@enxi.com / Manager123!')
     
-  } catch (error) {
-    console.error('❌ Error creating sales team:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Run the script

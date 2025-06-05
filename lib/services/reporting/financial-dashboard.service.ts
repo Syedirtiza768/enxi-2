@@ -2,7 +2,6 @@ import { prisma } from '@/lib/db/prisma'
 import { FinancialStatementsService } from '../accounting/financial-statements.service'
 import { TrialBalanceService } from '../accounting/trial-balance.service'
 import { 
-  JournalStatus,
   InvoiceStatus,
   OrderStatus
 } from '@/lib/generated/prisma'
@@ -410,7 +409,7 @@ export class FinancialDashboardService {
     })
   }
 
-  private async getCashFlowMetrics(asOfDate: Date) {
+  private async getCashFlowMetrics(_asOfDate: Date) {
     // This would integrate with cash accounts from chart of accounts
     // For now, return placeholders
     return {
@@ -479,13 +478,13 @@ export class FinancialDashboardService {
       .slice(0, 10)
   }
 
-  private async getProductPerformance(startDate: Date, endDate: Date) {
+  private async getProductPerformance(_startDate: Date, _endDate: Date) {
     // This would require joining invoice items with item master
     // For now, return empty array
     return []
   }
 
-  private async getSalesByRegion(startDate: Date, endDate: Date) {
+  private async getSalesByRegion(_startDate: Date, _endDate: Date) {
     // This would require customer address analysis
     // For now, return empty array
     return []

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LeadService } from '@/lib/services/lead.service'
 import { getUserFromRequest } from '@/lib/utils/auth'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Try to authenticate user but don't fail hard
     try {
-      const user = await getUserFromRequest(request)
+      const _user = await getUserFromRequest(request)
     } catch (authError) {
       console.warn('Auth check failed in stats route:', authError)
       // For now, continue anyway since we're in "bare minimum" auth mode
@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     const stats = await leadService.getLeadStats()
     
     return NextResponse.json(stats)
-  } catch (error) {
-    console.error('Lead stats retrieval error:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve lead statistics' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

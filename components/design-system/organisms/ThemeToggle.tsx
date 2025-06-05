@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useTheme } from '@/lib/design-system/theme-context'
+import { useTheme, type Theme } from '@/lib/design-system/theme-context'
 import { Button } from '../atoms/Button'
 import { Sun, Moon, Monitor } from 'lucide-react'
 
@@ -12,6 +12,7 @@ export interface ThemeToggleProps {
 
 export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme()
+  const [isOpen, setIsOpen] = React.useState(false)
 
   if (variant === 'icon') {
     return (
@@ -35,7 +36,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
     return (
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as any)}
+        onChange={(e) => setTheme(e.target.value as Theme)}
         className={`
           bg-[var(--bg-primary)] text-[var(--text-primary)]
           border border-[var(--border-primary)]
@@ -54,8 +55,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
     )
   }
 
-  // Dropdown variant
-  const [isOpen, setIsOpen] = React.useState(false)
+  // Dropdown variant - state is now declared at top level
 
   const themes = [
     { value: 'light', label: 'Light', icon: Sun },
@@ -102,7 +102,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
               <button
                 key={themeOption.value}
                 onClick={() => {
-                  setTheme(themeOption.value as any)
+                  setTheme(themeOption.value as Theme)
                   setIsOpen(false)
                 }}
                 className={`

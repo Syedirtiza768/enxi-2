@@ -209,11 +209,11 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
       {quotationItems.length === 0 ? (
         <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
           <p className="text-gray-500">No items added yet</p>
-          <p className="text-sm text-gray-400">Click "Add Custom Item" or "Add from Inventory" to get started</p>
+          <p className="text-sm text-gray-400">Click &quot;Add Custom Item&quot; or &quot;Add from Inventory&quot; to get started</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {quotationItems.map((item, index) => (
+          {quotationItems.map((item) => (
             <div key={item.id} className="border border-gray-200 rounded-lg p-4 bg-white">
               <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                 {/* Item Code */}

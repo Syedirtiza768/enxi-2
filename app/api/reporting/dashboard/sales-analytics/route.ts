@@ -9,9 +9,6 @@ const salesAnalyticsSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add proper authentication
-    const userId = 'system' // Replace with actual user authentication
-    
     const { searchParams } = new URL(request.url)
     const startDateParam = searchParams.get('startDate')
     const endDateParam = searchParams.get('endDate')
@@ -36,24 +33,9 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(analytics)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error getting sales analytics:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
-      { error: 'Failed to get sales analytics' },
+      { error: error instanceof Error ? error.message : 'Failed to get sales analytics' },
       { status: 500 }
     )
   }

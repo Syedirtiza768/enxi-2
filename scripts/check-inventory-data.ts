@@ -3,15 +3,15 @@ import { PrismaClient } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🔍 Checking inventory data...\n')
+  console.warn('🔍 Checking inventory data...\n')
   
   // Check units of measure first
   const units = await prisma.unitOfMeasure.findMany()
-  console.log(`Total units of measure: ${units.length}`)
+  console.warn(`Total units of measure: ${units.length}`)
   if (units.length > 0) {
-    console.log('Units of measure:')
+    console.warn('Units of measure:')
     for (const unit of units) {
-      console.log(`- ${unit.name} (${unit.code}): ${unit.symbol}`)
+      console.warn(`- ${unit.name} (${unit.code}): ${unit.symbol}`)
     }
   }
   
@@ -29,19 +29,19 @@ async function main() {
     }
   })
   
-  console.log(`Total items: ${items.length}`)
+  console.warn(`Total items: ${items.length}`)
   if (items.length > 0) {
-    console.log('Items:')
+    console.warn('Items:')
     for (const item of items) {
-      console.log(`- ${item.name} (${item.code})`)
-      console.log(`  Category: ${item.category.name}`)
-      console.log(`  UoM: ${item.unitOfMeasure.name}`)
-      console.log(`  Stock movements: ${item._count.stockMovements}`)
-      console.log(`  Stock lots: ${item._count.stockLots}`)
-      console.log(`  Track inventory: ${item.trackInventory}`)
-      console.log(`  Current cost: $${item.standardCost}`)
-      console.log(`  List price: $${item.listPrice}`)
-      console.log('')
+      console.warn(`- ${item.name} (${item.code})`)
+      console.warn(`  Category: ${item.category.name}`)
+      console.warn(`  UoM: ${item.unitOfMeasure.name}`)
+      console.warn(`  Stock movements: ${item._count.stockMovements}`)
+      console.warn(`  Stock lots: ${item._count.stockLots}`)
+      console.warn(`  Track inventory: ${item.trackInventory}`)
+      console.warn(`  Current cost: $${item.standardCost}`)
+      console.warn(`  List price: $${item.listPrice}`)
+      console.warn('')
     }
   }
   
@@ -51,20 +51,20 @@ async function main() {
       item: true
     }
   })
-  console.log(`Total stock lots: ${lots.length}`)
+  console.warn(`Total stock lots: ${lots.length}`)
   
   if (lots.length > 0) {
-    console.log('\nStock lots:')
+    console.warn('\nStock lots:')
     for (const lot of lots) {
-      console.log(`- Lot ${lot.lotNumber} for ${lot.item.name}`)
-      console.log(`  Available: ${lot.availableQty} @ $${lot.unitCost}`)
-      console.log(`  Total value: $${lot.totalCost}`)
+      console.warn(`- Lot ${lot.lotNumber} for ${lot.item.name}`)
+      console.warn(`  Available: ${lot.availableQty} @ $${lot.unitCost}`)
+      console.warn(`  Total value: $${lot.totalCost}`)
     }
   }
   
   // Check stock movements
   const movements = await prisma.stockMovement.count()
-  console.log(`\nTotal stock movements: ${movements}`)
+  console.warn(`\nTotal stock movements: ${movements}`)
   
   // Check categories
   const categories = await prisma.category.findMany({
@@ -77,11 +77,11 @@ async function main() {
       }
     }
   })
-  console.log(`\nTotal categories: ${categories.length}`)
+  console.warn(`\nTotal categories: ${categories.length}`)
   if (categories.length > 0) {
-    console.log('Categories:')
+    console.warn('Categories:')
     for (const cat of categories) {
-      console.log(`- ${cat.name} (${cat.code}): ${cat._count.items} items, ${cat._count.children} children`)
+      console.warn(`- ${cat.name} (${cat.code}): ${cat._count.items} items, ${cat._count.children} children`)
     }
   }
 }

@@ -10,9 +10,9 @@ const validateAmountSchema = z.object({
 
 const customerPOService = new CustomerPOService()
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await _request.json()
     const { quotationId, poAmount, tolerance } = validateAmountSchema.parse(body)
     
     const validation = await customerPOService.validatePOAmount(
@@ -23,25 +23,10 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(validation)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
-    console.error('Error validating PO amount:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to validate PO amount' },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 400 }
     )
   }
 }

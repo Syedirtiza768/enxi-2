@@ -3,7 +3,7 @@
 import { prisma } from '../lib/db/prisma'
 
 async function testShipmentAPI() {
-  console.log('Testing Shipment API...\n')
+  console.warn('Testing Shipment API...\n')
   
   try {
     // Get an approved sales order
@@ -20,7 +20,7 @@ async function testShipmentAPI() {
     })
     
     if (!approvedOrder) {
-      console.log('No approved sales orders found. Creating test data...')
+      console.warn('No approved sales orders found. Creating test data...')
       
       // Create test data
       const user = await prisma.user.findFirst()
@@ -92,19 +92,19 @@ async function testShipmentAPI() {
         }
       })
       
-      console.log(`✓ Created test sales order: ${newOrder.orderNumber}`)
+      console.warn(`✓ Created test sales order: ${newOrder.orderNumber}`)
     } else {
-      console.log(`✓ Found approved order: ${approvedOrder.orderNumber}`)
+      console.warn(`✓ Found approved order: ${approvedOrder.orderNumber}`)
       
       // Check if it has shippable items
       const shippableItems = approvedOrder.items.filter(item => 
         item.quantity > item.quantityShipped
       )
       
-      console.log(`  - Total items: ${approvedOrder.items.length}`)
-      console.log(`  - Shippable items: ${shippableItems.length}`)
-      console.log(`  - Customer: ${approvedOrder.salesCase.customer.name}`)
-      console.log(`  - Shipping Address: ${approvedOrder.shippingAddress}`)
+      console.warn(`  - Total items: ${approvedOrder.items.length}`)
+      console.warn(`  - Shippable items: ${shippableItems.length}`)
+      console.warn(`  - Customer: ${approvedOrder.salesCase.customer.name}`)
+      console.warn(`  - Shipping Address: ${approvedOrder.shippingAddress}`)
     }
     
     // Test fetching shipments
@@ -125,24 +125,23 @@ async function testShipmentAPI() {
       }
     })
     
-    console.log(`\n✓ Found ${shipments.length} shipments in database`)
+    console.warn(`\n✓ Found ${shipments.length} shipments in database`)
     
     if (shipments.length > 0) {
-      console.log('\nRecent shipments:')
+      console.warn('\nRecent shipments:')
       shipments.forEach(shipment => {
-        console.log(`  - ${shipment.shipmentNumber} (${shipment.status})`)
-        console.log(`    Order: ${shipment.salesOrder.orderNumber}`)
-        console.log(`    Items: ${shipment.items.length}`)
+        console.warn(`  - ${shipment.shipmentNumber} (${shipment.status})`)
+        console.warn(`    Order: ${shipment.salesOrder.orderNumber}`)
+        console.warn(`    Items: ${shipment.items.length}`)
       })
     }
     
-    console.log('\n✅ Shipment API test completed!')
+    console.warn('\n✅ Shipment API test completed!')
     
-  } catch (error) {
-    console.error('❌ Error testing shipment API:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 testShipmentAPI()

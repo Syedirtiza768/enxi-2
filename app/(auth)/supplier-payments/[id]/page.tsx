@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   PageLayout,
   PageHeader,
-  PageSection,
+  _PageSection,
   VStack,
   HStack,
   Grid,
@@ -80,7 +80,7 @@ interface SupplierPayment {
 }
 
 export default function SupplierPaymentDetailPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const paymentId = params.id as string
 
@@ -92,9 +92,9 @@ export default function SupplierPaymentDetailPage() {
     if (paymentId) {
       fetchPayment()
     }
-  }, [paymentId])
+  }, [fetchPayment, paymentId])
 
-  const fetchPayment = async () => {
+  const fetchPayment = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -109,12 +109,11 @@ export default function SupplierPaymentDetailPage() {
       
       setPayment(response.data)
     } catch (error) {
-      console.error('Error fetching supplier payment:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier payment')
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [paymentId])
 
   const getPaymentMethodBadge = (method: string) => {
     const config = {

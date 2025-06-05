@@ -105,7 +105,7 @@ export function ItemForm({
           setGlAccounts(glData.data || [])
         }
       } catch (error) {
-        console.error('Failed to load reference data:', error)
+        console.error('Error loading data:', error)
       }
     }
 
@@ -133,11 +133,11 @@ export function ItemForm({
         setFormData(prev => ({ ...prev, code: data.code }))
         setErrors(prev => ({ ...prev, code: '' }))
       }
-    } catch (error) {
-      console.error('Failed to generate code:', error)
-    } finally {
-      setGeneratingCode(false)
-    }
+      } catch (error) {
+        console.error('Error generating code:', error)
+      } finally {
+        setGeneratingCode(false)
+      }
   }
 
   const validateForm = () => {
@@ -194,13 +194,13 @@ export function ItemForm({
     try {
       await onSubmit(formData)
     } catch (error) {
-      console.error('Form submission error:', error)
+      console.error('Error submitting form:', error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleInputChange = (field: keyof ItemFormData, value: any) => {
+  const handleInputChange = (field: keyof ItemFormData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // Clear error for this field

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CustomerLedger } from '@/components/payments/customer-ledger'
 import { CustomerBusinessHistory } from '@/components/payments/customer-business-history'
@@ -30,15 +30,15 @@ export default function CustomerPaymentsPage() {
 
   useEffect(() => {
     loadCustomer()
-  }, [customerId])
+  }, [customerId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadCustomer = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.get(`/api/customers/${customerId}`)
+      const response = await apiClient(`/api/customers/${customerId}`, { method: 'GET' })
       setCustomer(response.data)
-    } catch (error) {
-      console.error('Error loading customer:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -163,8 +163,8 @@ export default function CustomerPaymentsPage() {
         <TabsContent value="business-history" className="space-y-6">
           <CustomerBusinessHistory 
             customerId={customerId}
-            onViewLedger={(id) => setActiveTab('ledger')}
-            onRecordPayment={(id) => setActiveTab('ledger')}
+            onViewLedger={(_id) => setActiveTab('ledger')}
+            onRecordPayment={(_id) => setActiveTab('ledger')}
             onCreateInvoice={(id) => {
               window.open(`/invoices/new?customerId=${id}`, '_blank')
             }}

@@ -3,7 +3,7 @@ import { PrismaClient, LeadStatus, LeadSource, SalesCaseStatus, QuotationStatus,
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🌱 Starting Customer & SalesCase demo seeding...')
+  console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {
     // Get admin user (assuming it exists)
@@ -15,10 +15,10 @@ async function main() {
       throw new Error('Admin user not found. Please run seed-admin.ts first.')
     }
 
-    console.log('✅ Found admin user:', adminUser.email)
+    console.warn('✅ Found admin user:', adminUser.email)
 
     // 1. Create a lead that will be converted to customer
-    console.log('\n📊 Creating lead for conversion...')
+    console.warn('\n📊 Creating lead for conversion...')
     const lead = await prisma.lead.create({
       data: {
         firstName: 'Sarah',
@@ -40,10 +40,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created lead:', lead.firstName, lead.lastName)
+    console.warn('✅ Created lead:', lead.firstName, lead.lastName)
 
     // 2. Convert lead to customer
-    console.log('\n🔄 Converting lead to customer...')
+    console.warn('\n🔄 Converting lead to customer...')
     const customerFromLead = await prisma.$transaction(async (tx) => {
       // Create customer from lead
       const customer = await tx.customer.create({
@@ -96,10 +96,10 @@ async function main() {
 
       return customer
     })
-    console.log('✅ Converted lead to customer:', customerFromLead.customerNumber)
+    console.warn('✅ Converted lead to customer:', customerFromLead.customerNumber)
 
     // 3. Create another customer directly (manual form)
-    console.log('\n👤 Creating customer via manual form...')
+    console.warn('\n👤 Creating customer via manual form...')
     const manualCustomer = await prisma.$transaction(async (tx) => {
       const customer = await tx.customer.create({
         data: {
@@ -140,10 +140,10 @@ async function main() {
 
       return customer
     })
-    console.log('✅ Created manual customer:', manualCustomer.customerNumber)
+    console.warn('✅ Created manual customer:', manualCustomer.customerNumber)
 
     // 4. Create sales case with full workflow
-    console.log('\n📋 Creating sales case...')
+    console.warn('\n📋 Creating sales case...')
     const salesCase = await prisma.salesCase.create({
       data: {
         customerId: customerFromLead.id,
@@ -158,10 +158,10 @@ async function main() {
         }
       }
     })
-    console.log('✅ Created sales case:', salesCase.caseNumber)
+    console.warn('✅ Created sales case:', salesCase.caseNumber)
 
     // 5. Create quotation
-    console.log('\n📄 Creating quotation...')
+    console.warn('\n📄 Creating quotation...')
     const quotation = await prisma.$transaction(async (tx) => {
       const quote = await tx.quotation.create({
         data: {
@@ -230,10 +230,10 @@ async function main() {
 
       return quote
     })
-    console.log('✅ Created quotation:', quotation.quotationNumber)
+    console.warn('✅ Created quotation:', quotation.quotationNumber)
 
     // 6. Add expenses to sales case
-    console.log('\n💰 Adding expenses...')
+    console.warn('\n💰 Adding expenses...')
     const expenses = await prisma.caseExpense.createMany({
       data: [
         {
@@ -273,10 +273,10 @@ async function main() {
         }
       ]
     })
-    console.log('✅ Added', expenses.count, 'expenses')
+    console.warn('✅ Added', expenses.count, 'expenses')
 
     // 7. Mark quotation as sent and accepted
-    console.log('\n✉️ Sending and accepting quotation...')
+    console.warn('\n✉️ Sending and accepting quotation...')
     await prisma.quotation.update({
       where: { id: quotation.id },
       data: { 
@@ -296,7 +296,7 @@ async function main() {
     })
 
     // 8. Create customer PO
-    console.log('\n📑 Creating customer PO...')
+    console.warn('\n📑 Creating customer PO...')
     const customerPO = await prisma.customerPO.create({
       data: {
         customerId: customerFromLead.id,
@@ -313,7 +313,7 @@ async function main() {
         createdById: adminUser.id
       }
     })
-    console.log('✅ Created customer PO:', customerPO.poNumber)
+    console.warn('✅ Created customer PO:', customerPO.poNumber)
 
     // Update sales case status
     await prisma.salesCase.update({
@@ -322,7 +322,7 @@ async function main() {
     })
 
     // 9. Create sales order from quotation
-    console.log('\n📦 Creating sales order...')
+    console.warn('\n📦 Creating sales order...')
     const salesOrder = await prisma.$transaction(async (tx) => {
       const order = await tx.salesOrder.create({
         data: {
@@ -366,10 +366,10 @@ async function main() {
 
       return order
     })
-    console.log('✅ Created sales order:', salesOrder.orderNumber)
+    console.warn('✅ Created sales order:', salesOrder.orderNumber)
 
     // 10. Mark as delivered and create invoice
-    console.log('\n🚚 Marking as delivered and creating invoice...')
+    console.warn('\n🚚 Marking as delivered and creating invoice...')
     await prisma.salesOrder.update({
       where: { id: salesOrder.id },
       data: { 
@@ -425,10 +425,10 @@ async function main() {
 
       return inv
     })
-    console.log('✅ Created invoice:', invoice.invoiceNumber)
+    console.warn('✅ Created invoice:', invoice.invoiceNumber)
 
     // 11. Record partial payment
-    console.log('\n💳 Recording partial payment...')
+    console.warn('\n💳 Recording partial payment...')
     const partialPayment = await prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
@@ -484,10 +484,10 @@ async function main() {
 
       return payment
     })
-    console.log('✅ Recorded partial payment:', partialPayment.referenceNumber)
+    console.warn('✅ Recorded partial payment:', partialPayment.referenceNumber)
 
     // 12. Record full payment
-    console.log('\n💳 Recording final payment...')
+    console.warn('\n💳 Recording final payment...')
     const finalPayment = await prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
@@ -542,10 +542,10 @@ async function main() {
 
       return payment
     })
-    console.log('✅ Recorded final payment:', finalPayment.referenceNumber)
+    console.warn('✅ Recorded final payment:', finalPayment.referenceNumber)
 
     // 13. Close the sales case
-    console.log('\n🎉 Closing sales case...')
+    console.warn('\n🎉 Closing sales case...')
     const closedCase = await prisma.salesCase.update({
       where: { id: salesCase.id },
       data: {
@@ -557,30 +557,28 @@ async function main() {
         closedAt: new Date()
       }
     })
-    console.log('✅ Closed sales case with result:', closedCase.result)
+    console.warn('✅ Closed sales case with result:', closedCase.result)
 
     // Display summary
-    console.log('\n📊 Demo Data Summary:')
-    console.log('====================')
-    console.log('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
-    console.log('2. Customer from lead:', customerFromLead.name, '-', customerFromLead.customerNumber)
-    console.log('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
-    console.log('4. Sales case:', salesCase.caseNumber, '-', salesCase.title)
-    console.log('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
-    console.log('6. Customer PO:', customerPO.poNumber)
-    console.log('7. Sales order:', salesOrder.orderNumber)
-    console.log('8. Invoice:', invoice.invoiceNumber, '- Status:', invoice.status)
-    console.log('9. Payments: 2 payments totaling', invoice.totalAmount)
-    console.log('10. Sales case closed as WON with profit margin:', closedCase.profitMargin.toFixed(2), '%')
+    console.warn('\n📊 Demo Data Summary:')
+    console.warn('====================')
+    console.warn('1. Lead created:', lead.firstName, lead.lastName, '(', lead.email, ')')
+    console.warn('2. Customer from lead:', customerFromLead.name, '-', customerFromLead.customerNumber)
+    console.warn('3. Manual customer:', manualCustomer.name, '-', manualCustomer.customerNumber)
+    console.warn('4. Sales case:', salesCase.caseNumber, '-', salesCase.title)
+    console.warn('5. Quotation:', quotation.quotationNumber, '- Amount:', quotation.totalAmount)
+    console.warn('6. Customer PO:', customerPO.poNumber)
+    console.warn('7. Sales order:', salesOrder.orderNumber)
+    console.warn('8. Invoice:', invoice.invoiceNumber, '- Status:', invoice.status)
+    console.warn('9. Payments: 2 payments totaling', invoice.totalAmount)
+    console.warn('10. Sales case closed as WON with profit margin:', closedCase.profitMargin.toFixed(2), '%')
     
-    console.log('\n✅ Demo seeding completed successfully!')
+    console.warn('\n✅ Demo seeding completed successfully!')
 
-  } catch (error) {
-    console.error('❌ Error during seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

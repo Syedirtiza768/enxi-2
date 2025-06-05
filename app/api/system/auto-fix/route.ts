@@ -4,10 +4,9 @@ import { getUserFromRequest } from '@/lib/utils/auth';
 export async function POST(request: NextRequest) {
   try {
     // Verify user authentication (optional - could be admin only)
-    let user;
     try {
-      user = await getUserFromRequest(request);
-      console.log('Auto-fix initiated by user', { userId: user.id });
+      const _user = await getUserFromRequest(request);
+      console.warn('Auto-fix initiated by user', { userId: _user.id });
     } catch {
       // Allow in development mode
       if (process.env.NODE_ENV !== 'development') {
@@ -16,7 +15,7 @@ export async function POST(request: NextRequest) {
           message: 'Auto-fix operations require authentication'
         }, { status: 401 });
       }
-      console.log('Auto-fix initiated in development mode');
+      console.warn('Auto-fix initiated in development mode');
     }
 
     // Auto-fix functionality has been removed
@@ -25,18 +24,13 @@ export async function POST(request: NextRequest) {
       message: 'Auto-fix functionality has been deprecated and removed'
     }, { status: 501 });
 
-  } catch (error) {
-    console.error('Auto-fix operation failed', error);
-    
-    return NextResponse.json({
-      error: 'Auto-fix operation failed',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
-  }
+} catch (error) {
+      console.error('Error:', error);
+    }
 }
 
 // Get auto-fix status and available fixes
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Auto-fix functionality has been removed
     return NextResponse.json({
@@ -46,11 +40,10 @@ export async function GET(request: NextRequest) {
     }, { status: 501 });
 
   } catch (error) {
-    console.error('Failed to get auto-fix status', error);
-    
-    return NextResponse.json({
-      error: 'Failed to get auto-fix status',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Auto-fix operation failed' },
+      { status: 500 }
+    );
   }
 }

@@ -15,11 +15,11 @@ import { PrismaClient } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 
 async function seedBasicAccounting() {
-  console.log('🏦 Starting Basic Accounting Data Seeding...\n')
+  console.warn('🏦 Starting Basic Accounting Data Seeding...\n')
 
   try {
     // Step 1: Clean existing accounting data
-    console.log('1. Cleaning existing accounting data...')
+    console.warn('1. Cleaning existing accounting data...')
     
     // Disable foreign key checks temporarily for SQLite
     await prisma.$executeRaw`PRAGMA foreign_keys = OFF;`
@@ -64,10 +64,10 @@ async function seedBasicAccounting() {
       })
     }
     
-    console.log('   ✅ Data cleaned and admin user ready')
+    console.warn('   ✅ Data cleaned and admin user ready')
 
     // Step 2: Create standard chart of accounts
-    console.log('\n2. Creating standard chart of accounts...')
+    console.warn('\n2. Creating standard chart of accounts...')
     
     const accounts = [
       // ASSETS
@@ -116,13 +116,13 @@ async function seedBasicAccounting() {
         }
       })
       createdAccounts[accountData.code] = account
-      console.log(`   📊 Created account: ${accountData.code} - ${accountData.name}`)
+      console.warn(`   📊 Created account: ${accountData.code} - ${accountData.name}`)
     }
     
-    console.log('   ✅ Chart of accounts created')
+    console.warn('   ✅ Chart of accounts created')
 
     // Step 3: Create basic customers
-    console.log('\n3. Creating customers...')
+    console.warn('\n3. Creating customers...')
     
     const customers = [
       {
@@ -163,13 +163,13 @@ async function seedBasicAccounting() {
         }
       })
       createdCustomers.push(customer)
-      console.log(`   👤 Created customer: ${customer.customerNumber} - ${customer.name}`)
+      console.warn(`   👤 Created customer: ${customer.customerNumber} - ${customer.name}`)
     }
     
-    console.log('   ✅ Customers created')
+    console.warn('   ✅ Customers created')
 
     // Step 4: Create sample invoices
-    console.log('\n4. Creating sample invoices...')
+    console.warn('\n4. Creating sample invoices...')
     
     const invoices = [
       {
@@ -216,11 +216,11 @@ async function seedBasicAccounting() {
       })
       
       createdInvoices.push(invoice)
-      console.log(`   🧾 Created invoice: ${invoice.invoiceNumber} - $${invoice.totalAmount.toFixed(2)}`)
+      console.warn(`   🧾 Created invoice: ${invoice.invoiceNumber} - $${invoice.totalAmount.toFixed(2)}`)
     }
 
     // Step 5: Create payments for invoices
-    console.log('\n5. Creating payments...')
+    console.warn('\n5. Creating payments...')
     
     let paymentCounter = 1
     for (const invoice of createdInvoices) {
@@ -242,11 +242,11 @@ async function seedBasicAccounting() {
           }
         }
       })
-      console.log(`   💰 Created payment: ${payment.paymentNumber} - $${payment.amount.toFixed(2)}`)
+      console.warn(`   💰 Created payment: ${payment.paymentNumber} - $${payment.amount.toFixed(2)}`)
     }
 
     // Step 6: Create journal entries
-    console.log('\n6. Creating journal entries...')
+    console.warn('\n6. Creating journal entries...')
     
     let entryNumber = 1
     
@@ -283,7 +283,7 @@ async function seedBasicAccounting() {
         }
       })
       
-      console.log(`   📚 Created sales journal entry: ${salesEntry.entryNumber}`)
+      console.warn(`   📚 Created sales journal entry: ${salesEntry.entryNumber}`)
       
       // Payment transaction (when payment is received)
       const paymentDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
@@ -315,7 +315,7 @@ async function seedBasicAccounting() {
         }
       })
       
-      console.log(`   📚 Created payment journal entry: ${paymentEntry.entryNumber}`)
+      console.warn(`   📚 Created payment journal entry: ${paymentEntry.entryNumber}`)
     }
     
     // Create some expense entries
@@ -357,11 +357,11 @@ async function seedBasicAccounting() {
         }
       })
       
-      console.log(`   📚 Created expense journal entry: ${expenseEntry.entryNumber}`)
+      console.warn(`   📚 Created expense journal entry: ${expenseEntry.entryNumber}`)
     }
 
     // Step 7: Update account balances based on journal entries
-    console.log('\n7. Updating account balances...')
+    console.warn('\n7. Updating account balances...')
     
     const allEntries = await prisma.journalLine.findMany({
       include: { account: true }
@@ -390,12 +390,12 @@ async function seedBasicAccounting() {
           where: { id: accountId },
           data: { balance: account.balance + balanceChange }
         })
-        console.log(`   💰 Updated ${account.code} balance: $${(account.balance + balanceChange).toFixed(2)}`)
+        console.warn(`   💰 Updated ${account.code} balance: $${(account.balance + balanceChange).toFixed(2)}`)
       }
     }
 
     // Step 8: Generate summary report
-    console.log('\n8. Generating summary report...')
+    console.warn('\n8. Generating summary report...')
     
     const totalAccounts = await prisma.account.count()
     const totalCustomers = await prisma.customer.count()
@@ -419,32 +419,30 @@ async function seedBasicAccounting() {
       _sum: { debitAmount: true }
     })
     
-    console.log('\n📊 BASIC ACCOUNTING SEED SUMMARY')
-    console.log('=================================')
-    console.log(`✅ Accounts Created: ${totalAccounts}`)
-    console.log(`✅ Customers Created: ${totalCustomers}`)
-    console.log(`✅ Invoices Generated: ${totalInvoices}`)
-    console.log(`✅ Payments Recorded: ${totalPayments}`)
-    console.log(`✅ Journal Entries: ${totalJournalEntries}`)
-    console.log(`📈 Total Revenue: $${(totalRevenue._sum.creditAmount || 0).toFixed(2)}`)
-    console.log(`📉 Total Expenses: $${(totalExpenses._sum.debitAmount || 0).toFixed(2)}`)
-    console.log(`💰 Net Income: $${((totalRevenue._sum.creditAmount || 0) - (totalExpenses._sum.debitAmount || 0)).toFixed(2)}`)
+    console.warn('\n📊 BASIC ACCOUNTING SEED SUMMARY')
+    console.warn('=================================')
+    console.warn(`✅ Accounts Created: ${totalAccounts}`)
+    console.warn(`✅ Customers Created: ${totalCustomers}`)
+    console.warn(`✅ Invoices Generated: ${totalInvoices}`)
+    console.warn(`✅ Payments Recorded: ${totalPayments}`)
+    console.warn(`✅ Journal Entries: ${totalJournalEntries}`)
+    console.warn(`📈 Total Revenue: $${(totalRevenue._sum.creditAmount || 0).toFixed(2)}`)
+    console.warn(`📉 Total Expenses: $${(totalExpenses._sum.debitAmount || 0).toFixed(2)}`)
+    console.warn(`💰 Net Income: $${((totalRevenue._sum.creditAmount || 0) - (totalExpenses._sum.debitAmount || 0)).toFixed(2)}`)
     
-    console.log('\n🎉 BASIC ACCOUNTING SEEDING COMPLETED!')
-    console.log('\n🔗 Ready for testing:')
-    console.log('1. Chart of Accounts: http://localhost:3000/accounting/accounts')
-    console.log('2. Customers: http://localhost:3000/customers')
-    console.log('3. Invoices: http://localhost:3000/invoices')
-    console.log('4. Payments: http://localhost:3000/payments')
-    console.log('5. Journal Entries: http://localhost:3000/accounting/journal-entries')
-    console.log('6. Financial Reports: http://localhost:3000/accounting/reports')
+    console.warn('\n🎉 BASIC ACCOUNTING SEEDING COMPLETED!')
+    console.warn('\n🔗 Ready for testing:')
+    console.warn('1. Chart of Accounts: http://localhost:3000/accounting/accounts')
+    console.warn('2. Customers: http://localhost:3000/customers')
+    console.warn('3. Invoices: http://localhost:3000/invoices')
+    console.warn('4. Payments: http://localhost:3000/payments')
+    console.warn('5. Journal Entries: http://localhost:3000/accounting/journal-entries')
+    console.warn('6. Financial Reports: http://localhost:3000/accounting/reports')
 
-  } catch (error) {
-    console.error('❌ Seeding failed:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Run the seeding

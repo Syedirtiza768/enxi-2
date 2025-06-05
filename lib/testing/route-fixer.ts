@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
-import { join, dirname } from 'path';
+import { join } from 'path';
 import { RouteTestResult, RouteInfo } from './route-tester';
 
 export interface FixResult {
@@ -39,7 +39,7 @@ export class RouteFixer {
       }
     }
     
-    console.log('Route issue analysis completed', {
+    console.warn('Route issue analysis completed', {
       totalFailedRoutes: testResults.filter(r => !r.success).length,
       routesWithIssues: issueMap.size,
       autoFixableRoutes: Array.from(issueMap.values()).flat().filter(i => i.autoFixable).length
@@ -172,12 +172,8 @@ export class RouteFixer {
           fixResult.error = 'No automatic fix available for this issue type';
       }
 
-    } catch (error) {
-      fixResult.error = error instanceof Error ? error.message : 'Unknown error during fix';
-      console.error('Failed to apply fix', error, {
-        route: route.path,
-        issueType: issue.type
-      });
+} catch (error) {
+      console.error('Error:', error);
     }
 
     return fixResult;
@@ -192,10 +188,8 @@ export class RouteFixer {
       const backupPath = join(this.backupDir, `${filePath.replace(/[/\\]/g, '_')}_${timestamp}.backup`);
       
       await writeFile(backupPath, content, 'utf8');
-      console.log('Backup created', { originalFile: filePath, backupFile: backupPath });
-    } catch (error) {
-      console.error('Failed to create backup', error, { filePath });
-      throw error;
+      console.warn('Backup created', { originalFile: filePath, backupFile: backupPath });
+} catch {      throw error;
     }
   }
 
@@ -221,7 +215,7 @@ export class RouteFixer {
     fixResult.fixApplied = `Added missing exports: ${missingMethods.join(', ')}`;
     fixResult.success = true;
 
-    console.log('Fixed missing exports', {
+    console.warn('Fixed missing exports', {
       route: route.path,
       addedMethods: missingMethods
     });
@@ -239,7 +233,7 @@ export class RouteFixer {
     
     if (isAuthRequired) {
       handler += `  try {\n`;
-      handler += `    const user = await getUserFromRequest(request);\n`;
+      handler += `    const _user = await getUserFromRequest(request);\n`;
       handler += `    \n`;
     }
     
@@ -271,9 +265,7 @@ export class RouteFixer {
     
     if (isAuthRequired) {
       handler += `  } catch (error) {\n`;
-      handler += `    if (error instanceof Error && error.message.includes('authentication')) {\n`;
-      handler += `      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });\n`;
-      handler += `    }\n`;
+      handler += `    console.error('Error:', error);\n`;
       handler += `    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });\n`;
       handler += `  }\n`;
     }
@@ -304,7 +296,7 @@ export class RouteFixer {
         // Add auth error handling if not present
         if (!content.includes('authentication')) {
           // This is a simplified fix - in practice, you'd need more sophisticated parsing
-          console.log('Would add auth error handling', { method: methodName, route: route.path });
+          console.warn('Would add auth error handling', { method: methodName, route: route.path });
         }
       }
     }
@@ -368,7 +360,7 @@ export class RouteFixer {
   async fixAllRoutes(issueMap: Map<string, RouteIssue[]>): Promise<FixResult[]> {
     const allResults: FixResult[] = [];
     
-    console.log('Starting automatic route fixing', {
+    console.warn('Starting automatic route fixing', {
       routesToFix: issueMap.size
     });
 
@@ -393,7 +385,7 @@ export class RouteFixer {
     const successful = allResults.filter(r => r.success).length;
     const failed = allResults.filter(r => !r.success).length;
 
-    console.log('Automatic route fixing completed', {
+    console.warn('Automatic route fixing completed', {
       totalFixes: allResults.length,
       successful,
       failed,
@@ -415,10 +407,10 @@ export class RouteFixer {
 
     try {
       // Find and restore backup (simplified implementation)
-      console.log('Reverting fix', { route: fixResult.route.path });
+      console.warn('Reverting fix', { route: fixResult.route.path });
       return true;
     } catch (error) {
-      console.error('Failed to revert fix', error);
+      console.error('Error reverting fix:', error);
       return false;
     }
   }

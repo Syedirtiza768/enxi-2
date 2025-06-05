@@ -129,7 +129,7 @@ export class SalesOrderService extends BaseService {
         })
 
         // Create sales order items
-        const items = await Promise.all(
+        const _items = await Promise.all(
           data.items.map(async (itemData, index) => {
             const itemCalculations = this.calculateItemTotals(itemData)
             
@@ -218,7 +218,9 @@ export class SalesOrderService extends BaseService {
       })
 
       if (!salesOrder) {
+        // Sales order not found
       } else {
+        // Sales order found
       }
 
       return salesOrder as SalesOrderWithDetails | null
@@ -232,7 +234,7 @@ export class SalesOrderService extends BaseService {
     dateFrom?: Date
     dateTo?: Date
   } = {}): Promise<SalesOrderWithDetails[]> {
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (filters.status) where.status = filters.status
     if (filters.salesCaseId) where.salesCaseId = filters.salesCaseId
@@ -296,7 +298,7 @@ export class SalesOrderService extends BaseService {
 
     return await prisma.$transaction(async (tx) => {
       // Calculate new totals if items are provided
-      let updateData: any = {
+      let updateData: Record<string, unknown> = {
         requestedDate: data.requestedDate,
         promisedDate: data.promisedDate,
         paymentTerms: data.paymentTerms,
@@ -389,7 +391,7 @@ export class SalesOrderService extends BaseService {
         throw new Error('Only pending orders can be approved')
       }
 
-      const updatedOrder = await prisma.salesOrder.update({
+      const _updatedOrder = await prisma.salesOrder.update({
         where: { id },
         data: {
           status: OrderStatus.APPROVED,
@@ -430,7 +432,7 @@ export class SalesOrderService extends BaseService {
       throw new Error('Cannot cancel shipped, delivered, or completed orders')
     }
 
-    const updatedOrder = await prisma.salesOrder.update({
+    const _updatedOrder = await prisma.salesOrder.update({
       where: { id },
       data: {
         status: OrderStatus.CANCELLED,

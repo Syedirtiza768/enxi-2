@@ -209,8 +209,20 @@ export class InventoryAnalyticsService extends BaseService {
 
       let totalCost = 0
       let totalMarketValue = 0
-      const categoryMap = new Map<string, any>()
-      const locationMap = new Map<string, any>()
+      const categoryMap = new Map<string, {
+        categoryName: string
+        quantity: number
+        cost: number
+        marketValue: number
+        percentage: number
+      }>()
+      const locationMap = new Map<string, {
+        locationName: string
+        quantity: number
+        cost: number
+        marketValue: number
+        percentage: number
+      }>()
 
       for (const balance of inventoryBalances) {
         const cost = balance.averageCost * balance.totalQuantity
@@ -460,7 +472,13 @@ export class InventoryAnalyticsService extends BaseService {
       orderBy: { movementDate: 'asc' }
     })
 
-    const dailyMap = new Map<string, any>()
+    const dailyMap = new Map<string, {
+      date: string
+      stockIn: number
+      stockOut: number
+      adjustments: number
+      netMovement: number
+    }>()
 
     for (const movement of movements) {
       const dateKey = movement.movementDate.toISOString().split('T')[0]
@@ -564,7 +582,13 @@ export class InventoryAnalyticsService extends BaseService {
     })
 
     const locationMap = new Map(locations.map(loc => [loc.id, loc]))
-    const resultMap = new Map<string, any>()
+    const resultMap = new Map<string, {
+      locationCode: string
+      locationName: string
+      stockIn: number
+      stockOut: number
+      netMovement: number
+    }>()
 
     for (const movement of movements) {
       if (!movement.locationId) continue

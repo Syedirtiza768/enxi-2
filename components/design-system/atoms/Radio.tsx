@@ -41,7 +41,8 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
     },
     ref
   ) => {
-    const radioId = id || React.useId()
+    const generatedId = React.useId()
+    const radioId = id || generatedId
 
     const sizes = {
       sm: 'h-4 w-4',
@@ -93,7 +94,6 @@ const Radio = forwardRef<HTMLInputElement, RadioProps>(
                 'peer'
               )}
               disabled={disabled}
-              aria-invalid={!!error}
               aria-describedby={error ? `${radioId}-error` : hint ? `${radioId}-hint` : undefined}
               {...props}
             />

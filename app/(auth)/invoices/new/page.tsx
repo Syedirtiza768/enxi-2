@@ -1,18 +1,17 @@
 'use client'
 
-import React from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { InvoiceForm } from '@/components/invoices/invoice-form'
 import { apiClient } from '@/lib/api/client'
 
-export default function NewInvoicePage() {
-  const router = useRouter()
+function NewInvoiceContent() {
   const searchParams = useSearchParams()
   const fromSalesOrder = searchParams.get('fromSalesOrder')
   const fromQuotation = searchParams.get('fromQuotation')
 
-  const handleSubmit = async (invoiceData: any) => {
+  const handleSubmit = async (invoiceData: Record<string, unknown>) => {
     try {
       const response = await apiClient('/api/invoices', {
         method: 'POST',
@@ -26,15 +25,14 @@ export default function NewInvoicePage() {
       const invoiceId = response.data?.data?.id || response.data?.id
       
       // Navigate to the new invoice detail page
-      router.push(`/invoices/${invoiceId}`)
+      window.location.href = `/invoices/${invoiceId}`
     } catch (error) {
-      console.error('Error creating invoice:', error)
-      throw error // Re-throw to let form handle error display
+      console.error('Error:', error)
     }
   }
 
   const handleCancel = () => {
-    router.push('/invoices')
+    window.location.href = '/invoices'
   }
 
   return (
@@ -42,7 +40,7 @@ export default function NewInvoicePage() {
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-sm text-gray-600">
         <button
-          onClick={() => router.push('/invoices')}
+          onClick={() => window.location.href = '/invoices'}
           className="flex items-center hover:text-gray-900"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
@@ -58,5 +56,13 @@ export default function NewInvoicePage() {
         onCancel={handleCancel}
       />
     </div>
+  )
+}
+
+export default function NewInvoicePage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading...</div>}>
+      <NewInvoiceContent />
+    </Suspense>
   )
 }

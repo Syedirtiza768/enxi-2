@@ -18,7 +18,7 @@ async function healthHandler(request: NextRequest) {
     const systemHealth = routeHealthMonitor.getSystemHealthSummary();
     const errorHealth = globalErrorHandler.getSystemHealth();
 
-    let response: any = {
+    const response: unknown = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
@@ -51,7 +51,7 @@ async function healthHandler(request: NextRequest) {
 
     // Perform active health checks if requested
     if (performChecks) {
-      console.log('Performing active health checks');
+      console.warn('Performing active health checks');
       const healthChecks = await routeHealthMonitor.performAllHealthChecks();
       response.activeChecks = healthChecks;
     }
@@ -60,7 +60,7 @@ async function healthHandler(request: NextRequest) {
     try {
       const prisma = new PrismaClient();
       await prisma.$connect();
-      const result = await prisma.$queryRaw`SELECT 1 as test`;
+      await prisma.$queryRaw`SELECT 1 as test`;
       await prisma.$disconnect();
       
       response.database = {
@@ -87,7 +87,7 @@ async function healthHandler(request: NextRequest) {
     const responseTime = Date.now() - startTime;
     response.responseTime = responseTime;
 
-    console.log('Health check completed', {
+    console.warn('Health check completed', {
       status: response.status,
       responseTime,
       databaseStatus: response.database.status,
@@ -105,26 +105,23 @@ async function healthHandler(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Health check failed', error);
-    
-    return NextResponse.json({
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : 'Health check failed',
-      responseTime: Date.now() - Date.now()
-    }, { 
-      status: 503,
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'System health check failed' },
+      {
+        status: 503,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       }
-    });
+    );
   }
 }
 
 export const GET = withUniversalErrorHandling(healthHandler, '/api/system/health', { operation: 'GET health' })
 
 // Simple health check endpoint
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   try {
     const systemHealth = routeHealthMonitor.getSystemHealthSummary();
     const status = systemHealth.overallStatus === 'unhealthy' ? 503 : 200;
@@ -137,6 +134,10 @@ export async function HEAD(request: NextRequest) {
       }
     });
   } catch (error) {
-    return new NextResponse(null, { status: 503 });
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Health check failed' },
+      { status: 500 }
+    );
   }
 }

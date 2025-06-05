@@ -3,8 +3,6 @@ import { AuthService } from '@/lib/services/auth.service'
 import { AuditService } from '@/lib/services/audit.service'
 import { loginSchema } from '@/lib/validators/auth.validator'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { prisma } from '@/lib/db/prisma'
-import { z } from 'zod'
 import { extractAuditContext } from '@/lib/utils/audit-context'
 
 export async function POST(request: NextRequest) {
@@ -34,10 +32,10 @@ export async function POST(request: NextRequest) {
     // Log successful login (skip for now to avoid issues)
     try {
       await auditService.logAction({
-        userId: user.id,
+        userId: _user.id,
         action: AuditAction.LOGIN,
         entityType: 'User',
-        entityId: user.id,
+        entityId: _user.id,
         metadata: { 
           success: true,
           username: user.username
@@ -65,14 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      )
-    }
-
+} catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },

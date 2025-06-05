@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
+import { SalesCaseWithDetails } from './sales-case.service'
 import { AuditService } from './audit.service'
 import { ChartOfAccountsService } from './accounting/chart-of-accounts.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
 import { 
   Customer,
-  Lead,
   AccountType,
   LeadStatus,
   Prisma
@@ -249,7 +249,7 @@ export class CustomerService extends BaseService {
     leadId: string,
     additionalData: Partial<CreateCustomerInput> & { createSalesCase?: boolean; salesCaseTitle?: string },
     userId: string
-  ): Promise<{ customer: Customer; salesCase?: any }> {
+  ): Promise<{ customer: Customer; salesCase?: SalesCaseWithDetails }> {
     return this.withLogging('convertLeadToCustomer', async () => {
 
       const lead = await prisma.lead.findUnique({
@@ -265,7 +265,7 @@ export class CustomerService extends BaseService {
       }
 
       // Use the enhanced lead service for conversion
-      const LeadService = require('./lead.service').LeadService
+      const { LeadService } = await import('./lead.service')
       const leadService = new LeadService()
       
       const customerData = {

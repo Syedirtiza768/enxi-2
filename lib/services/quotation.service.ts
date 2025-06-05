@@ -334,7 +334,7 @@ export class QuotationService extends BaseService {
     return result
   }
 
-  async getQuotationClientView(quotationId: string): Promise<any> {
+  async getQuotationClientView(quotationId: string): Promise<Record<string, unknown>> {
     const quotation = await this.getQuotation(quotationId)
     if (!quotation) {
       throw new Error('Quotation not found')
@@ -355,7 +355,7 @@ export class QuotationService extends BaseService {
     return clientQuotation
   }
 
-  async getQuotationInternalView(quotationId: string): Promise<any> {
+  async getQuotationInternalView(quotationId: string): Promise<Record<string, unknown>> {
     const quotation = await this.getQuotation(quotationId)
     if (!quotation) {
       throw new Error('Quotation not found')
@@ -454,7 +454,9 @@ export class QuotationService extends BaseService {
       })
 
       if (!quotation) {
+        // Quotation not found
       } else {
+        // Quotation found
       }
 
       return quotation
@@ -748,9 +750,7 @@ export class QuotationService extends BaseService {
             }
           }
         } catch (error) {
-          // If we can't check stock, assume out of stock
-          availabilityStatus = 'OUT_OF_STOCK'
-          availableQuantity = 0
+          console.error('Error checking item availability:', error);
         }
       }
 

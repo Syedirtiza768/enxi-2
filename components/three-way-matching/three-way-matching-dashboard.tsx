@@ -13,7 +13,7 @@ import {
 } from '@/components/design-system'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { 
   Search, 
@@ -28,7 +28,6 @@ import {
   ThumbsDown,
   BarChart3,
   FileText,
-  Filter
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -73,7 +72,7 @@ interface MatchingDashboardData {
 }
 
 export function ThreeWayMatchingDashboard() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [data, setData] = useState<MatchingDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -105,9 +104,8 @@ export function ThreeWayMatchingDashboard() {
       }
 
       setData(response.data)
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load matching data')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch dashboard data')
     } finally {
       setLoading(false)
     }
@@ -147,8 +145,7 @@ export function ThreeWayMatchingDashboard() {
       setApprovalReason('')
       await fetchDashboardData() // Refresh data
     } catch (error) {
-      console.error('Error approving exception:', error)
-      setError(error instanceof Error ? error.message : 'Failed to approve exception')
+      console.error('Failed to approve exception:', error)
     } finally {
       setActionLoading(null)
     }
@@ -176,8 +173,7 @@ export function ThreeWayMatchingDashboard() {
       setRejectionReason('')
       await fetchDashboardData() // Refresh data
     } catch (error) {
-      console.error('Error rejecting exception:', error)
-      setError(error instanceof Error ? error.message : 'Failed to reject exception')
+      console.error('Failed to reject exception:', error)
     } finally {
       setActionLoading(null)
     }
@@ -204,8 +200,7 @@ export function ThreeWayMatchingDashboard() {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error exporting report:', error)
-      setError(error instanceof Error ? error.message : 'Failed to export report')
+      console.error('Failed to export report:', error)
     }
   }
 

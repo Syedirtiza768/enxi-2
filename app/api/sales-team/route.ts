@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 
@@ -36,14 +36,13 @@ export const GET = createProtectedHandler(
         manager: null,
         teamMembers: [],
       })
-    } catch (error) {
-      console.error('Error in sales team route:', error)
-
-      return NextResponse.json(
-        { error: 'Failed to fetch sales team data' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { permissions: ['sales.read'] }
 )

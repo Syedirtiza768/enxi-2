@@ -35,7 +35,8 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     ref
   ) => {
     const [isChecked, setIsChecked] = React.useState(defaultChecked || false)
-    const switchId = id || React.useId()
+    const generatedId = React.useId()
+    const switchId = id || generatedId
 
     // Controlled vs uncontrolled
     const checkedState = checked !== undefined ? checked : isChecked

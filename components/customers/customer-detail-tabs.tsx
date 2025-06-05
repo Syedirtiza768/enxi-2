@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { apiClient } from '@/lib/api/client'
 import { CustomerLedger } from '@/components/payments/customer-ledger'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { Eye, FileText, DollarSign } from 'lucide-react'
+import { Eye, DollarSign } from 'lucide-react'
 
 interface CustomerDetailTabsProps {
   customerId: string
@@ -59,9 +59,9 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
     } else if (activeTab === 'invoices') {
       fetchInvoices()
     }
-  }, [activeTab, customerId])
+  }, [activeTab, customerId, fetchPayments, fetchInvoices])
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/payments?customerId=${customerId}`, { method: 'GET' })
@@ -69,14 +69,14 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
         const paymentsData = response.data.data || response.data
         setPayments(Array.isArray(paymentsData) ? paymentsData : [])
       }
-    } catch (error) {
-      console.error('Error fetching payments:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true)
     try {
       const response = await apiClient(`/api/invoices?customerId=${customerId}&status=open`, { method: 'GET' })
@@ -84,12 +84,12 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
         const invoicesData = response.data.data || response.data
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
       }
-    } catch (error) {
-      console.error('Error fetching invoices:', error)
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

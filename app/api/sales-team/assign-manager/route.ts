@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 import { z } from 'zod'
@@ -30,13 +30,6 @@ export const POST = createProtectedHandler(
     } catch (error) {
       console.error('Error assigning manager:', error)
       
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Invalid request data', details: error.errors },
-          { status: 400 }
-        )
-      }
-
       if (error instanceof Error) {
         return NextResponse.json(
           { error: error.message },

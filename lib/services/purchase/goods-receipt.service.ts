@@ -487,7 +487,7 @@ export class GoodsReceiptService extends BaseService {
     })
   }
 
-  async rejectGoodsReceipt(id: string, reason: string, userId: string): Promise<GoodsReceiptWithDetails> {
+  async rejectGoodsReceipt(id: string, reason: string, _userId: string): Promise<GoodsReceiptWithDetails> {
     return this.withLogging('rejectGoodsReceipt', async () => {
       const receipt = await this.getGoodsReceipt(id)
       if (!receipt) {

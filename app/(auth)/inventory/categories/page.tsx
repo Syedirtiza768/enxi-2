@@ -1,18 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Search, Filter, RefreshCw } from 'lucide-react'
+import { Plus, Search, RefreshCw } from 'lucide-react'
 import { CategoryTree, Category } from '@/components/inventory/category-tree'
 import { CategoryForm } from '@/components/inventory/category-form'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
 
-interface ApiResponse<T> {
-  data: T
-  total?: number
-  page?: number
-  limit?: number
-}
 
 export default function CategoriesPage() {
   const { user } = useAuth()
@@ -60,6 +54,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, showInactive])
 
   // Handle category create
@@ -108,7 +103,7 @@ export default function CategoriesPage() {
   }
 
   // Handle form submission
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: Record<string, unknown>) => {
     try {
       const url = formMode === 'create' 
         ? '/api/inventory/categories'
@@ -137,7 +132,7 @@ export default function CategoriesPage() {
   }
 
   // Handle edit button click
-  const handleEditClick = (category: Category) => {
+  const _handleEditClick = (category: Category) => {
     setFormMode('edit')
     setEditingCategory(category)
     setParentId(category.parentId || undefined)

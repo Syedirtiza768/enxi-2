@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/utils/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    console.log('=== AUTH TEST START ===');
-    console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('Headers:', Object.fromEntries(request.headers.entries()));
-    console.log('Cookies:', Array.from(request.cookies.keys()));
+    console.warn('=== AUTH TEST START ===');
+    console.warn('NODE_ENV:', process.env.NODE_ENV);
+    console.warn('Headers:', Object.fromEntries(request.headers.entries()));
+    console.warn('Cookies:', Array.from(request.cookies.keys()));
     
-    const user = await getUserFromRequest(request);
+    const _user = await getUserFromRequest(request);
     
-    console.log('Auth successful:', user);
-    console.log('=== AUTH TEST SUCCESS ===');
+    console.warn('Auth successful:', user);
+    console.warn('=== AUTH TEST SUCCESS ===');
     
     return NextResponse.json({
       success: true,
@@ -19,20 +19,20 @@ export async function GET(request: NextRequest) {
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     });
-  } catch (error: any) {
-    console.log('Auth failed:', error.message);
-    console.log('=== AUTH TEST FAILED ===');
+  } catch (error: unknown) {
+    console.warn('Auth failed:', error instanceof Error ? error.message : String(error));
+    console.warn('=== AUTH TEST FAILED ===');
     
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     }, { status: 401 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const body = await request.json();
     
@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString()
     }, { status: 500 });

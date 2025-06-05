@@ -8,7 +8,7 @@ function generateItemCode(prefix: string): string {
 }
 
 async function main() {
-  console.log('🌱 Starting inventory items seeding...')
+  console.warn('🌱 Starting inventory items seeding...')
 
   try {
     // Get admin user
@@ -20,7 +20,7 @@ async function main() {
       throw new Error('Admin user not found. Please run seed-admin.ts first.')
     }
 
-    console.log('✅ Found admin user:', adminUser.email)
+    console.warn('✅ Found admin user:', adminUser.email)
 
     // Get existing units of measure
     const piece = await prisma.unitOfMeasure.findFirst({
@@ -38,7 +38,7 @@ async function main() {
     }
 
     // Create categories
-    console.log('\n📁 Creating categories...')
+    console.warn('\n📁 Creating categories...')
     
     const electronics = await prisma.category.create({
       data: {
@@ -67,7 +67,7 @@ async function main() {
       }
     })
 
-    console.log('✅ Created categories')
+    console.warn('✅ Created categories')
 
     // Get GL accounts (create if they don't exist)
     let inventoryAccount = await prisma.account.findFirst({
@@ -103,7 +103,7 @@ async function main() {
     }
 
     // Create inventory items
-    console.log('\n📦 Creating inventory items...')
+    console.warn('\n📦 Creating inventory items...')
     
     const items = []
 
@@ -215,27 +215,25 @@ async function main() {
     })
     items.push(cardboardBox)
 
-    console.log(`✅ Created ${items.length} inventory items`)
+    console.warn(`✅ Created ${items.length} inventory items`)
 
     // Display summary
-    console.log('\n📊 Seeding Summary:')
-    console.log('====================')
-    console.log('Categories: 3 created (Electronics, Raw Materials, Packaging)')
-    console.log('Items: 5 created')
-    console.log('  - Business Laptop')
-    console.log('  - 24" LED Monitor')
-    console.log('  - Steel Sheet 2mm')
-    console.log('  - Copper Wire 2.5mm²')
-    console.log('  - Cardboard Box Medium')
+    console.warn('\n📊 Seeding Summary:')
+    console.warn('====================')
+    console.warn('Categories: 3 created (Electronics, Raw Materials, Packaging)')
+    console.warn('Items: 5 created')
+    console.warn('  - Business Laptop')
+    console.warn('  - 24" LED Monitor')
+    console.warn('  - Steel Sheet 2mm')
+    console.warn('  - Copper Wire 2.5mm²')
+    console.warn('  - Cardboard Box Medium')
     
-    console.log('\n✅ Inventory items seeding completed successfully!')
+    console.warn('\n✅ Inventory items seeding completed successfully!')
 
-  } catch (error) {
-    console.error('❌ Error during seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 main()

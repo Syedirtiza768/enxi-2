@@ -1,10 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, Search, Filter, RefreshCw, Download, FileText, Send, Eye, Edit, DollarSign, Receipt } from 'lucide-react'
-import { PageLayout, PageHeader, PageSection, VStack, Button, Card, CardContent, CardHeader, CardTitle, Grid } from '@/components/design-system'
-import { useAuth } from '@/lib/hooks/use-auth'
+import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit, DollarSign } from 'lucide-react'
+import { PageLayout, PageHeader, PageSection, VStack, Grid, Card } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
 
 interface Invoice {
@@ -38,16 +36,8 @@ interface Customer {
   name: string
 }
 
-interface ApiResponse<T> {
-  data: T
-  total?: number
-  page?: number
-  limit?: number
-}
 
 export default function InvoicesPage() {
-  const router = useRouter()
-  const { user } = useAuth()
   
   // State management
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -69,7 +59,7 @@ export default function InvoicesPage() {
   const limit = 20
   
   // Selection for bulk operations
-  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([])
+  const [_selectedInvoices, _setSelectedInvoices] = useState<string[]>([])
   const [hoveredInvoice, setHoveredInvoice] = useState<string | null>(null)
   
   // Reference data
@@ -77,7 +67,7 @@ export default function InvoicesPage() {
   
   // Payment modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<string | null>(null)
+  const [_selectedInvoiceForPayment, _setSelectedInvoiceForPayment] = useState<string | null>(null)
 
   // Fetch invoices from API
   const fetchInvoices = async () => {
@@ -128,7 +118,7 @@ export default function InvoicesPage() {
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
     } catch (error) {
-      console.error('Failed to fetch customers:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -139,6 +129,7 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     fetchInvoices()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, search, statusFilter, typeFilter, customerFilter, dateRangeFilter, overdueOnly])
 
   // Helper functions
@@ -189,16 +180,16 @@ export default function InvoicesPage() {
 
   // Event handlers
   const handleInvoiceSelect = (invoice: Invoice) => {
-    router.push(`/invoices/${invoice.id}`)
+    window.location.href = `/invoices/${invoice.id}`
   }
 
   const handleCreateNew = () => {
-    router.push('/invoices/new')
+    window.location.href = '/invoices/new'
   }
 
   const handleEdit = (invoiceId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    router.push(`/invoices/${invoiceId}/edit`)
+    window.location.href = `/invoices/${invoiceId}/edit`
   }
 
   const handleSend = async (invoiceId: string, e: React.MouseEvent) => {
@@ -211,13 +202,13 @@ export default function InvoicesPage() {
         await fetchInvoices() // Refresh list
       }
     } catch (error) {
-      console.error('Failed to send invoice:', error)
+      console.error('Error:', error)
     }
   }
 
   const handleRecordPayment = (invoiceId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    setSelectedInvoiceForPayment(invoiceId)
+    _setSelectedInvoiceForPayment(invoiceId)
     setShowPaymentModal(true)
   }
 
@@ -428,10 +419,10 @@ export default function InvoicesPage() {
             </div>
 
             {/* Bulk Actions */}
-            {selectedInvoices.length > 0 && (
+            {_selectedInvoices.length > 0 && (
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">
-                  {selectedInvoices.length} invoice{selectedInvoices.length > 1 ? 's' : ''} selected
+                  {_selectedInvoices.length} invoice{_selectedInvoices.length > 1 ? 's' : ''} selected
                 </span>
                 <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">
                   Send Selected

@@ -234,7 +234,7 @@ export class SalesTeamService extends BaseService {
       }
 
       if (filters?.status) {
-        where.status = filters.status as any
+        where.status = filters.status
       }
 
       const customers = await prisma.customer.findMany({
@@ -473,7 +473,7 @@ export class SalesTeamService extends BaseService {
     action: string
     entityType: string
     entityId: string
-    metadata?: any
+    metadata?: Record<string, unknown>
   }) {
     await prisma.auditLog.create({
       data: {

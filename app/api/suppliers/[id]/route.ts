@@ -30,10 +30,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data: supplier })
-  } catch (error) {
-    console.error('Error fetching supplier:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch supplier' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
@@ -50,7 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
+    const body = await _request.json()
     const {
       name,
       email,
@@ -95,23 +95,23 @@ export async function PUT(
         isActive,
         isPreferred
       },
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: supplier })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating supplier:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
@@ -135,22 +135,22 @@ export async function DELETE(
     }
 
     const supplierService = new SupplierService()
-    const supplier = await supplierService.deactivateSupplier(params.id, user.id)
+    const supplier = await supplierService.deactivateSupplier(params.id, _user.id)
 
     return NextResponse.json({ data: supplier })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deactivating supplier:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('outstanding balance')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('outstanding balance')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

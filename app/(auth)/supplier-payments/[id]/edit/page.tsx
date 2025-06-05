@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { PageLayout, PageHeader, VStack, Text } from '@/components/design-system'
+import { PageLayout, PageHeader, VStack, Text, Button } from '@/components/design-system'
 import { SupplierPaymentForm } from '@/components/supplier-payments/supplier-payment-form'
 import { ArrowLeft, DollarSign, AlertTriangle } from 'lucide-react'
-import { Button } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
 
 interface SupplierPaymentFormData {
@@ -23,7 +22,7 @@ interface SupplierPaymentFormData {
 }
 
 export default function EditSupplierPaymentPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const paymentId = params.id as string
 
@@ -35,9 +34,9 @@ export default function EditSupplierPaymentPage() {
     if (paymentId) {
       fetchPayment()
     }
-  }, [paymentId])
+  }, [fetchPayment, paymentId])
 
-  const fetchPayment = async () => {
+  const fetchPayment = useCallback(async () => {
     setLoading(true)
     setError(null)
 
@@ -68,13 +67,12 @@ export default function EditSupplierPaymentPage() {
       }
       
       setPayment(formData)
-    } catch (error) {
-      console.error('Error fetching supplier payment:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load supplier payment')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
-  }
+  }, [paymentId])
 
   const handleSuccess = () => {
     router.push(`/supplier-payments/${paymentId}`)

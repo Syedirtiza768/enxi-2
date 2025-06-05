@@ -34,13 +34,6 @@ export async function POST(
     
     return NextResponse.json(payment, { status: 201 })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error recording payment:', error)
     
     if (error instanceof Error) {

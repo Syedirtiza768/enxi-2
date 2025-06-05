@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { api } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -57,7 +57,6 @@ interface UserPermission {
 }
 
 export default function UserDetailPage() {
-  const router = useRouter()
   const params = useParams()
   const userId = params.id as string
 
@@ -75,7 +74,7 @@ export default function UserDetailPage() {
     if (userId) {
       fetchUserData()
     }
-  }, [userId])
+  }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUserData = async () => {
     try {
@@ -338,7 +337,7 @@ export default function UserDetailPage() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error || 'User not found'}</p>
-        <Button onClick={() => router.push('/users')}>
+        <Button onClick={() => window.location.href = '/users'}>
           Back to Users
         </Button>
       </div>
@@ -352,7 +351,7 @@ export default function UserDetailPage() {
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
-            onClick={() => router.push('/users')}
+            onClick={() => window.location.href = '/users'}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -368,7 +367,7 @@ export default function UserDetailPage() {
           </div>
         </div>
         <Button
-          onClick={() => router.push(`/users/${userId}/edit`)}
+          onClick={() => window.location.href = `/users/${userId}/edit`}
           className="flex items-center space-x-2"
         >
           <Settings className="w-4 h-4" />

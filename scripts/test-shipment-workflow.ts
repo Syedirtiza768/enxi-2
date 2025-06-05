@@ -3,11 +3,11 @@
 import { prisma } from '../lib/db/prisma'
 
 async function testShipmentWorkflow() {
-  console.log('Testing Shipment Workflow...\n')
+  console.warn('Testing Shipment Workflow...\n')
   
   try {
     // 1. Create test data if needed
-    console.log('1. Setting up test data...')
+    console.warn('1. Setting up test data...')
     
     // Find or create a user
     let user = await prisma.user.findFirst()
@@ -64,7 +64,7 @@ async function testShipmentWorkflow() {
     }
     
     // 2. Create an approved sales order
-    console.log('\n2. Creating an approved sales order...')
+    console.warn('\n2. Creating an approved sales order...')
     
     const salesCase = await prisma.salesCase.create({
       data: {
@@ -114,13 +114,13 @@ async function testShipmentWorkflow() {
       }
     })
     
-    console.log(`✓ Created sales order: ${salesOrder.orderNumber}`)
-    console.log(`  - Status: ${salesOrder.status}`)
-    console.log(`  - Customer: ${salesOrder.salesCase.customer.name}`)
-    console.log(`  - Items: ${salesOrder.items.length}`)
+    console.warn(`✓ Created sales order: ${salesOrder.orderNumber}`)
+    console.warn(`  - Status: ${salesOrder.status}`)
+    console.warn(`  - Customer: ${salesOrder.salesCase.customer.name}`)
+    console.warn(`  - Items: ${salesOrder.items.length}`)
     
     // 3. Create a shipment
-    console.log('\n3. Creating a shipment...')
+    console.warn('\n3. Creating a shipment...')
     
     const shipmentNumber = `SH-${Date.now()}`
     const shipment = await prisma.shipment.create({
@@ -157,14 +157,14 @@ async function testShipmentWorkflow() {
       }
     })
     
-    console.log(`✓ Created shipment: ${shipment.shipmentNumber}`)
-    console.log(`  - Status: ${shipment.status}`)
-    console.log(`  - Carrier: ${shipment.carrier}`)
-    console.log(`  - Tracking: ${shipment.trackingNumber}`)
-    console.log(`  - Items shipped: ${shipment.items.length}`)
+    console.warn(`✓ Created shipment: ${shipment.shipmentNumber}`)
+    console.warn(`  - Status: ${shipment.status}`)
+    console.warn(`  - Carrier: ${shipment.carrier}`)
+    console.warn(`  - Tracking: ${shipment.trackingNumber}`)
+    console.warn(`  - Items shipped: ${shipment.items.length}`)
     
     // 4. Confirm the shipment (mark as shipped)
-    console.log('\n4. Confirming shipment...')
+    console.warn('\n4. Confirming shipment...')
     
     // Update shipment status
     const confirmedShipment = await prisma.shipment.update({
@@ -214,12 +214,12 @@ async function testShipmentWorkflow() {
       })
     }
     
-    console.log(`✓ Shipment confirmed and marked as shipped`)
-    console.log(`  - Inventory deducted`)
-    console.log(`  - Sales order items updated`)
+    console.warn(`✓ Shipment confirmed and marked as shipped`)
+    console.warn(`  - Inventory deducted`)
+    console.warn(`  - Sales order items updated`)
     
     // 5. Check final state
-    console.log('\n5. Verifying final state...')
+    console.warn('\n5. Verifying final state...')
     
     const finalOrder = await prisma.salesOrder.findUnique({
       where: { id: salesOrder.id },
@@ -232,18 +232,18 @@ async function testShipmentWorkflow() {
       where: { id: item.id }
     })
     
-    console.log(`\n✓ Sales Order ${salesOrder.orderNumber}:`)
+    console.warn(`\n✓ Sales Order ${salesOrder.orderNumber}:`)
     finalOrder?.items.forEach(item => {
-      console.log(`  - ${item.itemCode}: ${item.quantityShipped}/${item.quantity} shipped`)
+      console.warn(`  - ${item.itemCode}: ${item.quantityShipped}/${item.quantity} shipped`)
     })
     
-    console.log(`\n✓ Inventory for ${item.code}:`)
-    console.log(`  - Initial quantity: 100`)
-    console.log(`  - Current quantity: ${finalItem?.quantityOnHand}`)
-    console.log(`  - Quantity shipped: ${5}`)
+    console.warn(`\n✓ Inventory for ${item.code}:`)
+    console.warn(`  - Initial quantity: 100`)
+    console.warn(`  - Current quantity: ${finalItem?.quantityOnHand}`)
+    console.warn(`  - Quantity shipped: ${5}`)
     
     // 6. List all shipments
-    console.log('\n6. Listing all shipments...')
+    console.warn('\n6. Listing all shipments...')
     
     const allShipments = await prisma.shipment.findMany({
       take: 5,
@@ -261,18 +261,17 @@ async function testShipmentWorkflow() {
       }
     })
     
-    console.log(`\nTotal shipments: ${allShipments.length}`)
+    console.warn(`\nTotal shipments: ${allShipments.length}`)
     allShipments.forEach(sh => {
-      console.log(`  - ${sh.shipmentNumber} (${sh.status}) - Order: ${sh.salesOrder.orderNumber}`)
+      console.warn(`  - ${sh.shipmentNumber} (${sh.status}) - Order: ${sh.salesOrder.orderNumber}`)
     })
     
-    console.log('\n✅ Shipment workflow test completed successfully!')
+    console.warn('\n✅ Shipment workflow test completed successfully!')
     
-  } catch (error) {
-    console.error('❌ Error in shipment workflow test:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 testShipmentWorkflow()

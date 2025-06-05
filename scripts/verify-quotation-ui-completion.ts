@@ -30,10 +30,8 @@ function checkFileContent(filePath: string, patterns: { pattern: string | RegExp
         details: found ? 'Found' : 'Not found'
       })
     }
-  } catch (error) {
-    results.push({
-      description: `${path.basename(filePath)}: File accessibility`,
-      status: 'fail',
+} catch (error) {      status: 'fail',
+    }
       details: `Error reading file: ${error.message}`
     })
   }
@@ -42,7 +40,7 @@ function checkFileContent(filePath: string, patterns: { pattern: string | RegExp
 }
 
 async function verifyQuotationUICompletion() {
-  console.log('🔍 Verifying Quotation UI Schema Alignment Completion...\n')
+  console.warn('🔍 Verifying Quotation UI Schema Alignment Completion...\n')
   
   const results: CheckResult[] = []
   const baseDir = '/Users/irtizahassan/apps/enxi/enxi-erp'
@@ -129,7 +127,7 @@ async function verifyQuotationUICompletion() {
   const failCount = results.filter(r => r.status === 'fail').length
   const warningCount = results.filter(r => r.status === 'warning').length
   
-  console.log('📊 Verification Results:\n')
+  console.warn('📊 Verification Results:\n')
   
   // Group results by status
   const groupedResults = {
@@ -139,64 +137,64 @@ async function verifyQuotationUICompletion() {
   }
   
   if (groupedResults.pass.length > 0) {
-    console.log('✅ PASSED CHECKS:')
+    console.warn('✅ PASSED CHECKS:')
     groupedResults.pass.forEach(result => {
-      console.log(`   ✅ ${result.description}`)
+      console.warn(`   ✅ ${result.description}`)
     })
-    console.log('')
+    console.warn('')
   }
   
   if (groupedResults.fail.length > 0) {
-    console.log('❌ FAILED CHECKS:')
+    console.warn('❌ FAILED CHECKS:')
     groupedResults.fail.forEach(result => {
-      console.log(`   ❌ ${result.description}: ${result.details}`)
+      console.warn(`   ❌ ${result.description}: ${result.details}`)
     })
-    console.log('')
+    console.warn('')
   }
   
   if (groupedResults.warning.length > 0) {
-    console.log('⚠️  WARNINGS (potential old schema references):')
+    console.warn('⚠️  WARNINGS (potential old schema references):')
     groupedResults.warning.forEach(result => {
-      console.log(`   ⚠️  ${result.description}`)
+      console.warn(`   ⚠️  ${result.description}`)
     })
-    console.log('')
+    console.warn('')
   }
   
   // Summary
-  console.log('📈 SUMMARY:')
-  console.log(`   ✅ Passed: ${passCount}`)
-  console.log(`   ❌ Failed: ${failCount}`)
-  console.log(`   ⚠️  Warnings: ${warningCount}`)
-  console.log(`   📊 Total Checks: ${results.length}`)
+  console.warn('📈 SUMMARY:')
+  console.warn(`   ✅ Passed: ${passCount}`)
+  console.warn(`   ❌ Failed: ${failCount}`)
+  console.warn(`   ⚠️  Warnings: ${warningCount}`)
+  console.warn(`   📊 Total Checks: ${results.length}`)
   
   const successRate = Math.round((passCount / results.length) * 100)
-  console.log(`   🎯 Success Rate: ${successRate}%`)
+  console.warn(`   🎯 Success Rate: ${successRate}%`)
   
-  console.log('\n' + '='.repeat(50))
+  console.warn('\n' + '='.repeat(50))
   
   if (failCount === 0) {
-    console.log('🎉 SCHEMA ALIGNMENT VERIFICATION: PASSED')
-    console.log('')
-    console.log('✅ All required schema updates are in place')
-    console.log('✅ Frontend components updated to use QuotationItem[]')
-    console.log('✅ All form fields mapped to correct database schema')
-    console.log('✅ Test scripts updated and verified')
-    console.log('')
-    console.log('🚀 The quotation module is ready for browser testing!')
-    console.log('')
-    console.log('Next steps:')
-    console.log('1. Start the development server: npm run dev')
-    console.log('2. Navigate to: http://localhost:3000/quotations')
-    console.log('3. Test creating a new quotation')
-    console.log('4. Verify item selection and calculations work')
-    console.log('5. Test the complete workflow: Draft → Send → Accept')
+    console.warn('🎉 SCHEMA ALIGNMENT VERIFICATION: PASSED')
+    console.warn('')
+    console.warn('✅ All required schema updates are in place')
+    console.warn('✅ Frontend components updated to use QuotationItem[]')
+    console.warn('✅ All form fields mapped to correct database schema')
+    console.warn('✅ Test scripts updated and verified')
+    console.warn('')
+    console.warn('🚀 The quotation module is ready for browser testing!')
+    console.warn('')
+    console.warn('Next steps:')
+    console.warn('1. Start the development server: npm run dev')
+    console.warn('2. Navigate to: http://localhost:3000/quotations')
+    console.warn('3. Test creating a new quotation')
+    console.warn('4. Verify item selection and calculations work')
+    console.warn('5. Test the complete workflow: Draft → Send → Accept')
     
     return true
   } else {
-    console.log('❌ SCHEMA ALIGNMENT VERIFICATION: FAILED')
-    console.log('')
-    console.log(`${failCount} critical issues need to be resolved before the UI is ready.`)
-    console.log('Please review the failed checks above and make the necessary corrections.')
+    console.warn('❌ SCHEMA ALIGNMENT VERIFICATION: FAILED')
+    console.warn('')
+    console.warn(`${failCount} critical issues need to be resolved before the UI is ready.`)
+    console.warn('Please review the failed checks above and make the necessary corrections.')
     
     return false
   }

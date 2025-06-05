@@ -53,9 +53,8 @@ describe('UserService Integration Tests', () => {
           },
         },
       })
-    } catch (error) {
-      console.error('Cleanup error:', error)
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       await prisma.$disconnect()
     }
   })

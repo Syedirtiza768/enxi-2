@@ -65,7 +65,7 @@ export class InventoryBalanceService extends BaseService {
     itemId: string,
     movementType: MovementType,
     quantity: number,
-    unitCost?: number
+    _unitCost?: number
   ): Promise<InventoryBalance> {
     return this.withLogging('updateInventoryBalance', async () => {
       return prisma.$transaction(async (tx) => {
@@ -104,9 +104,9 @@ export class InventoryBalanceService extends BaseService {
           case MovementType.STOCK_IN:
           case MovementType.OPENING:
             newQuantity += quantity
-            if (unitCost && unitCost > 0) {
+            if (_unitCost && _unitCost > 0) {
               // Update average cost using weighted average
-              const additionalValue = quantity * unitCost
+              const additionalValue = quantity * _unitCost
               newValue += additionalValue
               newAverageCost = newQuantity > 0 ? newValue / newQuantity : 0
             }
@@ -129,13 +129,12 @@ export class InventoryBalanceService extends BaseService {
             break
 
           case MovementType.ADJUSTMENT:
-            const oldQuantity = newQuantity
             newQuantity += quantity // quantity can be positive or negative for adjustments
             
-            if (unitCost && unitCost > 0) {
+            if (_unitCost && _unitCost > 0) {
               if (quantity > 0) {
                 // Positive adjustment - add value
-                const additionalValue = quantity * unitCost
+                const additionalValue = quantity * _unitCost
                 newValue += additionalValue
                 newAverageCost = newQuantity > 0 ? newValue / newQuantity : 0
               } else {
@@ -181,7 +180,7 @@ export class InventoryBalanceService extends BaseService {
     locationId: string,
     itemId: string,
     quantity: number,
-    reservationType: 'SALES_ORDER' | 'TRANSFER' | 'OTHER' = 'SALES_ORDER'
+    _reservationType: 'SALES_ORDER' | 'TRANSFER' | 'OTHER' = 'SALES_ORDER'
   ): Promise<InventoryBalance> {
     return this.withLogging('reserveStock', async () => {
       return prisma.$transaction(async (tx) => {

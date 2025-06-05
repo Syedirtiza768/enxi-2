@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface Customer {
@@ -39,7 +38,6 @@ interface SalesCaseMetrics {
 }
 
 export default function SalesCasesPage() {
-  const router = useRouter()
   const [salesCases, setSalesCases] = useState<SalesCase[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [metrics, setMetrics] = useState<SalesCaseMetrics | null>(null)
@@ -63,7 +61,7 @@ export default function SalesCasesPage() {
     fetchSalesCases()
     fetchCustomers()
     fetchMetrics()
-  }, [statusFilter, search])
+  }, [statusFilter, search]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSalesCases = async () => {
     try {
@@ -77,6 +75,7 @@ export default function SalesCasesPage() {
       setSalesCases(data.data || [])
     } catch (error) {
       console.error('Error fetching sales cases:', error)
+      setError('Failed to load sales cases')
     } finally {
       setLoading(false)
     }
@@ -125,8 +124,8 @@ export default function SalesCasesPage() {
       resetForm()
       fetchSalesCases()
       fetchMetrics()
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error))
     } finally {
       setSubmitting(false)
     }

@@ -15,12 +15,12 @@ import { AlertCircle } from 'lucide-react'
 interface SalesCaseFormProps {
   customerId?: string
   customerName?: string
-  onSuccess?: (salesCase: any) => void
+  onSuccess?: (salesCase: Record<string, unknown>) => void
   onCancel?: () => void
 }
 
 export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }: SalesCaseFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [customers, setCustomers] = useState<Array<{ id: string; name: string }>>([])
@@ -49,14 +49,13 @@ export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }:
         const customersData = response.data.data || response.data
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
-    } catch (error) {
-      console.error('Error loading customers:', error)
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setLoadingCustomers(false)
     }
   }
 
-  const handleChange = (field: keyof CreateSalesCaseData, value: any) => {
+  const handleChange = (field: keyof CreateSalesCaseData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field
     if (errors[field]) {
@@ -93,18 +92,19 @@ export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }:
       } else {
         router.push(`/sales-cases/${response.data.data.id}`)
       }
-    } catch (error: any) {
-      if (error.errors) {
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error) {
         // Zod validation errors
         const fieldErrors: Record<string, string> = {}
-        error.errors.forEach((err: any) => {
+        const zodError = error as { errors: { path: (string | number)[]; message: string }[] }
+        zodError.errors.forEach((err: { path: (string | number)[]; message: string }) => {
           if (err.path[0]) {
             fieldErrors[err.path[0]] = err.message
           }
         })
         setErrors(fieldErrors)
       } else {
-        setErrors({ general: error.message || 'Failed to create sales case' })
+        setErrors({ general: error instanceof Error ? error.message : 'Failed to create sales case' })
       }
     } finally {
       setLoading(false)

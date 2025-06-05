@@ -1,15 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
 import { Item } from '@/components/inventory/item-list'
-import { useAuth } from '@/lib/hooks/use-auth'
 
 export default function ItemDetailPage() {
-  const router = useRouter()
   const params = useParams()
-  const { user } = useAuth()
   
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,11 +48,11 @@ export default function ItemDetailPage() {
 
   // Handle navigation
   const handleBack = () => {
-    router.push('/inventory/items')
+    window.location.href = '/inventory/items'
   }
 
   const handleEdit = () => {
-    router.push(`/inventory/items/${itemId}/edit`)
+    window.location.href = `/inventory/items/${itemId}/edit`
   }
 
   const handleDelete = async () => {
@@ -69,7 +66,7 @@ export default function ItemDetailPage() {
         throw new Error('Failed to delete item')
       }
 
-      router.push('/inventory/items')
+      window.location.href = '/inventory/items'
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete item')
     }

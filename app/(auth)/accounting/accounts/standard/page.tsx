@@ -8,10 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiClient } from '@/lib/api/client'
-import { ArrowLeft, FileText, Download, AlertTriangle, CheckCircle } from 'lucide-react'
+import { ArrowLeft, FileText, AlertTriangle, CheckCircle } from 'lucide-react'
 
 export default function StandardChartPage() {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [currency, setCurrency] = useState('USD')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -70,7 +70,7 @@ export default function StandardChartPage() {
     {
       type: 'Equity',
       accounts: [
-        '3000 - Owner\'s Capital',
+        '3000 - Owner&apos;s Capital',
         '3100 - Retained Earnings',
         '3200 - Drawing'
       ]
@@ -214,7 +214,7 @@ export default function StandardChartPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold mb-2">What's Included</h4>
+              <h4 className="font-semibold mb-2">What&apos;s Included</h4>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Standard asset accounts (cash, receivables, inventory)</li>
                 <li>• Common liability accounts (payables, taxes)</li>

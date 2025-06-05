@@ -13,7 +13,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = request.nextUrl.searchParams
+    const searchParams = _request.nextUrl.searchParams
     const includeTolerance = searchParams.get('includeTolerance') === 'true'
     
     const threeWayMatchingService = new ThreeWayMatchingService()
@@ -33,12 +33,12 @@ export async function GET(
     }
 
     return NextResponse.json(analysis)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error analyzing three-way matching:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

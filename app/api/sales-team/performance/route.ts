@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 import { Role } from '@/lib/generated/prisma'
@@ -27,13 +27,6 @@ export const GET = createProtectedHandler(
     } catch (error) {
       console.error('Error fetching team performance:', error)
       
-      if (error instanceof Error && error.message.includes('Manager not found')) {
-        return NextResponse.json(
-          { error: 'Manager not found or invalid role' },
-          { status: 404 }
-        )
-      }
-
       return NextResponse.json(
         { error: 'Failed to fetch team performance' },
         { status: 500 }

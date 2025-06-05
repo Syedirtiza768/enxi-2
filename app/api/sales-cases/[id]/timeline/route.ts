@@ -12,7 +12,7 @@ export async function GET(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
     const salesCaseService = new SalesCaseService()
     
@@ -22,12 +22,12 @@ export async function GET(
       success: true,
       data: timeline
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching sales case timeline:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }

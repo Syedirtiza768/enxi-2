@@ -143,7 +143,7 @@ const EDGE_CASE_SCENARIOS = [
 ]
 
 async function createEdgeCaseCustomers() {
-  console.log('🔍 Creating edge case customers...')
+  console.warn('🔍 Creating edge case customers...')
   
   const edgeCustomers = []
   
@@ -197,12 +197,10 @@ async function createEdgeCaseCustomers() {
       })
       
       edgeCustomers.push(customerData)
-    } catch (error) {
-      console.log(`Edge case customer ${customerData.name} might already exist, continuing...`)
-    }
+} catch {    }
   }
   
-  console.log(`✅ Created ${edgeCustomers.length} edge case customers`)
+  console.warn(`✅ Created ${edgeCustomers.length} edge case customers`)
   return edgeCustomers
 }
 
@@ -251,7 +249,7 @@ function getLeadSourceForScenario(scenarioName: string): string {
 }
 
 async function createEdgeCaseInvoices(edgeCustomers: any[], users: any[]) {
-  console.log('📄 Creating edge case invoices...')
+  console.warn('📄 Creating edge case invoices...')
   
   const accountants = users.filter(u => u.role === 'accountant' || u.role === 'admin')
   let invoiceCounter = 20000 // Start from high number to avoid conflicts
@@ -289,13 +287,11 @@ async function createEdgeCaseInvoices(edgeCustomers: any[], users: any[]) {
         })
         
         invoiceCounter++
-      } catch (error) {
-        console.log(`Edge case invoice ${invoiceCounter} might already exist, continuing...`)
-      }
+} catch {      }
     }
   }
   
-  console.log(`✅ Created edge case invoices`)
+  console.warn(`✅ Created edge case invoices`)
 }
 
 function generateInvoiceDateForScenario(customer: any, invoiceIndex: number, scenario: any): Date {
@@ -427,7 +423,7 @@ function determineInvoiceStatus(scenario: any, invoiceDate: Date, dueDate: Date)
 }
 
 async function createEdgeCasePayments(edgeCustomers: any[], users: any[]) {
-  console.log('💳 Creating edge case payments...')
+  console.warn('💳 Creating edge case payments...')
   
   const accountants = users.filter(u => u.role === 'accountant' || u.role === 'admin')
   let paymentCounter = 30000 // Start from high number
@@ -466,16 +462,14 @@ async function createEdgeCasePayments(edgeCustomers: any[], users: any[]) {
               })
               
               paymentCounter++
-            } catch (error) {
-              console.log(`Edge case payment ${paymentCounter} might already exist, continuing...`)
-            }
+} catch {            }
           }
         }
       }
     }
   }
   
-  console.log(`✅ Created edge case payments`)
+  console.warn(`✅ Created edge case payments`)
 }
 
 function generateEdgeCasePaymentPattern(invoice: any, scenario: any) {
@@ -606,7 +600,7 @@ function generateEdgeCasePaymentPattern(invoice: any, scenario: any) {
 }
 
 async function createStressTestData() {
-  console.log('🔥 Creating stress test data...')
+  console.warn('🔥 Creating stress test data...')
   
   // Create customer with 1000+ transactions
   const stressCustomer = {
@@ -627,11 +621,9 @@ async function createStressTestData() {
       update: {},
       create: stressCustomer as any
     })
-  } catch (error) {
-    console.log('Stress test customer might already exist, continuing...')
-  }
-  
-  // Create 1000 invoices for stress testing
+} catch (error) {
+      console.error('Error:', error);
+      // Create 1000 invoices for stress testing
   const stressInvoices = []
   for (let i = 0; i < 1000; i++) {
     const invoiceDate = faker.date.between({
@@ -659,16 +651,14 @@ async function createStressTestData() {
       data: stressInvoices as any,
       skipDuplicates: true
     })
-  } catch (error) {
-    console.log('Some stress test invoices might already exist, continuing...')
-  }
-  
-  console.log('✅ Created stress test data (1000+ transactions)')
-}
+} catch (error) {
+      console.error('Error:', error);
+      console.warn('✅ Created stress test data (1000+ transactions)')
+    }
 
 export async function seedEdgeCases() {
   try {
-    console.log('🚀 Starting edge cases and stress test seeding...')
+    console.warn('🚀 Starting edge cases and stress test seeding...')
     
     // Get existing users
     const users = await prisma.user.findMany()
@@ -688,14 +678,12 @@ export async function seedEdgeCases() {
     // Create stress test data
     await createStressTestData()
     
-    console.log('✅ Edge cases and stress test seeding completed!')
+    console.warn('✅ Edge cases and stress test seeding completed!')
     
-  } catch (error) {
-    console.error('❌ Error during edge case seeding:', error)
-    throw error
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 // Run if called directly

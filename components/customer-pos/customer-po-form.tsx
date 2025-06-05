@@ -211,9 +211,8 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
         attachmentUrl
       })
     } catch (error) {
-      setErrors({
-        submit: `Failed to record PO: ${error instanceof Error ? error.message : 'Unknown error'}`
-      })
+      console.error('Error submitting PO:', error)
+      alert(error instanceof Error ? error.message : 'Failed to create customer PO')
     } finally {
       setLoading(false)
     }

@@ -12,28 +12,28 @@ export async function POST(
   context: RouteParams
 ) {
   try {
-    const user = await getUserFromRequest(request)
+    const _user = await getUserFromRequest(_request)
     const params = await context.params
     const journalEntryService = new JournalEntryService()
     
-    const journalEntry = await journalEntryService.cancelJournalEntry(params.id, user.id)
+    const journalEntry = await journalEntryService.cancelJournalEntry(params.id, _user.id)
 
     return NextResponse.json({
       success: true,
       data: journalEntry,
       message: 'Journal entry cancelled successfully'
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error cancelling journal entry:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       )
     }
 
-    if (error.message?.includes('already cancelled')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already cancelled')) {
       return NextResponse.json(
         { error: 'Journal entry is already cancelled' },
         { status: 400 }

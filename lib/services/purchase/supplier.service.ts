@@ -168,7 +168,7 @@ export class SupplierService extends BaseService {
   async updateSupplier(
     id: string,
     data: UpdateSupplierInput,
-    userId: string
+    _userId: string
   ): Promise<SupplierWithDetails> {
     return this.withLogging('updateSupplier', async () => {
       const existingSupplier = await prisma.supplier.findUnique({

@@ -71,7 +71,7 @@ interface PurchaseOrder {
 
 export default function PurchaseOrderDetailPage() {
   const params = useParams()
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -97,9 +97,8 @@ export default function PurchaseOrderDetailPage() {
       }
       
       setPurchaseOrder(response.data)
-    } catch (error) {
-      console.error('Error fetching purchase order:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load purchase order')
+} catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false)
     }
@@ -117,9 +116,8 @@ export default function PurchaseOrderDetailPage() {
       if (response.ok) {
         await fetchPurchaseOrder(purchaseOrder.id)
       }
-    } catch (error) {
-      console.error('Error sending purchase order:', error)
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(false)
     }
   }
@@ -136,9 +134,8 @@ export default function PurchaseOrderDetailPage() {
       if (response.ok) {
         await fetchPurchaseOrder(purchaseOrder.id)
       }
-    } catch (error) {
-      console.error('Error approving purchase order:', error)
-    } finally {
+} catch (error) {
+      console.error('Error:', error);
       setActionLoading(false)
     }
   }

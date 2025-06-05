@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { UserService } from '@/lib/services/user.service'
 import { z } from 'zod'
@@ -35,14 +35,13 @@ export const GET = createProtectedHandler(
         rolePermissions,
         allPermissions: userPermissions,
       })
-    } catch (error) {
-      console.error('Error fetching user permissions:', error)
-      
-      return NextResponse.json(
-        { error: 'Failed to fetch user permissions' },
-        { status: 500 }
-      )
-    }
+} catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
   },
   { permissions: ['users.read'] }
 )
@@ -82,15 +81,7 @@ export const POST = createProtectedHandler(
 
       return NextResponse.json({ success: true })
     } catch (error) {
-      console.error('Error updating user permission:', error)
-      
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { error: 'Validation error', details: error.errors },
-          { status: 400 }
-        )
-      }
-      
+      console.error('Error updating permission:', error);
       return NextResponse.json(
         { error: 'Failed to update permission' },
         { status: 500 }

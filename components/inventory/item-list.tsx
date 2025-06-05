@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Edit2, Trash2, Package, AlertTriangle } from 'lucide-react'
+import { Edit2, Trash2, Package } from 'lucide-react'
 
 export interface ItemStockSummary {
   totalQuantity: number

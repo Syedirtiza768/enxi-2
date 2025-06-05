@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService } from '@/lib/services/inventory/item.service'
 
 // GET /api/inventory/reports/stock-summary - Get stock summary report
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest) {
       summaries: stockSummaries,
       totals
     })
-  } catch (error) {
-    console.error('Error fetching stock summary:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stock summary' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

@@ -3,7 +3,7 @@ import { PrismaClient, MovementType } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('🔧 Fixing stock lots for opening movements...\n')
+  console.warn('🔧 Fixing stock lots for opening movements...\n')
   
   // Get all OPENING movements without stock lots
   const openingMovements = await prisma.stockMovement.findMany({
@@ -16,10 +16,10 @@ async function main() {
     }
   })
   
-  console.log(`Found ${openingMovements.length} opening movements without stock lots`)
+  console.warn(`Found ${openingMovements.length} opening movements without stock lots`)
   
   for (const movement of openingMovements) {
-    console.log(`\nProcessing ${movement.item.name}...`)
+    console.warn(`\nProcessing ${movement.item.name}...`)
     
     // Create stock lot for the opening movement
     const stockLot = await prisma.stockLot.create({
@@ -43,11 +43,11 @@ async function main() {
       data: { stockLotId: stockLot.id }
     })
     
-    console.log(`✅ Created stock lot ${stockLot.lotNumber} with ${stockLot.availableQty} units`)
+    console.warn(`✅ Created stock lot ${stockLot.lotNumber} with ${stockLot.availableQty} units`)
   }
   
   // Verify the fix
-  console.log('\n📊 Verification:')
+  console.warn('\n📊 Verification:')
   const items = await prisma.item.findMany({
     where: { trackInventory: true },
     include: {
@@ -64,10 +64,10 @@ async function main() {
       where: { itemId: item.id, isActive: true }
     })
     const totalStock = stockLots.reduce((sum, lot) => sum + lot.availableQty, 0)
-    console.log(`- ${item.name}: ${item._count.stockLots} lots, Total stock: ${totalStock}`)
+    console.warn(`- ${item.name}: ${item._count.stockLots} lots, Total stock: ${totalStock}`)
   }
   
-  console.log('\n✅ Stock lots fixed successfully!')
+  console.warn('\n✅ Stock lots fixed successfully!')
 }
 
 main()

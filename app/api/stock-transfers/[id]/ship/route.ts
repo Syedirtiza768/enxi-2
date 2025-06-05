@@ -22,23 +22,23 @@ export async function POST(
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.shipStockTransfer(
       params.id,
-      user.id
+      _user.id
     )
 
     return NextResponse.json({ data: transfer })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error shipping stock transfer:', error)
     
-    if (error.message?.includes('not found')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 404 }
       )
     }
     
-    if (error.message?.includes('Can only ship')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('Can only ship')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }

@@ -46,10 +46,10 @@ export default function InventoryPage() {
           categories: 0,
           recentMovements: 0
         })
-      } catch (error) {
-        console.error('Failed to fetch inventory stats:', error)
-      } finally {
-        setLoading(false)
+} catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false)
       }
     }
 

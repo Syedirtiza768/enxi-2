@@ -28,7 +28,7 @@ export async function PATCH(
     const body = await request.json()
     const data = updateExpenseSchema.parse(body)
     
-    const updateData: any = { ...data, updatedBy: userId }
+    const updateData: unknown = { ...data, updatedBy: userId }
     if (data.expenseDate) {
       updateData.expenseDate = new Date(data.expenseDate)
     }
@@ -37,13 +37,6 @@ export async function PATCH(
     
     return NextResponse.json(expense)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
-    
     console.error('Error updating expense:', error)
     
     if (error instanceof Error) {
@@ -73,14 +66,6 @@ export async function DELETE(
     return NextResponse.json({ message: 'Expense deleted successfully' })
   } catch (error) {
     console.error('Error deleting expense:', error)
-    
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      )
-    }
-    
     return NextResponse.json(
       { error: 'Failed to delete expense' },
       { status: 500 }

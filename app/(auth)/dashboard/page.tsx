@@ -31,11 +31,10 @@ export default function DashboardPage() {
         if (response.ok) {
           setLeadStats(response.data!)
         }
-      } catch (error) {
-        console.error('Failed to fetch lead stats:', error)
-      } finally {
-        setIsLoading(false)
-      }
+} catch (error) {
+      console.error('Error:', error);
+      setIsLoading(false)
+    }
     }
 
     fetchStats()

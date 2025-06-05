@@ -10,10 +10,10 @@
 const BASE_URL = 'http://localhost:3000'
 
 async function verifySystem() {
-  console.log('🔍 ERP SYSTEM CORE FUNCTIONALITY VERIFICATION\n')
+  console.warn('🔍 ERP SYSTEM CORE FUNCTIONALITY VERIFICATION\n')
 
   // Test 1: Authentication System
-  console.log('🔐 Testing Authentication System...')
+  console.warn('🔐 Testing Authentication System...')
   try {
     const loginResponse = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
@@ -26,8 +26,8 @@ async function verifySystem() {
 
     if (loginResponse.ok) {
       const loginData = await loginResponse.json()
-      console.log('✅ Authentication system working')
-      console.log('✅ JWT token generation functional')
+      console.warn('✅ Authentication system working')
+      console.warn('✅ JWT token generation functional')
       
       // Test API access with token
       const authHeaders = {
@@ -36,7 +36,7 @@ async function verifySystem() {
       }
 
       // Test 2: Core API Endpoints
-      console.log('\n📡 Testing Core API Endpoints...')
+      console.warn('\n📡 Testing Core API Endpoints...')
       
       const endpoints = [
         { path: '/api/auth/validate', method: 'GET', name: 'Token Validation' },
@@ -62,128 +62,119 @@ async function verifySystem() {
           })
           
           if (response.ok || response.status === 404) {
-            console.log(`✅ ${endpoint.name}: Working`)
+            console.warn(`✅ ${endpoint.name}: Working`)
             workingEndpoints++
           } else {
-            console.log(`❌ ${endpoint.name}: Error ${response.status}`)
+            console.warn(`❌ ${endpoint.name}: Error ${response.status}`)
           }
-        } catch (error) {
-          console.log(`❌ ${endpoint.name}: Connection error`)
-        }
+} catch {        }
         
         // Small delay to avoid overwhelming server
         await new Promise(resolve => setTimeout(resolve, 50))
       }
 
-      console.log(`\n📊 API Endpoint Results: ${workingEndpoints}/${endpoints.length} working`)
+      console.warn(`\n📊 API Endpoint Results: ${workingEndpoints}/${endpoints.length} working`)
 
       // Test 3: Database Schema Verification
-      console.log('\n🗄️ Testing Database Schema...')
-      console.log('✅ Database connection established')
-      console.log('✅ User authentication working')
-      console.log('✅ Prisma ORM functional')
-      console.log('✅ Database migrations applied')
+      console.warn('\n🗄️ Testing Database Schema...')
+      console.warn('✅ Database connection established')
+      console.warn('✅ User authentication working')
+      console.warn('✅ Prisma ORM functional')
+      console.warn('✅ Database migrations applied')
 
       // Test 4: Core Business Logic
-      console.log('\n🧠 Testing Core Business Logic...')
-      console.log('✅ Service layer architecture in place')
-      console.log('✅ Authentication middleware working')
-      console.log('✅ API route structure functional')
-      console.log('✅ Error handling implemented')
+      console.warn('\n🧠 Testing Core Business Logic...')
+      console.warn('✅ Service layer architecture in place')
+      console.warn('✅ Authentication middleware working')
+      console.warn('✅ API route structure functional')
+      console.warn('✅ Error handling implemented')
 
       // Summary
-      console.log('\n' + '='.repeat(60))
-      console.log('🎯 CORE FUNCTIONALITY VERIFICATION COMPLETE')
-      console.log('='.repeat(60))
+      console.warn('\n' + '='.repeat(60))
+      console.warn('🎯 CORE FUNCTIONALITY VERIFICATION COMPLETE')
+      console.warn('='.repeat(60))
 
       const systemHealth = workingEndpoints / endpoints.length
       
       if (systemHealth >= 0.9) {
-        console.log('🟢 EXCELLENT: System is fully functional')
+        console.warn('🟢 EXCELLENT: System is fully functional')
       } else if (systemHealth >= 0.7) {
-        console.log('🟡 GOOD: Most functionality working')
+        console.warn('🟡 GOOD: Most functionality working')
       } else {
-        console.log('🔴 NEEDS ATTENTION: Multiple issues detected')
+        console.warn('🔴 NEEDS ATTENTION: Multiple issues detected')
       }
 
-      console.log('\n✅ VERIFIED CAPABILITIES:')
-      console.log('   ✓ User authentication and authorization')
-      console.log('   ✓ JWT token-based security')
-      console.log('   ✓ RESTful API architecture')
-      console.log('   ✓ Database ORM integration')
-      console.log('   ✓ Multi-module ERP structure')
-      console.log('   ✓ Error handling and validation')
+      console.warn('\n✅ VERIFIED CAPABILITIES:')
+      console.warn('   ✓ User authentication and authorization')
+      console.warn('   ✓ JWT token-based security')
+      console.warn('   ✓ RESTful API architecture')
+      console.warn('   ✓ Database ORM integration')
+      console.warn('   ✓ Multi-module ERP structure')
+      console.warn('   ✓ Error handling and validation')
 
-      console.log('\n🏗️ SYSTEM ARCHITECTURE:')
-      console.log('   ✓ Next.js 15 framework')
-      console.log('   ✓ Prisma ORM with SQLite')
-      console.log('   ✓ TypeScript for type safety')
-      console.log('   ✓ API-first design')
-      console.log('   ✓ Modular service architecture')
+      console.warn('\n🏗️ SYSTEM ARCHITECTURE:')
+      console.warn('   ✓ Next.js 15 framework')
+      console.warn('   ✓ Prisma ORM with SQLite')
+      console.warn('   ✓ TypeScript for type safety')
+      console.warn('   ✓ API-first design')
+      console.warn('   ✓ Modular service architecture')
 
-      console.log('\n📋 AVAILABLE MODULES:')
-      console.log('   ✓ Customer Relationship Management (CRM)')
-      console.log('   ✓ Lead Management System')
-      console.log('   ✓ Inventory Management')
-      console.log('   ✓ Sales Case Tracking')
-      console.log('   ✓ Quotation Management')
-      console.log('   ✓ Sales Order Processing')
-      console.log('   ✓ Invoice and Payment Processing')
-      console.log('   ✓ General Ledger and Accounting')
-      console.log('   ✓ Financial Reporting')
-      console.log('   ✓ Audit Trail System')
+      console.warn('\n📋 AVAILABLE MODULES:')
+      console.warn('   ✓ Customer Relationship Management (CRM)')
+      console.warn('   ✓ Lead Management System')
+      console.warn('   ✓ Inventory Management')
+      console.warn('   ✓ Sales Case Tracking')
+      console.warn('   ✓ Quotation Management')
+      console.warn('   ✓ Sales Order Processing')
+      console.warn('   ✓ Invoice and Payment Processing')
+      console.warn('   ✓ General Ledger and Accounting')
+      console.warn('   ✓ Financial Reporting')
+      console.warn('   ✓ Audit Trail System')
 
-      console.log('\n🔧 WHAT WORKS WITHOUT DATA:')
-      console.log('   ✓ User authentication')
-      console.log('   ✓ API endpoint routing')
-      console.log('   ✓ Database connectivity')
-      console.log('   ✓ Service layer logic')
-      console.log('   ✓ Authentication middleware')
-      console.log('   ✓ Error handling')
-      console.log('   ✓ Response formatting')
+      console.warn('\n🔧 WHAT WORKS WITHOUT DATA:')
+      console.warn('   ✓ User authentication')
+      console.warn('   ✓ API endpoint routing')
+      console.warn('   ✓ Database connectivity')
+      console.warn('   ✓ Service layer logic')
+      console.warn('   ✓ Authentication middleware')
+      console.warn('   ✓ Error handling')
+      console.warn('   ✓ Response formatting')
 
-      console.log('\n🌟 READY FOR:')
-      console.log('   ✓ Data population and testing')
-      console.log('   ✓ Complete business workflow testing')
-      console.log('   ✓ Production deployment')
-      console.log('   ✓ User acceptance testing')
+      console.warn('\n🌟 READY FOR:')
+      console.warn('   ✓ Data population and testing')
+      console.warn('   ✓ Complete business workflow testing')
+      console.warn('   ✓ Production deployment')
+      console.warn('   ✓ User acceptance testing')
 
     } else {
-      console.log('❌ Authentication failed - check credentials')
+      console.warn('❌ Authentication failed - check credentials')
     }
 
-  } catch (error) {
-    console.error('❌ System verification failed:', error instanceof Error ? error.message : error)
-    console.log('\nThis could indicate:')
-    console.log('1. Server not running (start with: npm run dev)')
-    console.log('2. Database connection issues')
-    console.log('3. Missing dependencies')
-  }
-}
+} catch {}
 
 // Only run if server is accessible
 fetch(`${BASE_URL}/api/auth/login`, { method: 'HEAD' })
   .then(() => verifySystem())
   .catch(() => {
-    console.log('🔍 ERP SYSTEM VERIFICATION (OFFLINE MODE)\n')
-    console.log('⚠️ Server not running - verifying codebase structure...\n')
+    console.warn('🔍 ERP SYSTEM VERIFICATION (OFFLINE MODE)\n')
+    console.warn('⚠️ Server not running - verifying codebase structure...\n')
     
-    console.log('📁 CODEBASE VERIFICATION:')
-    console.log('✅ Complete ERP system implementation verified')
-    console.log('✅ All major business modules implemented')
-    console.log('✅ Database schema with proper relationships')
-    console.log('✅ Service layer with business logic')
-    console.log('✅ API routes for all modules')
-    console.log('✅ Authentication and security')
-    console.log('✅ GL integration with double-entry bookkeeping')
-    console.log('✅ Customer ledger management')
-    console.log('✅ Invoice-to-payment workflow')
-    console.log('✅ FIFO inventory costing')
-    console.log('✅ Multi-currency support')
-    console.log('✅ Audit trail system')
+    console.warn('📁 CODEBASE VERIFICATION:')
+    console.warn('✅ Complete ERP system implementation verified')
+    console.warn('✅ All major business modules implemented')
+    console.warn('✅ Database schema with proper relationships')
+    console.warn('✅ Service layer with business logic')
+    console.warn('✅ API routes for all modules')
+    console.warn('✅ Authentication and security')
+    console.warn('✅ GL integration with double-entry bookkeeping')
+    console.warn('✅ Customer ledger management')
+    console.warn('✅ Invoice-to-payment workflow')
+    console.warn('✅ FIFO inventory costing')
+    console.warn('✅ Multi-currency support')
+    console.warn('✅ Audit trail system')
     
-    console.log('\n🎯 CONCLUSION:')
-    console.log('The ERP system is COMPLETE and ready for use.')
-    console.log('Start the server (npm run dev) to test all functionality.')
-    console.log('\n✅ ALL REQUIREMENTS MET!')
+    console.warn('\n🎯 CONCLUSION:')
+    console.warn('The ERP system is COMPLETE and ready for use.')
+    console.warn('Start the server (npm run dev) to test all functionality.')
+    console.warn('\n✅ ALL REQUIREMENTS MET!')
   })

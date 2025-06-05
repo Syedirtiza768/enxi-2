@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { VStack, HStack, Input, Textarea, Button, Select, Text, Card, CardContent } from '@/components/design-system'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -69,7 +69,7 @@ interface GoodsReceiptFormProps {
 }
 
 export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
@@ -91,17 +91,17 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     if (goodsReceipt?.purchaseOrderId) {
       fetchPurchaseOrder(goodsReceipt.purchaseOrderId)
     }
-  }, [])
+  }, [goodsReceipt?.purchaseOrderId, fetchPurchaseOrder])
 
   useEffect(() => {
     if (formData.purchaseOrderId && !selectedPO) {
       fetchPurchaseOrder(formData.purchaseOrderId)
     }
-  }, [formData.purchaseOrderId])
+  }, [formData.purchaseOrderId, selectedPO, fetchPurchaseOrder])
 
   useEffect(() => {
     calculateTotal()
-  }, [formData.items])
+  }, [formData.items, calculateTotal])
 
   const fetchPurchaseOrders = async () => {
     try {
@@ -114,7 +114,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     }
   }
 
-  const fetchPurchaseOrder = async (poId: string) => {
+  const fetchPurchaseOrder = useCallback(async (poId: string) => {
     try {
       const response = await apiClient(`/api/purchase-orders/${poId}`, { method: 'GET' })
       if (response.ok) {
@@ -123,7 +123,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
         
         // Initialize receipt items from PO items
         if (!goodsReceipt) {
-          const receiptItems: GoodsReceiptItem[] = po.items.map((item: any) => ({
+          const receiptItems: GoodsReceiptItem[] = po.items.map((item: PurchaseOrder['items'][0]) => ({
             purchaseOrderItemId: item.id,
             item: item.item,
             orderedQuantity: item.quantity,
@@ -144,14 +144,14 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     } catch (error) {
       console.error('Error fetching purchase order:', error)
     }
-  }
+  }, [goodsReceipt])
 
-  const calculateTotal = () => {
+  const calculateTotal = useCallback(() => {
     const total = formData.items.reduce((sum, item) => 
       sum + (item.quantityReceived * item.unitCost), 0
     )
     setFormData(prev => ({ ...prev, totalReceived: total }))
-  }
+  }, [formData.items])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -167,7 +167,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     }
   }
 
-  const updateItem = (index: number, field: keyof GoodsReceiptItem, value: any) => {
+  const updateItem = (index: number, field: keyof GoodsReceiptItem, value: number | string) => {
     const updatedItems = [...formData.items]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     

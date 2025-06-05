@@ -36,7 +36,7 @@ interface ComprehensiveTestReport {
 }
 
 async function comprehensiveRouteTestAndFix() {
-  console.log('🚀 Starting Comprehensive Route Testing and Fixing\n');
+  console.warn('🚀 Starting Comprehensive Route Testing and Fixing\n');
   
   const startTime = Date.now();
   const report: ComprehensiveTestReport = {
@@ -48,7 +48,7 @@ async function comprehensiveRouteTestAndFix() {
 
   try {
     // Phase 1: Route Discovery
-    console.log('📍 Phase 1: Discovering all routes...');
+    console.warn('📍 Phase 1: Discovering all routes...');
     const routes = await routeDiscovery.discoverAllRoutes();
     const categorizedRoutes = routeDiscovery.getRoutesByCategory();
     
@@ -60,23 +60,23 @@ async function comprehensiveRouteTestAndFix() {
       categorizedRoutes
     };
     
-    console.log(`✅ Discovery Complete:`);
-    console.log(`   - Total Routes: ${report.discovery.totalRoutes}`);
-    console.log(`   - API Routes: ${report.discovery.apiRoutes}`);
-    console.log(`   - Page Routes: ${report.discovery.pageRoutes}`);
-    console.log(`   - Layout Routes: ${report.discovery.layoutRoutes}`);
+    console.warn(`✅ Discovery Complete:`);
+    console.warn(`   - Total Routes: ${report.discovery.totalRoutes}`);
+    console.warn(`   - API Routes: ${report.discovery.apiRoutes}`);
+    console.warn(`   - Page Routes: ${report.discovery.pageRoutes}`);
+    console.warn(`   - Layout Routes: ${report.discovery.layoutRoutes}`);
     
-    console.log('\n📊 Routes by Category:');
+    console.warn('\n📊 Routes by Category:');
     categorizedRoutes.forEach(group => {
-      console.log(`   - ${group.category}: ${group.routes.length} routes`);
+      console.warn(`   - ${group.category}: ${group.routes.length} routes`);
     });
 
     // Phase 2: Comprehensive Testing
-    console.log('\n🧪 Phase 2: Comprehensive route testing...');
+    console.warn('\n🧪 Phase 2: Comprehensive route testing...');
     
     // Focus on API routes first (most critical)
     const apiRoutes = routes.filter(r => r.type === 'api');
-    console.log(`Testing ${apiRoutes.length} API routes...`);
+    console.warn(`Testing ${apiRoutes.length} API routes...`);
     
     const tester = new RouteTester();
     const testSummary = await tester.testAllRoutes(apiRoutes);
@@ -93,37 +93,37 @@ async function comprehensiveRouteTestAndFix() {
         .slice(0, 10)
     };
     
-    console.log(`✅ Testing Complete:`);
-    console.log(`   - Total Tests: ${report.testing.totalTests}`);
-    console.log(`   - Passed: ${report.testing.passed}`);
-    console.log(`   - Failed: ${report.testing.failed}`);
-    console.log(`   - Success Rate: ${report.testing.successRate}%`);
+    console.warn(`✅ Testing Complete:`);
+    console.warn(`   - Total Tests: ${report.testing.totalTests}`);
+    console.warn(`   - Passed: ${report.testing.passed}`);
+    console.warn(`   - Failed: ${report.testing.failed}`);
+    console.warn(`   - Success Rate: ${report.testing.successRate}%`);
     
-    console.log('\n❌ Errors by Category:');
+    console.warn('\n❌ Errors by Category:');
     Object.entries(report.testing.errorsByCategory).forEach(([category, count]) => {
-      console.log(`   - ${category}: ${count} errors`);
+      console.warn(`   - ${category}: ${count} errors`);
     });
 
     if (report.testing.slowRoutes.length > 0) {
-      console.log('\n🐌 Slowest Routes:');
+      console.warn('\n🐌 Slowest Routes:');
       report.testing.slowRoutes.slice(0, 5).forEach((result: any) => {
-        console.log(`   - ${result.route.path} (${result.scenario.method}): ${result.responseTime}ms`);
+        console.warn(`   - ${result.route.path} (${result.scenario.method}): ${result.responseTime}ms`);
       });
     }
 
     // Phase 3: Error Analysis and Fixing
-    console.log('\n🔧 Phase 3: Analyzing and fixing errors...');
+    console.warn('\n🔧 Phase 3: Analyzing and fixing errors...');
     
     const fixer = new RouteFixer();
     const failedResults = tester.getFailedRoutes();
     
     if (failedResults.length > 0) {
-      console.log(`Analyzing ${failedResults.length} failed routes...`);
+      console.warn(`Analyzing ${failedResults.length} failed routes...`);
       
       const issueMap = await fixer.analyzeRouteIssues(failedResults);
       report.fixing.issuesFound = Array.from(issueMap.values()).flat().length;
       
-      console.log(`Found ${report.fixing.issuesFound} issues across ${issueMap.size} routes`);
+      console.warn(`Found ${report.fixing.issuesFound} issues across ${issueMap.size} routes`);
       
       // Show issue breakdown
       const issueTypes: Record<string, number> = {};
@@ -131,44 +131,44 @@ async function comprehensiveRouteTestAndFix() {
         issueTypes[issue.type] = (issueTypes[issue.type] || 0) + 1;
       });
       
-      console.log('\n🔍 Issues by Type:');
+      console.warn('\n🔍 Issues by Type:');
       Object.entries(issueTypes).forEach(([type, count]) => {
-        console.log(`   - ${type}: ${count} issues`);
+        console.warn(`   - ${type}: ${count} issues`);
       });
       
       // Apply automatic fixes
-      console.log('\n🛠️ Applying automatic fixes...');
+      console.warn('\n🛠️ Applying automatic fixes...');
       const fixResults = await fixer.fixAllRoutes(issueMap);
       
       report.fixing.fixesApplied = fixResults.length;
       report.fixing.successfulFixes = fixResults.filter(f => f.success).length;
       report.fixing.failedFixes = fixResults.filter(f => !f.success).length;
       
-      console.log(`✅ Fixes Applied:`);
-      console.log(`   - Total Attempts: ${report.fixing.fixesApplied}`);
-      console.log(`   - Successful: ${report.fixing.successfulFixes}`);
-      console.log(`   - Failed: ${report.fixing.failedFixes}`);
+      console.warn(`✅ Fixes Applied:`);
+      console.warn(`   - Total Attempts: ${report.fixing.fixesApplied}`);
+      console.warn(`   - Successful: ${report.fixing.successfulFixes}`);
+      console.warn(`   - Failed: ${report.fixing.failedFixes}`);
       
       if (report.fixing.successfulFixes > 0) {
-        console.log('\n✨ Successfully Fixed:');
+        console.warn('\n✨ Successfully Fixed:');
         fixResults.filter(f => f.success).slice(0, 5).forEach(fix => {
-          console.log(`   - ${fix.route.path}: ${fix.fixApplied}`);
+          console.warn(`   - ${fix.route.path}: ${fix.fixApplied}`);
         });
       }
       
       if (report.fixing.failedFixes > 0) {
-        console.log('\n⚠️ Manual Intervention Required:');
+        console.warn('\n⚠️ Manual Intervention Required:');
         fixResults.filter(f => !f.success).slice(0, 5).forEach(fix => {
-          console.log(`   - ${fix.route.path}: ${fix.error || 'Unknown error'}`);
+          console.warn(`   - ${fix.route.path}: ${fix.error || 'Unknown error'}`);
         });
       }
       
     } else {
-      console.log('🎉 No errors found - all routes are working correctly!');
+      console.warn('🎉 No errors found - all routes are working correctly!');
     }
 
     // Phase 4: Performance Analysis
-    console.log('\n⚡ Phase 4: Performance analysis...');
+    console.warn('\n⚡ Phase 4: Performance analysis...');
     
     const allResults = tester.getTestResults().filter(r => r.success);
     if (allResults.length > 0) {
@@ -189,15 +189,15 @@ async function comprehensiveRouteTestAndFix() {
         }))
       };
       
-      console.log(`✅ Performance Analysis:`);
-      console.log(`   - Average Response Time: ${report.performance.averageResponseTime}ms`);
-      console.log(`   - Fastest Route: ${report.performance.fastestRoutes[0]?.path} (${report.performance.fastestRoutes[0]?.responseTime}ms)`);
-      console.log(`   - Slowest Route: ${report.performance.slowestRoutes[0]?.path} (${report.performance.slowestRoutes[0]?.responseTime}ms)`);
+      console.warn(`✅ Performance Analysis:`);
+      console.warn(`   - Average Response Time: ${report.performance.averageResponseTime}ms`);
+      console.warn(`   - Fastest Route: ${report.performance.fastestRoutes[0]?.path} (${report.performance.fastestRoutes[0]?.responseTime}ms)`);
+      console.warn(`   - Slowest Route: ${report.performance.slowestRoutes[0]?.path} (${report.performance.slowestRoutes[0]?.responseTime}ms)`);
     }
 
     // Phase 5: Re-test Fixed Routes
     if (report.fixing.successfulFixes > 0) {
-      console.log('\n🔄 Phase 5: Re-testing fixed routes...');
+      console.warn('\n🔄 Phase 5: Re-testing fixed routes...');
       
       // Re-test only the routes that were fixed
       const fixedRoutes = fixer.getFixResults()
@@ -208,54 +208,54 @@ async function comprehensiveRouteTestAndFix() {
         const retestSummary = await tester.testAllRoutes(fixedRoutes);
         const improvement = retestSummary.passed - (testSummary.failed - report.fixing.successfulFixes);
         
-        console.log(`✅ Re-test Results:`);
-        console.log(`   - Re-tested: ${retestSummary.totalTests} tests`);
-        console.log(`   - Now Passing: ${retestSummary.passed}`);
-        console.log(`   - Still Failing: ${retestSummary.failed}`);
-        console.log(`   - Improvement: +${improvement} passing tests`);
+        console.warn(`✅ Re-test Results:`);
+        console.warn(`   - Re-tested: ${retestSummary.totalTests} tests`);
+        console.warn(`   - Now Passing: ${retestSummary.passed}`);
+        console.warn(`   - Still Failing: ${retestSummary.failed}`);
+        console.warn(`   - Improvement: +${improvement} passing tests`);
       }
     }
 
     // Generate comprehensive report
     const totalTime = Date.now() - startTime;
     
-    console.log('\n📋 COMPREHENSIVE REPORT SUMMARY');
-    console.log('=' .repeat(50));
-    console.log(`🎯 Overall Success Rate: ${report.testing.successRate}%`);
-    console.log(`⏱️ Total Processing Time: ${Math.round(totalTime / 1000)}s`);
-    console.log(`📊 Routes Discovered: ${report.discovery.totalRoutes}`);
-    console.log(`🧪 Tests Executed: ${report.testing.totalTests}`);
-    console.log(`🔧 Issues Fixed: ${report.fixing.successfulFixes}/${report.fixing.issuesFound}`);
-    console.log(`⚡ Avg Response Time: ${report.performance.averageResponseTime}ms`);
+    console.warn('\n📋 COMPREHENSIVE REPORT SUMMARY');
+    console.warn('=' .repeat(50));
+    console.warn(`🎯 Overall Success Rate: ${report.testing.successRate}%`);
+    console.warn(`⏱️ Total Processing Time: ${Math.round(totalTime / 1000)}s`);
+    console.warn(`📊 Routes Discovered: ${report.discovery.totalRoutes}`);
+    console.warn(`🧪 Tests Executed: ${report.testing.totalTests}`);
+    console.warn(`🔧 Issues Fixed: ${report.fixing.successfulFixes}/${report.fixing.issuesFound}`);
+    console.warn(`⚡ Avg Response Time: ${report.performance.averageResponseTime}ms`);
     
     // Performance categories
     const performanceGrade = report.performance.averageResponseTime < 500 ? 'A' :
                             report.performance.averageResponseTime < 1000 ? 'B' :
                             report.performance.averageResponseTime < 2000 ? 'C' : 'D';
     
-    console.log(`📈 Performance Grade: ${performanceGrade}`);
+    console.warn(`📈 Performance Grade: ${performanceGrade}`);
     
     // Final recommendations
-    console.log('\n💡 RECOMMENDATIONS:');
+    console.warn('\n💡 RECOMMENDATIONS:');
     
     if (report.testing.successRate < 80) {
-      console.log('🔴 Critical: Low success rate - immediate attention required');
+      console.warn('🔴 Critical: Low success rate - immediate attention required');
     } else if (report.testing.successRate < 95) {
-      console.log('🟡 Warning: Success rate could be improved');
+      console.warn('🟡 Warning: Success rate could be improved');
     } else {
-      console.log('🟢 Excellent: High success rate maintained');
+      console.warn('🟢 Excellent: High success rate maintained');
     }
     
     if (report.performance.averageResponseTime > 2000) {
-      console.log('🔴 Critical: High response times - performance optimization needed');
+      console.warn('🔴 Critical: High response times - performance optimization needed');
     } else if (report.performance.averageResponseTime > 1000) {
-      console.log('🟡 Warning: Response times could be optimized');
+      console.warn('🟡 Warning: Response times could be optimized');
     } else {
-      console.log('🟢 Good: Response times are acceptable');
+      console.warn('🟢 Good: Response times are acceptable');
     }
     
     if (report.fixing.failedFixes > 0) {
-      console.log(`🔴 Manual: ${report.fixing.failedFixes} issues require manual intervention`);
+      console.warn(`🔴 Manual: ${report.fixing.failedFixes} issues require manual intervention`);
     }
 
     // Save detailed report
@@ -270,19 +270,19 @@ async function comprehensiveRouteTestAndFix() {
       }
     }, null, 2));
     
-    console.log(`\n📄 Detailed report saved: ${reportPath}`);
+    console.warn(`\n📄 Detailed report saved: ${reportPath}`);
     
-    console.log('\n🎉 Comprehensive Route Testing and Fixing Complete!');
+    console.warn('\n🎉 Comprehensive Route Testing and Fixing Complete!');
     
     // Exit codes for CI/CD
     if (report.testing.successRate < 50) {
-      console.log('\n❌ CRITICAL FAILURE - Exiting with error code 1');
+      console.warn('\n❌ CRITICAL FAILURE - Exiting with error code 1');
       process.exit(1);
     } else if (report.testing.successRate < 80) {
-      console.log('\n⚠️ WARNING - Exiting with error code 2');
+      console.warn('\n⚠️ WARNING - Exiting with error code 2');
       process.exit(2);
     } else {
-      console.log('\n✅ SUCCESS - All systems operational');
+      console.warn('\n✅ SUCCESS - All systems operational');
       process.exit(0);
     }
 

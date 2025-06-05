@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   PageLayout,
   PageHeader,
@@ -27,8 +26,6 @@ import {
   Calendar,
   Edit,
   Trash2,
-  FileText,
-  Package
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
@@ -64,7 +61,6 @@ interface SupplierStats {
 }
 
 export default function SuppliersPage() {
-  const router = useRouter()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [stats, setStats] = useState<SupplierStats>({
     totalSuppliers: 0,
@@ -106,8 +102,7 @@ export default function SuppliersPage() {
       }
       setStats(stats)
     } catch (error) {
-      console.error('Error fetching suppliers:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load suppliers')
+      console.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -127,7 +122,7 @@ export default function SuppliersPage() {
         await fetchSuppliers()
       }
     } catch (error) {
-      console.error('Error deleting supplier:', error)
+      console.error('Error:', error)
     }
   }
 
@@ -195,7 +190,7 @@ export default function SuppliersPage() {
             <Button
               variant="primary"
               leftIcon={<Plus />}
-              onClick={() => router.push('/suppliers/new')}
+              onClick={() => window.location.href = '/suppliers/new'}
             >
               Add Supplier
             </Button>
@@ -317,7 +312,7 @@ export default function SuppliersPage() {
                     <Button
                       variant="primary"
                       leftIcon={<Plus />}
-                      onClick={() => router.push('/suppliers/new')}
+                      onClick={() => window.location.href = '/suppliers/new'}
                     >
                       Add Supplier
                     </Button>
@@ -390,7 +385,7 @@ export default function SuppliersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push(`/suppliers/${supplier.id}`)}
+                            onClick={() => window.location.href = `/suppliers/${supplier.id}`}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>

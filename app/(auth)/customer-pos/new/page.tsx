@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import CustomerPOForm from '@/components/customer-pos/customer-po-form'
@@ -21,8 +21,8 @@ interface Quotation {
   currency: string
 }
 
-export default function NewCustomerPOPage() {
-  const router = useRouter()
+function NewCustomerPOContent() {
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
   const quotationId = searchParams.get('quotationId')
 
@@ -63,7 +63,16 @@ export default function NewCustomerPOPage() {
     fetchQuotation()
   }, [quotationId])
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: {
+    poNumber: string
+    customerId: string
+    quotationId?: string
+    poDate: string
+    poAmount: number
+    currency: string
+    attachmentUrl?: string
+    notes?: string
+  }) => {
     try {
       const response = await fetch('/api/customer-pos', {
         method: 'POST',
@@ -85,7 +94,7 @@ export default function NewCustomerPOPage() {
       router.push(`/customer-pos/${result.id}`)
     } catch (error) {
       console.error('Error creating customer PO:', error)
-      throw error // Re-throw to be handled by the form
+      alert(error instanceof Error ? error.message : 'Failed to create customer PO')
     }
   }
 
@@ -159,5 +168,13 @@ export default function NewCustomerPOPage() {
         onCancel={handleCancel}
       />
     </div>
+  )
+}
+
+export default function NewCustomerPOPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewCustomerPOContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   VStack, 
@@ -16,7 +16,7 @@ import {
 } from '@/components/design-system'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Search, AlertTriangle, CheckCircle, Package, Calendar, DollarSign } from 'lucide-react'
+import { Search, AlertTriangle, Package } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
 interface Supplier {
@@ -98,7 +98,7 @@ interface SupplierInvoiceFormProps {
 }
 
 export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvoiceFormProps) {
-  const router = useRouter()
+  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -132,18 +132,18 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       fetchSupplier(supplierInvoice.supplierId)
       fetchGoodsReceipts(supplierInvoice.supplierId)
     }
-  }, [])
+  }, [fetchSupplier, supplierInvoice?.supplierId])
 
   useEffect(() => {
     if (formData.supplierId && formData.supplierId !== selectedSupplier?.id) {
       fetchSupplier(formData.supplierId)
       fetchGoodsReceipts(formData.supplierId)
     }
-  }, [formData.supplierId])
+  }, [fetchSupplier, formData.supplierId, selectedSupplier?.id])
 
   useEffect(() => {
     calculateTotals()
-  }, [formData.items])
+  }, [calculateTotals])
 
   useEffect(() => {
     // Auto-calculate due date based on payment terms
@@ -178,7 +178,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }
 
-  const fetchSupplier = async (supplierId: string) => {
+  const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
       const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
       if (response.ok) {
@@ -196,7 +196,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     } catch (error) {
       console.error('Error fetching supplier:', error)
     }
-  }
+  }, [formData.currency])
 
   const fetchGoodsReceipts = async (supplierId: string) => {
     try {
@@ -227,7 +227,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }
 
-  const calculateTotals = () => {
+  const calculateTotals = useCallback(() => {
     const subtotal = formData.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
     const taxAmount = formData.items.reduce((sum, item) => sum + (item.taxAmount || 0), 0)
     const totalAmount = subtotal + taxAmount
@@ -238,9 +238,9 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       taxAmount: Math.round(taxAmount * 100) / 100,
       totalAmount: Math.round(totalAmount * 100) / 100
     }))
-  }
+  }, [formData.items])
 
-  const addGoodsReceiptItem = (goodsReceiptItem: any) => {
+  const addGoodsReceiptItem = (goodsReceiptItem: GoodsReceipt['items'][0]) => {
     const newItem: SupplierInvoiceItem = {
       goodsReceiptItemId: goodsReceiptItem.id,
       description: goodsReceiptItem.item.name,
@@ -266,7 +266,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }))
   }
 
-  const updateItem = (index: number, field: keyof SupplierInvoiceItem, value: any) => {
+  const updateItem = (index: number, field: keyof SupplierInvoiceItem, value: string | number) => {
     setFormData(prev => {
       const updatedItems = [...prev.items]
       const item = { ...updatedItems[index] }
@@ -284,10 +284,10 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
   }
 
   const getAvailableGoodsReceiptItems = () => {
-    return goodsReceipts.flatMap(gr => 
-      gr.items.filter(item => 
+    return (goodsReceipts || []).flatMap(gr => 
+      (gr.items || []).filter(item => 
         (item.quantityReceived - (item.quantityInvoiced || 0)) > 0 &&
-        !formData.items.some(invoiceItem => invoiceItem.goodsReceiptItemId === item.id)
+        !(formData.items || []).some(invoiceItem => invoiceItem.goodsReceiptItemId === item.id)
       )
     )
   }
@@ -337,9 +337,9 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       } else {
         router.push('/supplier-invoices')
       }
-    } catch (error) {
-      console.error('Error saving supplier invoice:', error)
-      setError(error instanceof Error ? error.message : 'Failed to save supplier invoice')
+    } catch (err) {
+      console.error('Error saving supplier invoice:', err)
+      setError(err instanceof Error ? err.message : 'Failed to save supplier invoice')
     } finally {
       setLoading(false)
     }
@@ -353,7 +353,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }
 
-  const filteredSuppliers = suppliers.filter(supplier =>
+  const filteredSuppliers = (suppliers || []).filter(supplier =>
     supplier.name.toLowerCase().includes(supplierSearch.toLowerCase()) ||
     supplier.code.toLowerCase().includes(supplierSearch.toLowerCase()) ||
     supplier.supplierNumber.toLowerCase().includes(supplierSearch.toLowerCase())
@@ -397,7 +397,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       required
                     >
                       <option value="">Select supplier...</option>
-                      {filteredSuppliers.map(supplier => (
+                      {(filteredSuppliers || []).map(supplier => (
                         <option key={supplier.id} value={supplier.id}>
                           {supplier.name} ({supplier.code})
                         </option>
@@ -463,7 +463,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                     onValueChange={(value) => setFormData(prev => ({ ...prev, taxAccountId: value || undefined }))}
                   >
                     <option value="">No tax account</option>
-                    {taxAccounts.map(account => (
+                    {(taxAccounts || []).map(account => (
                       <option key={account.id} value={account.id}>
                         {account.accountNumber} - {account.accountName}
                       </option>
@@ -526,7 +526,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {availableGRItems.map(item => {
+                    {(availableGRItems || []).map(item => {
                       const availableQty = item.quantityReceived - (item.quantityInvoiced || 0)
                       return (
                         <TableRow key={item.id}>
@@ -598,7 +598,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {formData.items.map((item, index) => (
+                    {(formData.items || []).map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>
                           <VStack gap="xs">
@@ -653,7 +653,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                             required
                           >
                             <option value="">Select account...</option>
-                            {accounts.map(account => (
+                            {(accounts || []).map(account => (
                               <option key={account.id} value={account.id}>
                                 {account.accountNumber} - {account.accountName}
                               </option>

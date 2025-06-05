@@ -7,7 +7,7 @@
 import { PrismaClient } from '@/lib/generated/prisma'
 
 async function createTestInvoices() {
-  console.log('🚀 Creating test invoices...\n')
+  console.warn('🚀 Creating test invoices...\n')
   
   const prisma = new PrismaClient()
   
@@ -32,7 +32,7 @@ async function createTestInvoices() {
       return
     }
     
-    console.log(`📋 Found ${customers.length} customers and ${items.length} items`)
+    console.warn(`📋 Found ${customers.length} customers and ${items.length} items`)
     
     // 2. Create test invoices
     const invoicesToCreate = [
@@ -56,7 +56,7 @@ async function createTestInvoices() {
       }
     ]
     
-    console.log(`\n📄 Creating ${invoicesToCreate.length} test invoices...`)
+    console.warn(`\n📄 Creating ${invoicesToCreate.length} test invoices...`)
     
     for (let i = 0; i < invoicesToCreate.length; i++) {
       const invoiceData = invoicesToCreate[i]
@@ -133,20 +133,18 @@ async function createTestInvoices() {
           }
         })
         
-        console.log(`✅ Invoice ${i + 1} created:`)
-        console.log(`   - Number: ${invoice.invoiceNumber}`)
-        console.log(`   - Customer: ${invoice.customer.name}`)
-        console.log(`   - Status: ${invoice.status}`)
-        console.log(`   - Items: ${invoice.items.length}`)
-        console.log(`   - Total: $${invoice.totalAmount.toFixed(2)}`)
+        console.warn(`✅ Invoice ${i + 1} created:`)
+        console.warn(`   - Number: ${invoice.invoiceNumber}`)
+        console.warn(`   - Customer: ${invoice.customer.name}`)
+        console.warn(`   - Status: ${invoice.status}`)
+        console.warn(`   - Items: ${invoice.items.length}`)
+        console.warn(`   - Total: $${invoice.totalAmount.toFixed(2)}`)
         
-      } catch (error) {
-        console.error(`❌ Failed to create invoice ${i + 1}:`, error.message)
-      }
+} catch {      }
     }
     
     // 3. Summary
-    console.log('\n📊 Invoice Creation Summary:')
+    console.warn('\n📊 Invoice Creation Summary:')
     const createdInvoices = await prisma.invoice.findMany({
       include: {
         customer: true,
@@ -154,33 +152,32 @@ async function createTestInvoices() {
       }
     })
     
-    console.log(`✅ Total invoices in system: ${createdInvoices.length}`)
+    console.warn(`✅ Total invoices in system: ${createdInvoices.length}`)
     
     if (createdInvoices.length > 0) {
       const totalValue = createdInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0)
       const unpaidValue = createdInvoices.reduce((sum, inv) => sum + inv.balanceAmount, 0)
       
-      console.log(`💰 Total invoice value: $${totalValue.toFixed(2)}`)
-      console.log(`💳 Unpaid balance: $${unpaidValue.toFixed(2)}`)
+      console.warn(`💰 Total invoice value: $${totalValue.toFixed(2)}`)
+      console.warn(`💳 Unpaid balance: $${unpaidValue.toFixed(2)}`)
       
-      console.log('\n📋 Invoice Breakdown:')
+      console.warn('\n📋 Invoice Breakdown:')
       createdInvoices.forEach((invoice, index) => {
-        console.log(`   ${index + 1}. ${invoice.invoiceNumber}: ${invoice.customer.name} - $${invoice.totalAmount.toFixed(2)} (${invoice.status})`)
+        console.warn(`   ${index + 1}. ${invoice.invoiceNumber}: ${invoice.customer.name} - $${invoice.totalAmount.toFixed(2)} (${invoice.status})`)
       })
       
-      console.log('\n🎉 Test invoices created successfully!')
-      console.log('\n🔗 Next steps:')
-      console.log('1. Run: npm run dev')
-      console.log('2. Navigate to: http://localhost:3000/invoices')
-      console.log('3. Test the invoice-payment workflow')
-      console.log('4. Record payments for invoices')
+      console.warn('\n🎉 Test invoices created successfully!')
+      console.warn('\n🔗 Next steps:')
+      console.warn('1. Run: npm run dev')
+      console.warn('2. Navigate to: http://localhost:3000/invoices')
+      console.warn('3. Test the invoice-payment workflow')
+      console.warn('4. Record payments for invoices')
     }
     
-  } catch (error) {
-    console.error('❌ Error creating test invoices:', error)
-  } finally {
-    await prisma.$disconnect()
-  }
+} catch (error) {
+      console.error('Error:', error);
+      await prisma.$disconnect()
+    }
 }
 
 createTestInvoices()

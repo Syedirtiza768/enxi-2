@@ -240,7 +240,7 @@ export class ShipmentService extends BaseService {
     })
   }
 
-  async cancelShipment(shipmentId: string, data: CancelShipmentDto) {
+  async cancelShipment(shipmentId: string, _data: CancelShipmentDto) {
     return this.withLogging('cancelShipment', async () => {
       const shipment = await prisma.shipment.findUnique({
         where: { id: shipmentId },
@@ -282,7 +282,7 @@ export class ShipmentService extends BaseService {
       const where: Prisma.ShipmentWhereInput = {}
 
       if (options?.filters?.status) {
-        where.status = options.filters.status as any
+        where.status = options.filters.status as unknown
       }
 
       if (options?.filters?.salesOrderId) {
@@ -434,8 +434,8 @@ export class ShipmentService extends BaseService {
     return `SHP-${year}-${nextNumber.toString().padStart(5, '0')}`
   }
 
-  private async updateOrderStatusAfterShipment(tx: any, salesOrderId: string) {
-    const order = await tx.salesOrder.findUnique({
+  private async updateOrderStatusAfterShipment(_tx: unknown, salesOrderId: string) {
+    const order = await (_tx as Record<string, unknown>).salesOrder.findUnique({
       where: { id: salesOrderId },
       include: { items: true },
     })
@@ -446,15 +446,15 @@ export class ShipmentService extends BaseService {
     const hasShippedItems = order.items.some(item => item.quantityShipped > 0)
     
     if (hasShippedItems && order.status === OrderStatus.APPROVED) {
-      await tx.salesOrder.update({
+      await (_tx as Record<string, unknown>).salesOrder.update({
         where: { id: salesOrderId },
         data: { status: OrderStatus.SHIPPED },
       })
     }
   }
 
-  private async updateOrderStatusAfterDelivery(tx: any, salesOrderId: string) {
-    const order = await tx.salesOrder.findUnique({
+  private async updateOrderStatusAfterDelivery(_tx: unknown, salesOrderId: string) {
+    const order = await (_tx as Record<string, unknown>).salesOrder.findUnique({
       where: { id: salesOrderId },
       include: { items: true },
     })
@@ -467,7 +467,7 @@ export class ShipmentService extends BaseService {
     )
     
     if (allDelivered) {
-      await tx.salesOrder.update({
+      await (_tx as Record<string, unknown>).salesOrder.update({
         where: { id: salesOrderId },
         data: { status: OrderStatus.DELIVERED },
       })

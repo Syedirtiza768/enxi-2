@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
-import { UnitOfMeasureService } from '@/lib/services/inventory/unit-of-measure.service'
-import { CreateUnitOfMeasureInput } from '@/lib/services/inventory/unit-of-measure.service'
+import { UnitOfMeasureService, CreateUnitOfMeasureInput } from '@/lib/services/inventory/unit-of-measure.service'
 
 // GET /api/inventory/units-of-measure - Get all units of measure
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -29,17 +28,17 @@ export async function GET(request: NextRequest) {
       data: units,
       total: units.length
     })
-  } catch (error) {
-    console.error('Error fetching units of measure:', error)
+} catch (error) {
+    console.error('Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch units of measure' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
 }
 
 // POST /api/inventory/units-of-measure - Create new unit of measure
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -78,29 +77,29 @@ export async function POST(request: NextRequest) {
       isBaseUnit: isBaseUnit || false,
       baseUnitId,
       conversionFactor,
-      createdBy: user.id
+      createdBy: _user.id
     }
 
     const uomService = new UnitOfMeasureService()
     const unit = await uomService.createUnitOfMeasure(uomData)
 
     return NextResponse.json(unit, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating unit of measure:', error)
     
-    if (error.message?.includes('already exists')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 409 }
       )
     }
     
-    if (error.message?.includes('not found') || 
-        error.message?.includes('inactive') ||
-        error.message?.includes('must') ||
-        error.message?.includes('cannot')) {
+    if (error instanceof Error ? error.message : String(error)?.includes('not found') || 
+        error instanceof Error ? error.message : String(error)?.includes('inactive') ||
+        error instanceof Error ? error.message : String(error)?.includes('must') ||
+        error instanceof Error ? error.message : String(error)?.includes('cannot')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error instanceof Error ? error.message : String(error) },
         { status: 400 }
       )
     }
