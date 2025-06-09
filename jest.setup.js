@@ -1,8 +1,8 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom'
+require('@testing-library/jest-dom')
 
 // Polyfill for Next.js
-import { TextDecoder, TextEncoder } from 'util'
+const { TextDecoder, TextEncoder } = require('util')
 global.TextDecoder = TextDecoder
 global.TextEncoder = TextEncoder
 
