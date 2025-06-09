@@ -51,10 +51,20 @@ async function main() {
       console.log('Inventory tables cleanup skipped')
     }
     
+    // Clean up user-related tables first
+    await prisma.userPermission.deleteMany()
+    await prisma.userSession.deleteMany()
+    await prisma.userProfile.deleteMany()
+    await prisma.salesTeamMember.deleteMany()
+    await prisma.auditLog.deleteMany()
+    
+    // Clean up business entities
     await prisma.lead.deleteMany()
     await prisma.customer.deleteMany()
     await prisma.supplier.deleteMany()
     await prisma.account.deleteMany()
+    
+    // Finally delete users
     await prisma.user.deleteMany()
     
     console.log('✅ Cleaned existing data')
