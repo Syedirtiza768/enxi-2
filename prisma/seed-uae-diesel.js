@@ -68,9 +68,15 @@ async function main() {
         email: 'admin@dieseluae.com',
         password: hashedPassword,
         role: 'ADMIN',
-        firstName: 'Ahmed',
-        lastName: 'Al Rashid',
-        isActive: true
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Ahmed',
+            lastName: 'Al Rashid',
+            department: 'Management',
+            jobTitle: 'Administrator'
+          }
+        }
       }
     })
 
@@ -80,9 +86,15 @@ async function main() {
         email: 'sales@dieseluae.com',
         password: hashedPassword,
         role: 'USER',
-        firstName: 'Mohammed',
-        lastName: 'Al Maktoum',
-        isActive: true
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Mohammed',
+            lastName: 'Al Maktoum',
+            department: 'Sales',
+            jobTitle: 'Sales Manager'
+          }
+        }
       }
     })
 
@@ -92,9 +104,15 @@ async function main() {
         email: 'service@dieseluae.com',
         password: hashedPassword,
         role: 'USER',
-        firstName: 'Khalid',
-        lastName: 'Al Nahyan',
-        isActive: true
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Khalid',
+            lastName: 'Al Nahyan',
+            department: 'Service',
+            jobTitle: 'Service Technician'
+          }
+        }
       }
     })
 
@@ -104,9 +122,15 @@ async function main() {
         email: 'accounts@dieseluae.com',
         password: hashedPassword,
         role: 'USER',
-        firstName: 'Fatima',
-        lastName: 'Al Qassimi',
-        isActive: true
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Fatima',
+            lastName: 'Al Qassimi',
+            department: 'Finance',
+            jobTitle: 'Accountant'
+          }
+        }
       }
     })
 
@@ -116,9 +140,15 @@ async function main() {
         email: 'warehouse@dieseluae.com',
         password: hashedPassword,
         role: 'USER',
-        firstName: 'Omar',
-        lastName: 'Al Sharqi',
-        isActive: true
+        isActive: true,
+        profile: {
+          create: {
+            firstName: 'Omar',
+            lastName: 'Al Sharqi',
+            department: 'Warehouse',
+            jobTitle: 'Warehouse Manager'
+          }
+        }
       }
     })
 
