@@ -87,34 +87,55 @@ export class LeadService {
       // Validate input data
       const validatedData = createLeadSchema.parse(data)
       
-      // Check if lead with same email already exists
-      const existingLead = await prisma.lead.findFirst({
-        where: { email: validatedData.email }
+      // Use transaction for atomicity
+      const result = await prisma.$transaction(async (tx) => {
+        // Check if lead with same email already exists
+        const existingLead = await tx.lead.findFirst({
+          where: { email: validatedData.email }
+        })
+
+        if (existingLead) {
+          throw new Error('Lead with this email already exists')
+        }
+      
+        const lead = await tx.lead.create({
+          data: {
+            ...validatedData,
+            status: LeadStatus.NEW,
+            createdBy: userId,
+          },
+        })
+
+        // Log audit within transaction
+        await this.auditService.logAction({
+          userId,
+          action: 'CREATE',
+          entityType: 'Lead',
+          entityId: lead.id,
+          afterData: lead
+        })
+
+        return lead
+      }, {
+        maxWait: 5000, // 5 seconds max wait to connect
+        timeout: 10000, // 10 seconds timeout for the transaction
       })
 
-      if (existingLead) {
-        throw new Error('Lead with this email already exists')
-      }
-    
-      const lead = await prisma.lead.create({
-        data: {
-          ...validatedData,
-          status: LeadStatus.NEW,
-          createdBy: userId,
-        },
-      })
-
-      await this.auditService.logAction({
-        userId,
-        action: 'CREATE',
-        entityType: 'Lead',
-        entityId: lead.id,
-        afterData: lead
-      })
-
-      return lead
+      console.warn('[LeadService] Lead created successfully:', result.id)
+      return result
     } catch (error) {
-      console.error('Error creating lead:', error);
+      console.error('[LeadService] Error creating lead:', error);
+      
+      // Add more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('P2002')) {
+          throw new Error('A lead with this email already exists')
+        }
+        if (error.message.includes('connect') || error.message.includes('ETIMEDOUT')) {
+          throw new Error('Database connection failed. Please try again later.')
+        }
+      }
+      
       throw error;
     }
   }

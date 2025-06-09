@@ -11,73 +11,100 @@ import {
   Heading,
   Text,
   Button,
-  Input
+  Input,
+  Select
 } from '@/components/design-system'
-import { Save, Building } from 'lucide-react'
+import { Save, Building, DollarSign } from 'lucide-react'
 
 interface CompanySettings {
+  companyName: string
+  address?: string | null
+  phone?: string | null
+  email?: string | null
+  website?: string | null
+  defaultCurrency: string
+}
+
+interface Currency {
+  code: string
   name: string
-  address?: string
-  phone?: string
-  email?: string
-  website?: string
 }
 
 export default function CompanySettingsPage() {
   const [settings, setSettings] = useState<CompanySettings>({
-    name: 'EnXi ERP'
+    companyName: 'EnXi ERP',
+    defaultCurrency: 'USD'
   })
-  const [loading, setLoading] = useState(false)
+  const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Load existing settings
   useEffect(() => {
-    const loadSettings = () => {
-      try {
-        const savedName = localStorage.getItem('companyName')
-        const savedAddress = localStorage.getItem('companyAddress')
-        const savedPhone = localStorage.getItem('companyPhone')
-        const savedEmail = localStorage.getItem('companyEmail')
-        const savedWebsite = localStorage.getItem('companyWebsite')
-
-        setSettings({
-          name: savedName || 'EnXi ERP',
-          address: savedAddress || '',
-          phone: savedPhone || '',
-          email: savedEmail || '',
-          website: savedWebsite || ''
-        })
-      } catch (error) {
-        console.error('Error loading settings:', error)
-      }
-    }
-
     loadSettings()
   }, [])
 
-  const handleSave = async () => {
-    setLoading(true)
+  const loadSettings = async () => {
     try {
-      // Save to localStorage (in a real app, this would be an API call)
-      localStorage.setItem('companyName', settings.name)
-      if (settings.address) localStorage.setItem('companyAddress', settings.address)
-      if (settings.phone) localStorage.setItem('companyPhone', settings.phone)
-      if (settings.email) localStorage.setItem('companyEmail', settings.email)
-      if (settings.website) localStorage.setItem('companyWebsite', settings.website)
+      setLoading(true)
+      const response = await fetch('/api/settings/company', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
 
+      if (!response.ok) {
+        throw new Error('Failed to load settings')
+      }
+
+      const data = await response.json()
+      setSettings(data.settings)
+      setSupportedCurrencies(data.supportedCurrencies)
+    } catch (error) {
+      console.error('Error loading settings:', error)
+      setError('Failed to load company settings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      setSaving(true)
+      setError(null)
+
+      const response = await fetch('/api/settings/company', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(settings)
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save settings')
+      }
+
+      const updatedSettings = await response.json()
+      setSettings(updatedSettings)
       setSaved(true)
       
       // Trigger a custom event to notify other components
       window.dispatchEvent(new CustomEvent('companySettingsChanged', { 
-        detail: settings 
+        detail: updatedSettings 
       }))
 
       // Reset saved state after 3 seconds
       setTimeout(() => setSaved(false), 3000)
-} catch (error) {
-      console.error('Error:', error);
+    } catch (error: any) {
+      console.error('Error:', error)
+      setError(error.message || 'Failed to save settings')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -88,6 +115,19 @@ export default function CompanySettingsPage() {
     }))
   }
 
+  if (loading) {
+    return (
+      <Container size="lg" padding="lg">
+        <VStack gap="xl" className="py-6">
+          <VStack gap="sm">
+            <Heading as="h1" className="text-2xl">Company Settings</Heading>
+            <Text color="secondary">Loading...</Text>
+          </VStack>
+        </VStack>
+      </Container>
+    )
+  }
+
   return (
     <Container size="lg" padding="lg">
       <VStack gap="xl" className="py-6">
@@ -95,9 +135,18 @@ export default function CompanySettingsPage() {
         <VStack gap="sm">
           <Heading as="h1" className="text-2xl">Company Settings</Heading>
           <Text color="secondary">
-            Configure your company information and branding
+            Configure your company information and preferences
           </Text>
         </VStack>
+
+        {/* Error Alert */}
+        {error && (
+          <Card variant="subtle" padding="md" className="w-full max-w-2xl border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+            <CardContent>
+              <Text color="error">{error}</Text>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Settings Form */}
         <Card variant="elevated" padding="xl" className="w-full max-w-2xl">
@@ -109,7 +158,7 @@ export default function CompanySettingsPage() {
               <VStack gap="xs">
                 <Heading as="h2">Company Information</Heading>
                 <Text size="sm" color="secondary">
-                  This information will appear in the header and throughout the application
+                  This information will appear throughout the application
                 </Text>
               </VStack>
             </HStack>
@@ -120,8 +169,8 @@ export default function CompanySettingsPage() {
               <Input
                 label="Company Name"
                 type="text"
-                value={settings.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                value={settings.companyName}
+                onChange={(e) => handleInputChange('companyName', e.target.value)}
                 placeholder="Enter your company name"
                 required
                 fullWidth
@@ -164,33 +213,71 @@ export default function CompanySettingsPage() {
                 placeholder="https://yourcompany.com"
                 fullWidth
               />
-
-              <HStack justify="end" className="pt-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  leftIcon={<Save />}
-                  onClick={handleSave}
-                  loading={loading}
-                  disabled={!settings.name.trim()}
-                >
-                  {saved ? 'Saved!' : loading ? 'Saving...' : 'Save Settings'}
-                </Button>
-              </HStack>
             </VStack>
           </CardContent>
         </Card>
+
+        {/* Currency Settings */}
+        <Card variant="elevated" padding="xl" className="w-full max-w-2xl">
+          <CardHeader border>
+            <HStack gap="md" align="center">
+              <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-[var(--radius-lg)]">
+                <DollarSign className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
+              </div>
+              <VStack gap="xs">
+                <Heading as="h2">Currency Settings</Heading>
+                <Text size="sm" color="secondary">
+                  Set the default currency for your organization
+                </Text>
+              </VStack>
+            </HStack>
+          </CardHeader>
+
+          <CardContent className="pt-6">
+            <Select
+              label="Default Currency"
+              value={settings.defaultCurrency}
+              onChange={(e) => handleInputChange('defaultCurrency', e.target.value)}
+              fullWidth
+            >
+              {supportedCurrencies.map(currency => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.code} - {currency.name}
+                </option>
+              ))}
+            </Select>
+          </CardContent>
+        </Card>
+
+        {/* Save Button */}
+        <HStack justify="end" className="w-full max-w-2xl">
+          <Button
+            variant="primary"
+            size="lg"
+            leftIcon={<Save />}
+            onClick={handleSave}
+            loading={saving}
+            disabled={!settings.companyName.trim()}
+          >
+            {saved ? 'Saved!' : saving ? 'Saving...' : 'Save Settings'}
+          </Button>
+        </HStack>
 
         {/* Help Text */}
         <Card variant="subtle" padding="md" className="w-full max-w-2xl">
           <CardContent>
             <VStack gap="sm">
               <Text size="sm" weight="medium">
-                💡 Quick Tip
+                💡 Quick Tips
               </Text>
               <Text size="sm" color="secondary">
-                The company name will appear in the header bar and can be changed at any time. 
-                Other company information is optional but helps personalize your ERP experience.
+                • The company name will appear in the header bar and can be changed at any time
+              </Text>
+              <Text size="sm" color="secondary">
+                • The default currency will be used throughout the application for new transactions
+              </Text>
+              <Text size="sm" color="secondary">
+                • Changing the currency will not affect existing transactions
               </Text>
             </VStack>
           </CardContent>

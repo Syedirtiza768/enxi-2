@@ -282,6 +282,7 @@ export async function handleError(
     );
   }
 
+  // Handle Prisma errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     console.error('Database error', {
       code: error.code,
@@ -320,6 +321,70 @@ export async function handleError(
       } as ErrorResponse,
       { 
         status: statusCode,
+        headers: { 'X-Request-ID': requestId }
+      }
+    );
+  }
+
+  // Handle Prisma Unknown Request Errors (connection issues, etc.)
+  if (error instanceof Error && error.constructor.name === 'PrismaClientUnknownRequestError') {
+    console.error('Prisma unknown error', {
+      error: error.message,
+      stack: error.stack
+    });
+
+    return NextResponse.json(
+      {
+        error: 'DATABASE_CONNECTION_ERROR',
+        message: 'Database connection error. Please try again.',
+        requestId,
+        timestamp,
+        details: process.env.NODE_ENV === 'development' ? { message: error.message } : undefined
+      } as ErrorResponse,
+      { 
+        status: 503,
+        headers: { 'X-Request-ID': requestId }
+      }
+    );
+  }
+
+  // Handle Prisma initialization errors
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    console.error('Prisma initialization error', {
+      errorCode: error.errorCode,
+      message: error.message
+    });
+
+    return NextResponse.json(
+      {
+        error: 'DATABASE_INIT_ERROR',
+        message: 'Database initialization failed',
+        requestId,
+        timestamp,
+        details: process.env.NODE_ENV === 'development' ? { errorCode: error.errorCode } : undefined
+      } as ErrorResponse,
+      { 
+        status: 503,
+        headers: { 'X-Request-ID': requestId }
+      }
+    );
+  }
+
+  // Handle Prisma validation errors
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    console.error('Prisma validation error', {
+      message: error.message
+    });
+
+    return NextResponse.json(
+      {
+        error: 'DATABASE_VALIDATION_ERROR',
+        message: 'Invalid database operation',
+        requestId,
+        timestamp
+      } as ErrorResponse,
+      { 
+        status: 400,
         headers: { 'X-Request-ID': requestId }
       }
     );

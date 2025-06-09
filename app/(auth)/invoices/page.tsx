@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit, DollarSign } from 'lucide-react'
 import { PageLayout, PageHeader, PageSection, VStack, Grid, Card } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
+import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
 
 interface Invoice {
   id: string
@@ -38,6 +39,7 @@ interface Customer {
 
 
 export default function InvoicesPage() {
+  const { format } = useCurrencyFormatter()
   
   // State management
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -132,12 +134,9 @@ export default function InvoicesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, search, statusFilter, typeFilter, customerFilter, dateRangeFilter, overdueOnly])
 
-  // Helper functions
+  // Helper functions - Use the global currency formatter
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
+    return format(amount)
   }
 
   const getStatusBadge = (status: Invoice['status'], dueDate: string, balanceAmount: number) => {

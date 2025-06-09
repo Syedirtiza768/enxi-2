@@ -18,8 +18,23 @@ export class AuditService {
         },
       })
     } catch (error) {
-      console.error('Error logging action:', error);
-      throw error;
+      // Don't throw audit logging errors to prevent disrupting main operations
+      console.error('[AuditService] Failed to log action:', {
+        error: error instanceof Error ? error.message : error,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId
+      });
+      
+      // Return a mock response to prevent breaking the flow
+      return {
+        id: 'audit-error',
+        userId: data.userId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        timestamp: new Date()
+      }
     }
   }
 

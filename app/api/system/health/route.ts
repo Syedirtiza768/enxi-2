@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { routeHealthMonitor } from '@/lib/middleware/route-health-monitor';
 import { globalErrorHandler } from '@/lib/utils/global-error-handler';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db/prisma';
+import { dbHealthMonitor } from '@/lib/utils/db-health';
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper';
 
 async function healthHandler(request: NextRequest) {
@@ -56,22 +57,17 @@ async function healthHandler(request: NextRequest) {
       response.activeChecks = healthChecks;
     }
 
-    // Test database connectivity
-    try {
-      const prisma = new PrismaClient();
-      await prisma.$connect();
-      await prisma.$queryRaw`SELECT 1 as test`;
-      await prisma.$disconnect();
-      
-      response.database = {
-        status: 'connected',
-        responseTime: Date.now() - startTime
-      };
-    } catch (dbError) {
-      response.database = {
-        status: 'disconnected',
-        error: dbError instanceof Error ? dbError.message : 'Unknown database error'
-      };
+    // Test database connectivity using health monitor
+    const dbHealth = await dbHealthMonitor.checkHealth();
+    
+    response.database = {
+      status: dbHealth.isConnected ? 'connected' : 'disconnected',
+      latency: dbHealth.latency,
+      lastChecked: dbHealth.lastChecked,
+      error: dbHealth.error
+    };
+    
+    if (!dbHealth.isConnected) {
       response.status = 'degraded';
     }
 

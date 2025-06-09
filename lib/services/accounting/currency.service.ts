@@ -38,7 +38,7 @@ export class CurrencyService {
 
   // Common currency symbols for validation
   private supportedCurrencies = new Set([
-    'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF', 'CNY', 'INR', 'NZD'
+    'USD', 'EUR', 'GBP', 'AED', 'PKR', 'CAD', 'AUD', 'JPY', 'CHF', 'CNY', 'INR', 'NZD'
   ])
 
   constructor() {
