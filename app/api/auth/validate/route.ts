@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Validate token and get user (this handles both cookies and headers)
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     
     if (!user) {
       return NextResponse.json(
@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({
       valid: true,
       user: {
-        id: _user.id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role
