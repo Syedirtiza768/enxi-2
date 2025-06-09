@@ -162,7 +162,7 @@ async function main() {
         type: 'ASSET',
         description: 'Cash and cash equivalents in AED',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -174,7 +174,7 @@ async function main() {
         type: 'ASSET',
         description: 'Main operating account',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -186,7 +186,7 @@ async function main() {
         type: 'ASSET',
         description: 'Customer receivables',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -198,7 +198,7 @@ async function main() {
         type: 'ASSET',
         description: 'Diesel engine spare parts inventory',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -210,7 +210,7 @@ async function main() {
         type: 'LIABILITY',
         description: 'Supplier payables',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -222,7 +222,7 @@ async function main() {
         type: 'INCOME',
         description: 'Revenue from maintenance services',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -234,7 +234,7 @@ async function main() {
         type: 'INCOME',
         description: 'Revenue from spare parts sales',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -246,7 +246,7 @@ async function main() {
         type: 'EXPENSE',
         description: 'Cost of spare parts sold',
         currency: 'AED',
-        isActive: true,
+        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -295,7 +295,7 @@ async function main() {
         contactEmail: 'rashid@cumminsarabia.ae',
         contactPhone: '+971 50 123 4567',
         accountId: accountsPayable.id,
-        isActive: true,
+        status: 'ACTIVE',
         isPreferred: true,
         createdBy: admin.id
       }
