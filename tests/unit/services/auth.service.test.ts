@@ -118,7 +118,7 @@ describe('AuthService', () => {
       expect(jwt.sign).toHaveBeenCalledWith(
         user,
         process.env.JWT_SECRET || 'default-secret',
-        { expiresIn: '24h' }
+        { expiresIn: '7d' }
       )
     })
   })
@@ -245,6 +245,7 @@ describe('AuthService', () => {
         username: mockUser.username,
         email: mockUser.email,
         role: mockUser.role,
+        isActive: mockUser.isActive,
       })
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: '1' },

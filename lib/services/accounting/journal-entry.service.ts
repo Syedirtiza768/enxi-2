@@ -158,6 +158,9 @@ export class JournalEntryService {
       }
 
       return postedEntry
+    }, {
+      maxWait: 10000, // 10 seconds
+      timeout: 30000, // 30 seconds
     })
 
     // Audit log

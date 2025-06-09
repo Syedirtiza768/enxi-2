@@ -24,20 +24,21 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
     threeWayMatchingService = new ThreeWayMatchingService()
     goodsReceiptService = new GoodsReceiptService()
 
-    // Create test user
+    // Create test user with unique identifier
+    const timestamp = Date.now()
     testUser = await prisma.user.create({
       data: {
-        username: 'p2ptest',
-        email: 'p2p@test.com',
+        username: `p2ptest_${timestamp}`,
+        email: `p2p_${timestamp}@test.com`,
         password: 'hashedpassword',
         role: 'ACCOUNTANT'
       }
     })
 
-    // Create test accounts
+    // Create test accounts with unique codes
     const apAccount = await prisma.account.create({
       data: {
-        code: 'AP-P2P',
+        code: `AP-P2P-${timestamp}`,
         name: 'Test AP Account P2P',
         type: 'LIABILITY',
         createdBy: testUser.id
@@ -46,7 +47,7 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
 
     const bankAccount = await prisma.account.create({
       data: {
-        code: 'BANK-P2P',
+        code: `BANK-P2P-${timestamp}`,
         name: 'Test Bank Account P2P',
         type: 'ASSET',
         createdBy: testUser.id
@@ -55,7 +56,7 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
 
     const expenseAccount = await prisma.account.create({
       data: {
-        code: 'EXP-P2P',
+        code: `EXP-P2P-${timestamp}`,
         name: 'Test Expense Account P2P',
         type: 'EXPENSE',
         createdBy: testUser.id
@@ -72,21 +73,37 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
     testSupplier = await prisma.supplier.create({
       data: {
         name: 'End-to-End Test Supplier',
-        code: 'E2E-SUPP',
-        supplierNumber: 'E2E-001',
-        email: 'e2e@supplier.com',
+        supplierNumber: `E2E-001-${timestamp}`,
+        email: `e2e_${timestamp}@supplier.com`,
         currency: 'USD',
-        paymentTerms: 'Net 30',
-        apAccountId: apAccount.id,
+        paymentTerms: 30,
+        accountId: apAccount.id,
         createdBy: testUser.id
       }
     })
+
+    // Create unit of measure if it doesn't exist
+    let unitOfMeasure = await prisma.unitOfMeasure.findUnique({
+      where: { code: 'ea' }
+    })
+    
+    if (!unitOfMeasure) {
+      unitOfMeasure = await prisma.unitOfMeasure.create({
+        data: {
+          code: 'ea',
+          name: 'Each',
+          symbol: 'ea',
+          isBaseUnit: true,
+          createdBy: testUser.id
+        }
+      })
+    }
 
     // Create test items
     const category = await prisma.category.create({
       data: {
         name: 'E2E Test Category',
-        code: 'E2E-CAT',
+        code: `E2E-CAT-${timestamp}`,
         description: 'End-to-end test category',
         createdBy: testUser.id
       }
@@ -96,7 +113,7 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
       prisma.item.create({
         data: {
           name: 'E2E Test Item Alpha',
-          code: 'E2E-ALPHA',
+          code: `E2E-ALPHA-${timestamp}`,
           categoryId: category.id,
           unitOfMeasureId: 'ea',
           costPrice: 250.00,
@@ -107,7 +124,7 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
       prisma.item.create({
         data: {
           name: 'E2E Test Item Beta',
-          code: 'E2E-BETA',
+          code: `E2E-BETA-${timestamp}`,
           categoryId: category.id,
           unitOfMeasureId: 'ea',
           costPrice: 150.00,

@@ -100,6 +100,11 @@ export class FinancialStatementsService {
     endDate: Date,
     currency: string = 'USD'
   ): Promise<IncomeStatement> {
+    // Validate date range
+    if (startDate >= endDate) {
+      throw new Error('fromDate must be before toDate')
+    }
+
     // Get accounts and their balances for the period
     const accounts = await prisma.account.findMany({
       where: {

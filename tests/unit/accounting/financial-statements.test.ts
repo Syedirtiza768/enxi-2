@@ -11,46 +11,48 @@ describe('Financial Statements Service', () => {
   let coaService: ChartOfAccountsService
   let testUserId: string
   let accountIds: { [key: string]: string } = {}
+  let timestamp: number
 
   beforeEach(async () => {
     financialService = new FinancialStatementsService()
     journalService = new JournalEntryService()
     coaService = new ChartOfAccountsService()
     
-    // Create a test user
+    // Create a test user with unique identifier
+    timestamp = Date.now()
     const testUser = await prisma.user.create({
       data: {
-        username: 'testuser',
-        email: 'test@example.com',
+        username: `testuser_finstat_${timestamp}`,
+        email: `test_finstat_${timestamp}@example.com`,
         password: 'hashedPassword',
         role: 'USER'
       }
     })
     testUserId = testUser.id
 
-    // Create comprehensive test accounts
+    // Create comprehensive test accounts with unique codes
     const accounts = [
       // Assets
-      { code: '1000', name: 'Cash', type: AccountType.ASSET },
-      { code: '1200', name: 'Accounts Receivable', type: AccountType.ASSET },
-      { code: '1500', name: 'Equipment', type: AccountType.ASSET },
+      { code: `1000-${timestamp}`, name: 'Cash', type: AccountType.ASSET },
+      { code: `1200-${timestamp}`, name: 'Accounts Receivable', type: AccountType.ASSET },
+      { code: `1500-${timestamp}`, name: 'Equipment', type: AccountType.ASSET },
       
       // Liabilities
-      { code: '2000', name: 'Accounts Payable', type: AccountType.LIABILITY },
-      { code: '2500', name: 'Bank Loan', type: AccountType.LIABILITY },
+      { code: `2000-${timestamp}`, name: 'Accounts Payable', type: AccountType.LIABILITY },
+      { code: `2500-${timestamp}`, name: 'Bank Loan', type: AccountType.LIABILITY },
       
       // Equity
-      { code: '3000', name: 'Share Capital', type: AccountType.EQUITY },
-      { code: '3500', name: 'Retained Earnings', type: AccountType.EQUITY },
+      { code: `3000-${timestamp}`, name: 'Share Capital', type: AccountType.EQUITY },
+      { code: `3500-${timestamp}`, name: 'Retained Earnings', type: AccountType.EQUITY },
       
       // Income
-      { code: '4000', name: 'Sales Revenue', type: AccountType.INCOME },
-      { code: '4100', name: 'Service Revenue', type: AccountType.INCOME },
+      { code: `4000-${timestamp}`, name: 'Sales Revenue', type: AccountType.INCOME },
+      { code: `4100-${timestamp}`, name: 'Service Revenue', type: AccountType.INCOME },
       
       // Expenses
-      { code: '5000', name: 'Cost of Goods Sold', type: AccountType.EXPENSE },
-      { code: '5100', name: 'Office Expenses', type: AccountType.EXPENSE },
-      { code: '5200', name: 'Marketing Expenses', type: AccountType.EXPENSE }
+      { code: `5000-${timestamp}`, name: 'Cost of Goods Sold', type: AccountType.EXPENSE },
+      { code: `5100-${timestamp}`, name: 'Office Expenses', type: AccountType.EXPENSE },
+      { code: `5200-${timestamp}`, name: 'Marketing Expenses', type: AccountType.EXPENSE }
     ]
 
     for (const account of accounts) {
@@ -85,38 +87,38 @@ describe('Financial Statements Service', () => {
         {
           description: 'Initial capital investment',
           lines: [
-            { accountId: accountIds['1000'], debit: 50000, credit: 0 }, // Cash
-            { accountId: accountIds['3000'], debit: 0, credit: 50000 }  // Share Capital
+            { accountId: accountIds[`1000-${timestamp}`], debit: 50000, credit: 0 }, // Cash
+            { accountId: accountIds[`3000-${timestamp}`], debit: 0, credit: 50000 }  // Share Capital
           ]
         },
         {
           description: 'Equipment purchase',
           lines: [
-            { accountId: accountIds['1500'], debit: 20000, credit: 0 }, // Equipment
-            { accountId: accountIds['1000'], debit: 0, credit: 15000 }, // Cash payment
-            { accountId: accountIds['2500'], debit: 0, credit: 5000 }   // Bank loan
+            { accountId: accountIds[`1500-${timestamp}`], debit: 20000, credit: 0 }, // Equipment
+            { accountId: accountIds[`1000-${timestamp}`], debit: 0, credit: 15000 }, // Cash payment
+            { accountId: accountIds[`2500-${timestamp}`], debit: 0, credit: 5000 }   // Bank loan
           ]
         },
         {
           description: 'Sales on credit',
           lines: [
-            { accountId: accountIds['1200'], debit: 10000, credit: 0 }, // A/R
-            { accountId: accountIds['4000'], debit: 0, credit: 10000 }  // Revenue
+            { accountId: accountIds[`1200-${timestamp}`], debit: 10000, credit: 0 }, // A/R
+            { accountId: accountIds[`4000-${timestamp}`], debit: 0, credit: 10000 }  // Revenue
           ]
         },
         {
           description: 'Purchase on credit',
           lines: [
-            { accountId: accountIds['5000'], debit: 6000, credit: 0 },  // COGS
-            { accountId: accountIds['2000'], debit: 0, credit: 6000 }   // A/P
+            { accountId: accountIds[`5000-${timestamp}`], debit: 6000, credit: 0 },  // COGS
+            { accountId: accountIds[`2000-${timestamp}`], debit: 0, credit: 6000 }   // A/P
           ]
         },
         {
           description: 'Operating expenses',
           lines: [
-            { accountId: accountIds['5100'], debit: 2000, credit: 0 }, // Office expenses
-            { accountId: accountIds['5200'], debit: 1500, credit: 0 }, // Marketing
-            { accountId: accountIds['1000'], debit: 0, credit: 3500 }  // Cash payment
+            { accountId: accountIds[`5100-${timestamp}`], debit: 2000, credit: 0 }, // Office expenses
+            { accountId: accountIds[`5200-${timestamp}`], debit: 1500, credit: 0 }, // Marketing
+            { accountId: accountIds[`1000-${timestamp}`], debit: 0, credit: 3500 }  // Cash payment
           ]
         }
       ]
@@ -227,33 +229,33 @@ describe('Financial Statements Service', () => {
           date: new Date('2024-01-15'),
           description: 'Sales revenue Q1',
           lines: [
-            { accountId: accountIds['1000'], debit: 15000, credit: 0 },
-            { accountId: accountIds['4000'], debit: 0, credit: 15000 }
+            { accountId: accountIds[`1000-${timestamp}`], debit: 15000, credit: 0 },
+            { accountId: accountIds[`4000-${timestamp}`], debit: 0, credit: 15000 }
           ]
         },
         {
           date: new Date('2024-02-15'),
           description: 'Service revenue Q1',
           lines: [
-            { accountId: accountIds['1000'], debit: 8000, credit: 0 },
-            { accountId: accountIds['4100'], debit: 0, credit: 8000 }
+            { accountId: accountIds[`1000-${timestamp}`], debit: 8000, credit: 0 },
+            { accountId: accountIds[`4100-${timestamp}`], debit: 0, credit: 8000 }
           ]
         },
         {
           date: new Date('2024-03-15'),
           description: 'Cost of goods sold Q1',
           lines: [
-            { accountId: accountIds['5000'], debit: 9000, credit: 0 },
-            { accountId: accountIds['1000'], debit: 0, credit: 9000 }
+            { accountId: accountIds[`5000-${timestamp}`], debit: 9000, credit: 0 },
+            { accountId: accountIds[`1000-${timestamp}`], debit: 0, credit: 9000 }
           ]
         },
         {
           date: new Date('2024-03-20'),
           description: 'Operating expenses Q1',
           lines: [
-            { accountId: accountIds['5100'], debit: 3000, credit: 0 },
-            { accountId: accountIds['5200'], debit: 2500, credit: 0 },
-            { accountId: accountIds['1000'], debit: 0, credit: 5500 }
+            { accountId: accountIds[`5100-${timestamp}`], debit: 3000, credit: 0 },
+            { accountId: accountIds[`5200-${timestamp}`], debit: 2500, credit: 0 },
+            { accountId: accountIds[`1000-${timestamp}`], debit: 0, credit: 5500 }
           ]
         },
         // Q2 2024 transactions (should not be included in Q1 report)
@@ -261,8 +263,8 @@ describe('Financial Statements Service', () => {
           date: new Date('2024-04-15'),
           description: 'Q2 Sales',
           lines: [
-            { accountId: accountIds['1000'], debit: 20000, credit: 0 },
-            { accountId: accountIds['4000'], debit: 0, credit: 20000 }
+            { accountId: accountIds[`1000-${timestamp}`], debit: 20000, credit: 0 },
+            { accountId: accountIds[`4000-${timestamp}`], debit: 0, credit: 20000 }
           ]
         }
       ]

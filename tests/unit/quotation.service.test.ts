@@ -18,11 +18,12 @@ describe('Quotation Service', () => {
     customerService = new CustomerService()
     salesCaseService = new SalesCaseService()
     
-    // Create a test user
+    // Create a test user with unique identifier
+    const timestamp = Date.now()
     const testUser = await prisma.user.create({
       data: {
-        username: 'testuser',
-        email: 'test@example.com',
+        username: `testuser_quotation_${timestamp}`,
+        email: `test_quotation_${timestamp}@example.com`,
         password: 'hashedPassword',
         role: 'USER'
       }

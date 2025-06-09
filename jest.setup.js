@@ -1,6 +1,19 @@
 // Learn more: https://github.com/testing-library/jest-dom
 require('@testing-library/jest-dom')
 
+// Import database cleanup for integration tests
+const { cleanupDatabase } = require('./tests/helpers/database-cleanup')
+
+// Clean up database before all tests in integration tests
+if (process.env.NODE_ENV === 'test') {
+  beforeAll(async () => {
+    // Only cleanup for integration tests
+    if (process.env.TEST_TYPE === 'integration') {
+      await cleanupDatabase()
+    }
+  })
+}
+
 // Polyfill for Next.js
 const { TextDecoder, TextEncoder } = require('util')
 global.TextDecoder = TextDecoder
