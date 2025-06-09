@@ -35,7 +35,13 @@ export default function CompanySettingsPage() {
     companyName: 'EnXi ERP',
     defaultCurrency: 'USD'
   })
-  const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([])
+  const [supportedCurrencies, setSupportedCurrencies] = useState<Currency[]>([
+    { code: 'USD', name: 'US Dollar' },
+    { code: 'EUR', name: 'Euro' },
+    { code: 'GBP', name: 'British Pound' },
+    { code: 'AED', name: 'UAE Dirham' },
+    { code: 'PKR', name: 'Pakistani Rupee' }
+  ])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -60,8 +66,11 @@ export default function CompanySettingsPage() {
       }
 
       const data = await response.json()
-      setSettings(data.settings)
-      setSupportedCurrencies(data.supportedCurrencies)
+      setSettings(data.settings || {
+        companyName: 'EnXi ERP',
+        defaultCurrency: 'USD'
+      })
+      setSupportedCurrencies(data.supportedCurrencies || [])
     } catch (error) {
       console.error('Error loading settings:', error)
       setError('Failed to load company settings')
@@ -240,11 +249,15 @@ export default function CompanySettingsPage() {
               onChange={(e) => handleInputChange('defaultCurrency', e.target.value)}
               fullWidth
             >
-              {supportedCurrencies.map(currency => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.code} - {currency.name}
-                </option>
-              ))}
+              {supportedCurrencies && supportedCurrencies.length > 0 ? (
+                supportedCurrencies.map(currency => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.code} - {currency.name}
+                  </option>
+                ))
+              ) : (
+                <option value="USD">USD - US Dollar</option>
+              )}
             </Select>
           </CardContent>
         </Card>

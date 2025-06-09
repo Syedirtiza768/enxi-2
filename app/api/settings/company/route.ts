@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { validateAuth } from '@/lib/auth/server-auth'
+import { getUserFromRequest } from '@/lib/utils/auth'
 import { CompanySettingsService } from '@/lib/services/company-settings.service'
 
 const companySettingsService = new CompanySettingsService()
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await validateAuth(request)
-    if (!auth.isValid || !auth.user) {
+    console.log('Company settings GET request received')
+    let user
+    try {
+      user = await getUserFromRequest(request)
+      console.log('Authenticated user:', user)
+    } catch (authError) {
+      console.error('Authentication failed:', authError)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -19,6 +28,7 @@ export async function GET(request: NextRequest) {
       supportedCurrencies
     })
   } catch (error: any) {
+    console.error('Company settings GET error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch company settings' },
       { status: 500 }
@@ -28,20 +38,27 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await validateAuth(request)
-    if (!auth.isValid || !auth.user) {
+    let user
+    try {
+      user = await getUserFromRequest(request)
+    } catch (authError) {
+      console.error('Authentication failed:', authError)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Only admins can update company settings
-    if (auth.user.role !== 'ADMIN' && auth.user.role !== 'SUPER_ADMIN') {
+    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
     const updatedSettings = await companySettingsService.updateSettings({
       ...body,
-      updatedBy: auth.user.id
+      updatedBy: user.id
     })
 
     return NextResponse.json(updatedSettings)

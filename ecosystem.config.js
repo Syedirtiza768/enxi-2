@@ -3,7 +3,7 @@ module.exports = {
     name: 'Enxi-AlSahab',
     script: 'npm',
     args: 'start',
-    cwd: '/home/ubuntu/enxi-erp',
+    cwd: '.',
     instances: 1,
     exec_mode: 'fork',
     autorestart: true,
@@ -11,14 +11,15 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3001,
-      DATABASE_URL: 'file:./prisma/dev.db',
-      NEXTAUTH_URL: 'http://localhost:3001',
+      PORT: 3000,
+      DATABASE_URL: 'file:/Users/irtizahassan/apps/enxi/enxi-erp/prisma/dev.db',
+      NEXTAUTH_URL: 'http://localhost:3000',
+      JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-here',
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'your-secret-key-here'
     },
-    error_file: '/home/ubuntu/.pm2/logs/Enxi-AlSahab-error.log',
-    out_file: '/home/ubuntu/.pm2/logs/Enxi-AlSahab-out.log',
-    log_file: '/home/ubuntu/.pm2/logs/Enxi-AlSahab-combined.log',
+    error_file: './logs/pm2-error.log',
+    out_file: './logs/pm2-out.log',
+    log_file: './logs/pm2-combined.log',
     time: true,
     
     // Advanced PM2 features

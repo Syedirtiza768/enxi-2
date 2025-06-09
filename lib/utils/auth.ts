@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { AuthService } from '@/lib/services/auth.service'
+import { prisma } from '@/lib/db/prisma'
 
 export interface AuthUser {
   id: string
@@ -30,9 +31,24 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
       throw new Error('Invalid authentication token')
     }
 
+    // Verify user exists and is active in database
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true, username: true, email: true, role: true, isActive: true }
+    })
+
+    if (!dbUser || !dbUser.isActive) {
+      throw new Error('User not found or inactive')
+    }
+
     // Authentication successful
 
-    return user
+    return {
+      id: dbUser.id,
+      username: dbUser.username,
+      email: dbUser.email,
+      role: dbUser.role
+    }
   } catch (error) {
     console.error('Authentication error:', error);
     throw new Error('Unauthorized')
