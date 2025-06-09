@@ -267,20 +267,16 @@ async function main() {
     const dpWorld = await prisma.customer.create({
       data: {
         customerNumber: 'CUST-001',
-        companyName: 'DP World - Jebel Ali',
-        tradeName: 'DP World',
+        name: 'DP World - Jebel Ali',
         taxId: '100123456789012',
         email: 'maintenance@dpworld.com',
         phone: '+971 4 881 5000',
         website: 'https://www.dpworld.com',
         address: 'Jebel Ali Port, Dubai, UAE',
         industry: 'Ports & Logistics',
-        numberOfEmployees: 5000,
-        annualRevenue: 8000000000, // 8 billion AED
         creditLimit: 2000000, // 2 million AED
         paymentTerms: 60,
         currency: 'AED',
-        status: 'ACTIVE',
         createdBy: admin.id
       }
     })
@@ -301,12 +297,6 @@ async function main() {
         taxId: '100334567890003',
         bankName: 'Standard Chartered',
         bankAccount: 'AE070330000010123456789',
-        contactPerson: 'Rashid Ahmed',
-        contactEmail: 'rashid@cumminsarabia.ae',
-        contactPhone: '+971 50 123 4567',
-        accountId: accountsPayable.id,
-        status: 'ACTIVE',
-        isPreferred: true,
         createdBy: admin.id
       }
     })
