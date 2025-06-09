@@ -6,7 +6,7 @@ export async function GET(_request: NextRequest) {
   try {
     // Try to authenticate user but don't fail hard
     try {
-      const _user = await getUserFromRequest(request)
+      const _user = await getUserFromRequest(_request)
     } catch (authError) {
       console.warn('Auth check failed in stats route:', authError)
       // For now, continue anyway since we're in "bare minimum" auth mode
