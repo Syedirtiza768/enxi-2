@@ -13,6 +13,7 @@
     "test:coverage": "jest --coverage",
     "test:seed": "tsx prisma/test-seed.ts",
     "seed": "node prisma/seed.js",
+    "seed:uae": "node prisma/seed-uae-diesel.js",
     "seed:admin": "tsx scripts/seed/seed-admin.ts",
     "seed:accounting": "tsx prisma/seed-accounting.ts",
     "setup:accounts": "tsx scripts/setup-chart-of-accounts.ts",

@@ -29,6 +29,10 @@ npm install
 npx prisma generate
 npx prisma db push
 
+# Seed the database (choose one)
+npm run seed          # Default demo data
+npm run seed:uae      # UAE diesel engine maintenance company data
+
 # Run the development server
 npm run dev
 ```
