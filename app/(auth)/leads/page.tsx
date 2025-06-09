@@ -65,7 +65,9 @@ export default function LeadsPage() {
       setIsCreateDialogOpen(false)
       refetch()
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error creating lead:', error)
+      // The error will be shown in the form
+      throw error
     }
   }
 

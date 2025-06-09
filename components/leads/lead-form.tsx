@@ -66,11 +66,26 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     }
 
     try {
-      const submitData = { ...formData }
+      // Clean up empty strings before submission
+      const submitData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+        company: formData.company.trim() || undefined,
+        jobTitle: formData.jobTitle.trim() || undefined,
+        source: formData.source,
+        status: formData.status,
+        notes: formData.notes.trim() || undefined,
+      }
       
       await onSubmit(submitData)
     } catch (error) {
       console.error('Error submitting lead:', error)
+      // Show error to user
+      if (error instanceof Error) {
+        setErrors({ general: error.message })
+      }
     } finally {
       setIsLoading(false)
     }

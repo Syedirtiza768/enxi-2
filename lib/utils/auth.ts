@@ -35,6 +35,6 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
     return user
   } catch (error) {
     console.error('Authentication error:', error);
-    return null
+    throw new Error('Unauthorized')
   }
 }
