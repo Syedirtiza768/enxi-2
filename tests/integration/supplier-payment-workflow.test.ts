@@ -49,12 +49,11 @@ describe('Supplier Payment Workflow Integration', () => {
     testSupplier = await prisma.supplier.create({
       data: {
         name: 'Test Payment Supplier',
-        code: 'SUPP-PAY',
         supplierNumber: 'SUP-PAY-001',
         email: 'supplier@test.com',
         currency: 'USD',
-        paymentTerms: 'Net 30',
-        apAccountId: testAccount.id,
+        paymentTerms: 30,
+        accountId: testAccount.id,
         createdBy: testUser.id
       }
     })
@@ -66,7 +65,7 @@ describe('Supplier Payment Workflow Integration', () => {
         supplierId: testSupplier.id,
         invoiceDate: new Date('2024-01-01'),
         dueDate: new Date('2024-01-31'),
-        status: 'POSTED',
+        status: 'APPROVED',
         matchingStatus: 'FULLY_MATCHED',
         currency: 'USD',
         subtotal: 1000.00,
@@ -78,12 +77,24 @@ describe('Supplier Payment Workflow Integration', () => {
   })
 
   afterAll(async () => {
-    // Clean up test data
-    await prisma.supplierPayment.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.supplierInvoice.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.supplier.deleteMany({ where: { id: testSupplier.id } })
-    await prisma.account.deleteMany({ where: { id: { in: [testAccount.id, testBankAccount.id] } } })
-    await prisma.user.deleteMany({ where: { id: testUser.id } })
+    // Clean up test data with defensive checks
+    if (testSupplier?.id) {
+      await prisma.supplierPayment.deleteMany({ where: { supplierId: testSupplier.id } })
+      await prisma.supplierInvoice.deleteMany({ where: { supplierId: testSupplier.id } })
+      await prisma.supplier.deleteMany({ where: { id: testSupplier.id } })
+    }
+    
+    const accountIds = []
+    if (testAccount?.id) accountIds.push(testAccount.id)
+    if (testBankAccount?.id) accountIds.push(testBankAccount.id)
+    if (accountIds.length > 0) {
+      await prisma.account.deleteMany({ where: { id: { in: accountIds } } })
+    }
+    
+    if (testUser?.id) {
+      await prisma.user.deleteMany({ where: { id: testUser.id } })
+    }
+    
     await prisma.$disconnect()
   })
 
@@ -94,7 +105,7 @@ describe('Supplier Payment Workflow Integration', () => {
       data: {
         paidAmount: 0,
         balanceAmount: 1100.00,
-        status: 'POSTED'
+        status: 'APPROVED'
       }
     })
     
@@ -134,7 +145,7 @@ describe('Supplier Payment Workflow Integration', () => {
       })
       expect(updatedInvoice?.paidAmount).toBe(500.00)
       expect(updatedInvoice?.balanceAmount).toBe(600.00)
-      expect(updatedInvoice?.status).toBe('POSTED') // Still posted, not fully paid
+      expect(updatedInvoice?.status).toBe('APPROVED') // Still approved, not fully paid
     })
 
     test('should create payment without specific invoice (prepayment)', async () => {
@@ -369,7 +380,7 @@ describe('Supplier Payment Workflow Integration', () => {
           code: 'EUR-SUPP',
           supplierNumber: 'EUR-001',
           currency: 'EUR',
-          apAccountId: testAccount.id,
+          accountId: testAccount.id,
           createdBy: testUser.id
         }
       })
@@ -380,7 +391,7 @@ describe('Supplier Payment Workflow Integration', () => {
           supplierId: eurSupplier.id,
           invoiceDate: new Date('2024-01-01'),
           dueDate: new Date('2024-01-31'),
-          status: 'POSTED',
+          status: 'APPROVED',
           currency: 'EUR',
           subtotal: 1000.00,
           taxAmount: 200.00,

@@ -85,7 +85,7 @@ describe('Supplier Payments API', () => {
         supplierId: testSupplier.id,
         invoiceDate: new Date('2024-01-01'),
         dueDate: new Date('2024-01-31'),
-        status: 'POSTED',
+        status: 'APPROVED',
         currency: 'USD',
         subtotal: 800.00,
         taxAmount: 80.00,
@@ -112,7 +112,7 @@ describe('Supplier Payments API', () => {
       data: {
         paidAmount: 0,
         balanceAmount: 880.00,
-        status: 'POSTED'
+        status: 'APPROVED'
       }
     })
     

@@ -67,8 +67,8 @@ describe('Enhanced Three-Way Matching Integration', () => {
           code: 'TIA-001',
           categoryId: category.id,
           unitOfMeasureId: 'ea',
-          costPrice: 100.00,
-          sellingPrice: 150.00,
+          standardCost: 100.00,
+          listPrice: 150.00,
           createdBy: testUser.id
         }
       }),
@@ -78,8 +78,8 @@ describe('Enhanced Three-Way Matching Integration', () => {
           code: 'TIB-001',
           categoryId: category.id,
           unitOfMeasureId: 'ea',
-          costPrice: 200.00,
-          sellingPrice: 300.00,
+          standardCost: 200.00,
+          listPrice: 300.00,
           createdBy: testUser.id
         }
       })
@@ -195,19 +195,79 @@ describe('Enhanced Three-Way Matching Integration', () => {
   })
 
   afterAll(async () => {
-    // Clean up test data
-    await prisma.supplierInvoiceItem.deleteMany()
-    await prisma.supplierInvoice.deleteMany()
-    await prisma.goodsReceiptItem.deleteMany()
-    await prisma.goodsReceipt.deleteMany()
-    await prisma.purchaseOrderItem.deleteMany()
-    await prisma.purchaseOrder.deleteMany()
-    await prisma.item.deleteMany()
-    await prisma.category.deleteMany()
-    await prisma.supplier.deleteMany()
-    await prisma.account.deleteMany()
-    await prisma.user.deleteMany()
-    await prisma.$disconnect()
+    try {
+      // Clean up test data with defensive checks
+      if (testSupplier?.id || testPurchaseOrder?.id || testGoodsReceipt?.id || testSupplierInvoice?.id) {
+        // Clean up in reverse order of dependencies
+        await prisma.supplierInvoiceItem.deleteMany({
+          where: {
+            OR: [
+              { supplierInvoice: { supplierId: testSupplier?.id } },
+              { goodsReceiptItem: { goodsReceipt: { supplierId: testSupplier?.id } } }
+            ]
+          }
+        }).catch(() => {})
+        
+        await prisma.supplierInvoice.deleteMany({
+          where: { supplierId: testSupplier?.id }
+        }).catch(() => {})
+        
+        await prisma.goodsReceiptItem.deleteMany({
+          where: { goodsReceipt: { supplierId: testSupplier?.id } }
+        }).catch(() => {})
+        
+        await prisma.goodsReceipt.deleteMany({
+          where: { supplierId: testSupplier?.id }
+        }).catch(() => {})
+        
+        await prisma.purchaseOrderItem.deleteMany({
+          where: { purchaseOrder: { supplierId: testSupplier?.id } }
+        }).catch(() => {})
+        
+        await prisma.purchaseOrder.deleteMany({
+          where: { supplierId: testSupplier?.id }
+        }).catch(() => {})
+      }
+      
+      if (testItems && testItems.length > 0) {
+        const itemIds = testItems.map(item => item.id).filter(Boolean)
+        if (itemIds.length > 0) {
+          await prisma.item.deleteMany({
+            where: { id: { in: itemIds } }
+          }).catch(() => {})
+        }
+      }
+      
+      // Clean up category if it exists
+      await prisma.category.deleteMany({
+        where: { name: 'Test Category' }
+      }).catch(() => {})
+      
+      if (testSupplier?.id) {
+        await prisma.supplier.delete({
+          where: { id: testSupplier.id }
+        }).catch(() => {})
+      }
+      
+      if (testAccount?.id) {
+        await prisma.account.delete({
+          where: { id: testAccount.id }
+        }).catch(() => {})
+      }
+      
+      if (testUser?.id) {
+        await prisma.user.delete({
+          where: { id: testUser.id }
+        }).catch(() => {})
+      }
+    } catch (error) {
+      console.error('Error during test cleanup:', error)
+    } finally {
+      // Always disconnect, even if cleanup fails
+      if (prisma) {
+        await prisma.$disconnect().catch(() => {})
+      }
+    }
   })
 
   describe('Three-Way Matching Analysis', () => {

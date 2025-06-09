@@ -116,8 +116,8 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
           code: `E2E-ALPHA-${timestamp}`,
           categoryId: category.id,
           unitOfMeasureId: 'ea',
-          costPrice: 250.00,
-          sellingPrice: 375.00,
+          standardCost: 250.00,
+          listPrice: 375.00,
           createdBy: testUser.id
         }
       }),
@@ -127,8 +127,8 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
           code: `E2E-BETA-${timestamp}`,
           categoryId: category.id,
           unitOfMeasureId: 'ea',
-          costPrice: 150.00,
-          sellingPrice: 225.00,
+          standardCost: 150.00,
+          listPrice: 225.00,
           createdBy: testUser.id
         }
       })
@@ -136,20 +136,88 @@ describe('End-to-End Procurement-to-Pay Workflow', () => {
   })
 
   afterAll(async () => {
-    // Clean up test data in reverse order
-    await prisma.supplierPayment.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.supplierInvoiceItem.deleteMany()
-    await prisma.supplierInvoice.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.goodsReceiptItem.deleteMany()
-    await prisma.goodsReceipt.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.purchaseOrderItem.deleteMany()
-    await prisma.purchaseOrder.deleteMany({ where: { supplierId: testSupplier.id } })
-    await prisma.item.deleteMany({ where: { id: { in: testItems.map(i => i.id) } } })
-    await prisma.category.deleteMany()
-    await prisma.supplier.deleteMany({ where: { id: testSupplier.id } })
-    await prisma.account.deleteMany({ where: { id: { in: Object.values(testAccounts).map((acc: any) => acc.id) } } })
-    await prisma.user.deleteMany({ where: { id: testUser.id } })
-    await prisma.$disconnect()
+    // Clean up test data in reverse order with defensive checks
+    try {
+      // Clean up supplier payments
+      if (testSupplier?.id) {
+        await prisma.supplierPayment.deleteMany({ where: { supplierId: testSupplier.id } })
+      }
+      
+      // Clean up supplier invoice items and invoices
+      if (testSupplier?.id) {
+        await prisma.supplierInvoiceItem.deleteMany({
+          where: {
+            supplierInvoice: {
+              supplierId: testSupplier.id
+            }
+          }
+        })
+        await prisma.supplierInvoice.deleteMany({ where: { supplierId: testSupplier.id } })
+      }
+      
+      // Clean up goods receipt items and receipts
+      if (testSupplier?.id) {
+        await prisma.goodsReceiptItem.deleteMany({
+          where: {
+            goodsReceipt: {
+              supplierId: testSupplier.id
+            }
+          }
+        })
+        await prisma.goodsReceipt.deleteMany({ where: { supplierId: testSupplier.id } })
+      }
+      
+      // Clean up purchase order items and orders
+      if (testSupplier?.id) {
+        await prisma.purchaseOrderItem.deleteMany({
+          where: {
+            purchaseOrder: {
+              supplierId: testSupplier.id
+            }
+          }
+        })
+      }
+      if (testSupplier?.id) {
+        await prisma.purchaseOrder.deleteMany({ where: { supplierId: testSupplier.id } })
+      }
+      
+      // Clean up items
+      if (testItems && Array.isArray(testItems) && testItems.length > 0) {
+        const itemIds = testItems.filter(item => item?.id).map(item => item.id)
+        if (itemIds.length > 0) {
+          await prisma.item.deleteMany({ where: { id: { in: itemIds } } })
+        }
+      }
+      
+      // Clean up categories
+      await prisma.category.deleteMany()
+      
+      // Clean up supplier
+      if (testSupplier?.id) {
+        await prisma.supplier.deleteMany({ where: { id: testSupplier.id } })
+      }
+      
+      // Clean up accounts
+      if (testAccounts && typeof testAccounts === 'object') {
+        const accountIds = Object.values(testAccounts)
+          .filter((acc): acc is { id: string } => acc && typeof acc === 'object' && 'id' in acc)
+          .map(acc => acc.id)
+        if (accountIds.length > 0) {
+          await prisma.account.deleteMany({ where: { id: { in: accountIds } } })
+        }
+      }
+      
+      // Clean up user
+      if (testUser?.id) {
+        await prisma.user.deleteMany({ where: { id: testUser.id } })
+      }
+    } catch (error) {
+      // Log cleanup errors but don't fail the test
+      console.error('Error during test cleanup:', error)
+    } finally {
+      // Always disconnect from the database
+      await prisma.$disconnect()
+    }
   })
 
   describe('Complete P2P Workflow - Happy Path', () => {

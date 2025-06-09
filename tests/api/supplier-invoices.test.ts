@@ -218,7 +218,7 @@ describe('/api/supplier-invoices', () => {
           invoiceDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           currency: 'USD',
-          status: 'POSTED',
+          status: 'APPROVED',
           matchingStatus: 'FULLY_MATCHED',
           subtotal: 2500.00,
           taxAmount: 0,
@@ -251,7 +251,7 @@ describe('/api/supplier-invoices', () => {
       expect(response.status).toBe(200)
       expect(data.data).toHaveLength(1)
       expect(data.data[0].invoiceNumber).toBe('INV-API-001')
-      expect(data.data[0].status).toBe('POSTED')
+      expect(data.data[0].status).toBe('APPROVED')
       expect(data.data[0].totalAmount).toBe(2500.00)
     })
 
@@ -264,7 +264,7 @@ describe('/api/supplier-invoices', () => {
           invoiceDate: new Date(),
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           currency: 'USD',
-          status: 'POSTED',
+          status: 'APPROVED',
           matchingStatus: 'FULLY_MATCHED',
           subtotal: 1250.00,
           taxAmount: 0,
@@ -311,7 +311,7 @@ describe('/api/supplier-invoices', () => {
             invoiceDate: new Date(),
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             currency: 'USD',
-            status: 'POSTED',
+            status: 'APPROVED',
             matchingStatus: 'FULLY_MATCHED',
             subtotal: 750.00,
             taxAmount: 0,
@@ -322,7 +322,7 @@ describe('/api/supplier-invoices', () => {
         ]
       })
 
-      const url = 'http://localhost:3000/api/supplier-invoices?status=POSTED'
+      const url = 'http://localhost:3000/api/supplier-invoices?status=APPROVED'
       const request = new NextRequest(url)
 
       // Act
@@ -332,7 +332,7 @@ describe('/api/supplier-invoices', () => {
       // Assert
       expect(response.status).toBe(200)
       expect(data.data).toHaveLength(1)
-      expect(data.data[0].status).toBe('POSTED')
+      expect(data.data[0].status).toBe('APPROVED')
     })
   })
 
@@ -375,7 +375,7 @@ describe('/api/supplier-invoices', () => {
       // Assert
       expect(response.status).toBe(201)
       expect(data.data.invoiceNumber).toBe('INV-API-005')
-      expect(data.data.status).toBe('POSTED')
+      expect(data.data.status).toBe('APPROVED')
       expect(data.data.items).toHaveLength(1)
       expect(data.data.items[0].totalAmount).toBe(2500.00)
       expect(data.data.totalAmount).toBe(2500.00)

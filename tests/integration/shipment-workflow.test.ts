@@ -58,7 +58,7 @@ describe('Shipment Workflow Integration Tests', () => {
         name: 'Test Item',
         description: 'Test item for shipment testing',
         unitPrice: 100.00,
-        costPrice: 60.00,
+        standardCost: 60.00,
         categoryId: null,
         createdBy: testUser.id,
       },

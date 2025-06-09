@@ -135,18 +135,18 @@ async function seedComprehensiveAccounting() {
     }
 
     const items = [
-      { categoryId: createdCategories[0].id, itemCode: 'LAPTOP-001', description: 'Business Laptop', unitPrice: 1200, costPrice: 800, quantityOnHand: 25 },
-      { categoryId: createdCategories[0].id, itemCode: 'MOUSE-001', description: 'Wireless Mouse', unitPrice: 45, costPrice: 25, quantityOnHand: 100 },
-      { categoryId: createdCategories[0].id, itemCode: 'KEYBOARD-001', description: 'Mechanical Keyboard', unitPrice: 120, costPrice: 75, quantityOnHand: 50 },
-      { categoryId: createdCategories[1].id, itemCode: 'SW-CRM', description: 'CRM Software License', unitPrice: 500, costPrice: 200, quantityOnHand: 10 },
-      { categoryId: createdCategories[1].id, itemCode: 'SW-OFFICE', description: 'Office Suite License', unitPrice: 300, costPrice: 150, quantityOnHand: 20 },
-      { categoryId: createdCategories[2].id, itemCode: 'CONSULT-HR', description: 'IT Consulting (per hour)', unitPrice: 150, costPrice: 100, quantityOnHand: 0 },
-      { categoryId: createdCategories[2].id, itemCode: 'SUPPORT-PLAN', description: 'Annual Support Plan', unitPrice: 2000, costPrice: 800, quantityOnHand: 0 }
+      { categoryId: createdCategories[0].id, itemCode: 'LAPTOP-001', description: 'Business Laptop', unitPrice: 1200, standardCost: 800, quantityOnHand: 25 },
+      { categoryId: createdCategories[0].id, itemCode: 'MOUSE-001', description: 'Wireless Mouse', unitPrice: 45, standardCost: 25, quantityOnHand: 100 },
+      { categoryId: createdCategories[0].id, itemCode: 'KEYBOARD-001', description: 'Mechanical Keyboard', unitPrice: 120, standardCost: 75, quantityOnHand: 50 },
+      { categoryId: createdCategories[1].id, itemCode: 'SW-CRM', description: 'CRM Software License', unitPrice: 500, standardCost: 200, quantityOnHand: 10 },
+      { categoryId: createdCategories[1].id, itemCode: 'SW-OFFICE', description: 'Office Suite License', unitPrice: 300, standardCost: 150, quantityOnHand: 20 },
+      { categoryId: createdCategories[2].id, itemCode: 'CONSULT-HR', description: 'IT Consulting (per hour)', unitPrice: 150, standardCost: 100, quantityOnHand: 0 },
+      { categoryId: createdCategories[2].id, itemCode: 'SUPPORT-PLAN', description: 'Annual Support Plan', unitPrice: 2000, standardCost: 800, quantityOnHand: 0 }
     ]
 
     const createdItems: any[] = []
     for (const itemData of items) {
-      const item = await prisma.inventoryItem.create({
+      const item = await prisma.item.create({
         data: {
           ...itemData,
           unitOfMeasure: 'Each',
@@ -162,7 +162,7 @@ async function seedComprehensiveAccounting() {
             itemId: item.id,
             lotNumber: `LOT-${item.itemCode}-001`,
             quantity: itemData.quantityOnHand,
-            costPerUnit: itemData.costPrice,
+            costPerUnit: itemData.standardCost,
             expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
             createdBy: adminUser.id
           }
@@ -174,8 +174,8 @@ async function seedComprehensiveAccounting() {
             itemId: item.id,
             movementType: 'OPENING',
             quantity: itemData.quantityOnHand,
-            unitCost: itemData.costPrice,
-            totalCost: itemData.quantityOnHand * itemData.costPrice,
+            unitCost: itemData.standardCost,
+            totalCost: itemData.quantityOnHand * itemData.standardCost,
             movementDate: new Date(),
             notes: 'Opening stock balance',
             createdBy: adminUser.id
@@ -675,7 +675,7 @@ async function seedComprehensiveAccounting() {
     
     const totalAccounts = await prisma.account.count()
     const totalCustomers = await prisma.customer.count()
-    const totalItems = await prisma.inventoryItem.count()
+    const totalItems = await prisma.item.count()
     const totalInvoices = await prisma.invoice.count()
     const totalPayments = await prisma.payment.count()
     const totalJournalEntries = await prisma.journalEntry.count()

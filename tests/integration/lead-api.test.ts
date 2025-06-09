@@ -23,13 +23,24 @@ describe('Lead API Integration', () => {
   })
 
   afterAll(async () => {
-    // Clean up test data
-    await prisma.lead.deleteMany({
-      where: { createdBy: testUserId }
-    })
-    await prisma.user.delete({
-      where: { id: testUserId }
-    })
+    // Clean up test data with defensive checks
+    if (testUserId) {
+      try {
+        await prisma.lead.deleteMany({
+          where: { createdBy: testUserId }
+        })
+      } catch (error) {
+        console.warn('Failed to delete test leads:', error)
+      }
+
+      try {
+        await prisma.user.delete({
+          where: { id: testUserId }
+        })
+      } catch (error) {
+        console.warn('Failed to delete test user:', error)
+      }
+    }
   })
 
   beforeEach(async () => {
