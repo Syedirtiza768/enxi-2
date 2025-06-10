@@ -71,7 +71,9 @@ interface FormData {
 }
 
 export default function SalesOrderEditPage() {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  
+  const { formatCurrency } = useCurrency()
+const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const orderId = params.id as string
 
@@ -307,12 +309,7 @@ export default function SalesOrderEditPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   // Loading state
   if (loading) {

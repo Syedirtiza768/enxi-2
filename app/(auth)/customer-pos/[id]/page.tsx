@@ -41,7 +41,9 @@ interface CustomerPO {
 }
 
 export default function CustomerPODetailPage() {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  
+  const { formatCurrency } = useCurrency()
+const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const poId = params.id as string
 
@@ -140,12 +142,7 @@ export default function CustomerPODetailPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString()

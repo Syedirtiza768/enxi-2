@@ -218,12 +218,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   return (
     <div className="max-w-2xl mx-auto">

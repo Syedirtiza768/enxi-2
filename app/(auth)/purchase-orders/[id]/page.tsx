@@ -70,7 +70,9 @@ interface PurchaseOrder {
 }
 
 export default function PurchaseOrderDetailPage() {
-  const params = useParams()
+  
+  const { formatCurrency } = useCurrency()
+const params = useParams()
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [purchaseOrder, setPurchaseOrder] = useState<PurchaseOrder | null>(null)
   const [loading, setLoading] = useState(true)
@@ -99,7 +101,8 @@ export default function PurchaseOrderDetailPage() {
       setPurchaseOrder(response.data)
 } catch (error) {
       console.error('Error:', error);
-    } finally {
+    import { useCurrency } from '@/lib/contexts/currency-context'
+} finally {
       setLoading(false)
     }
   }
@@ -355,10 +358,10 @@ export default function PurchaseOrderDetailPage() {
                         {item.quantity} {item.item.unitOfMeasure.symbol}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${item.unitPrice.toFixed(2)}
+                        ${formatCurrency(item.unitPrice)}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${item.totalPrice.toFixed(2)}
+                        ${formatCurrency(item.totalPrice)}
                       </TableCell>
                       <TableCell>
                         {item.notes || '-'}
@@ -374,25 +377,25 @@ export default function PurchaseOrderDetailPage() {
                   <VStack gap="sm">
                     <HStack justify="between">
                       <Text>Subtotal:</Text>
-                      <Text weight="medium">${purchaseOrder.subtotal.toFixed(2)}</Text>
+                      <Text weight="medium">${formatCurrency(purchaseOrder.subtotal)}</Text>
                     </HStack>
                     {purchaseOrder.taxAmount > 0 && (
                       <HStack justify="between">
                         <Text>Tax:</Text>
-                        <Text weight="medium">${purchaseOrder.taxAmount.toFixed(2)}</Text>
+                        <Text weight="medium">${formatCurrency(purchaseOrder.taxAmount)}</Text>
                       </HStack>
                     )}
                     {purchaseOrder.shippingAmount > 0 && (
                       <HStack justify="between">
                         <Text>Shipping:</Text>
-                        <Text weight="medium">${purchaseOrder.shippingAmount.toFixed(2)}</Text>
+                        <Text weight="medium">${formatCurrency(purchaseOrder.shippingAmount)}</Text>
                       </HStack>
                     )}
                     <div className="pt-2 border-t border-[var(--border-primary)]">
                       <HStack justify="between">
                         <Text size="lg" weight="bold">Total:</Text>
                         <Text size="lg" weight="bold" className="text-[var(--color-brand-primary-600)]">
-                          ${purchaseOrder.totalAmount.toFixed(2)} {purchaseOrder.currency}
+                          ${formatCurrency(purchaseOrder.totalAmount)} {purchaseOrder.currency}
                         </Text>
                       </HStack>
                     </div>

@@ -472,9 +472,8 @@ async function seedInventoryData() {
         data: {
           locationId: location.id,
           stockLotId: created.id,
-          quantity: lot.availableQty,
           availableQty: lot.availableQty,
-          createdBy,
+          reservedQty: 0,
         },
       });
     }
@@ -522,7 +521,6 @@ async function generateLeads() {
       // Lead status based on age
       const leadAge = 24 - month;
       let status = 'NEW';
-      let dealValue = Math.floor(Math.random() * 500000) + 50000;
       
       if (leadAge > 18) {
         status = ['CONVERTED', 'LOST'][Math.random() < 0.3 ? 0 : 1];
@@ -549,12 +547,12 @@ async function generateLeads() {
       
       leadData.push({
         company: customer.name,
-        contactName: `${contact.first} ${contact.last}`,
+        firstName: contact.first,
+        lastName: contact.last,
         email: `${contact.first.toLowerCase()}.${contact.last.toLowerCase()}@${customer.name.toLowerCase().replace(/\s+/g, '')}.ae`,
         phone: customer.phone,
         source: selectedSource as any,
         status: status as any,
-        dealValue,
         notes: `${service} requirement for ${engineBrand} engine. ${Math.random() < 0.3 ? 'Urgent request.' : ''} Fleet size: ${Math.floor(Math.random() * 10) + 1} vessels.`,
         createdBy: assignedTo.id,
         createdAt: createdDate,
@@ -603,34 +601,35 @@ async function generateSalesCases() {
     
     if (lead.status === 'CONVERTED') {
       if (caseAge > 60) {
-        caseStatus = 'CLOSED_WON';
+        caseStatus = 'WON';
       } else if (caseAge > 30) {
-        caseStatus = 'APPROVED';
+        caseStatus = 'IN_PROGRESS';
       } else {
         caseStatus = 'IN_PROGRESS';
       }
     } else if (caseAge > 90) {
-      caseStatus = Math.random() < 0.3 ? 'CLOSED_WON' : 'CLOSED_LOST';
+      caseStatus = Math.random() < 0.3 ? 'WON' : 'LOST';
     } else if (caseAge > 45) {
-      caseStatus = ['IN_PROGRESS', 'PENDING_APPROVAL'][Math.floor(Math.random() * 2)];
+      caseStatus = 'IN_PROGRESS';
     }
     
+    const estimatedValue = Math.floor(Math.random() * 500000) + 50000;
     const priority = lead.notes?.includes('Urgent') ? 'URGENT' : 
-                    lead.dealValue > 200000 ? 'HIGH' :
-                    lead.dealValue > 100000 ? 'MEDIUM' : 'LOW';
+                    estimatedValue > 200000 ? 'HIGH' :
+                    estimatedValue > 100000 ? 'MEDIUM' : 'LOW';
     
     salesCaseData.push({
       caseNumber: `SC-${yearPrefix}-${String(caseCounter++).padStart(5, '0')}`,
       customerId: customer.id,
-      leadId: lead.id,
       title: `${lead.notes?.split('.')[0]} - ${customer.name}`,
       description: lead.notes,
       status: caseStatus as any,
-      priority: priority as any,
-      totalAmount: lead.dealValue,
+      estimatedValue: estimatedValue,
       createdBy: lead.createdBy,
+      assignedTo: lead.createdBy,
       createdAt: caseCreatedDate,
       updatedAt: addDays(caseCreatedDate, Math.floor(Math.random() * 14) + 7),
+      closedAt: (caseStatus === 'WON' || caseStatus === 'LOST') ? addDays(caseCreatedDate, Math.floor(Math.random() * 30) + 30) : null,
     });
   }
   
@@ -650,18 +649,19 @@ async function generateSalesCases() {
     const engineBrand = MARINE_ENGINE_BRANDS[Math.floor(Math.random() * MARINE_ENGINE_BRANDS.length)];
     const value = Math.floor(Math.random() * 300000) + 30000;
     
+    const caseStatus = ['OPEN', 'IN_PROGRESS', 'WON', 'LOST'][Math.floor(Math.random() * 4)];
     salesCaseData.push({
       caseNumber: `SC-${yearPrefix}-${String(caseCounter++).padStart(5, '0')}`,
       customerId: customer.id,
-      leadId: null,
       title: `${service} - ${customer.name}`,
       description: `Direct request for ${service} on ${engineBrand} engine. Customer called directly.`,
-      status: ['OPEN', 'IN_PROGRESS', 'APPROVED', 'CLOSED_WON'][Math.floor(Math.random() * 4)] as any,
-      priority: value > 150000 ? 'HIGH' : 'MEDIUM' as any,
-      totalAmount: value,
+      status: caseStatus as any,
+      estimatedValue: value,
       createdBy: assignedTo.id,
+      assignedTo: assignedTo.id,
       createdAt: createdDate,
       updatedAt: addDays(createdDate, Math.floor(Math.random() * 7) + 1),
+      closedAt: (caseStatus === 'WON' || caseStatus === 'LOST') ? addDays(createdDate, Math.floor(Math.random() * 30) + 30) : null,
     });
   }
   
@@ -679,7 +679,7 @@ async function generateQuotations() {
   console.log('\n📄 Generating Quotations...');
   
   const salesCases = await prisma.salesCase.findMany({
-    where: { status: { notIn: ['CLOSED_LOST'] } },
+    where: { status: { notIn: ['LOST', 'CANCELLED'] } },
     include: { customer: true },
     orderBy: { createdAt: 'asc' },
   });
@@ -712,14 +712,23 @@ async function generateQuotations() {
         const discount = Math.random() < 0.3 ? Math.floor(Math.random() * 15) : 0;
         const lineTotal = quantity * unitPrice * (1 - discount / 100);
         
+        const discountAmount = quantity * unitPrice * (discount / 100);
+        const taxableAmount = lineTotal;
+        const itemTaxAmount = taxableAmount * 0.05;
+        const itemTotalAmount = taxableAmount + itemTaxAmount;
+        
         selectedItems.push({
           itemId: item.id,
+          itemCode: item.code,
           description: item.description || item.name,
           quantity,
           unitPrice: Math.round(unitPrice),
           discount,
-          taxAmount: lineTotal * 0.05, // 5% VAT
-          totalAmount: Math.round(lineTotal * 1.05),
+          taxRate: 5, // 5% VAT
+          subtotal: Math.round(quantity * unitPrice),
+          discountAmount: Math.round(discountAmount),
+          taxAmount: Math.round(itemTaxAmount),
+          totalAmount: Math.round(itemTotalAmount),
         });
         
         subtotal += lineTotal;
@@ -732,9 +741,9 @@ async function generateQuotations() {
       let status = 'DRAFT';
       const quoteAge = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
       
-      if (salesCase.status === 'CLOSED_WON' && version === quotationCount) {
+      if (salesCase.status === 'WON' && version === quotationCount) {
         status = 'ACCEPTED';
-      } else if (salesCase.status === 'CLOSED_LOST') {
+      } else if (salesCase.status === 'LOST') {
         status = 'REJECTED';
       } else if (quoteAge > 30) {
         status = 'EXPIRED';
@@ -747,16 +756,15 @@ async function generateQuotations() {
       const quotation = {
         quotationNumber,
         salesCaseId: salesCase.id,
-        quotationDate: createdDate,
         validUntil: addDays(createdDate, 30),
         status: status as any,
+        version: version,
         paymentTerms: `Net ${salesCase.customer.paymentTerms} days`,
         deliveryTerms: 'Ex-Works Dubai',
-        subTotal: Math.round(subtotal),
-        totalTax: Math.round(taxAmount),
+        subtotal: Math.round(subtotal),
+        taxAmount: Math.round(taxAmount),
+        discountAmount: 0,
         totalAmount: Math.round(total),
-        currency: 'AED',
-        exchangeRate: 1,
         notes: `Reference: ${salesCase.caseNumber}\nVersion: ${version}\n${version > 1 ? 'Revised quotation as per customer feedback.' : 'Initial quotation.'}`,
         createdBy: salesCase.createdBy,
         createdAt: createdDate,
@@ -812,20 +820,22 @@ async function generateSalesOrders() {
     } else if (orderAge > 30) {
       status = 'SHIPPED';
     } else if (orderAge > 14) {
-      status = 'CONFIRMED';
+      status = 'APPROVED';
     }
     
     // Convert quotation items to order items
     const orderItems = quotation.items.map((item: any) => ({
       itemId: item.itemId,
+      itemCode: item.itemCode,
       description: item.description,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       discount: item.discount,
+      taxRate: item.taxRate,
+      subtotal: item.subtotal,
+      discountAmount: item.discountAmount,
       taxAmount: item.taxAmount,
       totalAmount: item.totalAmount,
-      deliveredQuantity: status === 'DELIVERED' ? item.quantity : 
-                        status === 'SHIPPED' ? Math.floor(item.quantity * 0.5) : 0,
     }));
     
     const salesOrder = {
@@ -833,16 +843,15 @@ async function generateSalesOrders() {
       salesCaseId: quotation.salesCaseId,
       quotationId: quotation.id,
       orderDate: createdDate,
-      expectedDeliveryDate: addDays(createdDate, 14),
-      actualDeliveryDate: status === 'DELIVERED' ? addDays(createdDate, Math.floor(Math.random() * 7) + 10) : null,
+      requestedDate: addDays(createdDate, 7),
+      promisedDate: addDays(createdDate, 14),
       status: status as any,
       paymentTerms: quotation.paymentTerms,
-      deliveryTerms: quotation.deliveryTerms,
-      subTotal: quotation.subTotal,
-      totalTax: quotation.totalTax,
+      shippingTerms: quotation.deliveryTerms,
+      subtotal: quotation.subtotal,
+      taxAmount: quotation.taxAmount,
+      discountAmount: quotation.discountAmount,
       totalAmount: quotation.totalAmount,
-      currency: quotation.currency,
-      exchangeRate: quotation.exchangeRate,
       notes: `Created from quotation: ${quotation.quotationNumber}`,
       createdBy: quotation.createdBy,
       createdAt: createdDate,
@@ -903,13 +912,16 @@ async function generatePurchaseOrders() {
           
           selectedItems.push({
             itemId: item.id,
+            itemCode: item.code,
             description: item.description || item.name,
-            orderedQuantity: quantity,
+            quantity: quantity,
             unitPrice,
             discount: 0,
-            taxAmount: lineTotal * 0.05,
+            taxRate: 5, // 5% VAT
+            subtotal: Math.round(lineTotal),
+            discountAmount: 0,
+            taxAmount: Math.round(lineTotal * 0.05),
             totalAmount: Math.round(lineTotal * 1.05),
-            receivedQuantity: 0,
           });
           
           subtotal += lineTotal;
@@ -929,23 +941,21 @@ async function generatePurchaseOrders() {
         } else if (poAge > 14) {
           status = 'APPROVED';
         } else if (poAge > 7) {
-          status = 'SENT';
+          status = 'ORDERED';
         }
         
         const purchaseOrder = {
           poNumber: `PO-${yearPrefix}${monthPrefix}-${String(poCounter++).padStart(4, '0')}`,
           supplierId: supplier.id,
           orderDate: createdDate,
-          expectedDeliveryDate: addDays(createdDate, 30),
-          actualDeliveryDate: status === 'COMPLETED' ? addDays(createdDate, 25) : null,
+          expectedDate: addDays(createdDate, 30),
           status: status as any,
           paymentTerms: `Net ${supplier.paymentTerms} days`,
           deliveryTerms: 'FOB Origin',
-          subTotal: Math.round(subtotal),
-          totalTax: Math.round(taxAmount),
+          subtotal: Math.round(subtotal),
+          taxAmount: Math.round(taxAmount),
+          discountAmount: 0,
           totalAmount: Math.round(total),
-          currency: 'AED',
-          exchangeRate: 1,
           notes: `Regular stock replenishment order`,
           createdBy: users[0].id,
           createdAt: createdDate,
@@ -994,10 +1004,14 @@ async function generateFinancialData() {
     
     const invoiceItems = order.items.map((item: any) => ({
       itemId: item.itemId,
+      itemCode: item.itemCode,
       description: item.description,
       quantity: item.deliveredQuantity || item.quantity,
       unitPrice: item.unitPrice,
       discount: item.discount,
+      taxRate: item.taxRate,
+      subtotal: item.subtotal,
+      discountAmount: item.discountAmount,
       taxAmount: item.taxAmount,
       totalAmount: item.totalAmount,
     }));
@@ -1008,12 +1022,12 @@ async function generateFinancialData() {
       customerId: order.salesCase.customerId,
       invoiceDate: createdDate,
       dueDate: addDays(createdDate, order.salesCase.customer.paymentTerms || 30),
-      status: 'POSTED' as any,
-      subTotal: order.subTotal,
-      totalTax: order.totalTax,
+      status: 'SENT' as any,
+      subtotal: order.subtotal,
+      taxAmount: order.taxAmount,
+      discountAmount: order.discountAmount || 0,
       totalAmount: order.totalAmount,
-      currency: order.currency,
-      exchangeRate: order.exchangeRate,
+      balanceAmount: order.totalAmount, // Unpaid initially
       notes: `Invoice for Sales Order: ${order.orderNumber}`,
       createdBy: order.createdBy,
       createdAt: createdDate,
@@ -1051,25 +1065,16 @@ async function generateFinancialData() {
     
     const payment = {
       paymentNumber: `PAY-${yearPrefix}-${String(paymentCounter++).padStart(5, '0')}`,
+      invoiceId: invoice.id,
       customerId: invoice.customerId,
       paymentDate,
       amount: invoice.totalAmount,
-      currency: invoice.currency,
-      exchangeRate: invoice.exchangeRate,
       paymentMethod: ['BANK_TRANSFER', 'CHECK', 'CASH'][Math.floor(Math.random() * 3)] as any,
       reference: `Payment for ${invoice.invoiceNumber}`,
       notes: 'Payment received and confirmed',
-      status: 'COMPLETED' as any,
       createdBy: invoice.createdBy,
       createdAt: paymentDate,
       updatedAt: paymentDate,
-      allocations: {
-        create: [{
-          invoiceId: invoice.id,
-          amount: invoice.totalAmount,
-          createdBy: invoice.createdBy,
-        }],
-      },
     };
     
     paymentData.push(payment);
@@ -1109,7 +1114,10 @@ async function generateShipments() {
     
     const shipmentItems = order.items.map((item: any) => ({
       salesOrderItemId: item.id,
-      quantity: order.status === 'DELIVERED' ? item.quantity : Math.floor(item.quantity * 0.5),
+      itemId: item.itemId,
+      itemCode: item.itemCode,
+      description: item.description,
+      quantityShipped: order.status === 'DELIVERED' ? item.quantity : Math.floor(item.quantity * 0.5),
     }));
     
     const shipment = {
@@ -1119,9 +1127,8 @@ async function generateShipments() {
       status: order.status === 'DELIVERED' ? 'DELIVERED' : 'IN_TRANSIT' as any,
       carrier: ['DHL Express', 'FedEx', 'Emirates SkyCargo', 'Aramex'][Math.floor(Math.random() * 4)],
       trackingNumber: `TRK${Date.now()}${Math.floor(Math.random() * 10000)}`,
-      weight: Math.floor(Math.random() * 100) + 10,
-      freight: Math.floor(Math.random() * 500) + 100,
-      notes: `Shipment for order ${order.orderNumber}`,
+      shippingCost: Math.floor(Math.random() * 500) + 100,
+      shipToAddress: order.salesCase.customer.address || 'Dubai, UAE',
       createdBy: order.createdBy,
       createdAt: createdDate,
       updatedAt: order.status === 'DELIVERED' ? addDays(createdDate, 10) : createdDate,

@@ -481,7 +481,7 @@ export function ThreeWayMatchingDashboard() {
                     {exception.variance && exception.variancePercentage ? (
                       <div>
                         <div className="font-medium">
-                          ${exception.variance.toFixed(2)}
+                          ${formatCurrency(exception.variance)}
                         </div>
                         <div className="text-sm text-gray-500">
                           ({exception.variancePercentage.toFixed(1)}%)

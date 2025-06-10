@@ -1,5 +1,8 @@
 # AI Assistant Reference - Enxi ERP Development
 
+## 🚫 Git Commit Guidelines
+**IMPORTANT: Never mention Claude, AI, or any AI assistant references in git commit messages**
+
 ## ⚡ PERFORMANCE OPTIMIZATION RULE
 **For maximum efficiency whenever you need to perform multiple independent operations, invoke all relevant tools simultaneously rather than sequentially**
 

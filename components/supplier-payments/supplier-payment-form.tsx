@@ -209,7 +209,7 @@ export function SupplierPaymentForm({
       }
 
       if (selectedInvoice && formData.amount > selectedInvoice.balanceAmount) {
-        throw new Error(`Payment amount cannot exceed invoice balance of ${selectedInvoice.balanceAmount.toFixed(2)}`)
+        throw new Error(`Payment amount cannot exceed invoice balance of ${formatCurrency(selectedInvoice.balanceAmount)}`)
       }
 
       const url = supplierPayment ? `/api/supplier-payments/${supplierPayment.id}` : '/api/supplier-payments'
@@ -366,7 +366,7 @@ export function SupplierPaymentForm({
                     <option value="">No specific invoice (prepayment)</option>
                     {supplierInvoices.map(invoice => (
                       <option key={invoice.id} value={invoice.id}>
-                        {invoice.invoiceNumber} - Balance: ${invoice.balanceAmount.toFixed(2)}
+                        {invoice.invoiceNumber} - Balance: ${formatCurrency(invoice.balanceAmount)}
                       </option>
                     ))}
                   </Select>
@@ -379,19 +379,19 @@ export function SupplierPaymentForm({
                         <VStack gap="xs">
                           <Text size="sm" weight="medium">Invoice Total</Text>
                           <Text weight="semibold">
-                            ${selectedInvoice.totalAmount.toFixed(2)} {selectedInvoice.currency}
+                            ${formatCurrency(selectedInvoice.totalAmount)} {selectedInvoice.currency}
                           </Text>
                         </VStack>
                         <VStack gap="xs">
                           <Text size="sm" weight="medium">Amount Paid</Text>
                           <Text weight="semibold">
-                            ${selectedInvoice.paidAmount.toFixed(2)}
+                            ${formatCurrency(selectedInvoice.paidAmount)}
                           </Text>
                         </VStack>
                         <VStack gap="xs">
                           <Text size="sm" weight="medium">Balance Due</Text>
                           <Text weight="semibold" className="text-green-700">
-                            ${selectedInvoice.balanceAmount.toFixed(2)}
+                            ${formatCurrency(selectedInvoice.balanceAmount)}
                           </Text>
                         </VStack>
                       </Grid>
@@ -446,7 +446,7 @@ export function SupplierPaymentForm({
                           amount: selectedInvoice.balanceAmount 
                         }))}
                       >
-                        Pay Full Balance (${selectedInvoice.balanceAmount.toFixed(2)})
+                        Pay Full Balance (${formatCurrency(selectedInvoice.balanceAmount)})
                       </Button>
                     </HStack>
                   )}
@@ -545,7 +545,7 @@ export function SupplierPaymentForm({
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Payment Amount</Text>
                         <Text size="xl" weight="bold">
-                          ${formData.amount.toFixed(2)} {formData.currency}
+                          ${formatCurrency(formData.amount)} {formData.currency}
                         </Text>
                       </VStack>
                     </CardContent>
@@ -557,7 +557,7 @@ export function SupplierPaymentForm({
                         <VStack gap="xs">
                           <Text size="sm" color="secondary">USD Equivalent</Text>
                           <Text size="xl" weight="bold">
-                            ${(formData.amount * formData.exchangeRate).toFixed(2)} USD
+                            ${formatCurrency((formData.amount * formData.exchangeRate))} USD
                           </Text>
                         </VStack>
                       </CardContent>

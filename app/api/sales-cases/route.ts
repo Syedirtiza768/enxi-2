@@ -42,11 +42,23 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get('dateTo')
     if (dateTo) options.dateTo = new Date(dateTo)
 
+    // Pagination support
+    const page = searchParams.get('page')
     const limit = searchParams.get('limit')
-    if (limit) options.limit = parseInt(limit)
-
-    const offset = searchParams.get('offset')
-    if (offset) options.offset = parseInt(offset)
+    
+    if (limit) {
+      options.limit = parseInt(limit)
+    } else {
+      options.limit = 20 // Default limit
+    }
+    
+    if (page) {
+      const pageNum = parseInt(page)
+      options.offset = (pageNum - 1) * (options.limit || 20)
+    } else {
+      const offset = searchParams.get('offset')
+      if (offset) options.offset = parseInt(offset)
+    }
 
     // Apply role-based visibility rules
     if (user.role === 'SALES_REP') {
@@ -70,10 +82,39 @@ export async function GET(request: NextRequest) {
     // SUPER_ADMIN, ADMIN can see all sales cases (no restrictions)
 
     const salesCases = await salesCaseService.getAllSalesCases(options)
+    
+    // Get total count for pagination
+    const totalCount = await prisma.salesCase.count({
+      where: {
+        ...(options.customerId && { customerId: options.customerId }),
+        ...(options.status && { status: options.status }),
+        ...(options.assignedTo && !options.assignedTo.includes(',') && { assignedTo: options.assignedTo }),
+        ...(options.assignedTo && options.assignedTo.includes(',') && { 
+          assignedTo: { in: options.assignedTo.split(',') } 
+        }),
+        ...(options.search && {
+          OR: [
+            { caseNumber: { contains: options.search, mode: 'insensitive' } },
+            { title: { contains: options.search, mode: 'insensitive' } },
+            { description: { contains: options.search, mode: 'insensitive' } },
+            { customer: { name: { contains: options.search, mode: 'insensitive' } } }
+          ]
+        }),
+        ...(options.dateFrom && { createdAt: { gte: options.dateFrom } }),
+        ...(options.dateTo && { createdAt: { lte: options.dateTo } })
+      }
+    })
+    
+    const currentPage = page ? parseInt(page) : Math.floor((options.offset || 0) / (options.limit || 20)) + 1
+    const totalPages = Math.ceil(totalCount / (options.limit || 20))
 
     return NextResponse.json({
       success: true,
-      data: salesCases
+      data: salesCases,
+      total: totalCount,
+      page: currentPage,
+      totalPages,
+      limit: options.limit || 20
     })
 } catch (error) {
     console.error('Error:', error);

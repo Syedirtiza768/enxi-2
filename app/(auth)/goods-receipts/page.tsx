@@ -289,7 +289,7 @@ export default function GoodsReceiptsPage() {
 
         {/* Goods Receipts Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card variant="elevated" className="overflow-x-auto">
             <CardHeader>
               <CardTitle>Goods Receipts ({filteredGoodsReceipts.length})</CardTitle>
             </CardHeader>

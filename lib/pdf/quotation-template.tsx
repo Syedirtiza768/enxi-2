@@ -252,7 +252,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: quotation.currency || 'USD',
     }).format(amount)
   }
 

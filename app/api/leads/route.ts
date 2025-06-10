@@ -4,15 +4,15 @@ import { createLeadSchema, leadListQuerySchema } from '@/lib/validators/lead.val
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper'
 
-const postHandler = async (_request: NextRequest) => {
+const postHandler = async (request: NextRequest) => {
   console.warn('[API] Lead POST handler started')
   
   // Authenticate user
-  const _user = await getUserFromRequest(_request)
+  const _user = await getUserFromRequest(request)
   console.warn('[API] Authenticated user:', _user.id)
   
   // Parse and validate request body
-  const body = await _request.json()
+  const body = await request.json()
   console.warn('[API] Request body:', body)
   
   const validatedData = createLeadSchema.parse(body)
@@ -27,11 +27,11 @@ const postHandler = async (_request: NextRequest) => {
 
 export const POST = withUniversalErrorHandling(postHandler, '/api/leads', { operation: 'POST createLead' })
 
-const getHandler = async (_request: NextRequest) => {
+const getHandler = async (request: NextRequest) => {
   // Try to authenticate user but don't fail hard
   let _user
   try {
-    _user = await getUserFromRequest(_request)
+    _user = await getUserFromRequest(request)
   } catch (authError) {
     console.warn('Auth check failed in leads route', {
       error: authError instanceof Error ? authError.message : 'Unknown auth error'
@@ -40,7 +40,7 @@ const getHandler = async (_request: NextRequest) => {
   }
   
   // Parse query parameters
-  const { searchParams } = new URL(_request.url)
+  const { searchParams } = new URL(request.url)
   const queryData = {
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '10'),

@@ -48,7 +48,9 @@ interface StockMovement {
 }
 
 export default function StockInPage() {
-  const [items, setItems] = useState<Item[]>([])
+  
+  const { formatCurrency } = useCurrency()
+const [items, setItems] = useState<Item[]>([])
   const [recentMovements, setRecentMovements] = useState<StockMovement[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -185,12 +187,7 @@ export default function StockInPage() {
     )
   })
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   return (
     <div className="space-y-6">

@@ -88,7 +88,9 @@ interface SupplierInvoice {
 }
 
 export default function SupplierInvoiceDetailPage() {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  
+  const { formatCurrency } = useCurrency()
+const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const invoiceId = params.id as string
 
@@ -119,7 +121,8 @@ export default function SupplierInvoiceDetailPage() {
       setInvoice(response.data)
 } catch (error) {
       console.error('Error:', error);
-    } finally {
+    import { useCurrency } from '@/lib/contexts/currency-context'
+} finally {
       setLoading(false)
     }
   }
@@ -497,14 +500,14 @@ export default function SupplierInvoiceDetailPage() {
                       {item.quantity} {item.goodsReceiptItem.item.unitOfMeasure.symbol}
                     </TableCell>
                     <TableCell>
-                      ${item.unitPrice.toFixed(2)}
+                      ${formatCurrency(item.unitPrice)}
                     </TableCell>
                     <TableCell>
-                      ${item.taxAmount.toFixed(2)}
+                      ${formatCurrency(item.taxAmount)}
                     </TableCell>
                     <TableCell>
                       <Text weight="medium">
-                        ${item.totalAmount.toFixed(2)}
+                        ${formatCurrency(item.totalAmount)}
                       </Text>
                     </TableCell>
                     <TableCell>
@@ -529,21 +532,21 @@ export default function SupplierInvoiceDetailPage() {
               <VStack gap="xs">
                 <Text size="sm" weight="medium" color="secondary">Subtotal</Text>
                 <Text size="lg" weight="semibold">
-                  ${invoice.subtotal.toFixed(2)}
+                  ${formatCurrency(invoice.subtotal)}
                 </Text>
               </VStack>
               
               <VStack gap="xs">
                 <Text size="sm" weight="medium" color="secondary">Tax Amount</Text>
                 <Text size="lg" weight="semibold">
-                  ${invoice.taxAmount.toFixed(2)}
+                  ${formatCurrency(invoice.taxAmount)}
                 </Text>
               </VStack>
               
               <VStack gap="xs">
                 <Text size="sm" weight="medium" color="secondary">Total Amount</Text>
                 <Text size="xl" weight="bold" className="text-[var(--color-brand-primary-600)]">
-                  ${invoice.totalAmount.toFixed(2)} {invoice.currency}
+                  ${formatCurrency(invoice.totalAmount)} {invoice.currency}
                 </Text>
               </VStack>
             </Grid>

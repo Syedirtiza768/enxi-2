@@ -74,7 +74,9 @@ interface ReportStats {
 }
 
 export default function InventoryReportsContent() {
-  const [reportType, setReportType] = useState<ReportType>('summary')
+  
+  const { formatCurrency } = useCurrency()
+const [reportType, setReportType] = useState<ReportType>('summary')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dateRange, setDateRange] = useState('30')
@@ -322,13 +324,13 @@ export default function InventoryReportsContent() {
               {item.quantity} {item.unit}
             </TableCell>
             <TableCell className="text-right">
-              ${item.unitCost.toFixed(2)}
+              ${formatCurrency(item.unitCost)}
             </TableCell>
             <TableCell className="text-right">
-              ${item.averageCost.toFixed(2)}
+              ${formatCurrency(item.averageCost)}
             </TableCell>
             <TableCell className="text-right font-semibold">
-              ${item.totalValue.toFixed(2)}
+              ${formatCurrency(item.totalValue)}
             </TableCell>
           </TableRow>
         ))}

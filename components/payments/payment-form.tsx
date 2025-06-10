@@ -118,7 +118,8 @@ export function PaymentForm({
       onSuccess()
 } catch (error) {
       console.error('Error:', error);
-      setIsSubmitting(false)
+      import { useCurrency } from '@/lib/contexts/currency-context'
+setIsSubmitting(false)
     }
   }
 
@@ -169,7 +170,7 @@ export function PaymentForm({
         <div className="space-y-1 text-sm text-gray-600">
           <div>Invoice: <span className="font-medium">{invoiceNumber}</span></div>
           <div>Customer: <span className="font-medium">{customerName}</span></div>
-          <div>Balance Due: <span className="font-medium text-red-600">${balanceAmount.toFixed(2)}</span></div>
+          <div>Balance Due: <span className="font-medium text-red-600">${formatCurrency(balanceAmount)}</span></div>
         </div>
       </CardHeader>
 
@@ -228,10 +229,10 @@ export function PaymentForm({
               </div>
 
               <div id="amount-info" className="text-sm text-gray-600">
-                Balance: ${balanceAmount.toFixed(2)}
+                Balance: ${formatCurrency(balanceAmount)}
                 {remainingBalance !== balanceAmount && (
                   <span className="ml-2">
-                    | Remaining Balance: ${remainingBalance.toFixed(2)}
+                    | Remaining Balance: ${formatCurrency(remainingBalance)}
                   </span>
                 )}
               </div>

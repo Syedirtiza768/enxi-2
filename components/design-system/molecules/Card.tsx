@@ -4,7 +4,7 @@ import React, { forwardRef, HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'outlined' | 'elevated' | 'filled'
+  variant?: 'default' | 'outlined' | 'elevated' | 'filled' | 'subtle'
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
   rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   hoverable?: boolean
@@ -41,7 +41,8 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       default: 'bg-[var(--bg-primary)] border border-[var(--border-primary)]',
       outlined: 'bg-transparent border-2 border-[var(--border-secondary)]',
       elevated: 'bg-[var(--bg-elevated)] shadow-[var(--shadow-md)]',
-      filled: 'bg-[var(--bg-secondary)]'
+      filled: 'bg-[var(--bg-secondary)]',
+      subtle: 'bg-[var(--bg-secondary)] border border-[var(--border-primary)]'
     }
 
     const paddingStyles = {

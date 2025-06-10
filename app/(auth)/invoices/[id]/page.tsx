@@ -57,7 +57,9 @@ interface Invoice {
 }
 
 export default function InvoiceDetailPage() {
-  const params = useParams()
+  
+  const { formatCurrency } = useCurrency()
+const params = useParams()
   const invoiceId = params.id as string
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
@@ -179,12 +181,7 @@ export default function InvoiceDetailPage() {
     )
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   // Loading state
   if (loading) {

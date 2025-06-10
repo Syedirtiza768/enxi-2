@@ -484,7 +484,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
                   <HStack justify="end">
                     <div className="text-right">
                       <Text size="lg" weight="bold">
-                        Total Received: ${formData.totalReceived.toFixed(2)}
+                        Total Received: ${formatCurrency(formData.totalReceived)}
                       </Text>
                     </div>
                   </HStack>

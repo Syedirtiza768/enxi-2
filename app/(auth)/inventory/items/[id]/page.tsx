@@ -6,7 +6,9 @@ import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, AlertTriangle
 import { Item } from '@/components/inventory/item-list'
 
 export default function ItemDetailPage() {
-  const params = useParams()
+  
+  const { formatCurrency } = useCurrency()
+const params = useParams()
   
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
@@ -74,12 +76,7 @@ export default function ItemDetailPage() {
   }
 
   // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   // Get status badge
   const getStatusBadge = (status: boolean, label: string, trueColor = 'green', falseColor = 'gray') => (

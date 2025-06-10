@@ -186,12 +186,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   // Filter inventory items based on search
   const filteredInventoryItems = inventoryItems.filter(item => {

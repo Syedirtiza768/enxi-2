@@ -49,19 +49,37 @@ export default function CompanySettingsPage() {
 
   // Load existing settings
   useEffect(() => {
-    loadSettings()
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      loadSettings()
+    }
   }, [])
 
   const loadSettings = async () => {
     try {
       setLoading(true)
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        console.warn('No authentication token found')
+        setError('Please log in to access company settings')
+        setLoading(false)
+        return
+      }
+
       const response = await fetch('/api/settings/company', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          setError('Your session has expired. Please log in again.')
+          // Optionally redirect to login
+          window.location.href = '/login'
+          return
+        }
         throw new Error('Failed to load settings')
       }
 
@@ -84,11 +102,18 @@ export default function CompanySettingsPage() {
       setSaving(true)
       setError(null)
 
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setError('Please log in to save settings')
+        setSaving(false)
+        return
+      }
+
       const response = await fetch('/api/settings/company', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(settings)
       })

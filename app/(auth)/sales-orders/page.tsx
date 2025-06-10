@@ -47,7 +47,9 @@ interface SalesOrder {
 }
 
 export default function SalesOrdersPage() {
-  const [orders, setOrders] = useState<SalesOrder[]>([])
+  
+  const { formatCurrency } = useCurrency()
+const [orders, setOrders] = useState<SalesOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -157,12 +159,7 @@ export default function SalesOrdersPage() {
     )
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   const formatDate = (date: string | undefined) => {
     if (!date) return '-'
@@ -345,7 +342,7 @@ export default function SalesOrdersPage() {
 
         {/* Orders List */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card variant="elevated" className="overflow-x-auto">
           {filteredOrders.length === 0 ? (
             <CardContent className="py-12">
               <VStack gap="lg" align="center">

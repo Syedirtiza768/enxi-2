@@ -72,7 +72,9 @@ interface GoodsReceipt {
 }
 
 export default function GoodsReceiptDetailPage() {
-  const params = useParams()
+  
+  const { formatCurrency } = useCurrency()
+const params = useParams()
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [goodsReceipt, setGoodsReceipt] = useState<GoodsReceipt | null>(null)
   const [loading, setLoading] = useState(true)
@@ -100,7 +102,8 @@ export default function GoodsReceiptDetailPage() {
       setGoodsReceipt(response.data)
 } catch (error) {
       console.error('Error:', error);
-    } finally {
+    import { useCurrency } from '@/lib/contexts/currency-context'
+} finally {
       setLoading(false)
     }
   }
@@ -336,10 +339,10 @@ export default function GoodsReceiptDetailPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${item.unitCost.toFixed(2)}
+                        ${formatCurrency(item.unitCost)}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${(item.quantityReceived * item.unitCost).toFixed(2)}
+                        ${formatCurrency((item.quantityReceived * item.unitCost))}
                       </TableCell>
                       <TableCell>
                         {getQualityBadge(item.qualityStatus)}
@@ -369,7 +372,7 @@ export default function GoodsReceiptDetailPage() {
                     <HStack justify="between">
                       <Text>Total Received Value:</Text>
                       <Text size="lg" weight="bold" className="text-[var(--color-brand-primary-600)]">
-                        ${goodsReceipt.totalReceived.toFixed(2)} {goodsReceipt.currency}
+                        ${formatCurrency(goodsReceipt.totalReceived)} {goodsReceipt.currency}
                       </Text>
                     </HStack>
                     

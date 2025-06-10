@@ -540,10 +540,10 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                             {availableQty} {item.item.unitOfMeasure.symbol}
                           </TableCell>
                           <TableCell>
-                            ${item.unitCost.toFixed(2)}
+                            ${formatCurrency(item.unitCost)}
                           </TableCell>
                           <TableCell>
-                            ${(availableQty * item.unitCost).toFixed(2)}
+                            ${formatCurrency((availableQty * item.unitCost))}
                           </TableCell>
                           <TableCell>
                             <Button
@@ -643,7 +643,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                         </TableCell>
                         <TableCell>
                           <Text weight="medium">
-                            ${item.totalAmount.toFixed(2)}
+                            ${formatCurrency(item.totalAmount)}
                           </Text>
                         </TableCell>
                         <TableCell>
@@ -692,7 +692,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Subtotal</Text>
                         <Text size="xl" weight="bold">
-                          ${formData.subtotal.toFixed(2)}
+                          ${formatCurrency(formData.subtotal)}
                         </Text>
                       </VStack>
                     </CardContent>
@@ -703,7 +703,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Tax Amount</Text>
                         <Text size="xl" weight="bold">
-                          ${formData.taxAmount.toFixed(2)}
+                          ${formatCurrency(formData.taxAmount)}
                         </Text>
                       </VStack>
                     </CardContent>
@@ -714,7 +714,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Total Amount</Text>
                         <Text size="xl" weight="bold" className="text-blue-900">
-                          ${formData.totalAmount.toFixed(2)} {formData.currency}
+                          ${formatCurrency(formData.totalAmount)} {formData.currency}
                         </Text>
                       </VStack>
                     </CardContent>

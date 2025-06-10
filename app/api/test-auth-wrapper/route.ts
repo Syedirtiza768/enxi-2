@@ -3,14 +3,14 @@ import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wra
 import { getUserFromRequest } from '@/lib/utils/auth';
 
 const testAuthHandler = async (request: NextRequest) => {
-  const _user = await getUserFromRequest(_request);
+  const user = await getUserFromRequest(request);
   
   return NextResponse.json({ 
     message: 'Test auth wrapper working',
     timestamp: new Date().toISOString(),
     method: request.method,
     user: {
-      id: _user.id,
+      id: user.id,
       username: user.username
     }
   });

@@ -106,12 +106,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
+  // formatCurrency function removed - use useCurrency hook instead
 
   // Item management functions
   const addQuotationItem = (fromInventoryItem?: InventoryItem) => {

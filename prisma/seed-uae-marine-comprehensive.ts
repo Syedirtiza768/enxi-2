@@ -19,7 +19,7 @@ import {
   ShipmentStatus,
   TransferStatus,
   LocationType
-} from '@prisma/client'
+} from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 import { faker } from '@faker-js/faker'
 
@@ -354,23 +354,12 @@ async function createBaseData() {
   const companySettings = await prisma.companySettings.create({
     data: {
       companyName: 'UAE Marine Engine Services LLC',
-      tradeLicenseNumber: 'DED-2023-789456',
-      taxRegistrationNumber: '100123456789012',
-      logo: '/logo/uae-marine-logo.png',
-      address: JSON.stringify({
-        street: 'Plot 45, Dubai Maritime City',
-        city: 'Dubai',
-        state: 'Dubai',
-        country: 'United Arab Emirates',
-        postalCode: '12345'
-      }),
+      address: 'Plot 45, Dubai Maritime City, Dubai, UAE 12345',
       phone: '+971 4 123 4567',
       email: 'info@uaemarineservices.ae',
       website: 'https://www.uaemarineservices.ae',
-      fiscalYearStart: '01-01',
       defaultCurrency: 'AED',
-      dateFormat: 'DD/MM/YYYY',
-      timeZone: 'Asia/Dubai'
+      isActive: true
     }
   })
   

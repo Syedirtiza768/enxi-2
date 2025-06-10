@@ -62,7 +62,9 @@ interface PaymentStats {
 }
 
 export default function SupplierPaymentsPage() {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  
+  const { formatCurrency } = useCurrency()
+const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [payments, setPayments] = useState<SupplierPayment[]>([])
   const [stats, setStats] = useState<PaymentStats>({
     totalPayments: 0,
@@ -115,7 +117,8 @@ export default function SupplierPaymentsPage() {
       setStats(stats)
 } catch (error) {
       console.error('Error:', error);
-    } finally {
+    import { useCurrency } from '@/lib/contexts/currency-context'
+} finally {
       setLoading(false)
     }
   }
@@ -395,7 +398,7 @@ export default function SupplierPaymentsPage() {
                           <div>
                             <div className="font-medium">{payment.supplierInvoice.invoiceNumber}</div>
                             <div className="text-sm text-gray-500">
-                              ${payment.supplierInvoice.totalAmount.toFixed(2)}
+                              ${formatCurrency(payment.supplierInvoice.totalAmount)}
                             </div>
                           </div>
                         ) : (
@@ -415,7 +418,7 @@ export default function SupplierPaymentsPage() {
                         <div className="text-sm text-gray-500">{payment.currency}</div>
                         {payment.currency !== 'USD' && (
                           <div className="text-xs text-gray-400">
-                            ${payment.baseAmount.toFixed(2)} USD
+                            ${formatCurrency(payment.baseAmount)} USD
                           </div>
                         )}
                       </TableCell>

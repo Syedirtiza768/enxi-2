@@ -5,6 +5,7 @@ import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit } from 'lu
 import { PageLayout, PageHeader, PageSection, VStack, Grid } from '@/components/design-system'
 import { Card } from '@/components/ui/card'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface QuotationItem {
   id: string
@@ -54,6 +55,8 @@ interface SalesCase {
 
 
 export default function QuotationsPage() {
+  // Hooks
+  const { formatCurrency } = useCurrency()
   
   // State management
   const [quotations, setQuotations] = useState<Quotation[]>([])
@@ -140,12 +143,6 @@ export default function QuotationsPage() {
   }, [currentPage, search, statusFilter, salesCaseFilter, dateRangeFilter]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Helper functions
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
-  }
 
   const getStatusBadge = (status: Quotation['status'], validUntil: string) => {
     const isExpired = new Date(validUntil) < new Date() && status === 'SENT'
@@ -427,7 +424,7 @@ export default function QuotationsPage() {
                 </button>
               </div>
             ) : (
-              <div className="overflow-hidden">
+              <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>

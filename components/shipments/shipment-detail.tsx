@@ -580,10 +580,10 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                       <TableCell>{item.description}</TableCell>
                       <TableCell className="text-right">{item.quantityShipped}</TableCell>
                       <TableCell className="text-right">
-                        ${item.item.unitPrice.toFixed(2)}
+                        ${formatCurrency(item.item.unitPrice)}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${(item.quantityShipped * item.item.unitPrice).toFixed(2)}
+                        ${formatCurrency((item.quantityShipped * item.item.unitPrice))}
                       </TableCell>
                     </TableRow>
                   ))}

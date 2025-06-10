@@ -411,7 +411,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                                     <Text size="sm" color="secondary">{item.code}</Text>
                                   </div>
                                   <Text size="sm" color="secondary">
-                                    ${item.standardCost.toFixed(2)} / {item.unitOfMeasure.symbol}
+                                    ${formatCurrency(item.standardCost)} / {item.unitOfMeasure.symbol}
                                   </Text>
                                 </HStack>
                               </div>
@@ -478,7 +478,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                           />
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${item.totalPrice.toFixed(2)}
+                          ${formatCurrency(item.totalPrice)}
                         </TableCell>
                         <TableCell>
                           <Input
@@ -550,7 +550,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                     Total Amount
                   </label>
                   <div className="text-2xl font-bold text-[var(--color-brand-primary-600)]">
-                    ${formData.totalAmount.toFixed(2)} {formData.currency}
+                    ${formatCurrency(formData.totalAmount)} {formData.currency}
                   </div>
                 </div>
               </div>
@@ -558,19 +558,19 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
               <div className="pt-4 border-t border-[var(--border-primary)]">
                 <HStack justify="between">
                   <Text>Subtotal:</Text>
-                  <Text weight="medium">${formData.subtotal.toFixed(2)}</Text>
+                  <Text weight="medium">${formatCurrency(formData.subtotal)}</Text>
                 </HStack>
                 <HStack justify="between">
                   <Text>Tax:</Text>
-                  <Text weight="medium">${formData.taxAmount.toFixed(2)}</Text>
+                  <Text weight="medium">${formatCurrency(formData.taxAmount)}</Text>
                 </HStack>
                 <HStack justify="between">
                   <Text>Shipping:</Text>
-                  <Text weight="medium">${formData.shippingAmount.toFixed(2)}</Text>
+                  <Text weight="medium">${formatCurrency(formData.shippingAmount)}</Text>
                 </HStack>
                 <HStack justify="between" className="pt-2 border-t border-[var(--border-primary)]">
                   <Text size="lg" weight="bold">Total:</Text>
-                  <Text size="lg" weight="bold">${formData.totalAmount.toFixed(2)}</Text>
+                  <Text size="lg" weight="bold">${formatCurrency(formData.totalAmount)}</Text>
                 </HStack>
               </div>
             </VStack>

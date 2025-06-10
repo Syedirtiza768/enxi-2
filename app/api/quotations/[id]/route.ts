@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(_request)
+    const _user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
@@ -40,8 +40,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(_request)
-    const body = await _request.json()
+    const _user = await getUserFromRequest(request)
+    const body = await request.json()
     
     const { 
       validUntil,
@@ -63,7 +63,7 @@ export async function PUT(
       }
     }
 
-    const updateData: unknown = {}
+    const updateData: any = {}
     if (validUntil) updateData.validUntil = new Date(validUntil)
     if (paymentTerms !== undefined) updateData.paymentTerms = paymentTerms
     if (deliveryTerms !== undefined) updateData.deliveryTerms = deliveryTerms

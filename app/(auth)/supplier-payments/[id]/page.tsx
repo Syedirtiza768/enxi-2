@@ -80,7 +80,9 @@ interface SupplierPayment {
 }
 
 export default function SupplierPaymentDetailPage() {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  
+  const { formatCurrency } = useCurrency()
+const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const params = useParams()
   const paymentId = params.id as string
 
@@ -214,7 +216,7 @@ export default function SupplierPaymentDetailPage() {
                 </Text>
                 {payment.currency !== 'USD' && (
                   <Text size="sm" color="secondary">
-                    ${payment.baseAmount.toFixed(2)} USD (Rate: {payment.exchangeRate})
+                    ${formatCurrency(payment.baseAmount)} USD (Rate: {payment.exchangeRate})
                   </Text>
                 )}
               </VStack>
@@ -368,21 +370,21 @@ export default function SupplierPaymentDetailPage() {
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Invoice Total</Text>
                   <Text weight="semibold">
-                    ${payment.supplierInvoice.totalAmount.toFixed(2)}
+                    ${formatCurrency(payment.supplierInvoice.totalAmount)}
                   </Text>
                 </VStack>
                 
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Total Paid</Text>
                   <Text weight="semibold">
-                    ${payment.supplierInvoice.paidAmount.toFixed(2)}
+                    ${formatCurrency(payment.supplierInvoice.paidAmount)}
                   </Text>
                 </VStack>
                 
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Remaining Balance</Text>
                   <Text weight="semibold" className={payment.supplierInvoice.balanceAmount > 0 ? 'text-orange-600' : 'text-green-600'}>
-                    ${payment.supplierInvoice.balanceAmount.toFixed(2)}
+                    ${formatCurrency(payment.supplierInvoice.balanceAmount)}
                   </Text>
                 </VStack>
               </Grid>
@@ -442,10 +444,10 @@ export default function SupplierPaymentDetailPage() {
                         </TableCell>
                         <TableCell>{line.description}</TableCell>
                         <TableCell className="text-right">
-                          {line.debitAmount > 0 ? `$${line.debitAmount.toFixed(2)}` : '-'}
+                          {line.debitAmount > 0 ? `$${formatCurrency(line.debitAmount)}` : '-'}
                         </TableCell>
                         <TableCell className="text-right">
-                          {line.creditAmount > 0 ? `$${line.creditAmount.toFixed(2)}` : '-'}
+                          {line.creditAmount > 0 ? `$${formatCurrency(line.creditAmount)}` : '-'}
                         </TableCell>
                       </TableRow>
                     ))}

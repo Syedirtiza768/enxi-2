@@ -353,7 +353,7 @@ export default function SupplierInvoicesPage() {
 
         {/* Supplier Invoices Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card variant="elevated" className="overflow-x-auto">
             <CardHeader>
               <CardTitle>Supplier Invoices ({filteredSupplierInvoices.length})</CardTitle>
             </CardHeader>

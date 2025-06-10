@@ -12,7 +12,7 @@ export async function GET(
   context: RouteParams
 ) {
   try {
-    const _user = await getUserFromRequest(_request)
+    const _user = await getUserFromRequest(request)
     const params = await context.params
     const salesCaseService = new SalesCaseService()
     const salesCase = await salesCaseService.getSalesCase(params.id)
@@ -43,9 +43,9 @@ export async function PUT(
   context: RouteParams
 ) {
   try {
-    const _user = await getUserFromRequest(_request)
+    const _user = await getUserFromRequest(request)
     const params = await context.params
-    const body = await _request.json()
+    const body = await request.json()
     
     const salesCaseService = new SalesCaseService()
     const salesCase = await salesCaseService.updateSalesCase(

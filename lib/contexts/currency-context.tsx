@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { setDefaultCurrency as setGlobalDefaultCurrency, formatCurrency as formatCurrencyUtil } from '@/lib/utils/currency'
 
 interface CurrencyContextType {
   defaultCurrency: string
@@ -24,7 +25,9 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     const handleSettingsChange = (event: Event) => {
       const customEvent = event as CustomEvent
       if (customEvent.detail?.defaultCurrency) {
-        setDefaultCurrency(customEvent.detail.defaultCurrency)
+        const currency = customEvent.detail.defaultCurrency
+        setDefaultCurrency(currency)
+        setGlobalDefaultCurrency(currency) // Update global default
       }
     }
 
@@ -59,7 +62,9 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         const data = await response.json()
-        setDefaultCurrency(data.settings.defaultCurrency)
+        const currency = data.settings.defaultCurrency
+        setDefaultCurrency(currency)
+        setGlobalDefaultCurrency(currency) // Update global default
         setSupportedCurrencies(data.supportedCurrencies)
       }
     } catch (error) {
@@ -70,19 +75,9 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   }
 
   const formatCurrency = (amount: number, currency?: string) => {
-    const currencyCode = currency || defaultCurrency
-    
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currencyCode,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }).format(amount)
-    } catch (error) {
-      // Fallback for unsupported currencies
-      return `${currencyCode} ${amount.toFixed(2)}`
-    }
+    return formatCurrencyUtil(amount, {
+      currency: currency || defaultCurrency
+    })
   }
 
   const refreshSettings = async () => {

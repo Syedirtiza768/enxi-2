@@ -219,7 +219,8 @@ export function QuotationForm({
           setLastAutoSave(new Date())
 } catch (error) {
       console.error('Error:', error);
-      setSaving(false)
+      import { useCurrency } from '@/lib/contexts/currency-context'
+setSaving(false)
     }
       }, 3000) // Auto-save after 3 seconds of inactivity
 
@@ -479,20 +480,14 @@ export function QuotationForm({
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Subtotal</span>
                 <span className="text-sm font-medium">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD'
-                  }).format(formData.subtotal)}
+                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(formData.subtotal)}
                 </span>
               </div>
               <div className="border-t pt-3">
                 <div className="flex justify-between">
                   <span className="text-base font-medium text-gray-900">Total</span>
                   <span className="text-base font-medium text-gray-900">
-                    {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: 'USD'
-                    }).format(formData.totalAmount)}
+                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(formData.totalAmount)}
                   </span>
                 </div>
               </div>
