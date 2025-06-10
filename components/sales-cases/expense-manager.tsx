@@ -68,10 +68,6 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
     needsApproval: false
   })
 
-  useEffect(() => {
-    fetchExpenses()
-  }, [salesCaseId, fetchExpenses])
-
   const fetchExpenses = useCallback(async () => {
     setLoading(true)
     try {
@@ -86,6 +82,10 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
       setLoading(false)
     }
   }, [salesCaseId])
+
+  useEffect(() => {
+    fetchExpenses()
+  }, [salesCaseId, fetchExpenses])
 
   const handleChange = (field: keyof CreateExpenseData, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))

@@ -73,16 +73,6 @@ export function SalesCaseDetailTabs({
   const [summary, setSummary] = useState<SalesCaseSummary | null>(null)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (activeTab === 'quotations') {
-      fetchQuotations()
-    } else if (activeTab === 'invoices') {
-      fetchInvoices()
-    } else if (activeTab === 'profitability') {
-      fetchSummary()
-    }
-  }, [activeTab, salesCaseId, fetchQuotations, fetchInvoices, fetchSummary])
-
   const fetchQuotations = useCallback(async () => {
     setLoading(true)
     try {
@@ -126,6 +116,16 @@ export function SalesCaseDetailTabs({
       setLoading(false)
     }
   }, [salesCaseId])
+
+  useEffect(() => {
+    if (activeTab === 'quotations') {
+      fetchQuotations()
+    } else if (activeTab === 'invoices') {
+      fetchInvoices()
+    } else if (activeTab === 'profitability') {
+      fetchSummary()
+    }
+  }, [activeTab, salesCaseId, fetchQuotations, fetchInvoices, fetchSummary])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
