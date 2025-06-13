@@ -202,6 +202,8 @@ model Account {
   itemsSales         Item[]   @relation("ItemSalesAccount")
   caseExpenses       CaseExpense[]
   locations          Location[] @relation("LocationInventoryAccount")
+  taxRatesCollected  TaxRate[] @relation("TaxCollectedAccount")
+  taxRatesPaid       TaxRate[] @relation("TaxPaidAccount")
   
   @@index([code])
   @@index([type])
@@ -326,6 +328,8 @@ model QuotationItem {
   cost            Float?     @default(0) // Cost per unit for margin calculation
   discount        Float      @default(0) // Percentage
   taxRate         Float      @default(0) // Percentage
+  taxRateId       String?    // Link to tax configuration
+  taxRateConfig   TaxRate?   @relation("QuotationItemTaxRate", fields: [taxRateId], references: [id])
   
   // Unit of measure
   unitOfMeasureId String?
@@ -423,6 +427,8 @@ model SalesOrderItem {
   unitPrice       Float      @default(0)
   discount        Float      @default(0) // Percentage
   taxRate         Float      @default(0) // Percentage
+  taxRateId       String?    // Link to tax configuration
+  taxRateConfig   TaxRate?   @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
   
   // Unit of measure
   unitOfMeasureId String?
@@ -564,6 +570,8 @@ model InvoiceItem {
   unitPrice       Float      @default(0)
   discount        Float      @default(0)
   taxRate         Float      @default(0)
+  taxRateId       String?    // Link to tax configuration
+  taxRateConfig   TaxRate?   @relation("InvoiceItemTaxRate", fields: [taxRateId], references: [id])
   
   // Calculated amounts
   subtotal        Float      @default(0)
@@ -1240,6 +1248,8 @@ model PurchaseOrderItem {
   unitPrice       Float      @default(0)
   discount        Float      @default(0) // Percentage
   taxRate         Float      @default(0) // Percentage
+  taxRateId       String?    // Link to tax configuration
+  taxRateConfig   TaxRate?   @relation("POItemTaxRate", fields: [taxRateId], references: [id])
   
   // Unit of measure
   unitOfMeasureId String?
@@ -1443,6 +1453,129 @@ enum SupplierInvoiceStatus {
 }
 
 // ============================================
+// TAX CONFIGURATION MODELS
+// ============================================
+
+// Tax Categories - for grouping tax rates
+model TaxCategory {
+  id          String     @id @default(cuid())
+  code        String     @unique
+  name        String
+  description String?
+  
+  // System flags
+  isActive    Boolean    @default(true)
+  isDefault   Boolean    @default(false)
+  
+  // Audit fields
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  taxRates    TaxRate[]
+  
+  @@index([code])
+  @@index([isActive])
+}
+
+// Tax Rates - actual tax percentages and rules
+model TaxRate {
+  id              String     @id @default(cuid())
+  code            String     @unique
+  name            String
+  description     String?
+  
+  // Tax configuration
+  rate            Float      // Tax percentage (e.g., 5 for 5%)
+  categoryId      String
+  category        TaxCategory @relation(fields: [categoryId], references: [id])
+  
+  // Applicability
+  taxType         TaxType    @default(SALES)
+  appliesTo       String     @default("ALL") // ALL, PRODUCTS, SERVICES
+  
+  // Effective dates
+  effectiveFrom   DateTime   @default(now())
+  effectiveTo     DateTime?
+  
+  // System flags
+  isActive        Boolean    @default(true)
+  isDefault       Boolean    @default(false)
+  isCompound      Boolean    @default(false) // Tax on tax
+  
+  // GL Integration
+  collectedAccountId String?     // Tax collected account (liability)
+  collectedAccount   Account?    @relation("TaxCollectedAccount", fields: [collectedAccountId], references: [id])
+  paidAccountId      String?     // Tax paid account (asset)
+  paidAccount        Account?    @relation("TaxPaidAccount", fields: [paidAccountId], references: [id])
+  
+  // Audit fields
+  createdBy       String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  // Relations
+  quotationItems    QuotationItem[]     @relation("QuotationItemTaxRate")
+  salesOrderItems   SalesOrderItem[]    @relation("SalesOrderItemTaxRate")
+  invoiceItems      InvoiceItem[]       @relation("InvoiceItemTaxRate")
+  purchaseOrderItems PurchaseOrderItem[] @relation("POItemTaxRate")
+  taxExemptions     TaxExemption[]
+  
+  @@index([code])
+  @@index([categoryId])
+  @@index([taxType])
+  @@index([isActive])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+// Tax exemptions for specific customers/suppliers
+model TaxExemption {
+  id              String     @id @default(cuid())
+  
+  // Entity reference
+  entityType      String     // CUSTOMER or SUPPLIER
+  entityId        String     // Customer or Supplier ID
+  
+  // Exemption details
+  taxRateId       String?    // Specific tax rate exempted (null = all taxes)
+  taxRate         TaxRate?   @relation(fields: [taxRateId], references: [id])
+  exemptionNumber String?    // Government-issued exemption number
+  reason          String?
+  
+  // Validity period
+  effectiveFrom   DateTime   @default(now())
+  effectiveTo     DateTime?
+  
+  // Documentation
+  attachmentUrl   String?
+  
+  // System flags
+  isActive        Boolean    @default(true)
+  
+  // Audit fields
+  createdBy       String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  @@index([entityType, entityId])
+  @@index([taxRateId])
+  @@index([isActive])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+// Enum for Tax Types
+enum TaxType {
+  SALES           // Sales tax/VAT on sales
+  PURCHASE        // Tax on purchases
+  WITHHOLDING     // Withholding tax
+  EXCISE          // Excise duty
+  CUSTOMS         // Customs duty
+  SERVICE         // Service tax
+  OTHER           // Other tax types
+}
+
+// ============================================
 // COMPANY SETTINGS MODEL
 // ============================================
 
@@ -1456,6 +1589,10 @@ model CompanySettings {
   
   // Currency settings
   defaultCurrency String   @default("USD")
+  
+  // Tax settings
+  defaultTaxRateId String?  // Default tax rate for new transactions
+  taxRegistrationNumber String? // Company's tax registration number
   
   // System flags
   isActive        Boolean  @default(true)

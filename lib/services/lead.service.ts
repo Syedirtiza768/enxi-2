@@ -314,26 +314,32 @@ export class LeadService {
       throw new Error('Lead has already been converted')
     }
 
-    return await prisma.$transaction(async (tx) => {
-      // Create customer
-      const customer = await this.customerService.createCustomer({
-        ...data.customerData,
-        leadId: data.leadId,
-        createdBy: data.convertedBy
-      })
+    // Create customer first (outside transaction for better performance)
+    const customer = await this.customerService.createCustomer({
+      ...data.customerData,
+      leadId: data.leadId,
+      createdBy: data.convertedBy
+    })
 
-      // Update lead status
-      await tx.lead.update({
-        where: { id: data.leadId },
-        data: {
-          status: LeadStatus.CONVERTED,
-          customer: {
-            connect: { id: customer.id }
+    try {
+      // Use a shorter transaction just for the lead update
+      await prisma.$transaction(async (tx) => {
+        // Update lead status
+        await tx.lead.update({
+          where: { id: data.leadId },
+          data: {
+            status: LeadStatus.CONVERTED,
+            customer: {
+              connect: { id: customer.id }
+            }
           }
-        }
+        })
+      }, {
+        maxWait: 5000, // 5 seconds max wait
+        timeout: 10000, // 10 seconds timeout
       })
 
-      // Create sales case if requested
+      // Create sales case if requested (outside transaction)
       let salesCase
       if (data.createSalesCase) {
         const { SalesCaseService } = await import('./sales-case.service')
@@ -347,6 +353,7 @@ export class LeadService {
         })
       }
 
+      // Log audit (outside transaction)
       await this.auditService.logAction({
         userId: data.convertedBy,
         action: 'CONVERT',
@@ -359,7 +366,12 @@ export class LeadService {
       })
 
       return { customer, salesCase }
-    })
+    } catch (error) {
+      // If lead update fails, we need to handle the orphaned customer
+      // For now, we'll just log the error and rethrow
+      console.error('Failed to update lead status after customer creation:', error)
+      throw new Error(`Lead conversion partially failed. Customer ${customer.id} was created but lead status update failed.`)
+    }
   }
 
   async updateLeadStatus(

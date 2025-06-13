@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight, Eye, Settings } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface QuotationItem {
   id: string
@@ -40,6 +41,7 @@ interface LineItemEditorProps {
 }
 
 export function LineItemEditor({ quotationItems, onChange, disabled = false }: LineItemEditorProps) {
+  const { formatCurrency } = useCurrency()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('client')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)

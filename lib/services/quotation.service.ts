@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
 import { SalesCaseService } from './sales-case.service'
+import { taxService } from './tax.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
 import { 
   Quotation,
@@ -31,6 +32,7 @@ export interface CreateQuotationItemInput {
   cost?: number
   discount?: number
   taxRate?: number
+  taxRateId?: string // Link to centralized tax configuration
   sortOrder?: number
   availabilityStatus?: string
   availableQuantity?: number
@@ -92,10 +94,15 @@ export class QuotationService extends BaseService {
       const quotationNumber = await this.generateQuotationNumber()
 
       // Calculate totals
-      const calculations = this.calculateTotals(data.items)
+      const calculations = await this.calculateTotals(data.items, salesCase.customer.id)
 
       // Create quotation with items in a transaction
       const result = await prisma.$transaction(async (tx) => {
+        // Pre-calculate item totals for all items
+        const itemTotalsArray = await Promise.all(
+          itemsWithAvailability.map(item => this.calculateItemTotals(item, salesCase.customer.id))
+        )
+        
         const quotation = await tx.quotation.create({
           data: {
             quotationNumber,
@@ -115,7 +122,8 @@ export class QuotationService extends BaseService {
             items: {
               create: itemsWithAvailability.map((item, index) => ({
                 ...item,
-                ...this.calculateItemTotals(item),
+                ...itemTotalsArray[index],
+                taxRate: itemTotalsArray[index].effectiveTaxRate, // Store the effective tax rate
                 sortOrder: item.sortOrder ?? index
               }))
             }
@@ -263,10 +271,14 @@ export class QuotationService extends BaseService {
       await this.validateQuotationItems(data.items)
     }
 
+    // Get customer ID for tax calculations
+    const salesCase = await this.salesCaseService.getSalesCase(existingQuotation.salesCaseId)
+    const customerId = salesCase?.customer.id
+
     // Calculate new totals if items are being updated
     let calculations = null
     if (data.items) {
-      calculations = this.calculateTotals(data.items)
+      calculations = await this.calculateTotals(data.items, customerId)
     }
 
     // Update quotation in a transaction
@@ -276,6 +288,14 @@ export class QuotationService extends BaseService {
         await tx.quotationItem.deleteMany({
           where: { quotationId }
         })
+      }
+
+      // Pre-calculate item totals if items are provided
+      let itemTotalsArray: any[] = []
+      if (data.items) {
+        itemTotalsArray = await Promise.all(
+          data.items.map(item => this.calculateItemTotals(item, customerId))
+        )
       }
 
       const updatedQuotation = await tx.quotation.update({
@@ -297,7 +317,8 @@ export class QuotationService extends BaseService {
             items: {
               create: data.items.map((item, index) => ({
                 ...item,
-                ...this.calculateItemTotals(item),
+                ...itemTotalsArray[index],
+                taxRate: itemTotalsArray[index].effectiveTaxRate, // Store the effective tax rate
                 sortOrder: item.sortOrder ?? index
               }))
             }
@@ -663,28 +684,49 @@ export class QuotationService extends BaseService {
     }
   }
 
-  private calculateItemTotals(item: CreateQuotationItemInput) {
+  private async calculateItemTotals(item: CreateQuotationItemInput, customerId?: string) {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * (item.discount || 0) / 100
     const discountedAmount = subtotal - discountAmount
-    const taxAmount = discountedAmount * (item.taxRate || 0) / 100
+    
+    // Calculate tax using centralized tax system
+    let taxAmount = 0
+    let effectiveTaxRate = item.taxRate || 0
+    
+    if (item.taxRateId || !item.taxRate) {
+      // Use centralized tax calculation
+      const taxCalc = await taxService.calculateTax({
+        amount: discountedAmount,
+        taxRateId: item.taxRateId,
+        customerId,
+        appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
+      })
+      
+      taxAmount = taxCalc.taxAmount
+      effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+    } else {
+      // Fallback to manual tax rate
+      taxAmount = discountedAmount * (item.taxRate || 0) / 100
+    }
+    
     const totalAmount = discountedAmount + taxAmount
 
     return {
       subtotal,
       discountAmount,
       taxAmount,
-      totalAmount
+      totalAmount,
+      effectiveTaxRate
     }
   }
 
-  private calculateTotals(items: CreateQuotationItemInput[]) {
+  private async calculateTotals(items: CreateQuotationItemInput[], customerId?: string) {
     let subtotal = 0
     let discountAmount = 0
     let taxAmount = 0
 
     for (const item of items) {
-      const itemTotals = this.calculateItemTotals(item)
+      const itemTotals = await this.calculateItemTotals(item, customerId)
       subtotal += itemTotals.subtotal
       discountAmount += itemTotals.discountAmount
       taxAmount += itemTotals.taxAmount
@@ -796,18 +838,27 @@ export class QuotationService extends BaseService {
   }
 
   private async generateQuotationNumber(): Promise<string> {
-    const lastQuotation = await prisma.quotation.findFirst({
-      orderBy: { quotationNumber: 'desc' }
+    // Generate a unique quotation number using timestamp and random suffix
+    const timestamp = Date.now()
+    const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    
+    // First try to get the count of existing quotations for numbering
+    const count = await prisma.quotation.count()
+    const sequence = (count + 1).toString().padStart(4, '0')
+    
+    // Create a unique number that combines sequence and timestamp
+    const quotationNumber = `QUOT-${sequence}-${timestamp}${randomSuffix}`
+    
+    // Verify it doesn't exist (extra safety)
+    const existing = await prisma.quotation.findUnique({
+      where: { quotationNumber }
     })
-
-    if (!lastQuotation) {
-      return 'QUOT-0001'
+    
+    if (existing) {
+      // If by some chance it exists, recursively try again
+      return this.generateQuotationNumber()
     }
-
-    // Extract base number without version
-    const baseNumber = lastQuotation.quotationNumber.split('-v')[0]
-    const lastNumber = parseInt(baseNumber.split('-')[1])
-    const newNumber = lastNumber + 1
-    return `QUOT-${newNumber.toString().padStart(4, '0')}`
+    
+    return quotationNumber
   }
 }

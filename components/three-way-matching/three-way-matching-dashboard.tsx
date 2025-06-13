@@ -30,6 +30,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface MatchingException {
   id: string
@@ -73,6 +74,7 @@ interface MatchingDashboardData {
 
 export function ThreeWayMatchingDashboard() {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { formatCurrency } = useCurrency()
   const [data, setData] = useState<MatchingDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -481,7 +483,7 @@ export function ThreeWayMatchingDashboard() {
                     {exception.variance && exception.variancePercentage ? (
                       <div>
                         <div className="font-medium">
-                          ${formatCurrency(exception.variance)}
+                          {formatCurrency(exception.variance)}
                         </div>
                         <div className="text-sm text-gray-500">
                           ({exception.variancePercentage.toFixed(1)}%)

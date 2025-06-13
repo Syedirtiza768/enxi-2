@@ -26,6 +26,7 @@ import {
   Download
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface GoodsReceipt {
   id: string
@@ -100,10 +101,9 @@ const params = useParams()
       }
       
       setGoodsReceipt(response.data)
-} catch (error) {
-      console.error('Error:', error);
-    import { useCurrency } from '@/lib/contexts/currency-context'
-} finally {
+    } catch (error) {
+      console.error('Error fetching goods receipt:', error)
+    } finally {
       setLoading(false)
     }
   }

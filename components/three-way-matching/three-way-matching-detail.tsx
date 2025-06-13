@@ -25,6 +25,7 @@ import {
   ShoppingCart,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface ThreeWayMatchingAnalysis {
   purchaseOrder: {
@@ -108,15 +109,10 @@ interface ThreeWayMatchingDetailProps {
 }
 
 export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDetailProps) {
+  const { formatCurrency } = useCurrency()
   const [analysis, setAnalysis] = useState<ThreeWayMatchingAnalysis | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (purchaseOrderId) {
-      fetchAnalysis()
-    }
-  }, [purchaseOrderId, fetchAnalysis])
 
   const fetchAnalysis = useCallback(async () => {
     setLoading(true)
@@ -132,13 +128,18 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
       }
 
       setAnalysis(response.data)
-} catch (error) {
-      console.error('Error:', error);
-    import { useCurrency } from '@/lib/contexts/currency-context'
-} finally {
+    } catch (error) {
+      console.error('Error fetching analysis:', error)
+    } finally {
       setLoading(false)
     }
   }, [purchaseOrderId])
+
+  useEffect(() => {
+    if (purchaseOrderId) {
+      fetchAnalysis()
+    }
+  }, [purchaseOrderId, fetchAnalysis])
 
   const getMatchingStatusBadge = (status: string) => {
     const config = {
@@ -272,7 +273,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
             <VStack gap="xs">
               <Text size="sm" weight="medium" color="secondary">Total Amount</Text>
               <Text weight="semibold">
-                ${formatCurrency(analysis.purchaseOrder.totalAmount)} {analysis.purchaseOrder.currency}
+                {formatCurrency(analysis.purchaseOrder.totalAmount)} {analysis.purchaseOrder.currency}
               </Text>
             </VStack>
           </Grid>
@@ -395,7 +396,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                           <Text>{discrepancy.expectedQuantity}</Text>
                         )}
                         {discrepancy.expectedPrice && (
-                          <Text>${formatCurrency(discrepancy.expectedPrice)}</Text>
+                          <Text>{formatCurrency(discrepancy.expectedPrice)}</Text>
                         )}
                       </TableCell>
                       <TableCell>
@@ -403,7 +404,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                           <Text>{discrepancy.actualQuantity}</Text>
                         )}
                         {discrepancy.actualPrice && (
-                          <Text>${formatCurrency(discrepancy.actualPrice)}</Text>
+                          <Text>{formatCurrency(discrepancy.actualPrice)}</Text>
                         )}
                       </TableCell>
                       <TableCell>
@@ -492,8 +493,8 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                                 </VStack>
                               </TableCell>
                               <TableCell>{item.quantityReceived}</TableCell>
-                              <TableCell>${formatCurrency(item.unitCost)}</TableCell>
-                              <TableCell>${formatCurrency(item.totalCost)}</TableCell>
+                              <TableCell>{formatCurrency(item.unitCost)}</TableCell>
+                              <TableCell>{formatCurrency(item.totalCost)}</TableCell>
                               <TableCell>{getQualityBadge(item.qualityStatus)}</TableCell>
                             </TableRow>
                           ))}
@@ -548,7 +549,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                         <HStack justify="between" align="center">
                           <Text size="sm" color="secondary">Invoice Total</Text>
                           <Text size="lg" weight="bold">
-                            ${formatCurrency(invoice.totalAmount)}
+                            {formatCurrency(invoice.totalAmount)}
                           </Text>
                         </HStack>
                         <Table>
@@ -565,8 +566,8 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                               <TableRow key={item.id}>
                                 <TableCell>{item.description}</TableCell>
                                 <TableCell>{item.quantity}</TableCell>
-                                <TableCell>${formatCurrency(item.unitPrice)}</TableCell>
-                                <TableCell>${formatCurrency(item.totalAmount)}</TableCell>
+                                <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                                <TableCell>{formatCurrency(item.totalAmount)}</TableCell>
                               </TableRow>
                             ))}
                           </TableBody>

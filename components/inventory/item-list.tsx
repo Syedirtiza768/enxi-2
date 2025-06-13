@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Edit2, Trash2, Package } from 'lucide-react'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 export interface ItemStockSummary {
   totalQuantity: number
@@ -57,6 +58,7 @@ export function ItemList({
   onItemDelete,
   showStockDetails = false
 }: ItemListProps) {
+  const { formatCurrency } = useCurrency()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Item | null>(null)
 

@@ -53,14 +53,6 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (activeTab === 'payments') {
-      fetchPayments()
-    } else if (activeTab === 'invoices') {
-      fetchInvoices()
-    }
-  }, [activeTab, customerId, fetchPayments, fetchInvoices])
-
   const fetchPayments = useCallback(async () => {
     setLoading(true)
     try {
@@ -90,6 +82,14 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
       setLoading(false)
     }
   }, [customerId])
+
+  useEffect(() => {
+    if (activeTab === 'payments') {
+      fetchPayments()
+    } else if (activeTab === 'invoices') {
+      fetchInvoices()
+    }
+  }, [activeTab, customerId, fetchPayments, fetchInvoices])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

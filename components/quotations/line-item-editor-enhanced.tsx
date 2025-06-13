@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface QuotationLine {
   lineNumber: number
@@ -60,10 +61,11 @@ interface LineItemEditorEnhancedProps {
 }
 
 export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = false }: LineItemEditorEnhancedProps) {
+  const { formatCurrency } = useCurrency()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('internal')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
-  const [_loading, _setLoading] = useState(true)
-  const [_error, _setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([1]))
 
   // Group items by line number

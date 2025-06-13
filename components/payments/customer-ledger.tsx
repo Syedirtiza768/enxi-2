@@ -44,24 +44,21 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
   // Filters
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
-  const [transactionType, setTransactionType] = useState('')
-
-  useEffect(() => {
-    loadCustomerData()
-  }, [customerId, loadCustomerData])
+  const [transactionType, setTransactionType] = useState('all')
 
   const loadCustomerData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const [customerResponse, transactionsResponse] = await Promise.all([
-        apiClient.get(`/api/customers/${customerId}`),
-        apiClient.get(`/api/customers/${customerId}/transactions`)
-      ])
+      const customerResponse = await apiClient(`/api/customers/${customerId}`, { method: 'GET' })
       
-      setCustomer(customerResponse.data)
-      setTransactions(transactionsResponse.data)
+      if (customerResponse.ok && customerResponse.data) {
+        setCustomer(customerResponse.data.data || customerResponse.data)
+      }
+      
+      // TODO: Load transactions when the endpoint is implemented
+      setTransactions([])
     } catch (err) {
       console.error('Error loading customer data:', err)
       setError('Error loading customer data. Please try again.')
@@ -69,6 +66,10 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
       setLoading(false)
     }
   }, [customerId])
+
+  useEffect(() => {
+    loadCustomerData()
+  }, [customerId, loadCustomerData])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -120,7 +121,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
     .filter(transaction => {
       if (fromDate && new Date(transaction.date) < new Date(fromDate)) return false
       if (toDate && new Date(transaction.date) > new Date(toDate)) return false
-      if (transactionType && transaction.type !== transactionType) return false
+      if (transactionType && transactionType !== 'all' && transaction.type !== transactionType) return false
       return true
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : []
@@ -264,7 +265,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
                     <SelectValue placeholder="All types" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All types</SelectItem>
+                    <SelectItem value="all">All types</SelectItem>
                     <SelectItem value="invoice">Invoices</SelectItem>
                     <SelectItem value="payment">Payments</SelectItem>
                     <SelectItem value="credit_note">Credit Notes</SelectItem>

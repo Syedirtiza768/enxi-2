@@ -123,6 +123,7 @@ const navigation: NavItem[] = [
     children: [
       { title: 'Invoices', href: '/invoices', icon: <FileText className="h-4 w-4" /> },
       { title: 'Payments', href: '/payments', icon: <DollarSign className="h-4 w-4" /> },
+      { title: 'Tax Configuration', href: '/tax-configuration', icon: <Receipt className="h-4 w-4" /> },
       { title: 'Chart of Accounts', href: '/accounting/accounts', icon: <Layers className="h-4 w-4" /> },
       { title: 'Journal Entries', href: '/accounting/journal-entries', icon: <FileText className="h-4 w-4" /> },
       { title: 'Reports', href: '#', icon: <PieChart className="h-4 w-4" />,

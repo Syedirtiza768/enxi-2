@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface QuotationItem {
   id: string
@@ -40,6 +41,7 @@ interface SimpleItemEditorProps {
 }
 
 export function SimpleItemEditor({ quotationItems, onChange, disabled = false }: SimpleItemEditorProps) {
+  const { formatCurrency } = useCurrency()
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

@@ -6,6 +6,10 @@ import { VStack, HStack, Input, Textarea, Button, Select, Text, Card, CardConten
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
+import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
+import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
+import { TaxType } from '@/lib/generated/prisma'
 
 interface Supplier {
   id: string
@@ -31,6 +35,9 @@ interface PurchaseOrderItem {
   item?: Item
   quantity: number
   unitPrice: number
+  discount?: number
+  taxRate?: number
+  taxRateId?: string
   totalPrice: number
   notes?: string
 }
@@ -57,6 +64,8 @@ interface PurchaseOrderFormProps {
 
 export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFormProps) {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { formatCurrency } = useCurrency()
+  const { defaultRate } = useDefaultTaxRate({ taxType: TaxType.PURCHASE })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -84,42 +93,33 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     fetchItems()
   }, [])
 
-  useEffect(() => {
-    calculateTotals()
-  }, [calculateTotals])
-
-  const fetchSuppliers = async () => {
-    try {
-      const response = await apiClient('/api/suppliers', { method: 'GET' })
-      if (response.ok) {
-        setSuppliers(response.data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching suppliers:', error)
-    }
-  }
-
-  const fetchItems = async () => {
-    try {
-      const response = await apiClient('/api/inventory/items', { method: 'GET' })
-      if (response.ok) {
-        setItems(response.data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching items:', error)
-    }
-  }
-
   const calculateTotals = useCallback(() => {
-    const subtotal = formData.items.reduce((sum, item) => sum + item.totalPrice, 0)
-    const totalAmount = subtotal + formData.taxAmount + formData.shippingAmount
+    let subtotal = 0
+    let itemTaxTotal = 0
+    
+    formData.items.forEach(item => {
+      const itemSubtotal = item.quantity * item.unitPrice
+      const discountAmount = itemSubtotal * ((item.discount || 0) / 100)
+      const afterDiscount = itemSubtotal - discountAmount
+      const itemTax = afterDiscount * ((item.taxRate || 0) / 100)
+      
+      subtotal += itemSubtotal
+      itemTaxTotal += itemTax
+    })
+    
+    const totalAmount = subtotal + itemTaxTotal + formData.shippingAmount
     
     setFormData(prev => ({
       ...prev,
       subtotal,
+      taxAmount: itemTaxTotal,
       totalAmount
     }))
-  }, [formData.items, formData.taxAmount, formData.shippingAmount])
+  }, [formData.items, formData.shippingAmount])
+
+  useEffect(() => {
+    calculateTotals()
+  }, [calculateTotals])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -143,12 +143,16 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
   }
 
   const addItem = (item: Item) => {
+    const unitPrice = item.standardCost || 0
     const newItem: PurchaseOrderItem = {
       itemId: item.id,
       item,
       quantity: 1,
-      unitPrice: item.standardCost || 0,
-      totalPrice: item.standardCost || 0,
+      unitPrice,
+      discount: 0,
+      taxRate: defaultRate?.rate || 0,
+      taxRateId: defaultRate?.id,
+      totalPrice: unitPrice,
       notes: ''
     }
     
@@ -165,9 +169,14 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     const updatedItems = [...formData.items]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     
-    // Recalculate total price
-    if (field === 'quantity' || field === 'unitPrice') {
-      updatedItems[index].totalPrice = updatedItems[index].quantity * updatedItems[index].unitPrice
+    // Recalculate total price considering discount and tax
+    if (field === 'quantity' || field === 'unitPrice' || field === 'discount' || field === 'taxRate') {
+      const item = updatedItems[index]
+      const subtotal = item.quantity * item.unitPrice
+      const discountAmount = subtotal * ((item.discount || 0) / 100)
+      const afterDiscount = subtotal - discountAmount
+      const taxAmount = afterDiscount * ((item.taxRate || 0) / 100)
+      updatedItems[index].totalPrice = afterDiscount + taxAmount
     }
     
     setFormData(prev => ({ ...prev, items: updatedItems }))
@@ -411,7 +420,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                                     <Text size="sm" color="secondary">{item.code}</Text>
                                   </div>
                                   <Text size="sm" color="secondary">
-                                    ${formatCurrency(item.standardCost)} / {item.unitOfMeasure.symbol}
+                                    {formatCurrency(item.standardCost)} / {item.unitOfMeasure.symbol}
                                   </Text>
                                 </HStack>
                               </div>
@@ -443,6 +452,8 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                       <TableHead>Item</TableHead>
                       <TableHead className="text-right">Quantity</TableHead>
                       <TableHead className="text-right">Unit Price</TableHead>
+                      <TableHead className="text-right">Discount %</TableHead>
+                      <TableHead className="text-center">Tax</TableHead>
                       <TableHead className="text-right">Total</TableHead>
                       <TableHead>Notes</TableHead>
                       <TableHead>Actions</TableHead>
@@ -477,8 +488,31 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                             className="w-24 text-right"
                           />
                         </TableCell>
+                        <TableCell className="text-right">
+                          <Input
+                            type="number"
+                            value={item.discount || 0}
+                            onChange={(e) => updateItem(index, 'discount', parseFloat(e.target.value) || 0)}
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            className="w-20 text-right"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <TaxRateSelector
+                            value={item.taxRateId}
+                            onChange={(taxRateId, taxRate) => {
+                              updateItem(index, 'taxRateId', taxRateId || '')
+                              updateItem(index, 'taxRate', taxRate)
+                            }}
+                            taxType={TaxType.PURCHASE}
+                            className="w-full"
+                            placeholder="Tax"
+                          />
+                        </TableCell>
                         <TableCell className="text-right font-medium">
-                          ${formatCurrency(item.totalPrice)}
+                          {formatCurrency(item.totalPrice)}
                         </TableCell>
                         <TableCell>
                           <Input
@@ -517,15 +551,13 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Tax Amount
+                    Tax Amount (Calculated)
                   </label>
                   <Input
                     type="number"
                     name="taxAmount"
                     value={formData.taxAmount}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
+                    disabled
                     fullWidth
                   />
                 </div>
@@ -550,7 +582,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                     Total Amount
                   </label>
                   <div className="text-2xl font-bold text-[var(--color-brand-primary-600)]">
-                    ${formatCurrency(formData.totalAmount)} {formData.currency}
+                    {formatCurrency(formData.totalAmount)} {formData.currency}
                   </div>
                 </div>
               </div>
@@ -558,11 +590,11 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
               <div className="pt-4 border-t border-[var(--border-primary)]">
                 <HStack justify="between">
                   <Text>Subtotal:</Text>
-                  <Text weight="medium">${formatCurrency(formData.subtotal)}</Text>
+                  <Text weight="medium">{formatCurrency(formData.subtotal)}</Text>
                 </HStack>
                 <HStack justify="between">
                   <Text>Tax:</Text>
-                  <Text weight="medium">${formatCurrency(formData.taxAmount)}</Text>
+                  <Text weight="medium">{formatCurrency(formData.taxAmount)}</Text>
                 </HStack>
                 <HStack justify="between">
                   <Text>Shipping:</Text>

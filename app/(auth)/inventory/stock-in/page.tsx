@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { apiClient } from '@/lib/api/client'
 import { Plus, Package, Calendar, FileText } from 'lucide-react'
 import { format } from 'date-fns'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface Item {
   id: string

@@ -18,7 +18,10 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
     
     const token = cookieToken || bearerToken
 
-    // Log attempt for debugging if needed
+    // Log attempt for debugging
+    if (!token) {
+      console.log('Auth attempt: No token found in cookies or Authorization header')
+    }
 
     if (!token) {
       throw new Error('No authentication token provided')
@@ -28,6 +31,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
     const user = authService.verifyToken(token)
 
     if (!user) {
+      console.log('Auth attempt: Token verification failed')
       throw new Error('Invalid authentication token')
     }
 
@@ -38,10 +42,12 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
     })
 
     if (!dbUser || !dbUser.isActive) {
+      console.log('Auth attempt: User not found or inactive', { userId: user.id })
       throw new Error('User not found or inactive')
     }
 
     // Authentication successful
+    console.log('Auth successful for user:', dbUser.username)
 
     return {
       id: dbUser.id,
@@ -50,7 +56,7 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
       role: dbUser.role
     }
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error('Authentication error:', error instanceof Error ? error.message : error)
     throw new Error('Unauthorized')
   }
 }

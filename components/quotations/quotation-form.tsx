@@ -5,6 +5,7 @@ import { Save, X, FileText, Clock, Edit3 } from 'lucide-react'
 import { LineItemEditorV2 } from './line-item-editor-v2'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface QuotationItem {
   id: string
@@ -22,6 +23,7 @@ interface QuotationItem {
   cost?: number
   discount?: number
   taxRate?: number
+  taxRateId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -72,6 +74,7 @@ export function QuotationForm({
   autoSave = false 
 }: QuotationFormProps) {
   const { user: _user } = useAuth()
+  const { defaultCurrency, formatCurrency } = useCurrency()
   const [mode, setMode] = useState(initialMode)
   
   // Form state
@@ -114,7 +117,7 @@ export function QuotationForm({
         setLoading(true)
         setError(null)
         
-        const response = await apiClient('/api/sales-cases', {
+        const response = await apiClient('/api/sales-cases?status=OPEN', {
           method: 'GET'
         })
         
@@ -217,11 +220,11 @@ export function QuotationForm({
           await onSubmit({ ...formData, status: 'DRAFT' })
           setHasUnsavedChanges(false)
           setLastAutoSave(new Date())
-} catch (error) {
-      console.error('Error:', error);
-      import { useCurrency } from '@/lib/contexts/currency-context'
-setSaving(false)
-    }
+        } catch (error) {
+          console.error('Auto-save error:', error)
+        } finally {
+          setSaving(false)
+        }
       }, 3000) // Auto-save after 3 seconds of inactivity
 
       setAutoSaveTimer(timer)
@@ -232,7 +235,7 @@ setSaving(false)
         clearTimeout(autoSaveTimer)
       }
     }
-  }, [autoSave, hasUnsavedChanges, formData, onSubmit, saving, autoSaveTimer])
+  }, [autoSave, hasUnsavedChanges, formData, onSubmit, saving])
 
   // Handle form submission
   const handleSubmit = async (status: 'DRAFT' | 'SENT' = 'SENT') => {
@@ -350,7 +353,9 @@ setSaving(false)
                   disabled={isPreview}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                 >
-                  <option value="">Select sales case...</option>
+                  <option value="">
+                    {salesCases.length === 0 ? 'No open sales cases available' : 'Select sales case...'}
+                  </option>
                   {salesCases.map(sc => (
                     <option key={sc.id} value={sc.id}>
                       {sc.caseNumber} - {sc.description}
@@ -359,6 +364,9 @@ setSaving(false)
                 </select>
                 {validationErrors.salesCaseId && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.salesCaseId}</p>
+                )}
+                {salesCases.length === 0 && (
+                  <p className="mt-1 text-sm text-gray-500">Only open sales cases can have quotations</p>
                 )}
               </div>
 
@@ -480,14 +488,14 @@ setSaving(false)
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Subtotal</span>
                 <span className="text-sm font-medium">
-                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(formData.subtotal)}
+                  {formatCurrency(formData.subtotal)}
                 </span>
               </div>
               <div className="border-t pt-3">
                 <div className="flex justify-between">
                   <span className="text-base font-medium text-gray-900">Total</span>
                   <span className="text-base font-medium text-gray-900">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(formData.totalAmount)}
+                    {formatCurrency(formData.totalAmount)}
                   </span>
                 </div>
               </div>

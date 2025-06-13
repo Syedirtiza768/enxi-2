@@ -15,6 +15,7 @@ import { useLeads } from '@/hooks/use-leads'
 import { LeadStatus, LeadSource } from '@/lib/generated/prisma'
 import { LeadResponse } from '@/lib/types/lead.types'
 import { PageLayout, PageHeader, PageSection, VStack } from '@/components/design-system'
+import { api } from '@/lib/api/client'
 
 interface ConvertFormData {
   address: string
@@ -37,7 +38,7 @@ export default function LeadsPage() {
   const [convertFormData, setConvertFormData] = useState<ConvertFormData>({
     address: '',
     taxId: '',
-    currency: 'USD',
+    currency: 'AED',
     creditLimit: 0,
     paymentTerms: 30
   })
@@ -96,15 +97,10 @@ export default function LeadsPage() {
   const handleConvertLead = async () => {
     if (!selectedLead) return
     try {
-      const response = await fetch(`/api/leads/${selectedLead.id}/convert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(convertFormData)
-      })
+      const response = await api.post(`/api/leads/${selectedLead.id}/convert`, convertFormData)
       
       if (!response.ok) {
-        const error = await response.text()
-        throw new Error(error)
+        throw new Error(response.error || 'Failed to convert lead')
       }
       
       setIsConvertDialogOpen(false)
@@ -112,7 +108,8 @@ export default function LeadsPage() {
       refetch()
       alert('Lead converted to customer successfully!')
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error converting lead:', error)
+      alert(error instanceof Error ? error.message : 'Failed to convert lead')
     }
   }
 
@@ -445,6 +442,7 @@ export default function LeadsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="AED">AED</SelectItem>
                     <SelectItem value="USD">USD</SelectItem>
                     <SelectItem value="EUR">EUR</SelectItem>
                     <SelectItem value="GBP">GBP</SelectItem>

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Save, X, FileText, Plus, Trash2, Calculator } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
+import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
+import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
 
 interface InvoiceItem {
   id?: string
@@ -13,6 +15,7 @@ interface InvoiceItem {
   unitPrice: number
   discount: number
   taxRate: number
+  taxRateId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -26,6 +29,7 @@ interface QuotationItem {
   unitPrice: number
   discount?: number
   taxRate?: number
+  taxRateId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -94,6 +98,7 @@ export function InvoiceForm({
   onCancel 
 }: InvoiceFormProps) {
   const { user: _user } = useAuth() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { defaultRate } = useDefaultTaxRate()
   
   // Form state
   const [formData, setFormData] = useState<Partial<Invoice>>({
@@ -317,7 +322,8 @@ export function InvoiceForm({
       quantity: 1,
       unitPrice: 0,
       discount: 0,
-      taxRate: 10, // Default tax rate
+      taxRate: defaultRate?.rate || 0,
+      taxRateId: defaultRate?.id,
       subtotal: 0,
       discountAmount: 0,
       taxAmount: 0,
@@ -738,15 +744,18 @@ export function InvoiceForm({
                     {/* Tax Rate */}
                     <div className="col-span-1">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Tax (%)
+                        Tax
                       </label>
-                      <input
-                        type="number"
-                        value={item.taxRate}
-                        onChange={(e) => updateItem(index, { taxRate: Math.max(0, parseFloat(e.target.value) || 0) })}
-                        min="0"
-                        step="0.01"
+                      <TaxRateSelector
+                        value={item.taxRateId}
+                        onChange={(taxRateId, taxRate) => {
+                          updateItem(index, { 
+                            taxRateId, 
+                            taxRate 
+                          })
+                        }}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Select tax"
                       />
                     </div>
 

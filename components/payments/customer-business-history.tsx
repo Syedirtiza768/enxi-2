@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { apiClient } from '@/lib/api/client'
+import { api } from '@/lib/api/client'
 
 interface CustomerBusinessHistoryProps {
   customerId: string
@@ -89,10 +89,10 @@ export function CustomerBusinessHistory({
         timelineResponse, 
         trendsResponse
       ] = await Promise.all([
-        apiClient.get(`/api/customers/${customerId}`),
-        apiClient.get(`/api/customers/${customerId}/business-metrics`),
-        apiClient.get(`/api/customers/${customerId}/activity-timeline`),
-        apiClient.get(`/api/customers/${customerId}/payment-trends`)
+        api.get(`/api/customers/${customerId}`),
+        api.get(`/api/customers/${customerId}/business-metrics`),
+        api.get(`/api/customers/${customerId}/activity-timeline`),
+        api.get(`/api/customers/${customerId}/payment-trends`)
       ])
       
       setCustomer(customerResponse.data)

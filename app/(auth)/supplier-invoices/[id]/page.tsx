@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SupplierInvoice {
   id: string
@@ -119,10 +120,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
       }
       
       setInvoice(response.data)
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
-    import { useCurrency } from '@/lib/contexts/currency-context'
-} finally {
+    } finally {
       setLoading(false)
     }
   }

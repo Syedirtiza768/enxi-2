@@ -3,6 +3,7 @@ import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
 import { JournalEntryService } from './accounting/journal-entry.service'
 import { SalesOrderService } from './sales-order.service'
+import { taxService } from './tax.service'
 import { 
   Invoice,
   InvoiceItem,
@@ -49,6 +50,7 @@ export interface CreateInvoiceItemInput {
   unitPrice: number
   discount?: number
   taxRate?: number
+  taxRateId?: string // Link to centralized tax configuration
 }
 
 export interface UpdateInvoiceInput {
@@ -101,7 +103,7 @@ export class InvoiceService extends BaseService {
         }
 
         // Calculate totals
-        const { subtotal, taxAmount, discountAmount, totalAmount } = this.calculateTotals(data.items)
+        const { subtotal, taxAmount, discountAmount, totalAmount } = await this.calculateTotals(data.items, data.customerId)
 
         // Create invoice
         const invoice = await tx.invoice.create({
@@ -128,7 +130,7 @@ export class InvoiceService extends BaseService {
         // Create invoice items
         const _items = await Promise.all(
           data.items.map(async (itemData, _index) => {
-            const itemCalculations = this.calculateItemTotals(itemData)
+            const itemCalculations = await this.calculateItemTotals(itemData, data.customerId)
             
             return await tx.invoiceItem.create({
               data: {
@@ -139,7 +141,8 @@ export class InvoiceService extends BaseService {
                 quantity: itemData.quantity,
                 unitPrice: itemData.unitPrice,
                 discount: itemData.discount || 0,
-                taxRate: itemData.taxRate || 0,
+                taxRate: itemCalculations.effectiveTaxRate, // Use the effective tax rate from calculation
+                taxRateId: itemData.taxRateId, // Store the tax rate ID reference
                 subtotal: itemCalculations.subtotal,
                 discountAmount: itemCalculations.discountAmount,
                 taxAmount: itemCalculations.taxAmount,
@@ -315,7 +318,7 @@ export class InvoiceService extends BaseService {
         })
 
         // Calculate new totals
-        const { subtotal, taxAmount, discountAmount, totalAmount } = this.calculateTotals(data.items)
+        const { subtotal, taxAmount, discountAmount, totalAmount } = await this.calculateTotals(data.items, existingInvoice.customerId)
         
         updateData = {
           ...updateData,
@@ -329,7 +332,7 @@ export class InvoiceService extends BaseService {
         // Create new items
         await Promise.all(
           data.items.map(async (itemData) => {
-            const itemCalculations = this.calculateItemTotals(itemData)
+            const itemCalculations = await this.calculateItemTotals(itemData, existingInvoice.customerId)
             
             return await tx.invoiceItem.create({
               data: {
@@ -340,7 +343,8 @@ export class InvoiceService extends BaseService {
                 quantity: itemData.quantity,
                 unitPrice: itemData.unitPrice,
                 discount: itemData.discount || 0,
-                taxRate: itemData.taxRate || 0,
+                taxRate: itemCalculations.effectiveTaxRate, // Use the effective tax rate from calculation
+                taxRateId: itemData.taxRateId, // Store the tax rate ID reference
                 subtotal: itemCalculations.subtotal,
                 discountAmount: itemCalculations.discountAmount,
                 taxAmount: itemCalculations.taxAmount,
@@ -528,7 +532,8 @@ export class InvoiceService extends BaseService {
       quantity: item.quantity,
       unitPrice: item.unitPrice,
       discount: item.discount,
-      taxRate: item.taxRate
+      taxRate: item.taxRate,
+      taxRateId: item.taxRateId // Include tax rate ID reference
     }))
 
     // Calculate due date based on payment terms (default 30 days)
@@ -550,13 +555,13 @@ export class InvoiceService extends BaseService {
 
   // Private helper methods
 
-  private calculateTotals(items: CreateInvoiceItemInput[]) {
+  private async calculateTotals(items: CreateInvoiceItemInput[], customerId?: string) {
     let subtotal = 0
     let taxAmount = 0
     let discountAmount = 0
 
     for (const item of items) {
-      const itemCalculations = this.calculateItemTotals(item)
+      const itemCalculations = await this.calculateItemTotals(item, customerId)
       subtotal += itemCalculations.subtotal
       taxAmount += itemCalculations.taxAmount
       discountAmount += itemCalculations.discountAmount
@@ -567,14 +572,34 @@ export class InvoiceService extends BaseService {
     return { subtotal, taxAmount, discountAmount, totalAmount }
   }
 
-  private calculateItemTotals(item: CreateInvoiceItemInput) {
+  private async calculateItemTotals(item: CreateInvoiceItemInput, customerId?: string) {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * ((item.discount || 0) / 100)
     const afterDiscount = subtotal - discountAmount
-    const taxAmount = afterDiscount * ((item.taxRate || 0) / 100)
+    
+    // Calculate tax using centralized tax system
+    let taxAmount = 0
+    let effectiveTaxRate = item.taxRate || 0
+    
+    if (item.taxRateId || !item.taxRate) {
+      // Use centralized tax calculation
+      const taxCalc = await taxService.calculateTax({
+        amount: afterDiscount,
+        taxRateId: item.taxRateId,
+        customerId,
+        appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
+      })
+      
+      taxAmount = taxCalc.taxAmount
+      effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+    } else {
+      // Fallback to manual tax rate
+      taxAmount = afterDiscount * ((item.taxRate || 0) / 100)
+    }
+    
     const totalAmount = afterDiscount + taxAmount
 
-    return { subtotal, discountAmount, taxAmount, totalAmount }
+    return { subtotal, discountAmount, taxAmount, totalAmount, effectiveTaxRate }
   }
 
   private async generateInvoiceNumber(type: InvoiceType, tx?: Prisma.TransactionClient): Promise<string> {

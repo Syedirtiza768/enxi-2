@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface PaymentFormProps {
   invoiceId: string
@@ -53,9 +54,10 @@ export function PaymentForm({
   onSuccess,
   onCancel,
 }: PaymentFormProps) {
+  const { formatCurrency } = useCurrency()
   const [formData, setFormData] = useState<PaymentFormData>({
     amount: balanceAmount,
-    paymentMethod: '',
+    paymentMethod: 'BANK_TRANSFER',
     paymentDate: new Date().toISOString().split('T')[0],
     reference: '',
     notes: '',
@@ -107,19 +109,27 @@ export function PaymentForm({
     setSubmitError(null)
 
     try {
-      await apiClient.post(`/api/invoices/${invoiceId}/payments`, {
-        amount: formData.amount,
-        paymentMethod: formData.paymentMethod,
-        paymentDate: formData.paymentDate,
-        reference: formData.reference || undefined,
-        notes: formData.notes || undefined,
+      const response = await apiClient(`/api/invoices/${invoiceId}/payments`, {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: formData.amount,
+          paymentMethod: formData.paymentMethod,
+          paymentDate: formData.paymentDate,
+          reference: formData.reference || undefined,
+          notes: formData.notes || undefined,
+        })
       })
 
+      if (!response.ok) {
+        throw new Error(response.error || 'Payment failed')
+      }
+
       onSuccess()
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
-      import { useCurrency } from '@/lib/contexts/currency-context'
-setIsSubmitting(false)
+      setSubmitError(error instanceof Error ? error.message : 'Payment failed. Please try again.');
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -161,7 +171,7 @@ setIsSubmitting(false)
     }
   }
 
-  const remainingBalance = balanceAmount - formData.amount
+  const remainingBalance = balanceAmount - (formData.amount || 0)
 
   return (
     <Card className="w-full max-w-2xl">
@@ -170,7 +180,7 @@ setIsSubmitting(false)
         <div className="space-y-1 text-sm text-gray-600">
           <div>Invoice: <span className="font-medium">{invoiceNumber}</span></div>
           <div>Customer: <span className="font-medium">{customerName}</span></div>
-          <div>Balance Due: <span className="font-medium text-red-600">${formatCurrency(balanceAmount)}</span></div>
+          <div>Balance Due: <span className="font-medium text-red-600">{formatCurrency(balanceAmount)}</span></div>
         </div>
       </CardHeader>
 
@@ -229,10 +239,10 @@ setIsSubmitting(false)
               </div>
 
               <div id="amount-info" className="text-sm text-gray-600">
-                Balance: ${formatCurrency(balanceAmount)}
+                Balance: {formatCurrency(balanceAmount)}
                 {remainingBalance !== balanceAmount && (
                   <span className="ml-2">
-                    | Remaining Balance: ${formatCurrency(remainingBalance)}
+                    | Remaining Balance: {formatCurrency(remainingBalance)}
                   </span>
                 )}
               </div>

@@ -11,47 +11,38 @@ async function main() {
     console.log('Cleaning existing data...')
     
     // Clean in reverse order of dependencies
-    try {
-      await prisma.auditLog.deleteMany()
-      await prisma.journalLine.deleteMany()
-      await prisma.journalEntry.deleteMany()
-    } catch (e) {
-      console.log('Journal tables cleanup skipped')
-    }
+    // Financial tables
+    await prisma.journalLine.deleteMany()
+    await prisma.journalEntry.deleteMany()
     
-    try {
-      await prisma.supplierPayment.deleteMany()
-      await prisma.supplierInvoiceItem.deleteMany()
-      await prisma.supplierInvoice.deleteMany()
-      await prisma.goodsReceiptItem.deleteMany()
-      await prisma.goodsReceipt.deleteMany()
-      await prisma.purchaseOrderItem.deleteMany()
-      await prisma.purchaseOrder.deleteMany()
-    } catch (e) {
-      console.log('Procurement tables cleanup skipped')
-    }
+    // Procurement tables
+    await prisma.supplierPayment.deleteMany()
+    await prisma.supplierInvoice.deleteMany()
+    await prisma.goodsReceiptItem.deleteMany()
+    await prisma.goodsReceipt.deleteMany()
+    await prisma.purchaseOrderItem.deleteMany()
+    await prisma.purchaseOrder.deleteMany()
     
-    try {
-      await prisma.quotationItem.deleteMany()
-      await prisma.quotationVersion.deleteMany()
-      await prisma.quotation.deleteMany()
-      await prisma.salesCaseUpdate.deleteMany()
-      await prisma.salesCase.deleteMany()
-    } catch (e) {
-      console.log('Sales tables cleanup skipped')
-    }
+    // Sales tables - must be deleted before Customer
+    await prisma.payment.deleteMany()
+    await prisma.invoiceItem.deleteMany()
+    await prisma.invoice.deleteMany()
+    await prisma.customerPO.deleteMany()
+    await prisma.salesOrderItem.deleteMany()
+    await prisma.salesOrder.deleteMany()
+    await prisma.quotationItem.deleteMany()
+    await prisma.quotation.deleteMany()
+    await prisma.caseExpense.deleteMany()
+    await prisma.salesCase.deleteMany()
     
-    try {
-      await prisma.stockMovement.deleteMany()
-      await prisma.stockLot.deleteMany()
-      await prisma.item.deleteMany()
-      await prisma.category.deleteMany()
-      await prisma.unitOfMeasure.deleteMany()
-    } catch (e) {
-      console.log('Inventory tables cleanup skipped')
-    }
+    // Inventory tables
+    await prisma.stockMovement.deleteMany()
+    await prisma.stockLot.deleteMany()
+    await prisma.item.deleteMany()
+    await prisma.category.deleteMany()
+    await prisma.unitOfMeasure.deleteMany()
     
-    // Clean up user-related tables first
+    // Clean up user-related tables
     await prisma.userPermission.deleteMany()
     await prisma.userSession.deleteMany()
     await prisma.userProfile.deleteMany()

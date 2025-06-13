@@ -3,6 +3,7 @@ import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
 import { QuotationService } from './quotation.service'
 import { JournalEntryService } from './accounting/journal-entry.service'
+import { taxService } from './tax.service'
 import { 
   SalesOrder,
   SalesOrderItem,
@@ -53,6 +54,7 @@ export interface CreateSalesOrderItemInput {
   unitPrice: number
   discount?: number
   taxRate?: number
+  taxRateId?: string // Link to centralized tax configuration
   unitOfMeasureId?: string
 }
 
@@ -92,7 +94,11 @@ export class SalesOrderService extends BaseService {
         // If converting from quotation, validate it
         let quotation = null
         if (data.quotationId) {
-          quotation = await this.quotationService.getQuotation(data.quotationId)
+          // Get quotation directly from the transaction to avoid timeout
+          quotation = await tx.quotation.findUnique({
+            where: { id: data.quotationId },
+            include: { items: true }
+          })
           if (!quotation) {
             throw new Error('Quotation not found')
           }
@@ -101,8 +107,18 @@ export class SalesOrderService extends BaseService {
           }
         }
 
+        // Get sales case with customer for tax calculations
+        const salesCase = await tx.salesCase.findUnique({
+          where: { id: data.salesCaseId },
+          include: { customer: true }
+        })
+        
+        if (!salesCase) {
+          throw new Error('Sales case not found')
+        }
+
         // Calculate totals
-        const { subtotal, taxAmount, discountAmount, totalAmount } = this.calculateTotals(data.items)
+        const { subtotal, taxAmount, discountAmount, totalAmount } = await this.calculateTotals(data.items, salesCase.customer.id)
 
         // Create sales order
         const salesOrder = await tx.salesOrder.create({
@@ -131,7 +147,7 @@ export class SalesOrderService extends BaseService {
         // Create sales order items
         const _items = await Promise.all(
           data.items.map(async (itemData, index) => {
-            const itemCalculations = this.calculateItemTotals(itemData)
+            const itemCalculations = await this.calculateItemTotals(itemData, salesCase.customer.id)
             
             return await tx.salesOrderItem.create({
               data: {
@@ -142,7 +158,8 @@ export class SalesOrderService extends BaseService {
                 quantity: itemData.quantity,
                 unitPrice: itemData.unitPrice,
                 discount: itemData.discount || 0,
-                taxRate: itemData.taxRate || 0,
+                taxRate: itemCalculations.effectiveTaxRate, // Use the effective tax rate from calculation
+                taxRateId: itemData.taxRateId, // Store the tax rate ID reference
                 unitOfMeasureId: itemData.unitOfMeasureId,
                 subtotal: itemCalculations.subtotal,
                 discountAmount: itemCalculations.discountAmount,
@@ -177,6 +194,9 @@ export class SalesOrderService extends BaseService {
 
 
         return this.getSalesOrder(salesOrder.id, tx)
+      }, {
+        maxWait: 10000, // 10 seconds max wait time
+        timeout: 20000  // 20 seconds timeout
       })
     })
   }
@@ -387,6 +407,11 @@ export class SalesOrderService extends BaseService {
         throw new Error('Sales order not found')
       }
 
+      // Debug OrderStatus
+      console.log('OrderStatus enum:', OrderStatus);
+      console.log('Current status:', salesOrder.status);
+      console.log('PENDING value:', OrderStatus.PENDING);
+      
       if (salesOrder.status !== OrderStatus.PENDING) {
         throw new Error('Only pending orders can be approved')
       }
@@ -482,6 +507,7 @@ export class SalesOrderService extends BaseService {
         unitPrice: item.unitPrice,
         discount: item.discount,
         taxRate: item.taxRate,
+        taxRateId: item.taxRateId, // Include tax rate ID reference
         unitOfMeasureId: item.unitOfMeasureId
       }))
 
@@ -504,13 +530,13 @@ export class SalesOrderService extends BaseService {
 
   // Private helper methods
 
-  private calculateTotals(items: CreateSalesOrderItemInput[]) {
+  private async calculateTotals(items: CreateSalesOrderItemInput[], customerId?: string) {
     let subtotal = 0
     let taxAmount = 0
     let discountAmount = 0
 
     for (const item of items) {
-      const itemCalculations = this.calculateItemTotals(item)
+      const itemCalculations = await this.calculateItemTotals(item, customerId)
       subtotal += itemCalculations.subtotal
       taxAmount += itemCalculations.taxAmount
       discountAmount += itemCalculations.discountAmount
@@ -521,14 +547,34 @@ export class SalesOrderService extends BaseService {
     return { subtotal, taxAmount, discountAmount, totalAmount }
   }
 
-  private calculateItemTotals(item: CreateSalesOrderItemInput) {
+  private async calculateItemTotals(item: CreateSalesOrderItemInput, customerId?: string) {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * ((item.discount || 0) / 100)
     const afterDiscount = subtotal - discountAmount
-    const taxAmount = afterDiscount * ((item.taxRate || 0) / 100)
+    
+    // Calculate tax using centralized tax system
+    let taxAmount = 0
+    let effectiveTaxRate = item.taxRate || 0
+    
+    if (item.taxRateId || !item.taxRate) {
+      // Use centralized tax calculation
+      const taxCalc = await taxService.calculateTax({
+        amount: afterDiscount,
+        taxRateId: item.taxRateId,
+        customerId,
+        appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
+      })
+      
+      taxAmount = taxCalc.taxAmount
+      effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+    } else {
+      // Fallback to manual tax rate
+      taxAmount = afterDiscount * ((item.taxRate || 0) / 100)
+    }
+    
     const totalAmount = afterDiscount + taxAmount
 
-    return { subtotal, discountAmount, taxAmount, totalAmount }
+    return { subtotal, discountAmount, taxAmount, totalAmount, effectiveTaxRate }
   }
 
   private async generateOrderNumber(tx?: Prisma.TransactionClient): Promise<string> {

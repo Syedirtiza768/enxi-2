@@ -9,6 +9,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { useCurrency } from '@/lib/contexts/currency-context'
+import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
+import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
 
 interface QuotationLine {
   lineNumber: number
@@ -37,6 +40,7 @@ interface QuotationItem {
   cost?: number
   discount?: number
   taxRate?: number
+  taxRateId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -82,11 +86,13 @@ interface LineItemEditorV2Props {
 }
 
 export function LineItemEditorV2({ quotationItems, onChange, disabled = false }: LineItemEditorV2Props) {
+  const { formatCurrency } = useCurrency()
+  const { defaultRate } = useDefaultTaxRate()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('internal')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [_loading, _setLoading] = useState(true)
-  const [_error, _setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [expandedLines, setExpandedLines] = useState<Set<number>>(new Set([1]))
   const [searchTerm, setSearchTerm] = useState('')
   const [showNewItemDialog, setShowNewItemDialog] = useState(false)
@@ -186,8 +192,6 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
     }
   }
 
-  // formatCurrency function removed - use useCurrency hook instead
-
   // Filter inventory items based on search
   const filteredInventoryItems = inventoryItems.filter(item => {
     if (!searchTerm) return true
@@ -247,7 +251,13 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
       description: '',
       quantity: 1,
       unitPrice: 0,
-      ...calculateItemAmounts({ quantity: 1, unitPrice: 0 })
+      taxRate: defaultRate?.rate || 0,
+      taxRateId: defaultRate?.id,
+      ...calculateItemAmounts({ 
+        quantity: 1, 
+        unitPrice: 0, 
+        taxRate: defaultRate?.rate || 0 
+      })
     } as QuotationItem
     
     onChange([...quotationItems, newItem])
@@ -564,12 +574,17 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                       </div>
 
                       <div className="col-span-1">
-                        <Input
-                          type="number"
-                          value={item.taxRate || 0}
-                          onChange={(e) => updateItem(item.id, { taxRate: parseFloat(e.target.value) || 0 })}
-                          placeholder="Tax %"
+                        <TaxRateSelector
+                          value={item.taxRateId}
+                          onChange={(taxRateId, taxRate) => {
+                            updateItem(item.id, { 
+                              taxRateId, 
+                              taxRate 
+                            })
+                          }}
                           disabled={disabled}
+                          className="w-full h-9"
+                          placeholder="Tax"
                         />
                       </div>
 

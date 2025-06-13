@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from '../base.service'
+import { taxService } from '../tax.service'
 import { 
   PurchaseOrder, 
   PurchaseOrderItem,
@@ -31,6 +32,7 @@ export interface CreatePOItemInput {
   unitPrice: number
   discount?: number
   taxRate?: number
+  taxRateId?: string // Link to centralized tax configuration
   unitOfMeasureId?: string
   sortOrder?: number
 }
@@ -109,23 +111,53 @@ export class PurchaseOrderService extends BaseService {
       let taxAmount = 0
       let discountAmount = 0
 
-      for (const item of data.items) {
-        if (item.quantity <= 0) {
-          throw new Error('Item quantity must be positive')
-        }
-        if (item.unitPrice < 0) {
-          throw new Error('Item unit price cannot be negative')
-        }
+      // Pre-calculate tax for all items
+      const itemTaxCalculations = await Promise.all(
+        data.items.map(async (item) => {
+          if (item.quantity <= 0) {
+            throw new Error('Item quantity must be positive')
+          }
+          if (item.unitPrice < 0) {
+            throw new Error('Item unit price cannot be negative')
+          }
 
-        const itemSubtotal = item.quantity * item.unitPrice
-        const itemDiscount = itemSubtotal * ((item.discount || 0) / 100)
-        const itemNetAmount = itemSubtotal - itemDiscount
-        const itemTax = itemNetAmount * ((item.taxRate || 0) / 100)
+          const itemSubtotal = item.quantity * item.unitPrice
+          const itemDiscount = itemSubtotal * ((item.discount || 0) / 100)
+          const itemNetAmount = itemSubtotal - itemDiscount
+          
+          // Calculate tax using centralized tax system
+          let itemTax = 0
+          let effectiveTaxRate = item.taxRate || 0
+          
+          if (item.taxRateId || !item.taxRate) {
+            // Use centralized tax calculation
+            const taxCalc = await taxService.calculateTax({
+              amount: itemNetAmount,
+              taxRateId: item.taxRateId,
+              supplierId: data.supplierId,
+              appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
+            })
+            
+            itemTax = taxCalc.taxAmount
+            effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+          } else {
+            // Fallback to manual tax rate
+            itemTax = itemNetAmount * ((item.taxRate || 0) / 100)
+          }
 
-        subtotal += itemSubtotal
-        discountAmount += itemDiscount
-        taxAmount += itemTax
-      }
+          subtotal += itemSubtotal
+          discountAmount += itemDiscount
+          taxAmount += itemTax
+
+          return {
+            itemSubtotal,
+            itemDiscount,
+            itemTax,
+            itemTotal: itemNetAmount + itemTax,
+            effectiveTaxRate
+          }
+        })
+      )
 
       const totalAmount = subtotal - discountAmount + taxAmount
 
@@ -159,11 +191,7 @@ export class PurchaseOrderService extends BaseService {
 
         // Create purchase order items
         for (const [index, itemData] of data.items.entries()) {
-          const itemSubtotal = itemData.quantity * itemData.unitPrice
-          const itemDiscount = itemSubtotal * ((itemData.discount || 0) / 100)
-          const itemNetAmount = itemSubtotal - itemDiscount
-          const itemTax = itemNetAmount * ((itemData.taxRate || 0) / 100)
-          const itemTotal = itemSubtotal - itemDiscount + itemTax
+          const taxCalc = itemTaxCalculations[index]
 
           await tx.purchaseOrderItem.create({
             data: {
@@ -174,12 +202,13 @@ export class PurchaseOrderService extends BaseService {
               quantity: itemData.quantity,
               unitPrice: itemData.unitPrice,
               discount: itemData.discount || 0,
-              taxRate: itemData.taxRate || 0,
+              taxRate: taxCalc.effectiveTaxRate, // Use the effective tax rate from calculation
+              taxRateId: itemData.taxRateId, // Store the tax rate ID reference
               unitOfMeasureId: itemData.unitOfMeasureId,
-              subtotal: itemSubtotal,
-              discountAmount: itemDiscount,
-              taxAmount: itemTax,
-              totalAmount: itemTotal,
+              subtotal: taxCalc.itemSubtotal,
+              discountAmount: taxCalc.itemDiscount,
+              taxAmount: taxCalc.itemTax,
+              totalAmount: taxCalc.itemTotal,
               sortOrder: itemData.sortOrder || index + 1
             }
           })

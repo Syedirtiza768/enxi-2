@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
-    name: 'Enxi-AlSahab',
-    script: 'npm',
+    name: 'enxi-erp',
+    script: 'node_modules/.bin/next',
     args: 'start',
     cwd: '.',
     instances: 1,
@@ -12,10 +12,10 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3000,
-      DATABASE_URL: 'file:/Users/irtizahassan/apps/enxi/enxi-erp/prisma/dev.db',
+      DATABASE_URL: 'file:/Users/irtizahassan/apps/enxi/enxi-erp/enxi-2/prisma/prisma/dev.db',
       NEXTAUTH_URL: 'http://localhost:3000',
-      JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-here',
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'your-secret-key-here'
+      JWT_SECRET: process.env.JWT_SECRET || 'development-secret-key-change-in-production',
+      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'development-secret-key-change-in-production'
     },
     error_file: './logs/pm2-error.log',
     out_file: './logs/pm2-out.log',

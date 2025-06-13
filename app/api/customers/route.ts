@@ -5,7 +5,18 @@ import { CustomerService } from '@/lib/services/customer.service'
 // GET /api/customers - List all customers with search
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    // Try to get user first and handle auth errors separately
+    let user;
+    try {
+      user = await getUserFromRequest(request)
+    } catch (authError) {
+      console.error('Authentication failed:', authError)
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
     const customerService = new CustomerService()
     const searchParams = request.nextUrl.searchParams
     
@@ -34,7 +45,18 @@ export async function GET(request: NextRequest) {
 // POST /api/customers - Create new customer
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request)
+    // Try to get user first and handle auth errors separately
+    let user;
+    try {
+      user = await getUserFromRequest(request)
+    } catch (authError) {
+      console.error('Authentication failed:', authError)
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
     const body = await request.json()
     
     const { 
@@ -60,6 +82,22 @@ export async function POST(request: NextRequest) {
     }
 
     const customerService = new CustomerService()
+    
+    console.log('Creating customer with data:', {
+      name,
+      email,
+      phone,
+      industry,
+      website,
+      address,
+      taxId,
+      currency,
+      creditLimit,
+      paymentTerms,
+      leadId,
+      userId: user.id
+    })
+    
     const customer = await customerService.createCustomer({
       name,
       email,
@@ -82,15 +120,33 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.error('Error creating customer:', error)
     
-    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    
+    // Handle specific error cases
+    if (errorMessage.includes('already exists')) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : String(error) },
+        { error: errorMessage },
         { status: 409 }
+      )
+    }
+    
+    if (errorMessage.includes('Account code already exists')) {
+      // This is a known issue with AR account creation, provide helpful message
+      return NextResponse.json(
+        { error: 'Unable to create customer account. Please try again.' },
+        { status: 500 }
+      )
+    }
+    
+    if (errorMessage.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
       )
     }
 
     return NextResponse.json(
-      { error: 'Failed to create customer' },
+      { error: 'Failed to create customer', details: errorMessage },
       { status: 500 }
     )
   }

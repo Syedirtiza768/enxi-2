@@ -50,8 +50,10 @@ export async function POST(request: NextRequest) {
 
     // Set cookie and return response
     const response = NextResponse.json({
+      success: true,
       token,
       user,
+      message: 'Login successful'
     })
     
     response.cookies.set('auth-token', token, {
@@ -65,6 +67,15 @@ export async function POST(request: NextRequest) {
     return response
 } catch (error) {
     console.error('Login error:', error)
+    
+    // Handle validation errors
+    if (error instanceof Error && error.name === 'ZodError') {
+      return NextResponse.json(
+        { error: 'Invalid request data', details: error },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

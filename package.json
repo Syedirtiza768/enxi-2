@@ -20,6 +20,8 @@
     "setup:accounts": "tsx scripts/setup-chart-of-accounts.ts",
     "test:integration": "tsx scripts/test-integration.ts",
     "test:ui-backend": "tsx scripts/test-ui-backend-integration.ts",
+    "test:frontend": "tsx scripts/test-frontend-comprehensive.ts",
+    "test:frontend:quick": "tsx scripts/test-frontend-quick.ts",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "cron:start": "ENABLE_CRON_JOBS=true tsx scripts/start-cron.ts",

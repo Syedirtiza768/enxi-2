@@ -26,6 +26,7 @@ import {
   Edit
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SupplierPayment {
   id: string
@@ -115,10 +116,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         pendingCount: 0 // Supplier payments don't have pending status like invoices
       }
       setStats(stats)
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
-    import { useCurrency } from '@/lib/contexts/currency-context'
-} finally {
+    } finally {
       setLoading(false)
     }
   }
@@ -398,7 +398,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                           <div>
                             <div className="font-medium">{payment.supplierInvoice.invoiceNumber}</div>
                             <div className="text-sm text-gray-500">
-                              ${formatCurrency(payment.supplierInvoice.totalAmount)}
+                              {formatCurrency(payment.supplierInvoice.totalAmount)}
                             </div>
                           </div>
                         ) : (
@@ -418,7 +418,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                         <div className="text-sm text-gray-500">{payment.currency}</div>
                         {payment.currency !== 'USD' && (
                           <div className="text-xs text-gray-400">
-                            ${formatCurrency(payment.baseAmount)} USD
+                            {formatCurrency(payment.baseAmount)} USD
                           </div>
                         )}
                       </TableCell>

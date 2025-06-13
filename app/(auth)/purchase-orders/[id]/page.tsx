@@ -27,6 +27,7 @@ import {
   DollarSign
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface PurchaseOrder {
   id: string
@@ -99,10 +100,9 @@ const params = useParams()
       }
       
       setPurchaseOrder(response.data)
-} catch (error) {
-      console.error('Error:', error);
-    import { useCurrency } from '@/lib/contexts/currency-context'
-} finally {
+    } catch (error) {
+      console.error('Error fetching purchase order:', error)
+    } finally {
       setLoading(false)
     }
   }

@@ -21,6 +21,7 @@ import {
   Plus, Search, Package, Clock, CheckCircle, 
   XCircle, AlertCircle, ChevronRight 
 } from 'lucide-react'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SalesOrder {
   id: string

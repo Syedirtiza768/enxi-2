@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Upload, X, Calendar, DollarSign, FileText, AlertTriangle } from 'lucide-react'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface Quotation {
   id: string
@@ -37,6 +38,7 @@ interface CustomerPOFormProps {
 }
 
 export default function CustomerPOForm({ quotation, onSubmit, onCancel }: CustomerPOFormProps) {
+  const { formatCurrency } = useCurrency()
   const [formData, setFormData] = useState<CustomerPOFormData>({
     poNumber: '',
     customerId: quotation?.salesCase?.customer?.id || '',
@@ -81,7 +83,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
         setAmountWarning('')
       }
     }
-  }, [formData.poAmount, quotation])
+  }, [formData.poAmount, quotation, formatCurrency])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -218,7 +220,6 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     }
   }
 
-  // formatCurrency function removed - use useCurrency hook instead
 
   return (
     <div className="max-w-2xl mx-auto">

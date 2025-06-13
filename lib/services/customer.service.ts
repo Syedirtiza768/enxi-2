@@ -72,22 +72,45 @@ export class CustomerService extends BaseService {
         throw new Error('Customer with this email already exists')
       }
 
-      // Create customer with AR account in a transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Generate customer number
-        const customerNumber = await this.generateCustomerNumber()
+      // First, prepare all data outside the transaction
+      const customerNumber = await this.generateCustomerNumber()
+      const parentAccountId = await this.getOrCreateARParentAccount(data.createdBy)
 
-        // Create AR account for the customer
-        const arAccount = await this.coaService.createAccount({
-          code: `1200-${customerNumber}`,
-          name: `AR - ${data.name}`,
-          type: AccountType.ASSET,
-          currency: data.currency || 'USD',
-          description: `Accounts Receivable for ${data.name}`,
-          parentId: await this.getOrCreateARParentAccount(data.createdBy),
-          createdBy: data.createdBy
+      // Create AR account first (outside transaction to avoid timeout)
+      let arAccount
+      try {
+        // Generate unique account code with timestamp to avoid conflicts
+        const timestamp = Date.now().toString().slice(-6)
+        const accountCode = `1200-${customerNumber}-${timestamp}`
+        
+        arAccount = await prisma.account.create({
+          data: {
+            code: accountCode,
+            name: `AR - ${data.name}`,
+            type: AccountType.ASSET,
+            currency: data.currency || 'AED',
+            description: `Accounts Receivable for ${data.name}`,
+            parentId: parentAccountId || undefined,
+            createdBy: data.createdBy
+          }
         })
+      } catch (error) {
+        // Fallback: create without parent if there's an issue
+        const fallbackCode = `AR-${customerNumber}-${Date.now()}`
+        arAccount = await prisma.account.create({
+          data: {
+            code: fallbackCode,
+            name: `AR - ${data.name}`,
+            type: AccountType.ASSET,
+            currency: data.currency || 'AED',
+            description: `Accounts Receivable for ${data.name}`,
+            createdBy: data.createdBy
+          }
+        })
+      }
 
+      // Create customer with a shorter transaction
+      const result = await prisma.$transaction(async (tx) => {
         // Create customer
         const customer = await tx.customer.create({
           data: {
@@ -99,7 +122,7 @@ export class CustomerService extends BaseService {
             website: data.website,
             address: data.address,
             taxId: data.taxId,
-            currency: data.currency || 'USD',
+            currency: data.currency || 'AED',
             creditLimit: data.creditLimit || 0,
             paymentTerms: data.paymentTerms || 30,
             leadId: data.leadId,
@@ -121,6 +144,9 @@ export class CustomerService extends BaseService {
         }
 
         return customer
+      }, {
+        maxWait: 10000, // Increase max wait time
+        timeout: 20000  // Increase timeout
       })
 
       // Audit log
@@ -276,7 +302,7 @@ export class CustomerService extends BaseService {
         website: additionalData.website,
         address: additionalData.address,
         taxId: additionalData.taxId,
-        currency: additionalData.currency || 'USD',
+        currency: additionalData.currency || 'AED',
         creditLimit: additionalData.creditLimit || 0,
         paymentTerms: additionalData.paymentTerms || 30
       }
@@ -389,45 +415,96 @@ export class CustomerService extends BaseService {
   }
 
   private async generateCustomerNumber(): Promise<string> {
+    // Use a more robust approach with retry logic
+    let attempts = 0
+    const maxAttempts = 10
     
-    const lastCustomer = await prisma.customer.findFirst({
-      orderBy: { customerNumber: 'desc' }
-    })
-
-    if (!lastCustomer) {
-      return 'CUST-0001'
+    while (attempts < maxAttempts) {
+      try {
+        // Get the count of existing customers
+        const customerCount = await prisma.customer.count()
+        
+        // Generate a number based on count + timestamp for uniqueness
+        const timestamp = Date.now().toString().slice(-4)
+        const baseNumber = customerCount + 1
+        const customerNumber = `CUST-${baseNumber.toString().padStart(4, '0')}-${timestamp}`
+        
+        // Check if this number already exists
+        const exists = await prisma.customer.findFirst({
+          where: { customerNumber }
+        })
+        
+        if (!exists) {
+          return customerNumber
+        }
+        
+        attempts++
+      } catch (error) {
+        attempts++
+        if (attempts >= maxAttempts) {
+          // Final fallback: use full timestamp
+          return `CUST-${Date.now()}`
+        }
+      }
     }
-
-    const lastNumber = parseInt(lastCustomer.customerNumber.split('-')[1])
-    const newNumber = lastNumber + 1
-    const generatedNumber = `CUST-${newNumber.toString().padStart(4, '0')}`
     
-    
-    return generatedNumber
+    // Ultimate fallback
+    return `CUST-${Date.now()}`
   }
 
   private async getOrCreateARParentAccount(userId: string): Promise<string> {
-    
-    // Find or create parent AR account
-    let parentAccount = await prisma.account.findFirst({
-      where: {
-        code: '1200',
-        type: AccountType.ASSET
-      }
-    })
-
-    if (!parentAccount) {
-      parentAccount = await this.coaService.createAccount({
-        code: '1200',
-        name: 'Accounts Receivable',
-        type: AccountType.ASSET,
-        currency: 'USD',
-        description: 'Customer accounts receivable',
-        createdBy: userId
+    try {
+      // Find or create parent AR account
+      let parentAccount = await prisma.account.findFirst({
+        where: {
+          code: '1200',
+          type: AccountType.ASSET
+        }
       })
-    } else {
-    }
 
-    return parentAccount.id
+      if (!parentAccount) {
+        // Try to create the parent account
+        try {
+          parentAccount = await prisma.account.create({
+            data: {
+              code: '1200',
+              name: 'Accounts Receivable',
+              type: AccountType.ASSET,
+              currency: 'USD',
+              description: 'Customer accounts receivable',
+              createdBy: userId
+            }
+          })
+        } catch (error) {
+          // If creation fails due to race condition, try to find it again
+          parentAccount = await prisma.account.findFirst({
+            where: {
+              code: '1200',
+              type: AccountType.ASSET
+            }
+          })
+          
+          if (!parentAccount) {
+            // If still not found, create with unique code
+            parentAccount = await prisma.account.create({
+              data: {
+                code: `1200-AR-${Date.now()}`,
+                name: 'Accounts Receivable',
+                type: AccountType.ASSET,
+                currency: 'USD',
+                description: 'Customer accounts receivable',
+                createdBy: userId
+              }
+            })
+          }
+        }
+      }
+
+      return parentAccount.id
+    } catch (error) {
+      console.error('Error in getOrCreateARParentAccount:', error)
+      // Return empty string to allow customer creation to continue without parent
+      return ''
+    }
   }
 }

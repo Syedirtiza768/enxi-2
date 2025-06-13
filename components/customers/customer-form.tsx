@@ -33,6 +33,7 @@ interface CustomerFormProps {
 }
 
 const currencies = [
+  { value: 'AED', label: 'AED - UAE Dirham' },
   { value: 'USD', label: 'USD - US Dollar' },
   { value: 'EUR', label: 'EUR - Euro' },
   { value: 'GBP', label: 'GBP - British Pound' },
@@ -68,7 +69,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
     website: '',
     address: '',
     taxId: '',
-    currency: 'USD',
+    currency: 'AED',
     creditLimit: 0,
     paymentTerms: 30,
     leadId: leadData?.id

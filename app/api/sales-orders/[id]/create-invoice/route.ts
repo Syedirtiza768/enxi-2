@@ -19,7 +19,7 @@ export async function POST(
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await _request.json()
+    const body = await request.json()
     const data = createInvoiceFromOrderSchema.parse(body)
     
     const invoiceService = new InvoiceService()

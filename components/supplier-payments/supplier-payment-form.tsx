@@ -103,6 +103,25 @@ export function SupplierPaymentForm({
     bankAccountId: supplierPayment?.bankAccountId || ''
   })
 
+  const fetchSupplier = useCallback(async (supplierId: string) => {
+    try {
+      const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
+      if (response.ok) {
+        const supplier = response.data
+        setSelectedSupplier(supplier)
+        
+        if (!formData.currency && supplier.currency) {
+          setFormData(prev => ({
+            ...prev,
+            currency: supplier.currency
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch supplier:', error)
+    }
+  }, [formData.currency])
+
   useEffect(() => {
     Promise.all([
       fetchSuppliers(),
@@ -113,7 +132,7 @@ export function SupplierPaymentForm({
       fetchSupplier(formData.supplierId)
       fetchSupplierInvoices(formData.supplierId)
     }
-  }, [fetchSupplier, formData.supplierId])
+  }, [formData.supplierId])
 
   useEffect(() => {
     if (formData.supplierId && formData.supplierId !== selectedSupplier?.id) {
@@ -149,24 +168,6 @@ export function SupplierPaymentForm({
     }
   }
 
-  const fetchSupplier = useCallback(async (supplierId: string) => {
-    try {
-      const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
-      if (response.ok) {
-        const supplier = response.data
-        setSelectedSupplier(supplier)
-        
-        if (!formData.currency && supplier.currency) {
-          setFormData(prev => ({
-            ...prev,
-            currency: supplier.currency
-          }))
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch supplier:', error)
-    }
-  }, [formData.currency])
 
   const fetchSupplierInvoices = async (supplierId: string) => {
     try {
@@ -557,7 +558,7 @@ export function SupplierPaymentForm({
                         <VStack gap="xs">
                           <Text size="sm" color="secondary">USD Equivalent</Text>
                           <Text size="xl" weight="bold">
-                            ${formatCurrency((formData.amount * formData.exchangeRate))} USD
+                            {formatCurrency((formData.amount * formData.exchangeRate))} USD
                           </Text>
                         </VStack>
                       </CardContent>

@@ -6,6 +6,7 @@ import {
   Plus, Search, FileText, CheckCircle, Clock, 
   XCircle, ChevronRight, Package, DollarSign
 } from 'lucide-react'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface CustomerPO {
   id: string
