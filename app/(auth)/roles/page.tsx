@@ -17,7 +17,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from '@/lib/types/shared-enums'
 
 interface Permission {
   id: string

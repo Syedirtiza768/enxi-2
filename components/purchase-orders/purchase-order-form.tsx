@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
-import { TaxType } from '@/lib/generated/prisma'
+import { TaxType } from '@/lib/types/shared-enums'
 
 interface Supplier {
   id: string

@@ -24,7 +24,7 @@ import {
 import { apiClient } from '@/lib/api/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { TaxCategory, TaxRate, TaxType } from '@/lib/generated/prisma'
+import { TaxCategory, TaxRate, TaxType } from '@/lib/types/shared-enums'
 
 interface TaxCategoryWithRates extends TaxCategory {
   taxRates: TaxRate[]

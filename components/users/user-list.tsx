@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api/client'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from '@/lib/types/shared-enums'
 import {
   Table,
   TableBody,

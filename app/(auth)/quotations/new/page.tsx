@@ -89,7 +89,7 @@ function NewQuotationContent() {
           autoSave={true}
         />
       ) : (
-        <QuotationFormV2 />
+        <QuotationFormV2 salesCaseId={salesCaseId} />
       )}
     </div>
   )

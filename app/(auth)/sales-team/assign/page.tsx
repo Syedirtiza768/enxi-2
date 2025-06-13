@@ -19,7 +19,7 @@ import {
   Building,
   Link
 } from 'lucide-react'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from '@/lib/types/shared-enums'
 
 interface User {
   id: string

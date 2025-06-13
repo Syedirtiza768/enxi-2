@@ -12,9 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SimplifiedItemEditor } from './simplified-item-editor';
 import { CustomerSearch } from '@/components/customers/customer-search';
 import { useToast } from '@/components/ui/use-toast';
-import { QuotationService } from '@/lib/services/quotation.service';
 import { Eye, FileText, Save, Send } from 'lucide-react';
 import { format } from 'date-fns';
+import { apiClient } from '@/lib/api/client';
 
 interface QuotationFormData {
   customer_id: string;
@@ -29,11 +29,17 @@ interface QuotationFormData {
   items: any[];
 }
 
-export function QuotationFormV2() {
+interface QuotationFormV2Props {
+  salesCaseId?: string | null;
+}
+
+export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFormV2Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('client');
+  const [salesCases, setSalesCases] = useState<any[]>([]);
+  const [selectedSalesCase, setSelectedSalesCase] = useState<string>(initialSalesCaseId || '');
   
   const [formData, setFormData] = useState<QuotationFormData>({
     customer_id: '',
@@ -46,6 +52,56 @@ export function QuotationFormV2() {
     discount_percentage: 0,
     items: []
   });
+
+  // If we have an initial sales case ID, fetch its details
+  useEffect(() => {
+    if (initialSalesCaseId) {
+      fetchSalesCaseDetails(initialSalesCaseId);
+    }
+  }, [initialSalesCaseId]);
+
+  // Fetch sales cases when customer is selected
+  useEffect(() => {
+    if (formData.customer_id && !initialSalesCaseId) {
+      fetchSalesCases(formData.customer_id);
+    } else if (!formData.customer_id && !initialSalesCaseId) {
+      setSalesCases([]);
+      setSelectedSalesCase('');
+    }
+  }, [formData.customer_id, initialSalesCaseId]);
+
+  const fetchSalesCaseDetails = async (salesCaseId: string) => {
+    try {
+      const response = await apiClient(`/api/sales-cases/${salesCaseId}`);
+      if (response.ok && response.data) {
+        const salesCase = response.data;
+        // Set the customer from the sales case
+        setFormData(prev => ({ 
+          ...prev, 
+          customer_id: salesCase.customerId,
+          customer: salesCase.customer
+        }));
+        setSalesCases([salesCase]);
+      }
+    } catch (error) {
+      console.error('Error fetching sales case details:', error);
+    }
+  };
+
+  const fetchSalesCases = async (customerId: string) => {
+    try {
+      const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
+      if (response.ok && response.data) {
+        setSalesCases(response.data);
+        // Auto-select if only one open sales case
+        if (response.data.length === 1) {
+          setSelectedSalesCase(response.data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching sales cases:', error);
+    }
+  };
 
   const calculateTotals = () => {
     const itemsTotal = formData.items.reduce((sum, item) => sum + (item.total || 0), 0);
@@ -73,6 +129,15 @@ export function QuotationFormV2() {
       return;
     }
 
+    if (!selectedSalesCase) {
+      toast({
+        title: 'Error',
+        description: 'Please select or create a sales case for this customer',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (formData.items.length === 0) {
       toast({
         title: 'Error',
@@ -84,12 +149,42 @@ export function QuotationFormV2() {
 
     setLoading(true);
     try {
-      const quotationService = new QuotationService();
-      const result = await quotationService.createQuotation({
-        ...formData,
-        status,
-        total: totals.total
+      // Transform form data to match API expectations
+      const quotationData = {
+        salesCaseId: selectedSalesCase,
+        validUntil: formData.expiry_date,
+        paymentTerms: formData.payment_terms,
+        deliveryTerms: formData.delivery_terms,
+        notes: formData.special_instructions,
+        internalNotes: formData.internal_notes,
+        items: formData.items.map(item => ({
+          itemCode: item.code || item.itemCode || '',
+          description: item.description || '',
+          quantity: item.quantity || 0,
+          unitPrice: item.unitPrice || item.price || 0,
+          discount: item.discount || 0,
+          taxRate: item.taxRate || 0,
+          cost: item.cost || 0
+        }))
+      };
+
+      const response = await apiClient('/api/quotations', {
+        method: 'POST',
+        body: JSON.stringify(quotationData)
       });
+
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to create quotation');
+      }
+
+      const result = response.data;
+
+      // If status is 'sent', send the quotation
+      if (status === 'sent' && result.id) {
+        await apiClient(`/api/quotations/${result.id}/send`, {
+          method: 'POST'
+        });
+      }
 
       toast({
         title: 'Success',
@@ -98,9 +193,10 @@ export function QuotationFormV2() {
 
       router.push(`/quotations/${result.id}`);
     } catch (error) {
+      console.error('Error creating quotation:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save quotation',
+        description: error instanceof Error ? error.message : 'Failed to save quotation',
         variant: 'destructive'
       });
     } finally {
@@ -142,6 +238,7 @@ export function QuotationFormV2() {
                   onChange={(customerId, customer) => {
                     setFormData(prev => ({ ...prev, customer_id: customerId, customer }));
                   }}
+                  disabled={!!initialSalesCaseId}
                 />
                 {formData.customer && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
@@ -152,6 +249,48 @@ export function QuotationFormV2() {
                     {formData.customer.phone && (
                       <p className="text-sm text-gray-600">{formData.customer.phone}</p>
                     )}
+                  </div>
+                )}
+                
+                {/* Sales Case Selection */}
+                {formData.customer_id && !initialSalesCaseId && (
+                  <div className="mt-4">
+                    <Label htmlFor="salesCase">Sales Case</Label>
+                    <Select
+                      value={selectedSalesCase}
+                      onValueChange={setSelectedSalesCase}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a sales case" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {salesCases.length === 0 ? (
+                          <SelectItem value="create" disabled>
+                            No open sales cases - Please create one first
+                          </SelectItem>
+                        ) : (
+                          salesCases.map((salesCase) => (
+                            <SelectItem key={salesCase.id} value={salesCase.id}>
+                              {salesCase.caseNumber} - {salesCase.title || 'Untitled'}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {salesCases.length === 0 && (
+                      <p className="text-sm text-amber-600 mt-2">
+                        Please create a sales case for this customer first before creating a quotation.
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Show selected sales case when coming from sales case page */}
+                {initialSalesCaseId && salesCases.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <span className="font-medium">Sales Case:</span> {salesCases[0].caseNumber} - {salesCases[0].title || 'Untitled'}
+                    </p>
                   </div>
                 )}
               </CardContent>

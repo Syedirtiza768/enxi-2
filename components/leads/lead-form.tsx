@@ -11,7 +11,7 @@ import {
   Select,
   Text
 } from '@/components/design-system'
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+import { LeadSource, LeadStatus } from '@/lib/types/shared-enums'
 import { LeadResponse, CreateLeadData, UpdateLeadData } from '@/lib/types/lead.types'
 import { AlertCircle } from 'lucide-react'
 

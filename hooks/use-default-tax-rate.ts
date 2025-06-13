@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TaxRate, TaxType } from '@/lib/generated/prisma'
+import { TaxRate, TaxType } from '@/lib/types/shared-enums'
 
 interface UseDefaultTaxRateOptions {
   taxType?: TaxType
