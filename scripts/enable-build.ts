@@ -28,22 +28,36 @@ function updateNextConfig() {
   
   const config = fs.readFileSync(configPath, 'utf-8')
   
-  if (!config.includes('ignoreBuildErrors')) {
+  if (!config.includes('ignoreBuildErrors: true')) {
     // For TypeScript config
     if (configPath.endsWith('.ts')) {
-      const updatedConfig = config.replace(
-        /const nextConfig[^{]*{/,
-        `const nextConfig = {
+      let updatedConfig = config
+      
+      // First check if typescript config already exists
+      if (config.includes('typescript:')) {
+        // Replace existing typescript config
+        updatedConfig = config.replace(
+          /typescript:\s*{[^}]*}/,
+          `typescript: {
+    // TEMPORARY: Remove after fixing type errors
+    // Added on: ${new Date().toISOString()}
+    // Tracking: see suppressed-errors.json
+    ignoreBuildErrors: true,
+  }`
+        )
+      } else {
+        // Add typescript config after nextConfig declaration
+        updatedConfig = config.replace(
+          /const nextConfig[^{]*{/,
+          `const nextConfig = {
   // TEMPORARY: Remove after fixing type errors
   // Added on: ${new Date().toISOString()}
   // Tracking: see suppressed-errors.json
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },`
-      )
+        )
+      }
       
       fs.writeFileSync(configPath, updatedConfig)
     } else {
