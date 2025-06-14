@@ -20,13 +20,20 @@ const suppressedErrors: SuppressedError[] = []
 
 // Step 1: Update Next.js config to allow building with errors
 function updateNextConfig() {
-  const configPath = path.join(process.cwd(), 'next.config.js')
+  // Check for TypeScript config first
+  let configPath = path.join(process.cwd(), 'next.config.ts')
+  if (!fs.existsSync(configPath)) {
+    configPath = path.join(process.cwd(), 'next.config.js')
+  }
+  
   const config = fs.readFileSync(configPath, 'utf-8')
   
   if (!config.includes('ignoreBuildErrors')) {
-    const updatedConfig = config.replace(
-      'module.exports = {',
-      `module.exports = {
+    // For TypeScript config
+    if (configPath.endsWith('.ts')) {
+      const updatedConfig = config.replace(
+        /const nextConfig[^{]*{/,
+        `const nextConfig = {
   // TEMPORARY: Remove after fixing type errors
   // Added on: ${new Date().toISOString()}
   // Tracking: see suppressed-errors.json
@@ -36,10 +43,29 @@ function updateNextConfig() {
   eslint: {
     ignoreDuringBuilds: true,
   },`
-    )
+      )
+      
+      fs.writeFileSync(configPath, updatedConfig)
+    } else {
+      // For JavaScript config
+      const updatedConfig = config.replace(
+        'module.exports = {',
+        `module.exports = {
+  // TEMPORARY: Remove after fixing type errors
+  // Added on: ${new Date().toISOString()}
+  // Tracking: see suppressed-errors.json
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },`
+      )
+      
+      fs.writeFileSync(configPath, updatedConfig)
+    }
     
-    fs.writeFileSync(configPath, updatedConfig)
-    console.log('✅ Updated next.config.js to allow building with errors')
+    console.log(`✅ Updated ${path.basename(configPath)} to allow building with errors`)
   }
 }
 
@@ -268,8 +294,13 @@ ${suppressedErrors
 async function main() {
   console.log('🚀 Enabling build with TypeScript errors...\n')
   
-  // Backup current state
-  execSync('git add -A && git commit -m "backup: before enabling error suppression" || true')
+  // Backup current state (skip if not in git repo)
+  try {
+    execSync('git status', { stdio: 'ignore' })
+    execSync('git add -A && git commit -m "backup: before enabling error suppression" || true', { stdio: 'pipe' })
+  } catch (error) {
+    console.log('⚠️  Not in a git repository, skipping backup commit')
+  }
   
   // Execute steps
   updateNextConfig()
