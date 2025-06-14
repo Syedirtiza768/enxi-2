@@ -9,7 +9,7 @@
 
 const BASE_URL = 'http://localhost:3000'
 
-async function verifySystem() {
+async function verifySystem(): Promise<void> {
   console.warn('🔍 ERP SYSTEM CORE FUNCTIONALITY VERIFICATION\n')
 
   // Test 1: Authentication System

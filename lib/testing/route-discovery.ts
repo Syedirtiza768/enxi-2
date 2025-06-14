@@ -1,4 +1,4 @@
-import { readdir, stat } from 'fs/promises';
+import { readdir, stat, readFile } from 'fs/promises';
 import { join } from 'path';
 
 export interface RouteInfo {
@@ -87,6 +87,8 @@ export class RouteDiscovery {
 
   private async processApiRoute(filePath: string, currentPath: string): Promise<RouteInfo | null> {
     try {
+      // Note: Dynamic imports can cause webpack warnings in production builds
+      // This is acceptable for testing utilities
       const content = await import(filePath);
       const methods: string[] = [];
       
@@ -174,8 +176,7 @@ export class RouteDiscovery {
   private async checkAuthRequirement(filePath: string): Promise<boolean> {
     try {
       // Read file content to check for auth requirements
-      const fs = await import('fs/promises');
-      const content = await fs.readFile(filePath, 'utf8');
+      const content = await readFile(filePath, 'utf8');
       
       // Look for common auth patterns
       return content.includes('getUserFromRequest') ||

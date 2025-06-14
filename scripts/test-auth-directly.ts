@@ -2,7 +2,7 @@
 
 import { AuthService } from '../lib/services/auth.service';
 
-async function testAuth() {
+async function testAuth(): Promise<void> {
   console.warn('🔍 Testing Authentication Directly\n');
 
   try {

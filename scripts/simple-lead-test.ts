@@ -1,7 +1,7 @@
 #!/usr/bin/env npx tsx
 
 // Simple direct test without complex client
-async function testLeadCreation() {
+async function testLeadCreation(): Promise<void> {
   console.warn('🔍 Simple Lead Creation Test\n');
 
   const BASE_URL = 'http://localhost:3000';

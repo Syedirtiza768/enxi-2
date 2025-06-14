@@ -36,14 +36,13 @@ export default function AccountsPage() {
     loadAccounts()
   }, [])
 
-  const loadAccounts = async () => {
+  const loadAccounts = async (): Promise<number> => {
     try {
       setLoading(true)
-      const response = await apiClient('/api/accounting/accounts', { method: 'GET' })
+      const response = await apiClient<Account[]>('/api/accounting/accounts', { method: 'GET' })
       
       if (response.ok && response.data) {
-        const accountsData = response.data.data || response.data
-        setAccounts(Array.isArray(accountsData) ? accountsData : [])
+        setAccounts(Array.isArray(response.data) ? response.data : [])
       } else {
         console.error('Failed to load accounts:', response.error)
         setAccounts([])

@@ -66,6 +66,11 @@ __*.log
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/e2e-test-results/
+/e2e/storage-state/
+e2e-test.db
+e2e-test.db-shm
+e2e-test.db-wal
 route-test-report-*.json
 
 # temporary files

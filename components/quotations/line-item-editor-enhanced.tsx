@@ -101,10 +101,10 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
 
   // Load inventory items
   useEffect(() => {
-    const fetchInventoryItems = async () => {
+    const fetchInventoryItems = async (): Promise<void> => {
       try {
         setLoading(true)
-        const response = await apiClient('/api/inventory/items', { method: 'GET' })
+        const response = await apiClient<{ data?: InventoryItem[] }>('/api/inventory/items', { method: 'GET' })
         
         if (response.ok) {
           const inventoryData = response.data?.data || response.data || []
@@ -448,7 +448,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <label className="text-gray-600">Margin:</label>
                             <div className="font-medium">
                               {item.cost && item.unitPrice > 0 
-                                ? `${((item.unitPrice - item.cost) / item.unitPrice * 100).toFixed(1)}%`
+                                ? `${((Number(item.unitPrice || 0) - Number(item.cost || 0)) / Number(item.unitPrice || 1) * 100).toFixed(1)}%`
                                 : '-'}
                             </div>
                           </div>

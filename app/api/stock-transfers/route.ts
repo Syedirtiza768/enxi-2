@@ -4,7 +4,7 @@ import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.se
 import { TransferStatus } from '@/lib/generated/prisma'
 
 // GET /api/stock-transfers - Get all stock transfers
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/stock-transfers - Create stock transfer
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       reason,
       notes,
       items,
-      requestedBy: _user.id
+      requestedBy: user.id
     })
 
     return NextResponse.json({ data: transfer }, { status: 201 })

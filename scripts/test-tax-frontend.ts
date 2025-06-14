@@ -2,7 +2,7 @@
 
 import { chromium } from 'playwright'
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🧪 Starting Tax System Frontend Test\n')
   
   const browser = await chromium.launch({ headless: false })

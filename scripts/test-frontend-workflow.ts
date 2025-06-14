@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 
-async function testFrontendWorkflow() {
+async function testFrontendWorkflow(): Promise<void> {
   console.log('🌐 Starting Frontend Workflow Test');
   console.log('==================================\n');
 

@@ -6,19 +6,17 @@ const cancelOrderSchema = z.object({
   reason: z.string().min(1, 'Cancellation reason is required')
 })
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await _request.json()
+    const body = await request.json()
     const { reason } = cancelOrderSchema.parse(body)
     
     const salesOrderService = new SalesOrderService()
-    const salesOrder = await salesOrderService.cancelSalesOrder(params.id, reason, userId)
+    const salesOrder = await salesOrderService.cancelSalesOrder(resolvedParams.id, reason, userId)
     
     return NextResponse.json(salesOrder)
   } catch (error) {

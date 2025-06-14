@@ -7,7 +7,7 @@
 
 import { initializeQuotationExpiryCron } from '@/lib/cron/quotation-expiry'
 
-async function startCronJobs() {
+async function startCronJobs(): Promise<void> {
   console.warn('Starting ERP system cron jobs...')
   
   try {

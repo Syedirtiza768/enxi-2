@@ -5,7 +5,7 @@ import { SalesCaseService } from '@/lib/services/sales-case.service'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {

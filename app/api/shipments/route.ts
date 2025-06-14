@@ -37,7 +37,7 @@ const querySchema = z.object({
   endDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams.entries())
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json()
     const validatedData = createShipmentSchema.parse(body)

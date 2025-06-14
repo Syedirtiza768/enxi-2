@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function fixAuthSystem() {
+async function fixAuthSystem(): Promise<void> {
   console.warn('🔧 Fixing Authentication System\n');
   
   const BASE_URL = 'http://localhost:3000';

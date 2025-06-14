@@ -2,7 +2,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-export async function cleanupDatabase() {
+export async function cleanupDatabase(): Promise<void> {
   // Delete in the correct order to respect foreign key constraints
   const tablesToClean = [
     // Financial/Payment related
@@ -69,11 +69,11 @@ export async function cleanupDatabase() {
   }
 }
 
-export async function setupTestDatabase() {
+export async function setupTestDatabase(): Promise<void> {
   await cleanupDatabase()
 }
 
-export async function teardownTestDatabase() {
+export async function teardownTestDatabase(): Promise<void> {
   await cleanupDatabase()
   await prisma.$disconnect()
 }

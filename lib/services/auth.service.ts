@@ -7,7 +7,11 @@ export class AuthService {
   private jwtSecret: string
 
   constructor() {
-    this.jwtSecret = process.env.JWT_SECRET || 'default-secret'
+    const jwtSecret = process.env.JWT_SECRET
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not configured')
+    }
+    this.jwtSecret = jwtSecret
   }
 
   async validateUser(username: string, password: string): Promise<UserResponse | null> {

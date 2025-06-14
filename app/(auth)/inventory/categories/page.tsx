@@ -7,6 +7,18 @@ import { CategoryForm } from '@/components/inventory/category-form'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
 
+interface CategoryFormData {
+  name: string
+  code: string
+  description: string
+  parentId?: string
+  glAccounts: {
+    inventoryAccount: string
+    cogsAccount: string
+    varianceAccount: string
+  }
+}
+
 
 export default function CategoriesPage() {
   const { user } = useAuth()
@@ -23,7 +35,7 @@ export default function CategoriesPage() {
   const [parentId, setParentId] = useState<string | undefined>()
 
   // Fetch categories
-  const fetchCategories = async () => {
+  const fetchCategories = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)
@@ -33,7 +45,7 @@ export default function CategoriesPage() {
       if (!showInactive) params.append('isActive', 'true')
       params.append('includeChildren', 'true')
 
-      const response = await apiClient(`/api/inventory/categories/tree?${params}`, {
+      const response = await apiClient<{ data: any }>(`/api/inventory/categories/tree?${params}`, {
         method: 'GET'
       })
 
@@ -103,7 +115,7 @@ export default function CategoriesPage() {
   }
 
   // Handle form submission
-  const handleFormSubmit = async (data: Record<string, unknown>) => {
+  const handleFormSubmit = async (data: CategoryFormData) => {
     try {
       const url = formMode === 'create' 
         ? '/api/inventory/categories'

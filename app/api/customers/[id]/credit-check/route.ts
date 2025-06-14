@@ -7,16 +7,13 @@ interface RouteParams {
 }
 
 // GET /api/customers/[id]/credit-check - Perform credit check for customer
-export async function GET(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const customerService = new CustomerService()
     
-    const creditCheck = await customerService.performCreditCheck(params.id)
+    const creditCheck = await customerService.performCreditCheck(id)
 
     return NextResponse.json({
       success: true,

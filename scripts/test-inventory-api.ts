@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:3000/api'
 
-async function testInventoryAPIs() {
+async function testInventoryAPIs(): Promise<void> {
   console.warn('🧪 Testing Inventory APIs...\n')
 
   try {

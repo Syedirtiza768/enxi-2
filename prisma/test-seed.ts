@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-export async function setupTestDatabase() {
+export async function setupTestDatabase(): Promise<void> {
   console.warn('🧪 Setting up test database...')
   
   try {
@@ -17,9 +17,13 @@ export async function setupTestDatabase() {
     
     console.warn('✅ Test database setup completed')
     return { testUser, accounts }
-} catch {}
+  } catch (error) {
+    console.error('Error in setupTestDatabase:', error)
+    throw error
+  }
+}
 
-export async function cleanTestDatabase() {
+export async function cleanTestDatabase(): Promise<void> {
   console.warn('🧹 Cleaning test database...')
   
   // Delete in dependency order to avoid foreign key violations
@@ -44,7 +48,7 @@ export async function cleanTestDatabase() {
   console.warn('✅ Test database cleaned')
 }
 
-async function createTestUser() {
+async function createTestUser(): Promise<T> {
   const hashedPassword = await bcrypt.hash('testpass123', 10)
   
   const testUser = await prisma.user.create({

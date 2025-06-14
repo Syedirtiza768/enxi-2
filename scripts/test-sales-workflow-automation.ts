@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
-async function testSalesWorkflowAutomation() {
+async function testSalesWorkflowAutomation(): Promise<void> {
   console.warn('🚀 Testing Sales Workflow Automation...\n')
 
   try {

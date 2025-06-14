@@ -4,7 +4,7 @@ import { CompanySettingsService } from '@/lib/services/company-settings.service'
 
 const companySettingsService = new CompanySettingsService()
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     console.log('Company settings GET request received')
     let user
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest): Promise<NextResponse> {
   try {
     let user
     try {

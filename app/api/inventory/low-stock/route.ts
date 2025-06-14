@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InventoryService } from '@/lib/services/inventory/inventory.service'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // TODO: Add proper authentication
-    const _userId = 'system' // Replace with actual user authentication
+    const userId = 'system' // Replace with actual user authentication
     
     const inventoryService = new InventoryService()
     const lowStockItems = await inventoryService.getItemsNeedingReorder()

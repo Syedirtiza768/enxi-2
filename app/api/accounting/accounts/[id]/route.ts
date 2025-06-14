@@ -10,15 +10,12 @@ interface RouteParams {
 }
 
 // GET /api/accounting/accounts/[id] - Get specific account
-export async function GET(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const chartOfAccountsService = new ChartOfAccountsService()
-    const account = await chartOfAccountsService.getAccount(params.id)
+    const account = await chartOfAccountsService.getAccount(id)
 
     if (!account) {
       return NextResponse.json(
@@ -38,14 +35,11 @@ export async function GET(
 }
 
 // PUT /api/accounting/accounts/[id] - Update account
-export async function PUT(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
-    const body = await _request.json()
+    const user = await getUserFromRequest(request)
+    const { id } = await params
+    const body = await request.json()
     const { name, description, status } = body
 
     const updateData: Record<string, unknown> = {}
@@ -70,9 +64,9 @@ export async function PUT(
 
     const chartOfAccountsService = new ChartOfAccountsService()
     const account = await chartOfAccountsService.updateAccount(
-      params.id,
+      id,
       updateData,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

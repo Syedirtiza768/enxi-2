@@ -77,12 +77,12 @@ export default function SuppliersPage() {
     fetchSuppliers()
   }, [])
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/suppliers', {
+      const response = await apiClient<{ data: Supplier[]; total?: number } | Supplier[]>('/api/suppliers', {
         method: 'GET'
       })
       
@@ -90,7 +90,8 @@ export default function SuppliersPage() {
         throw new Error('Failed to fetch suppliers')
       }
       
-      const data = response.data?.data || []
+      const responseData = response.data
+      const data = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setSuppliers(data)
       
       // Calculate stats
@@ -131,9 +132,9 @@ export default function SuppliersPage() {
       ACTIVE: { label: 'Active', className: 'bg-green-100 text-green-800' },
       INACTIVE: { label: 'Inactive', className: 'bg-gray-100 text-gray-800' },
       BLOCKED: { label: 'Blocked', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
@@ -200,12 +201,12 @@ export default function SuppliersPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={4} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Suppliers</Text>
-                    <Text size="2xl" weight="bold">{stats.totalSuppliers}</Text>
+                    <Text size="xl" weight="bold">{stats.totalSuppliers}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <Building2 className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -214,12 +215,12 @@ export default function SuppliersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Active Suppliers</Text>
-                    <Text size="2xl" weight="bold">{stats.activeSuppliers}</Text>
+                    <Text size="xl" weight="bold">{stats.activeSuppliers}</Text>
                   </VStack>
                   <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                     <Building2 className="h-6 w-6 text-green-600" />
@@ -228,12 +229,12 @@ export default function SuppliersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Purchase Value</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.totalPurchaseValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -244,12 +245,12 @@ export default function SuppliersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Avg. Payment Terms</Text>
-                    <Text size="2xl" weight="bold">{Math.round(stats.averagePaymentTerm)} days</Text>
+                    <Text size="xl" weight="bold">{Math.round(stats.averagePaymentTerm)} days</Text>
                   </VStack>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
                     <Calendar className="h-6 w-6 text-purple-600" />
@@ -262,7 +263,7 @@ export default function SuppliersPage() {
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -292,7 +293,7 @@ export default function SuppliersPage() {
 
         {/* Suppliers Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Suppliers ({filteredSuppliers.length})</CardTitle>
             </CardHeader>

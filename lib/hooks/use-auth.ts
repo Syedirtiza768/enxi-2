@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // No need to manually set cookie - server handles it
   }
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     // Call logout endpoint to clear server-side session
     try {
       await fetch('/api/auth/logout', {

@@ -4,7 +4,7 @@ import { StockMovementService, CreateStockMovementInput } from '@/lib/services/i
 import { MovementType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/stock-movements - Get stock movements
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -18,8 +18,25 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get('locationId')
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
+    const from = searchParams.get('from')
+    const to = searchParams.get('to')
+    const aggregate = searchParams.get('aggregate')
 
     const stockMovementService = new StockMovementService()
+
+    // Handle date range aggregation for analytics
+    if (aggregate && from && to) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+      
+      const aggregatedData = await stockMovementService.getAggregatedMovements({
+        from: fromDate,
+        to: toDate,
+        groupBy: aggregate as 'daily' | 'weekly' | 'monthly'
+      })
+      
+      return NextResponse.json({ movements: aggregatedData })
+    }
 
     // If itemId is provided, get movements for specific item
     if (itemId) {
@@ -34,11 +51,14 @@ export async function GET(request: NextRequest) {
     // Otherwise, get all movements with filters
     const dateFrom = days && days !== 'all' 
       ? new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000)
-      : undefined
+      : from ? new Date(from) : undefined
+    
+    const dateTo = to ? new Date(to) : undefined
 
     const movements = await stockMovementService.getAllMovements({
       type: type || undefined,
       dateFrom,
+      dateTo,
       locationId: locationId || undefined,
       limit: limit ? parseInt(limit) : 100,
       offset: offset ? parseInt(offset) : 0
@@ -55,7 +75,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/inventory/stock-movements - Create stock movement
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -108,7 +128,7 @@ export async function POST(request: NextRequest) {
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       supplier,
       purchaseRef,
-      createdBy: _user.id
+      createdBy: user.id
     }
 
     const stockMovementService = new StockMovementService()

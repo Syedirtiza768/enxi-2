@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function diagnoseAuthIssue() {
+async function diagnoseAuthIssue(): Promise<unknown> {
   console.warn('🔍 Diagnosing Authentication Issue\n');
   
   const BASE_URL = 'http://localhost:3000';

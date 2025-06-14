@@ -17,7 +17,11 @@ export async function authenticateUser(request: NextRequest): Promise<AuthUser |
     }
 
     const token = authHeader.substring(7)
-    const jwtSecret = process.env.JWT_SECRET || 'test-secret'
+    const jwtSecret = process.env.JWT_SECRET
+    
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET environment variable is not configured')
+    }
     
     const decoded = jwt.verify(token, jwtSecret) as { userId?: string }
     

@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
-async function verifyPort3001Functionality() {
+async function verifyPort3001Functionality(): Promise<void> {
   console.warn('🔍 Verifying User Edit Functionality on Port 3001...\n')
 
   try {

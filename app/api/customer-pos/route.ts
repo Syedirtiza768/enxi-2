@@ -15,9 +15,9 @@ const createCustomerPOSchema = z.object({
 
 const customerPOService = new CustomerPOService()
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(_request.url)
+    const { searchParams } = new URL(request.url)
     
     const filters: unknown = {}
     
@@ -51,12 +51,12 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await _request.json()
+    const body = await request.json()
     const data = createCustomerPOSchema.parse(body)
     
     const customerPO = await customerPOService.createCustomerPO({

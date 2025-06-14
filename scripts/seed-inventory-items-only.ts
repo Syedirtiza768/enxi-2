@@ -7,7 +7,7 @@ function generateItemCode(prefix: string): string {
   return `${prefix}-${random.toString().padStart(4, '0')}`
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting inventory items seeding...')
 
   try {

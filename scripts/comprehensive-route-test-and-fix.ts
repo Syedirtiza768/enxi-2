@@ -35,7 +35,7 @@ interface ComprehensiveTestReport {
   };
 }
 
-async function comprehensiveRouteTestAndFix() {
+async function comprehensiveRouteTestAndFix(): Promise<void> {
   console.warn('🚀 Starting Comprehensive Route Testing and Fixing\n');
   
   const startTime = Date.now();

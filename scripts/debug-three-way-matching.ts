@@ -6,7 +6,7 @@
 
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
-async function testThreeWayMatchingMethods() {
+async function testThreeWayMatchingMethods(): Promise<void> {
   console.log('🔍 Testing ThreeWayMatchingService methods individually...\n')
   
   const service = new ThreeWayMatchingService()
@@ -37,7 +37,7 @@ async function testThreeWayMatchingMethods() {
   }
 }
 
-async function testApiDirectly() {
+async function testApiDirectly(): Promise<void> {
   console.log('\n🌐 Testing API endpoint directly...\n')
   
   try {
@@ -76,7 +76,7 @@ async function testApiDirectly() {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   await testThreeWayMatchingMethods()
   await testApiDirectly()
 }

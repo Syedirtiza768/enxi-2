@@ -93,7 +93,7 @@ export function initializeQuotationExpiryCron() {
 /**
  * Manual execution for testing purposes
  */
-export async function runQuotationExpiryCheck() {
+export async function runQuotationExpiryCheck(): Promise<boolean> {
   console.warn('Running manual quotation expiry check...')
 
   try {

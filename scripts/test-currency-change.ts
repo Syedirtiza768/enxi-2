@@ -4,7 +4,7 @@ import { PrismaClient } from '../lib/generated/prisma/index.js'
 
 const prisma = new PrismaClient()
 
-async function testCurrencyChange() {
+async function testCurrencyChange(): Promise<void> {
   try {
     console.log('🔧 Testing currency change to AED...\n')
 

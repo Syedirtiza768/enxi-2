@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
-async function testUserEditComplete() {
+async function testUserEditComplete(): Promise<void> {
   console.warn('🔧 Testing Complete User Edit System...\n')
 
   try {

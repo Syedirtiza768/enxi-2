@@ -9,11 +9,9 @@ const updateStatusSchema = z.object({
 
 const leadService = new LeadService()
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
@@ -21,7 +19,7 @@ export async function PATCH(
     const { status } = updateStatusSchema.parse(body)
     
     const lead = await leadService.updateLeadStatus(
-      params.id,
+      resolvedParams.id,
       status,
       userId
     )

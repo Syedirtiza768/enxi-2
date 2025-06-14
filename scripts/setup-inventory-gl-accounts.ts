@@ -2,7 +2,7 @@ import { PrismaClient, AccountType } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🏦 Setting up GL accounts for inventory...\n')
 
   try {

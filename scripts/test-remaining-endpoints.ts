@@ -40,7 +40,7 @@ async function testAuthenticatedEndpoint(url: string, description: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🧪 Testing previously failing API endpoints...\n')
   
   const endpoints = [

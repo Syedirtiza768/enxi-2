@@ -23,12 +23,17 @@ export interface CreateQuotationInput {
 }
 
 export interface CreateQuotationItemInput {
+  lineNumber: number // Groups items into lines
+  lineDescription?: string // Description for the line (shown to client)
+  isLineHeader: boolean // First item in each line
+  itemType: 'PRODUCT' | 'SERVICE'
   itemId?: string // Optional link to inventory item
   itemCode: string
   description: string
   internalDescription?: string
   quantity: number
   unitPrice: number
+  unitOfMeasureId?: string
   cost?: number
   discount?: number
   taxRate?: number
@@ -74,27 +79,30 @@ export class QuotationService extends BaseService {
     data: CreateQuotationInput & { createdBy: string }
   ): Promise<QuotationWithDetails> {
     return this.withLogging('createQuotation', async () => {
+      // Validate header fields
+      await this.validateQuotationHeader(data)
 
       // Validate sales case exists and is open
       const salesCase = await this.salesCaseService.getSalesCase(data.salesCaseId)
       if (!salesCase) {
         throw new Error('Sales case not found')
       }
-      if (salesCase.status !== SalesCaseStatus.OPEN) {
-        throw new Error('Can only create quotations for open sales cases')
+      if (salesCase.status !== SalesCaseStatus.OPEN && salesCase.status !== SalesCaseStatus.IN_PROGRESS) {
+        throw new Error('Can only create quotations for open or in-progress sales cases')
       }
 
-      // Validate item references and business rules
+      // Validate and enrich items with line grouping
       await this.validateQuotationItems(data.items)
+      const enrichedItems = await this.enrichQuotationItems(data.items)
 
-      // Check inventory availability
-      const itemsWithAvailability = await this.checkInventoryAvailability(data.items)
+      // Check inventory availability and calculate FIFO costs
+      const itemsWithAvailability = await this.checkInventoryAvailability(enrichedItems)
 
       // Generate quotation number
       const quotationNumber = await this.generateQuotationNumber()
 
       // Calculate totals
-      const calculations = await this.calculateTotals(data.items, salesCase.customer.id)
+      const calculations = await this.calculateTotals(itemsWithAvailability, salesCase.customer.id)
 
       // Create quotation with items in a transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -266,6 +274,19 @@ export class QuotationService extends BaseService {
       throw new Error('Only draft quotations can be updated')
     }
 
+    // Validate header fields if provided
+    if (data.validUntil || data.paymentTerms || data.deliveryTerms || data.notes || data.internalNotes) {
+      await this.validateQuotationHeader({
+        salesCaseId: existingQuotation.salesCaseId,
+        validUntil: data.validUntil || existingQuotation.validUntil,
+        paymentTerms: data.paymentTerms,
+        deliveryTerms: data.deliveryTerms,
+        notes: data.notes,
+        internalNotes: data.internalNotes,
+        items: [] // Items validated separately
+      })
+    }
+
     // Validate items if provided
     if (data.items) {
       await this.validateQuotationItems(data.items)
@@ -291,7 +312,7 @@ export class QuotationService extends BaseService {
       }
 
       // Pre-calculate item totals if items are provided
-      let itemTotalsArray: any[] = []
+      let itemTotalsArray: Awaited<ReturnType<typeof this.calculateItemTotals>>[] = []
       if (data.items) {
         itemTotalsArray = await Promise.all(
           data.items.map(item => this.calculateItemTotals(item, customerId))
@@ -361,16 +382,36 @@ export class QuotationService extends BaseService {
       throw new Error('Quotation not found')
     }
 
+    // Group items by line number for client view
+    const lineGroups = new Map<number, any[]>()
+    
+    quotation.items.forEach(item => {
+      if (!lineGroups.has(item.lineNumber)) {
+        lineGroups.set(item.lineNumber, [])
+      }
+      lineGroups.get(item.lineNumber)?.push(item)
+    })
+
+    // Create client-friendly line structure
+    const clientLines = Array.from(lineGroups.entries()).map(([lineNumber, items]) => {
+      const lineHeader = items.find(item => item.isLineHeader)
+      const lineTotal = items.reduce((sum, item) => sum + item.totalAmount, 0)
+      
+      return {
+        lineNumber,
+        lineDescription: lineHeader?.lineDescription || '',
+        quantity: lineHeader?.quantity || 1,
+        totalAmount: lineTotal,
+        // Don't show individual items or internal details
+      }
+    })
+
     // Remove internal fields from quotation
     const clientQuotation = {
       ...quotation,
       internalNotes: undefined,
-      items: quotation.items.map(item => ({
-        ...item,
-        cost: undefined,
-        internalDescription: undefined,
-        margin: undefined
-      }))
+      lines: clientLines,
+      items: undefined // Remove detailed items from client view
     }
 
     return clientQuotation
@@ -757,17 +798,55 @@ export class QuotationService extends BaseService {
     }
   }
 
-  private async checkInventoryAvailability(items: CreateQuotationItemInput[]): Promise<(CreateQuotationItemInput & { availabilityStatus?: string; availableQuantity?: number })[]> {
+  private async enrichQuotationItems(items: CreateQuotationItemInput[]): Promise<CreateQuotationItemInput[]> {
     const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
     const itemService = new ItemService()
+
+    const enrichedItems = []
+
+    for (const item of items) {
+      let enrichedItem = { ...item }
+
+      if (item.itemId) {
+        try {
+          // Get item details
+          const itemData = await itemService.getItem(item.itemId)
+          if (itemData) {
+            // Use item master data if not provided
+            enrichedItem.itemCode = item.itemCode || itemData.code
+            enrichedItem.description = item.description || itemData.name
+            enrichedItem.unitOfMeasureId = item.unitOfMeasureId || itemData.unitOfMeasureId
+            
+            // Set default cost from standard cost if not provided
+            if (!enrichedItem.cost && itemData.standardCost) {
+              enrichedItem.cost = itemData.standardCost
+            }
+          }
+        } catch (error) {
+          console.error('Error enriching item:', error)
+        }
+      }
+
+      enrichedItems.push(enrichedItem)
+    }
+
+    return enrichedItems
+  }
+
+  private async checkInventoryAvailability(items: CreateQuotationItemInput[]): Promise<(CreateQuotationItemInput & { availabilityStatus?: string; availableQuantity?: number; fifoCost?: number })[]> {
+    const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
+    const InventoryService = await import('./inventory/inventory.service').then(m => m.InventoryService)
+    const itemService = new ItemService()
+    const inventoryService = new InventoryService()
 
     const itemsWithAvailability = []
 
     for (const item of items) {
       let availabilityStatus: string | undefined
       let availableQuantity: number | undefined
+      let fifoCost: number | undefined
 
-      if (item.itemId) {
+      if (item.itemId && item.itemType === 'PRODUCT') {
         try {
           // Get current stock for the item
           const stockSummary = await itemService.getItemStockSummary(item.itemId)
@@ -777,62 +856,208 @@ export class QuotationService extends BaseService {
             
             if (item.quantity <= stockSummary.availableStock) {
               availabilityStatus = 'IN_STOCK'
+              
+              // Calculate FIFO cost for products
+              try {
+                const fifoCostData = await inventoryService.calculateFIFOCost(item.itemId, item.quantity)
+                fifoCost = fifoCostData.averageCost
+              } catch (error) {
+                // Use standard cost if FIFO calculation fails
+                console.error('FIFO calculation failed, using standard cost:', error)
+              }
             } else {
               availabilityStatus = 'INSUFFICIENT_STOCK'
             }
           } else {
-            // Service items or items without stock tracking
-            const itemData = await itemService.getItem(item.itemId)
-            if (itemData && !itemData.trackInventory) {
-              availabilityStatus = 'IN_STOCK' // Services are always available
-              availableQuantity = 0
-            } else {
-              availabilityStatus = 'OUT_OF_STOCK'
-              availableQuantity = 0
-            }
+            availabilityStatus = 'OUT_OF_STOCK'
+            availableQuantity = 0
           }
         } catch (error) {
           console.error('Error checking item availability:', error);
         }
+      } else if (item.itemType === 'SERVICE') {
+        // Services are always available
+        availabilityStatus = 'IN_STOCK'
+        availableQuantity = undefined
       }
 
       itemsWithAvailability.push({
         ...item,
         ...(availabilityStatus && { availabilityStatus }),
-        ...(availableQuantity !== undefined && { availableQuantity })
+        ...(availableQuantity !== undefined && { availableQuantity }),
+        ...(fifoCost !== undefined && { cost: fifoCost }) // Update cost with FIFO cost
       })
     }
 
     return itemsWithAvailability
   }
 
+  private async validateQuotationHeader(data: CreateQuotationInput): Promise<void> {
+    // Validate salesCaseId
+    if (!data.salesCaseId) {
+      throw new Error('Sales case ID is required')
+    }
+    
+    // Validate validUntil date
+    if (!data.validUntil) {
+      throw new Error('Valid until date is required')
+    }
+    
+    const validUntilDate = new Date(data.validUntil)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    if (validUntilDate <= today) {
+      throw new Error('Valid until date must be in the future')
+    }
+    
+    // Maximum 180 days in future
+    const maxDate = new Date()
+    maxDate.setDate(maxDate.getDate() + 180)
+    if (validUntilDate > maxDate) {
+      throw new Error('Valid until date should not be more than 6 months in the future')
+    }
+    
+    // Validate payment terms
+    if (data.paymentTerms && data.paymentTerms.length > 100) {
+      throw new Error('Payment terms must be 100 characters or less')
+    }
+    
+    // Validate delivery terms
+    if (data.deliveryTerms && data.deliveryTerms.length > 200) {
+      throw new Error('Delivery terms must be 200 characters or less')
+    }
+    
+    // Validate notes
+    if (data.notes && data.notes.length > 1000) {
+      throw new Error('Notes must be 1000 characters or less')
+    }
+    
+    // Validate internal notes
+    if (data.internalNotes && data.internalNotes.length > 1000) {
+      throw new Error('Internal notes must be 1000 characters or less')
+    }
+  }
+
   private async validateQuotationItems(items: CreateQuotationItemInput[]): Promise<void> {
-    for (const item of items) {
+    if (!items || items.length === 0) {
+      throw new Error('At least one quotation item is required')
+    }
+
+    // Track item codes for duplicate checking
+    const itemCodes = new Map<string, number>()
+    
+    for (const [index, item] of items.entries()) {
+      const lineContext = `Line ${item.lineNumber}, Item ${index + 1}`
+      
+      // Validate item code
+      if (!item.itemCode || item.itemCode.trim().length === 0) {
+        throw new Error(`${lineContext}: Item code is required`)
+      }
+      if (item.itemCode.length > 50) {
+        throw new Error(`${lineContext}: Item code must be 50 characters or less`)
+      }
+      
+      // Check for duplicate item codes within same line
+      const codeKey = `${item.lineNumber}-${item.itemCode.toLowerCase().trim()}`
+      if (itemCodes.has(codeKey)) {
+        throw new Error(`${lineContext}: Duplicate item code "${item.itemCode}" found in line ${item.lineNumber}`)
+      }
+      itemCodes.set(codeKey, index)
+      
+      // Validate description
+      if (!item.description || item.description.trim().length === 0) {
+        throw new Error(`${lineContext}: Description is required`)
+      }
+      if (item.description.length > 500) {
+        throw new Error(`${lineContext}: Description must be 500 characters or less`)
+      }
+      
+      // Validate line description
+      if (item.lineDescription && item.lineDescription.length > 200) {
+        throw new Error(`${lineContext}: Line description must be 200 characters or less`)
+      }
+      
+      // Validate internal description
+      if (item.internalDescription && item.internalDescription.length > 1000) {
+        throw new Error(`${lineContext}: Internal description must be 1000 characters or less`)
+      }
+      
       // Validate item reference exists if provided
       if (item.itemId) {
         const itemExists = await prisma.item.findUnique({
           where: { id: item.itemId }
         })
         if (!itemExists) {
-          throw new Error('Item not found')
+          throw new Error(`${lineContext}: Referenced inventory item not found`)
         }
       }
 
       // Validate business rules
-      if (item.quantity <= 0) {
-        throw new Error('Quantity must be positive')
+      if (!item.quantity || item.quantity <= 0) {
+        throw new Error(`${lineContext}: Quantity must be greater than 0`)
+      }
+      if (item.quantity > 999999) {
+        throw new Error(`${lineContext}: Quantity must be less than 1,000,000`)
+      }
+      if (!Number.isFinite(item.quantity)) {
+        throw new Error(`${lineContext}: Quantity must be a valid number`)
       }
 
       if (item.unitPrice < 0) {
-        throw new Error('Unit price cannot be negative')
+        throw new Error(`${lineContext}: Unit price cannot be negative`)
+      }
+      if (item.unitPrice > 9999999.99) {
+        throw new Error(`${lineContext}: Unit price must be less than 10,000,000`)
+      }
+      if (!Number.isFinite(item.unitPrice)) {
+        throw new Error(`${lineContext}: Unit price must be a valid number`)
       }
 
-      if (item.discount && (item.discount < 0 || item.discount > 100)) {
-        throw new Error('Discount cannot exceed 100%')
+      if (item.discount !== undefined && item.discount !== null) {
+        if (item.discount < 0 || item.discount > 100) {
+          throw new Error(`${lineContext}: Discount must be between 0% and 100%`)
+        }
+        if (!Number.isFinite(item.discount)) {
+          throw new Error(`${lineContext}: Discount must be a valid number`)
+        }
       }
 
-      if (item.taxRate && item.taxRate < 0) {
-        throw new Error('Tax rate cannot be negative')
+      if (item.taxRate !== undefined && item.taxRate !== null) {
+        if (item.taxRate < 0 || item.taxRate > 100) {
+          throw new Error(`${lineContext}: Tax rate must be between 0% and 100%`)
+        }
+        if (!Number.isFinite(item.taxRate)) {
+          throw new Error(`${lineContext}: Tax rate must be a valid number`)
+        }
+      }
+      
+      if (item.cost !== undefined && item.cost !== null) {
+        if (item.cost < 0) {
+          throw new Error(`${lineContext}: Cost cannot be negative`)
+        }
+        if (item.cost > 9999999.99) {
+          throw new Error(`${lineContext}: Cost must be less than 10,000,000`)
+        }
+        if (!Number.isFinite(item.cost)) {
+          throw new Error(`${lineContext}: Cost must be a valid number`)
+        }
+        
+        // Business rule: Check margin if selling below cost
+        if (item.cost > 0 && item.unitPrice > 0) {
+          const margin = ((item.unitPrice - item.cost) / item.unitPrice) * 100
+          if (margin < -100) {
+            throw new Error(`${lineContext}: Selling price is significantly below cost`)
+          }
+        }
+      }
+      
+      // Validate tax rate reference if provided
+      if (item.taxRateId) {
+        const taxRateExists = await taxService.getActiveTaxRates()
+        if (!taxRateExists.some(tr => tr.id === item.taxRateId)) {
+          throw new Error(`${lineContext}: Invalid tax rate reference`)
+        }
       }
     }
   }

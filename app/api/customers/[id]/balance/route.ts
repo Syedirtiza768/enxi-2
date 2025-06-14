@@ -7,16 +7,13 @@ interface RouteParams {
 }
 
 // GET /api/customers/[id]/balance - Get customer balance and credit status
-export async function GET(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const customerService = new CustomerService()
     
-    const balanceInfo = await customerService.getCustomerBalance(params.id)
+    const balanceInfo = await customerService.getCustomerBalance(id)
 
     return NextResponse.json({
       success: true,

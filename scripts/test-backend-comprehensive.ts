@@ -121,7 +121,7 @@ async function apiCall(endpoint: string, options: any = {}) {
   }
 }
 
-async function testBackendComprehensive() {
+async function testBackendComprehensive(): Promise<void> {
   console.log('🚀 Starting Comprehensive Backend Test Suite\n')
   console.log('📊 Expected totals from quotation:')
   console.log(`   Subtotal: AED ${EXPECTED_TOTALS.subtotal.toFixed(2)}`)

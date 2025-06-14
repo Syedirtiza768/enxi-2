@@ -7,20 +7,17 @@ interface RouteParams {
 }
 
 // POST /api/leads/[id]/convert - Convert lead to customer
-export async function POST(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const customerService = new CustomerService()
     const customer = await customerService.convertLeadToCustomer(
-      params.id,
+      id,
       body,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

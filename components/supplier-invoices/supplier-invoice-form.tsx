@@ -167,9 +167,9 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }, [formData.invoiceDate, selectedSupplier?.paymentTerms])
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/suppliers', { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>('/api/suppliers', { method: 'GET' })
       if (response.ok) {
         setSuppliers(response.data?.data || [])
       }
@@ -180,7 +180,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
 
   const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
-      const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>(`/api/suppliers/${supplierId}`, { method: 'GET' })
       if (response.ok) {
         const supplier = response.data
         setSelectedSupplier(supplier)
@@ -200,7 +200,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
 
   const fetchGoodsReceipts = async (supplierId: string) => {
     try {
-      const response = await apiClient(`/api/goods-receipts?supplierId=${supplierId}&status=RECEIVED`, { method: 'GET' })
+      const response = await apiClient<{ data: any }>(`/api/goods-receipts?supplierId=${supplierId}&status=RECEIVED`, { method: 'GET' })
       if (response.ok) {
         setGoodsReceipts(response.data?.data || [])
       }
@@ -209,7 +209,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (): Promise<number> => {
     try {
       const [expenseResponse, taxResponse] = await Promise.all([
         apiClient('/api/accounting/accounts?type=EXPENSE', { method: 'GET' }),
@@ -323,13 +323,13 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       const url = supplierInvoice ? `/api/supplier-invoices/${supplierInvoice.id}` : '/api/supplier-invoices'
       const method = supplierInvoice ? 'PUT' : 'POST'
 
-      const response = await apiClient(url, {
+      const response = await apiClient<{ data: any }>(url, {
         method,
         body: JSON.stringify(formData)
       })
 
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to save supplier invoice')
+        throw new Error(response.error || 'Failed to save supplier invoice')
       }
 
       if (onSuccess) {
@@ -393,7 +393,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                     />
                     <Select
                       value={formData.supplierId}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, supplierId: value }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, supplierId: e.target.value }))}
                       required
                     >
                       <option value="">Select supplier...</option>
@@ -410,7 +410,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                   <Text size="sm" weight="medium">Currency</Text>
                   <Select
                     value={formData.currency}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                     required
                   >
                     <option value="USD">USD</option>
@@ -460,7 +460,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                   <Text size="sm" weight="medium">Tax Account</Text>
                   <Select
                     value={formData.taxAccountId || ''}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, taxAccountId: value || undefined }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, taxAccountId: e.target.value || undefined }))}
                   >
                     <option value="">No tax account</option>
                     {(taxAccounts || []).map(account => (
@@ -649,7 +649,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                         <TableCell>
                           <Select
                             value={item.accountId}
-                            onValueChange={(value) => updateItem(index, 'accountId', value)}
+                            onChange={(e) => updateItem(index, 'accountId', e.target.value)}
                             required
                           >
                             <option value="">Select account...</option>

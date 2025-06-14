@@ -117,7 +117,7 @@ async function healthHandler(request: NextRequest) {
 export const GET = withUniversalErrorHandling(healthHandler, '/api/system/health', { operation: 'GET health' })
 
 // Simple health check endpoint
-export async function HEAD(_request: NextRequest) {
+export async function HEAD(request: NextRequest) {
   try {
     const systemHealth = routeHealthMonitor.getSystemHealthSummary();
     const status = systemHealth.overallStatus === 'unhealthy' ? 503 : 200;

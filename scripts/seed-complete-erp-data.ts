@@ -16,7 +16,7 @@ const prisma = new PrismaClient()
 const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Complete ERP Data Seed...\n')
 
   try {
@@ -102,7 +102,7 @@ async function main() {
     }
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<Account> {
   console.warn('🧹 Cleaning database...')
   
   // Delete in correct order to respect foreign key constraints
@@ -137,7 +137,7 @@ async function cleanDatabase() {
     console.warn('✅ Database cleaned')
 } catch {}
 
-async function createUsers() {
+async function createUsers(): Promise<T> {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
   const [admin, sales, accountant, warehouse] = await Promise.all([
@@ -1698,7 +1698,7 @@ async function createExchangeRates(adminId: string) {
   ])
 }
 
-async function printSummary() {
+async function printSummary(): Promise<void> {
   console.warn('\n' + '='.repeat(60))
   console.warn('📊 SEED DATA SUMMARY')
   console.warn('='.repeat(60))

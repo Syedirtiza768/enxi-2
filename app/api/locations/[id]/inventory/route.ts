@@ -3,24 +3,18 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { LocationService } from '@/lib/services/warehouse/location.service'
 import { InventoryBalanceService } from '@/lib/services/warehouse/inventory-balance.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // GET /api/locations/[id]/inventory - Get location inventory
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = _request.nextUrl.searchParams
+    const searchParams = request.nextUrl.searchParams
     const itemId = searchParams.get('itemId')
     const hasStock = searchParams.get('hasStock')
     const lowStock = searchParams.get('lowStock')
@@ -32,7 +26,7 @@ export async function GET(
     const inventoryBalanceService = new InventoryBalanceService()
 
     // Check if location exists
-    const location = await locationService.getLocation(params.id)
+    const location = await locationService.getLocation(resolvedParams.id)
     if (!location) {
       return NextResponse.json(
         { error: 'Location not found' },
@@ -42,8 +36,8 @@ export async function GET(
 
     if (summary === 'true') {
       // Return location inventory summary
-      const inventorySummary = await locationService.getLocationInventorySummary(params.id)
-      const stockSummary = await inventoryBalanceService.getLocationStockSummary(params.id)
+      const inventorySummary = await locationService.getLocationInventorySummary(resolvedParams.id)
+      const stockSummary = await inventoryBalanceService.getLocationStockSummary(resolvedParams.id)
       
       return NextResponse.json({ 
         data: {
@@ -53,7 +47,7 @@ export async function GET(
       })
     } else {
       // Return detailed inventory
-      const inventory = await locationService.getLocationInventory(params.id, {
+      const inventory = await locationService.getLocationInventory(resolvedParams.id, {
         itemId: itemId || undefined,
         hasStock: hasStock ? hasStock === 'true' : undefined,
         lowStock: lowStock ? lowStock === 'true' : undefined,

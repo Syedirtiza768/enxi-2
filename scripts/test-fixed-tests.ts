@@ -48,7 +48,7 @@ async function runTest(test: typeof testsToRun[0]): Promise<TestResult> {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🔧 Running Fixed Tests\n')
   console.log('This script will test the specific fixes applied to the test suite.\n')
 

@@ -35,7 +35,7 @@ export default function InventoryPage() {
 
   useEffect(() => {
     // Fetch inventory statistics
-    const fetchStats = async () => {
+    const fetchStats = async (): Promise<void> => {
       try {
         // For now, using mock data until APIs are implemented
         setStats({

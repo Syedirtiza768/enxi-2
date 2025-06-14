@@ -54,7 +54,8 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
       const customerResponse = await apiClient(`/api/customers/${customerId}`, { method: 'GET' })
       
       if (customerResponse.ok && customerResponse.data) {
-        setCustomer(customerResponse.data.data || customerResponse.data)
+        const responseData = customerResponse.data
+        setCustomer(Array.isArray(responseData) ? responseData[0] : (responseData.data || responseData))
       }
       
       // TODO: Load transactions when the endpoint is implemented

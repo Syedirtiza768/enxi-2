@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeft, Package, FileText, CheckCircle, XCircle, 
-  Truck, Edit, Calendar, MapPin, CreditCard, Clock
+  Truck, Edit, Calendar, MapPin, CreditCard, Clock, History
 } from 'lucide-react'
+import { OrderTimeline } from '@/components/sales-orders/order-timeline'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SalesOrderItem {
   id: string
@@ -64,9 +66,8 @@ interface SalesOrder {
 }
 
 export default function SalesOrderDetailPage() {
-  
   const { formatCurrency } = useCurrency()
-const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const params = useParams()
   const orderId = params.id as string
 
@@ -74,10 +75,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [timeline, setTimeline] = useState<any[]>([])
+  const [showTimeline, setShowTimeline] = useState(false)
 
   // Fetch sales order details
   useEffect(() => {
-    const fetchOrder = async () => {
+    const fetchOrder = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -92,6 +95,62 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         const data = await response.json()
         setOrder(data)
+        
+        // Generate timeline events (in a real app, this would come from the backend)
+        const events = []
+        
+        // Order created
+        events.push({
+          id: '1',
+          type: 'created',
+          timestamp: data.createdAt,
+          description: 'Sales order created',
+          user: { name: 'System', email: 'system@enxi.com' }
+        })
+        
+        // Status changes
+        if (data.approvedAt) {
+          events.push({
+            id: '2',
+            type: 'approved',
+            timestamp: data.approvedAt,
+            description: 'Sales order approved',
+            user: { name: 'Manager', email: 'manager@enxi.com' }
+          })
+        }
+        
+        if (data.shippedAt) {
+          events.push({
+            id: '3',
+            type: 'shipped',
+            timestamp: data.shippedAt,
+            description: 'Order shipped',
+            metadata: data.trackingNumber ? { 'Tracking Number': data.trackingNumber } : undefined
+          })
+        }
+        
+        if (data.deliveredAt) {
+          events.push({
+            id: '4',
+            type: 'delivered',
+            timestamp: data.deliveredAt,
+            description: 'Order delivered'
+          })
+        }
+        
+        if (data.cancelledAt) {
+          events.push({
+            id: '5',
+            type: 'cancelled',
+            timestamp: data.cancelledAt,
+            description: 'Order cancelled',
+            metadata: data.cancelReason ? { 'Reason': data.cancelReason } : undefined
+          })
+        }
+        
+        // Sort by timestamp descending
+        events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        setTimeline(events)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load sales order')
         console.error('Error fetching sales order:', err)
@@ -105,7 +164,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }, [orderId])
 
-  const handleApprove = async () => {
+  const handleApprove = async (): Promise<unknown> => {
     if (!confirm('Are you sure you want to approve this sales order?')) {
       return
     }
@@ -130,7 +189,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleStartProcessing = async () => {
+  const handleStartProcessing = async (): Promise<unknown> => {
     if (!confirm('Start processing this order? This will begin fulfillment.')) {
       return
     }
@@ -155,7 +214,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleMarkShipped = async () => {
+  const handleMarkShipped = async (): Promise<unknown> => {
     if (!confirm('Mark this order as shipped? This will update the delivery status.')) {
       return
     }
@@ -186,7 +245,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleMarkDelivered = async () => {
+  const handleMarkDelivered = async (): Promise<unknown> => {
     if (!confirm('Mark this order as delivered? This will complete the order.')) {
       return
     }
@@ -211,7 +270,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleCancel = async () => {
+  const handleCancel = async (): Promise<unknown> => {
     const reason = prompt('Please provide a reason for cancelling this order:')
     if (!reason) {
       return
@@ -242,7 +301,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleCreateInvoice = async () => {
+  const handleCreateInvoice = async (): Promise<void> => {
     if (!confirm('Create an invoice from this sales order?')) {
       return
     }
@@ -293,9 +352,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
       COMPLETED: { text: 'Completed', className: 'bg-green-100 text-green-800' },
       CANCELLED: { text: 'Cancelled', className: 'bg-red-100 text-red-800' },
       ON_HOLD: { text: 'On Hold', className: 'bg-orange-100 text-orange-800' }
-    }
+    } as const
 
-    const config = statusConfig[status] || { text: status, className: 'bg-gray-100 text-gray-800' }
+    const config = statusConfig[status as keyof typeof statusConfig] || { text: status, className: 'bg-gray-100 text-gray-800' }
     return (
       <span className={`inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full ${config.className}`}>
         {getStatusIcon(status)}
@@ -383,6 +442,14 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
+          {/* Timeline Button */}
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          >
+            <History className="h-4 w-4 mr-2" />
+            {showTimeline ? 'Hide Timeline' : 'Show Timeline'}
+          </button>
           {/* PENDING Status Actions */}
           {order.status === 'PENDING' && (
             <>
@@ -500,6 +567,17 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           )}
         </div>
       </div>
+
+      {/* Order Timeline */}
+      {showTimeline && (
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <History className="h-5 w-5 mr-2" />
+            Order Timeline
+          </h2>
+          <OrderTimeline events={timeline} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}

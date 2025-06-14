@@ -27,7 +27,7 @@ import {
 } from "@/lib/generated/prisma";
 
 // Simple helper to create users with hashed password
-async function createUsers() {
+async function createUsers(): Promise<T> {
   const password = await bcrypt.hash("demo123", 10);
   const admin = await prisma.user.create({
     data: {
@@ -72,7 +72,7 @@ async function createUsers() {
   return { admin, sales, accountant, warehouse };
 }
 
-async function createPermissions() {
+async function createPermissions(): Promise<T> {
   const perms = await Promise.all([
     prisma.permission.create({
       data: {
@@ -609,7 +609,7 @@ async function updateProfitability(sc: any, inv: any) {
   await logAction(sc.createdBy, "SalesCase", sc.id, "UPDATE");
 }
 
-async function main() {
+async function main(): Promise<void> {
   await prisma.$transaction([
     prisma.rolePermission.deleteMany(),
     prisma.permission.deleteMany(),

@@ -7,13 +7,10 @@ interface RouteParams {
 }
 
 // PUT /api/sales-cases/[id]/assign - Assign sales case to user
-export async function PUT(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const { assignedTo } = body
@@ -27,9 +24,9 @@ export async function PUT(
 
     const salesCaseService = new SalesCaseService()
     const salesCase = await salesCaseService.assignSalesCase(
-      params.id,
+      id,
       assignedTo,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

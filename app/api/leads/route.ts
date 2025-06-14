@@ -8,8 +8,8 @@ const postHandler = async (request: NextRequest) => {
   console.warn('[API] Lead POST handler started')
   
   // Authenticate user
-  const _user = await getUserFromRequest(request)
-  console.warn('[API] Authenticated user:', _user.id)
+  const user = await getUserFromRequest(request)
+  console.warn('[API] Authenticated user:', user.id)
   
   // Parse and validate request body
   const body = await request.json()
@@ -20,7 +20,7 @@ const postHandler = async (request: NextRequest) => {
   
   // Create lead
   const leadService = new LeadService()
-  const lead = await leadService.createLead(validatedData, _user.id)
+  const lead = await leadService.createLead(validatedData, user.id)
   
   return NextResponse.json(lead, { status: 201 })
 }
@@ -29,9 +29,9 @@ export const POST = withUniversalErrorHandling(postHandler, '/api/leads', { oper
 
 const getHandler = async (request: NextRequest) => {
   // Try to authenticate user but don't fail hard
-  let _user
+  let user
   try {
-    _user = await getUserFromRequest(request)
+    user = await getUserFromRequest(request)
   } catch (authError) {
     console.warn('Auth check failed in leads route', {
       error: authError instanceof Error ? authError.message : 'Unknown auth error'
@@ -41,6 +41,16 @@ const getHandler = async (request: NextRequest) => {
   
   // Parse query parameters
   const { searchParams } = new URL(request.url)
+  const email = searchParams.get('email')
+  
+  // If email is provided, search for leads by email
+  if (email) {
+    const leadService = new LeadService()
+    const leads = await leadService.findByEmail(email)
+    return NextResponse.json(leads)
+  }
+  
+  // Otherwise, get paginated leads
   const queryData = {
     page: parseInt(searchParams.get('page') || '1'),
     limit: parseInt(searchParams.get('limit') || '10'),

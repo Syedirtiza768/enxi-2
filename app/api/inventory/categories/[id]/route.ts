@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { CategoryService, UpdateCategoryInput } from '@/lib/services/inventory/category.service'
 
-type RouteParams = {
-  params: Promise<{
-    id: string
-  }>
-}
+
 
 // GET /api/inventory/categories/[id] - Get single category
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -38,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 // PUT /api/inventory/categories/[id] - Update category
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -46,7 +42,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const body = await _request.json()
+    const body = await request.json()
     const { code, name, description, parentId, isActive } = body
 
     const updateData: UpdateCategoryInput = {}
@@ -60,7 +56,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const category = await categoryService.updateCategory(
       id,
       updateData,
-      _user.id
+      user.id
     )
 
     return NextResponse.json(category)
@@ -92,7 +88,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/inventory/categories/[id] - Delete category
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -101,7 +97,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
     const categoryService = new CategoryService()
-    await categoryService.deleteCategory(id, _user.id)
+    await categoryService.deleteCategory(id, user.id)
 
     return NextResponse.json({ message: 'Category deleted successfully' })
   } catch (error: unknown) {

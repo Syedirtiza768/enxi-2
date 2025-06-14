@@ -4,7 +4,7 @@ import { prisma } from '../lib/db/prisma'
 import { Role } from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 
-async function createManagerUser() {
+async function createManagerUser(): Promise<void> {
   console.warn('👥 Creating manager user for sales team demo...\n')
   
   try {

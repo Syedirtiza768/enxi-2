@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { TaxType } from '@/lib/generated/prisma'
 
-async function seedTaxConfiguration() {
+async function seedTaxConfiguration(): Promise<User> {
   console.log('🌱 Starting tax configuration seed...')
 
   try {

@@ -3,7 +3,7 @@
 
 import { prisma } from '../lib/db/prisma'
 
-async function testUIBackendIntegration() {
+async function testUIBackendIntegration(): Promise<void> {
   console.warn('🔧 Testing Complete UI-Backend Integration...\n')
   
   try {

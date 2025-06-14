@@ -16,7 +16,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function seedComprehensiveAccounting() {
+async function seedComprehensiveAccounting(): Promise<number> {
   console.warn('🏦 Starting Comprehensive Accounting Data Seeding...\n')
 
   try {

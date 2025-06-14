@@ -25,7 +25,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 // UAE Diesel Engine Maintenance Company Seed Data
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting UAE Diesel Engine Maintenance Company seed...')
 
   // Clean existing data
@@ -196,7 +196,7 @@ async function main() {
   console.warn('Warehouse: username: warehouse, password: DieselUAE2024!')
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<void> {
   try {
     // Delete in correct order to respect foreign keys
     // Helper function to safely delete if model exists
@@ -266,7 +266,7 @@ async function cleanDatabase() {
   }
 }
 
-async function createUsers() {
+async function createUsers(): Promise<T> {
   const hashedPassword = await bcrypt.hash('DieselUAE2024!', 10)
 
   const admin = await prisma.user.upsert({

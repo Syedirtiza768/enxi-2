@@ -2,7 +2,7 @@ import { PrismaClient, LeadStatus, LeadSource, SalesCaseStatus, QuotationStatus,
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<unknown> {
   console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {

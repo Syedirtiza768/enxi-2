@@ -168,7 +168,7 @@ export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFo
         }))
       };
 
-      const response = await apiClient('/api/quotations', {
+      const response = await apiClient<{ data: any[] }>('/api/quotations', {
         method: 'POST',
         body: JSON.stringify(quotationData)
       });
@@ -445,13 +445,13 @@ export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFo
                       <div className="text-sm text-gray-600">
                         <div className="flex justify-between">
                           <span>Total Cost</span>
-                          <span>AED {formData.items.reduce((sum, item) => sum + (item.cost * item.quantity), 0).toFixed(2)}</span>
+                          <span>AED {formData.items.reduce((sum, item) => sum + (Number(item.cost || 0) * Number(item.quantity || 0)), 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between mt-1">
                           <span>Gross Margin</span>
                           <span className="font-medium">
                             {totals.total > 0 
-                              ? `${(((totals.total - formData.items.reduce((sum, item) => sum + (item.cost * item.quantity), 0)) / totals.total) * 100).toFixed(1)}%`
+                              ? `${(((totals.total - formData.items.reduce((sum, item) => sum + (Number(item.cost || 0) * Number(item.quantity || 0)), 0)) / totals.total) * 100).toFixed(1)}%`
                               : '0%'
                             }
                           </span>

@@ -20,7 +20,7 @@ async function logResult(step: string, status: 'success' | 'failed', details?: a
   if (error) console.log('Error:', error);
 }
 
-async function testCompleteWorkflow() {
+async function testCompleteWorkflow(): Promise<void> {
   console.log('🚀 Starting Complete Workflow Test - Based on Quotation SRV-01-NM-0525');
   console.log('================================================\n');
 

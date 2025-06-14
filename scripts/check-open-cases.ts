@@ -2,7 +2,7 @@ import { PrismaClient, SalesCaseStatus } from '../lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
-async function checkSalesCases() {
+async function checkSalesCases(): Promise<boolean> {
   try {
     const openCases = await prisma.salesCase.findMany({
       where: { status: SalesCaseStatus.OPEN },

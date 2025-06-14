@@ -2,7 +2,7 @@
 
 import { prisma } from '../lib/db/prisma'
 
-async function testQuotationFunctionality() {
+async function testQuotationFunctionality(): Promise<void> {
   console.log('🧪 Testing Quotation Functionality\n')
 
   try {

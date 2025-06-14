@@ -72,7 +72,7 @@ export default function InvoicesPage() {
   const [_selectedInvoiceForPayment, _setSelectedInvoiceForPayment] = useState<string | null>(null)
 
   // Fetch invoices from API
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)
@@ -89,7 +89,7 @@ export default function InvoicesPage() {
       if (dateRangeFilter) params.append('dateRange', dateRangeFilter)
       if (overdueOnly) params.append('overdue', 'true')
 
-      const response = await apiClient(`/api/invoices?${params}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/invoices?${params}`, {
         method: 'GET'
       })
 
@@ -110,9 +110,9 @@ export default function InvoicesPage() {
   }
 
   // Fetch customers for filter
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/customers', {
+      const response = await apiClient<{ data: Customer[] }>('/api/customers', {
         method: 'GET'
       })
       if (response.ok) {
@@ -157,9 +157,9 @@ export default function InvoicesPage() {
       OVERDUE: { text: 'Overdue', className: 'bg-red-100 text-red-800' },
       CANCELLED: { text: 'Cancelled', className: 'bg-gray-100 text-gray-800' },
       REFUNDED: { text: 'Refunded', className: 'bg-purple-100 text-purple-800' }
-    }
+    } as const
 
-    const config = statusConfig[status]
+    const config = statusConfig[status as keyof typeof statusConfig]
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
         {config.text}
@@ -173,8 +173,8 @@ export default function InvoicesPage() {
       CREDIT_NOTE: 'Credit Note',
       DEBIT_NOTE: 'Debit Note',
       PROFORMA: 'Proforma'
-    }
-    return typeLabels[type]
+    } as const
+    return typeLabels[type as keyof typeof typeLabels]
   }
 
   // Event handlers

@@ -17,11 +17,9 @@ const updateExpenseSchema = z.object({
 
 const salesCaseService = new SalesCaseService()
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
@@ -33,7 +31,7 @@ export async function PATCH(
       updateData.expenseDate = new Date(data.expenseDate)
     }
     
-    const expense = await salesCaseService.updateExpense(params.id, updateData)
+    const expense = await salesCaseService.updateExpense(resolvedParams.id, updateData)
     
     return NextResponse.json(expense)
   } catch (error) {
@@ -53,15 +51,13 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    await salesCaseService.deleteExpense(params.id, userId)
+    await salesCaseService.deleteExpense(resolvedParams.id, userId)
     
     return NextResponse.json({ message: 'Expense deleted successfully' })
   } catch (error) {

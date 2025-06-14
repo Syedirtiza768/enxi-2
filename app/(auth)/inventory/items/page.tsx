@@ -5,6 +5,7 @@ import { Plus, Search, RefreshCw, Download, Package } from 'lucide-react'
 import { PageLayout, PageHeader, PageSection, VStack, Grid } from '@/components/design-system'
 import { ItemList, Item } from '@/components/inventory/item-list'
 import { apiClient } from '@/lib/api/client'
+import { ExportButton } from '@/components/export/export-button'
 
 
 interface Category {
@@ -39,7 +40,7 @@ export default function ItemsPage() {
   const [categories, setCategories] = useState<Category[]>([])
 
   // Fetch items from API
-  const fetchItems = async () => {
+  const fetchItems = async (): Promise<unknown> => {
     try {
       setLoading(true)
       setError(null)
@@ -56,7 +57,7 @@ export default function ItemsPage() {
       if (statusFilter === 'inactive') params.append('isActive', 'false')
       if (lowStockOnly) params.append('lowStock', 'true')
 
-      const response = await apiClient(`/api/inventory/items?${params}`, {
+      const response = await apiClient<{ data: any[]; total?: number }>(`/api/inventory/items?${params}`, {
         method: 'GET'
       })
 
@@ -65,22 +66,52 @@ export default function ItemsPage() {
       }
 
       const data = response.data
-      const itemsData = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])
+      const itemsData = data ? (Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])) : []
       
       // Transform items to match expected structure
-      const transformedItems = itemsData.map((item: Record<string, unknown>) => ({
-        ...item,
-        stockSummary: item.currentStock !== undefined ? {
-          totalQuantity: item.currentStock,
-          availableQuantity: item.currentStock,
-          reservedQuantity: 0,
-          totalValue: item.stockValue || (item.currentStock * item.standardCost)
-        } : null
-      }))
+      const transformedItems = itemsData.map((item: any) => {
+        // Ensure required fields have proper structure
+        const transformedItem: Item = {
+          id: item.id || '',
+          code: item.code || '',
+          name: item.name || '',
+          description: item.description || undefined,
+          type: (item.type || 'PRODUCT') as 'PRODUCT' | 'SERVICE' | 'RAW_MATERIAL',
+          category: item.category ? {
+            id: item.category.id || '',
+            name: item.category.name || 'Uncategorized'
+          } : { id: '', name: 'Uncategorized' },
+          unitOfMeasure: item.unitOfMeasure ? {
+            id: item.unitOfMeasure.id || '',
+            code: item.unitOfMeasure.code || 'EA',
+            name: item.unitOfMeasure.name || 'Each'
+          } : { id: '', code: 'EA', name: 'Each' },
+          trackInventory: item.trackInventory === true,
+          minStockLevel: Number(item.minStockLevel) || 0,
+          maxStockLevel: Number(item.maxStockLevel) || 0,
+          reorderPoint: Number(item.reorderPoint) || 0,
+          standardCost: Number(item.standardCost) || 0,
+          listPrice: Number(item.listPrice) || 0,
+          isActive: item.isActive !== false,
+          isSaleable: item.isSaleable === true,
+          isPurchaseable: item.isPurchaseable === true,
+          inventoryAccountId: item.inventoryAccountId || undefined,
+          cogsAccountId: item.cogsAccountId || undefined,
+          salesAccountId: item.salesAccountId || undefined,
+          stockSummary: item.currentStock !== undefined ? {
+            totalQuantity: Number(item.currentStock || 0),
+            availableQuantity: Number(item.currentStock || 0),
+            reservedQuantity: 0,
+            totalValue: Number(item.stockValue || (Number(item.currentStock || 0) * Number(item.standardCost || 0)))
+          } : null
+        }
+        
+        return transformedItem
+      })
       
       setItems(transformedItems)
-      setTotalItems(data.total || itemsData.length)
-      setTotalPages(Math.ceil((data.total || itemsData.length) / limit))
+      setTotalItems(data?.total || itemsData.length)
+      setTotalPages(Math.ceil((data?.total || itemsData.length) / limit))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load items')
       console.error('Error fetching items:', err)
@@ -90,14 +121,14 @@ export default function ItemsPage() {
   }
 
   // Fetch categories for filter
-  const fetchCategories = async () => {
+  const fetchCategories = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/inventory/categories', {
+      const response = await apiClient<{ data: any[]; total?: number }>('/api/inventory/categories', {
         method: 'GET'
       })
-      if (response.ok) {
+      if (response.ok && response.data) {
         const data = response.data
-        setCategories(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []))
+        setCategories(data ? (Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])) : [])
       }
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -195,13 +226,24 @@ export default function ItemsPage() {
           description="Manage your inventory items and stock levels"
           centered={false}
           actions={
-            <button
-              onClick={handleCreateNew}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Item
-            </button>
+            <div className="flex gap-2">
+              <ExportButton 
+                dataType="inventory"
+                defaultFilters={{
+                  categoryId: categoryFilter || undefined,
+                  type: typeFilter || undefined,
+                  isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+                  lowStock: lowStockOnly || undefined
+                }}
+              />
+              <button
+                onClick={handleCreateNew}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Item
+              </button>
+            </div>
           }
         />
 
@@ -331,15 +373,19 @@ export default function ItemsPage() {
                 </div>
               )}
 
-              {/* Export Button */}
+              {/* Additional Export Button */}
               {_selectedItems.length === 0 && (
-                <button
-                  onClick={handleExport}
-                  className="flex items-center px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </button>
+                <ExportButton 
+                  dataType="inventory"
+                  variant="outline"
+                  size="sm"
+                  defaultFilters={{
+                    categoryId: categoryFilter || undefined,
+                    type: typeFilter || undefined,
+                    isActive: statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined,
+                    lowStock: lowStockOnly || undefined
+                  }}
+                />
               )}
             </div>
           </div>

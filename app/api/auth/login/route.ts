@@ -5,7 +5,7 @@ import { loginSchema } from '@/lib/validators/auth.validator'
 import { AuditAction } from '@/lib/validators/audit.validator'
 import { extractAuditContext } from '@/lib/utils/audit-context'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json()
     const validatedData = loginSchema.parse(body)
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Handle validation errors
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error },
+        { error: 'Invalid request data' },
         { status: 400 }
       )
     }

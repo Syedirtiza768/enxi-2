@@ -34,6 +34,23 @@ interface InventoryItem {
   }
 }
 
+interface LineItem {
+  id: string
+  type: 'INVENTORY'
+  description: string
+  quantity: number
+  unitPrice: number
+  total: number
+  inventoryItemId?: string
+}
+
+interface QuotationLine {
+  id: string
+  description: string
+  lineItems: LineItem[]
+  total: number
+}
+
 interface LineItemEditorProps {
   quotationItems: QuotationItem[]
   onChange: (items: QuotationItem[]) => void
@@ -49,12 +66,12 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
 
   // Load inventory items for selection
   useEffect(() => {
-    const fetchInventoryItems = async () => {
+    const fetchInventoryItems = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
         
-        const response = await apiClient('/api/inventory/items', {
+        const response = await apiClient<{ data: InventoryItem[]; total?: number } | InventoryItem[]>('/api/inventory/items', {
           method: 'GET'
         })
         
@@ -62,7 +79,8 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
           throw new Error('Failed to load inventory items')
         }
         
-        const inventoryData = response.data?.data || response.data || []
+        const responseData = response.data
+        const inventoryData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setInventoryItems(Array.isArray(inventoryData) ? inventoryData : [])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load inventory items')
@@ -141,9 +159,24 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   }
 
   // Simplified quotation structure - using quotationItems directly
-  const quotationLines: Array<{ id: string; description: string; lineItems: Array<{ id: string; description: string; quantity: number; unitPrice: number; total: number; inventoryItemId?: string; type?: string }>; total: number }> = []
+  const quotationLines: QuotationLine[] = []
   const expandedLines = new Set<string>()
   const setExpandedLines = (_: Set<string>) => {} // Placeholder
+  
+  // Helper functions for quotation line management
+  const calculateItemTotal = (quantity: number, unitPrice: number): number => {
+    return quantity * unitPrice
+  }
+
+  const updateQuotationLine = (lineId: string, updates: Partial<QuotationLine>) => {
+    // Update quotation line functionality not implemented in this simplified version
+    console.log('updateQuotationLine called:', lineId, updates)
+  }
+
+  const deleteQuotationLine = (lineId: string) => {
+    // Delete quotation line functionality not implemented in this simplified version
+    console.log('deleteQuotationLine called:', lineId)
+  }
   
   // Helper functions for the render logic
   const addQuotationLine = () => {

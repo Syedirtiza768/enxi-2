@@ -43,7 +43,7 @@ async function testEndpoint(url: string, description: string, authToken?: string
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🚀 Testing API endpoints on http://localhost:3001\n')
   
   // Give the server a moment to fully start

@@ -3,7 +3,7 @@ import { taxService } from '@/lib/services/tax.service'
 import { withAuth } from '@/lib/utils/auth'
 
 // GET /api/tax-rates/validate
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   return withAuth(request, async (session) => {
     try {
       const result = await taxService.validateTaxConfiguration()

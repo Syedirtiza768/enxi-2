@@ -46,17 +46,17 @@ export default function EditSupplierInvoicePage() {
     }
   }, [invoiceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchInvoice = async () => {
+  const fetchInvoice = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient(`/api/supplier-invoices/${invoiceId}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/supplier-invoices/${invoiceId}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to fetch supplier invoice')
+        throw new Error(response.error || 'Failed to fetch supplier invoice')
       }
       
       const invoiceData = response.data

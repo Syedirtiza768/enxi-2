@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { LeadService } from '@/lib/services/lead.service'
 
-async function testLeadCreation() {
+async function testLeadCreation(): Promise<void> {
   console.log('🧪 Testing lead creation...\n')
   
   try {

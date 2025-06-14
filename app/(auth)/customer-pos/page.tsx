@@ -54,7 +54,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
   // Fetch customer POs
   useEffect(() => {
-    const fetchPOs = async () => {
+    const fetchPOs = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -97,9 +97,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     const searchLower = search.toLowerCase()
     return (
       po.poNumber.toLowerCase().includes(searchLower) ||
-      po.customer.name.toLowerCase().includes(searchLower) ||
-      po.salesCase.caseNumber.toLowerCase().includes(searchLower) ||
-      po.quotation.quotationNumber.toLowerCase().includes(searchLower)
+      (po.customer?.name?.toLowerCase().includes(searchLower) || false) ||
+      (po.salesCase?.caseNumber?.toLowerCase().includes(searchLower) || false) ||
+      (po.quotation?.quotationNumber?.toLowerCase().includes(searchLower) || false)
     )
   })
 
@@ -374,14 +374,14 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{po.poNumber}</div>
-                    <div className="text-xs text-gray-500">{po.salesCase.caseNumber}</div>
+                    <div className="text-xs text-gray-500">{po.salesCase?.caseNumber || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{po.customer.name}</div>
-                    <div className="text-xs text-gray-500">{po.customer.email}</div>
+                    <div className="text-sm text-gray-900">{po.customer?.name || '-'}</div>
+                    <div className="text-xs text-gray-500">{po.customer?.email || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{po.quotation.quotationNumber}</div>
+                    <div className="text-sm text-gray-900">{po.quotation?.quotationNumber || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatCurrency(po.poAmount)}

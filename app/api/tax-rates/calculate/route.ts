@@ -3,7 +3,7 @@ import { taxService } from '@/lib/services/tax.service'
 import { withAuth } from '@/lib/utils/auth'
 
 // POST /api/tax-rates/calculate
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   return withAuth(request, async (session) => {
     try {
       const body = await request.json()

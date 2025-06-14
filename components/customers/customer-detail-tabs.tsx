@@ -56,7 +56,7 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
   const fetchPayments = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient(`/api/payments?customerId=${customerId}`, { method: 'GET' })
+      const response = await apiClient<{ data: any }>(`/api/payments?customerId=${customerId}`, { method: 'GET' })
       if (response.ok && response.data) {
         const paymentsData = response.data.data || response.data
         setPayments(Array.isArray(paymentsData) ? paymentsData : [])
@@ -71,7 +71,7 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
   const fetchInvoices = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient(`/api/invoices?customerId=${customerId}&status=open`, { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>(`/api/invoices?customerId=${customerId}&status=open`, { method: 'GET' })
       if (response.ok && response.data) {
         const invoicesData = response.data.data || response.data
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])

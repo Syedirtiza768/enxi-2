@@ -4,7 +4,7 @@ import { PrismaClient } from '@/lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
-async function createOpenSalesCase() {
+async function createOpenSalesCase(): Promise<void> {
   try {
     const salesCase = await prisma.salesCase.create({
       data: {

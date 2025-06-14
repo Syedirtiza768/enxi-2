@@ -131,7 +131,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }, [shipmentId])
 
-  const handleConfirmShipment = async () => {
+  const handleConfirmShipment = async (): Promise<unknown> => {
     if (!user) return
 
     try {
@@ -153,7 +153,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const handleDeliverShipment = async () => {
+  const handleDeliverShipment = async (): Promise<unknown> => {
     if (!user) return
 
     try {
@@ -179,7 +179,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const handleCancelShipment = async () => {
+  const handleCancelShipment = async (): Promise<unknown> => {
     if (!user || !cancelReason.trim()) return
 
     try {
@@ -203,7 +203,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const handleUpdateTracking = async () => {
+  const handleUpdateTracking: () => Promise<void>= async() => {
     try {
       setActionLoading(true)
       const response = await api.put(`/api/shipments/${shipmentId}`, trackingData)

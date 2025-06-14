@@ -4,7 +4,7 @@ import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.serv
 import { ItemType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/items - Get all items with filters
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/inventory/items - Create new item
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       salesAccountId,
       isSaleable: isSaleable ?? true,
       isPurchaseable: isPurchaseable ?? true,
-      createdBy: _user.id
+      createdBy: user.id
     }
 
     const itemService = new ItemService()

@@ -2,25 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // GET /api/purchase-orders/[id] - Get purchase order by ID
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const purchaseOrderService = new PurchaseOrderService()
-    const purchaseOrder = await purchaseOrderService.getPurchaseOrder(params.id)
+    const purchaseOrder = await purchaseOrderService.getPurchaseOrder(resolvedParams.id)
 
     if (!purchaseOrder) {
       return NextResponse.json(
@@ -40,17 +34,15 @@ export async function GET(
 }
 
 // PUT /api/purchase-orders/[id] - Update purchase order
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const {
       expectedDate,
       requestedBy,
@@ -66,7 +58,7 @@ export async function PUT(
 
     const purchaseOrderService = new PurchaseOrderService()
     const purchaseOrder = await purchaseOrderService.updatePurchaseOrder(
-      params.id,
+      resolvedParams.id,
       {
         expectedDate: expectedDate ? new Date(expectedDate) : undefined,
         requestedBy,
@@ -79,7 +71,7 @@ export async function PUT(
         currency,
         exchangeRate
       },
-      _user.id
+      user.id
     )
 
     return NextResponse.json({ data: purchaseOrder })

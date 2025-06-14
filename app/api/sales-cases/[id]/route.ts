@@ -7,15 +7,12 @@ interface RouteParams {
 }
 
 // GET /api/sales-cases/[id] - Get specific sales case
-export async function GET(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const salesCaseService = new SalesCaseService()
-    const salesCase = await salesCaseService.getSalesCase(params.id)
+    const salesCase = await salesCaseService.getSalesCase(id)
 
     if (!salesCase) {
       return NextResponse.json(
@@ -38,20 +35,17 @@ export async function GET(
 }
 
 // PUT /api/sales-cases/[id] - Update sales case
-export async function PUT(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const salesCaseService = new SalesCaseService()
     const salesCase = await salesCaseService.updateSalesCase(
-      params.id,
+      id,
       body,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

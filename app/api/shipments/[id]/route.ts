@@ -11,13 +11,11 @@ const updateShipmentSchema = z.object({
   notes: z.string().optional(),
 })
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const shipment = await prisma.shipment.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       include: {
         items: {
           include: {
@@ -53,16 +51,14 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const body = await _request.json()
+    const resolvedParams = await params
+    const body = await request.json()
     const validatedData = updateShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
-    const shipment = await shipmentService.updateTrackingInfo(params.id, validatedData)
+    const shipment = await shipmentService.updateTrackingInfo(resolvedParams.id, validatedData)
     
     return NextResponse.json(shipment)
   } catch (error) {

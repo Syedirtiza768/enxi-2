@@ -87,12 +87,12 @@ export default function SupplierInvoicesPage() {
     fetchSupplierInvoices()
   }, [])
 
-  const fetchSupplierInvoices = async () => {
+  const fetchSupplierInvoices = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/supplier-invoices', {
+      const response = await apiClient<{ data: any[] }>('/api/supplier-invoices', {
         method: 'GET'
       })
       
@@ -127,9 +127,9 @@ export default function SupplierInvoicesPage() {
       DRAFT: { label: 'Draft', className: 'bg-gray-100 text-gray-800' },
       POSTED: { label: 'Posted', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
@@ -141,9 +141,9 @@ export default function SupplierInvoicesPage() {
       OVER_MATCHED: { label: 'Over Matched', className: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-3 w-3" /> },
       UNDER_MATCHED: { label: 'Under Matched', className: 'bg-orange-100 text-orange-800', icon: <AlertTriangle className="h-3 w-3" /> },
       PENDING: { label: 'Pending', className: 'bg-gray-100 text-gray-800', icon: <Clock className="h-3 w-3" /> }
-    }
+    } as const
     
-    const { label, className, icon } = config[matchingStatus] || { 
+    const { label, className, icon } = config[matchingStatus as keyof typeof config] || { 
       label: matchingStatus, 
       className: 'bg-gray-100 text-gray-800',
       icon: <Clock className="h-3 w-3" />
@@ -234,12 +234,12 @@ export default function SupplierInvoicesPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={5} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Invoices</Text>
-                    <Text size="2xl" weight="bold">{stats.totalInvoices}</Text>
+                    <Text size="xl" weight="bold">{stats.totalInvoices}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <FileText className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -248,12 +248,12 @@ export default function SupplierInvoicesPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Draft Invoices</Text>
-                    <Text size="2xl" weight="bold">{stats.draftInvoices}</Text>
+                    <Text size="xl" weight="bold">{stats.draftInvoices}</Text>
                   </VStack>
                   <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <Edit className="h-6 w-6 text-gray-600" />
@@ -262,12 +262,12 @@ export default function SupplierInvoicesPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Posted Invoices</Text>
-                    <Text size="2xl" weight="bold">{stats.postedInvoices}</Text>
+                    <Text size="xl" weight="bold">{stats.postedInvoices}</Text>
                   </VStack>
                   <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                     <CheckCircle className="h-6 w-6 text-green-600" />
@@ -276,12 +276,12 @@ export default function SupplierInvoicesPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Value</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -292,12 +292,12 @@ export default function SupplierInvoicesPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Overdue</Text>
-                    <Text size="2xl" weight="bold">{stats.overdueInvoices}</Text>
+                    <Text size="xl" weight="bold">{stats.overdueInvoices}</Text>
                   </VStack>
                   <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
                     <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -310,7 +310,7 @@ export default function SupplierInvoicesPage() {
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -353,7 +353,7 @@ export default function SupplierInvoicesPage() {
 
         {/* Supplier Invoices Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-x-auto">
+          <Card className="overflow-x-auto">
             <CardHeader>
               <CardTitle>Supplier Invoices ({filteredSupplierInvoices.length})</CardTitle>
             </CardHeader>

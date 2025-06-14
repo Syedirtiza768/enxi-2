@@ -147,7 +147,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
         }))
       };
 
-      const response = await apiClient('/api/quotations', {
+      const response = await apiClient<{ data: any[] }>('/api/quotations', {
         method: 'POST',
         body: JSON.stringify(quotationData)
       });

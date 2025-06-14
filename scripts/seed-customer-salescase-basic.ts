@@ -20,7 +20,7 @@ function generateQuotationNumber(): string {
   return `QUO-${timestamp}-${random}`
 }
 
-async function main() {
+async function main(): Promise<unknown> {
   console.warn('🌱 Starting Customer & SalesCase demo seeding...')
 
   try {

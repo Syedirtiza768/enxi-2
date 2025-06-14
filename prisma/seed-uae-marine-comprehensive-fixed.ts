@@ -210,7 +210,7 @@ const LEAD_SOURCES = [
 ];
 
 // Base data seeders
-async function seedBaseData() {
+async function seedBaseData(): Promise<void> {
   console.log('\n🔧 Seeding Base Data...');
   
   // Company settings
@@ -295,7 +295,7 @@ async function seedBaseData() {
 }
 
 // Master data seeders
-async function seedMasterData() {
+async function seedMasterData(): Promise<void> {
   console.log('\n📦 Seeding Master Data...');
   
   // Get the first user to be the creator
@@ -380,7 +380,7 @@ async function seedMasterData() {
 }
 
 // Inventory data seeder
-async function seedInventoryData() {
+async function seedInventoryData(): Promise<void> {
   console.log('\n🔩 Seeding Inventory Data...');
   
   const categories = await prisma.category.findMany();
@@ -481,7 +481,7 @@ async function seedInventoryData() {
 }
 
 // Generate leads with realistic distribution
-async function generateLeads() {
+async function generateLeads(): Promise<void> {
   console.log('\n📞 Generating Leads...');
   
   const customers = await prisma.customer.findMany();
@@ -569,7 +569,7 @@ async function generateLeads() {
 }
 
 // Generate sales cases
-async function generateSalesCases() {
+async function generateSalesCases(): Promise<void> {
   console.log('\n📋 Generating Sales Cases...');
   
   const qualifiedLeads = await prisma.lead.findMany({
@@ -675,7 +675,7 @@ async function generateSalesCases() {
 }
 
 // Generate quotations
-async function generateQuotations() {
+async function generateQuotations(): Promise<void> {
   console.log('\n📄 Generating Quotations...');
   
   const salesCases = await prisma.salesCase.findMany({
@@ -789,7 +789,7 @@ async function generateQuotations() {
 }
 
 // Generate sales orders
-async function generateSalesOrders() {
+async function generateSalesOrders(): Promise<void> {
   console.log('\n📦 Generating Sales Orders...');
   
   const acceptedQuotations = await prisma.quotation.findMany({
@@ -874,7 +874,7 @@ async function generateSalesOrders() {
 }
 
 // Generate purchase orders
-async function generatePurchaseOrders() {
+async function generatePurchaseOrders(): Promise<boolean> {
   console.log('\n📋 Generating Purchase Orders...');
   
   const suppliers = await prisma.supplier.findMany();
@@ -980,7 +980,7 @@ async function generatePurchaseOrders() {
 }
 
 // Generate invoices and payments
-async function generateFinancialData() {
+async function generateFinancialData(): Promise<void> {
   console.log('\n💰 Generating Financial Data...');
   
   // Generate invoices from delivered sales orders
@@ -1090,7 +1090,7 @@ async function generateFinancialData() {
 }
 
 // Generate shipments
-async function generateShipments() {
+async function generateShipments(): Promise<void> {
   console.log('\n🚢 Generating Shipments...');
   
   const shippedOrders = await prisma.salesOrder.findMany({
@@ -1150,7 +1150,7 @@ async function generateShipments() {
 }
 
 // Main orchestrator
-async function main() {
+async function main(): Promise<void> {
   console.log('🌊 Starting UAE Marine Engine Maintenance Company Seed Process...');
   console.log(`📅 Generating ${CONFIG.DATE_RANGE_MONTHS} months of historical data`);
   console.log(`📦 Batch size: ${CONFIG.BATCH_SIZE} records`);
@@ -1193,7 +1193,7 @@ async function main() {
 }
 
 // Helper function to clear all data
-async function clearAllData() {
+async function clearAllData(): Promise<void> {
   const tables = [
     'Payment',
     'InvoiceItem',
@@ -1232,7 +1232,7 @@ async function clearAllData() {
 }
 
 // Print summary statistics
-async function printSummary() {
+async function printSummary(): Promise<void> {
   console.log('\n📊 Database Summary:');
   
   const counts = await Promise.all([

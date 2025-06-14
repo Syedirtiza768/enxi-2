@@ -26,6 +26,7 @@ import {
   Printer
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 type ReportType = 'summary' | 'valuation' | 'expiring' | 'lowstock' | 'movement' | 'aging'
 
@@ -101,7 +102,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportType, dateRange, categoryFilter, locationFilter])
 
-  const fetchReportData = async () => {
+  const fetchReportData = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
@@ -177,7 +178,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
       if (categoryFilter !== 'all') params.append('categoryId', categoryFilter)
       if (locationFilter !== 'all') params.append('locationId', locationFilter)
 
-      const response = await apiClient(`/api/inventory/reports/export?${params}`, {
+      const response = await apiClient<{ data: any }>(`/api/inventory/reports/export?${params}`, {
         method: 'GET'
       })
 
@@ -444,7 +445,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
         {reportStats.totalValue > 0 && (
           <PageSection>
             <Grid cols={4} gap="lg">
-              <Card variant="elevated" padding="md">
+              <Card>
                 <CardContent>
                   <VStack gap="xs">
                     <Text size="sm" color="secondary">Total Items</Text>
@@ -452,7 +453,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
                   </VStack>
                 </CardContent>
               </Card>
-              <Card variant="elevated" padding="md">
+              <Card>
                 <CardContent>
                   <VStack gap="xs">
                     <Text size="sm" color="secondary">Total Value</Text>
@@ -462,7 +463,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
                   </VStack>
                 </CardContent>
               </Card>
-              <Card variant="elevated" padding="md">
+              <Card>
                 <CardContent>
                   <VStack gap="xs">
                     <Text size="sm" color="secondary">Low Stock Items</Text>
@@ -472,7 +473,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
                   </VStack>
                 </CardContent>
               </Card>
-              <Card variant="elevated" padding="md">
+              <Card>
                 <CardContent>
                   <VStack gap="xs">
                     <Text size="sm" color="secondary">Out of Stock</Text>
@@ -488,7 +489,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardHeader>
               <HStack justify="between" align="center">
                 <CardTitle>Report Filters</CardTitle>
@@ -545,7 +546,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
 
         {/* Report Content */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card className="overflow-hidden">
             <CardContent className="p-0">
               {renderReport()}
             </CardContent>

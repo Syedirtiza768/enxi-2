@@ -7,16 +7,13 @@ interface RouteParams {
 }
 
 // GET /api/sales-cases/[id]/timeline - Get sales case timeline
-export async function GET(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const salesCaseService = new SalesCaseService()
     
-    const timeline = await salesCaseService.getSalesCaseTimeline(params.id)
+    const timeline = await salesCaseService.getSalesCaseTimeline(id)
 
     return NextResponse.json({
       success: true,

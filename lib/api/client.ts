@@ -24,6 +24,12 @@ export interface ApiResponse<T = unknown> {
   error?: string
   status: number
   ok: boolean
+  errorDetails?: {
+    code?: string
+    message?: string
+    field?: string
+    context?: Record<string, any>
+  }
 }
 
 /**
@@ -35,7 +41,7 @@ function getAuthToken(): string | null {
     const cookies = document.cookie.split(';')
     const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth-token='))
     if (authCookie) {
-      return authCookie.split('=')[1]
+      return authCookie.split('=')[1] || null
     }
   }
 
@@ -139,10 +145,25 @@ export async function apiClient<T = unknown>(
         errorData,
         duration: `${duration}ms`
       })
+      
+      // Enhanced error response with structured error details
       return {
-        error: errorData.error || `Request failed: ${response.statusText}`,
+        error: errorData.error || errorData.message || `Request failed: ${response.statusText}`,
         status: response.status,
         ok: false,
+        errorDetails: {
+          code: errorData.code || `HTTP_${response.status}`,
+          message: errorData.message || errorData.error || response.statusText,
+          field: errorData.field,
+          context: {
+            url,
+            method,
+            status: response.status,
+            statusText: response.statusText,
+            duration: `${duration}ms`,
+            ...errorData.context
+          }
+        }
       }
     }
 
@@ -164,6 +185,16 @@ export async function apiClient<T = unknown>(
       error: error instanceof Error ? error.message : 'Network error occurred',
       status: 0,
       ok: false,
+      errorDetails: {
+        code: 'NETWORK_ERROR',
+        message: error instanceof Error ? error.message : 'Network error occurred',
+        context: {
+          url,
+          method,
+          duration: `${duration}ms`,
+          networkError: true
+        }
+      }
     }
   }
 }

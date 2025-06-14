@@ -6,6 +6,7 @@ import {
   ArrowLeft, FileText, CheckCircle, Clock, Edit, Download,
   Calendar, DollarSign, Building, Package, User, ExternalLink
 } from 'lucide-react'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface CustomerPO {
   id: string
@@ -54,7 +55,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
   // Fetch PO details
   useEffect(() => {
-    const fetchPO = async () => {
+    const fetchPO = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -85,7 +86,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }, [poId])
 
-  const handleAccept = async () => {
+  const handleAccept = async (): Promise<unknown> => {
     if (!confirm('Are you sure you want to accept this PO? This will create a sales order.')) {
       return
     }

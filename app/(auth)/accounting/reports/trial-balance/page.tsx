@@ -29,7 +29,7 @@ export default function TrialBalancePage() {
   const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split('T')[0])
   const [currency, setCurrency] = useState('USD')
 
-  const fetchTrialBalance = async () => {
+  const fetchTrialBalance = async (): Promise<void> => {
     setLoading(true)
     setError('')
     

@@ -4,7 +4,7 @@ import { prisma } from '../lib/db/prisma'
 import { Role, QuotationStatus, OrderStatus } from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 
-async function createTestWorkflowData() {
+async function createTestWorkflowData(): Promise<void> {
   console.warn('🛠️  Creating test data for sales workflow automation...\n')
 
   try {

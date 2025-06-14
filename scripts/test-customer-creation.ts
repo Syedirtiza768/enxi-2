@@ -3,7 +3,7 @@ import { CustomerService } from '../lib/services/customer.service'
 
 const prisma = new PrismaClient()
 
-async function testCustomerCreation() {
+async function testCustomerCreation(): Promise<void> {
   try {
     console.log('🧪 Testing customer creation...')
     

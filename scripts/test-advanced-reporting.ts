@@ -29,7 +29,7 @@ interface TestResults {
   warnings: string[]
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('📊 Starting Advanced Reporting and Analytics System Test...\n')
   
   const results: TestResults = {

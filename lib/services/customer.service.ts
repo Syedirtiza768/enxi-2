@@ -236,38 +236,189 @@ export class CustomerService extends BaseService {
   async getAllCustomers(options?: {
     search?: string
     currency?: string
+    industry?: string
+    status?: 'active' | 'inactive'
+    hasOutstanding?: boolean
+    dateFrom?: string
+    dateTo?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+    page?: number
     limit?: number
     offset?: number
-  }): Promise<Customer[]> {
+  }): Promise<{
+    customers: Customer[]
+    total: number
+    stats: {
+      total: number
+      active: number
+      inactive: number
+      totalCreditLimit: number
+      totalOutstanding: number
+    }
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }> {
     return this.withLogging('getAllCustomers', async () => {
-
       const where: Prisma.CustomerWhereInput = {}
 
+      // Search filter
       if (options?.search) {
         where.OR = [
-          { name: { contains: options.search } },
-          { email: { contains: options.search } },
-          { customerNumber: { contains: options.search } }
+          { name: { contains: options.search, mode: 'insensitive' } },
+          { email: { contains: options.search, mode: 'insensitive' } },
+          { customerNumber: { contains: options.search, mode: 'insensitive' } },
+          { phone: { contains: options.search, mode: 'insensitive' } }
         ]
       }
 
+      // Currency filter
       if (options?.currency) {
         where.currency = options.currency
       }
 
-      const customers = await prisma.customer.findMany({
-        where,
-        include: {
-          account: true,
-          lead: true
-        },
-        orderBy: { createdAt: 'desc' },
-        take: options?.limit,
-        skip: options?.offset
-      })
+      // Industry filter
+      if (options?.industry) {
+        where.industry = options.industry
+      }
 
+      // Status filter
+      if (options?.status) {
+        where.isActive = options.status === 'active'
+      }
 
-      return customers
+      // Outstanding balance filter
+      if (options?.hasOutstanding) {
+        where.account = {
+          balance: { gt: 0 }
+        }
+      }
+
+      // Date range filter
+      if (options?.dateFrom || options?.dateTo) {
+        where.createdAt = {}
+        if (options.dateFrom) {
+          where.createdAt.gte = new Date(options.dateFrom)
+        }
+        if (options.dateTo) {
+          where.createdAt.lte = new Date(options.dateTo)
+        }
+      }
+
+      // Pagination
+      const page = options?.page || 1
+      const limit = options?.limit || 20
+      const offset = options?.offset || (page - 1) * limit
+
+      // Sorting
+      let orderBy: Prisma.CustomerOrderByWithRelationInput = { createdAt: 'desc' }
+      if (options?.sortBy) {
+        const direction = options.sortOrder || 'asc'
+        switch (options.sortBy) {
+          case 'name':
+            orderBy = { name: direction }
+            break
+          case 'email':
+            orderBy = { email: direction }
+            break
+          case 'currency':
+            orderBy = { currency: direction }
+            break
+          case 'creditLimit':
+            orderBy = { creditLimit: direction }
+            break
+          case 'createdAt':
+            orderBy = { createdAt: direction }
+            break
+          case 'balance':
+            orderBy = { account: { balance: direction } }
+            break
+          default:
+            orderBy = { createdAt: 'desc' }
+        }
+      }
+
+      // Get customers with pagination
+      const [customers, totalCount] = await Promise.all([
+        prisma.customer.findMany({
+          where,
+          include: {
+            account: true,
+            lead: true,
+            _count: {
+              select: {
+                salesCases: true
+              }
+            }
+          },
+          orderBy,
+          take: limit,
+          skip: offset
+        }),
+        prisma.customer.count({ where })
+      ])
+
+      // Calculate stats
+      const stats = await this.getCustomerStats()
+
+      // Pagination info
+      const totalPages = Math.ceil(totalCount / limit)
+      const pagination = {
+        page,
+        limit,
+        total: totalCount,
+        totalPages
+      }
+
+      return {
+        customers,
+        total: totalCount,
+        stats,
+        pagination
+      }
+    })
+  }
+
+  async getCustomerStats(): Promise<{
+    total: number
+    active: number
+    inactive: number
+    totalCreditLimit: number
+    totalOutstanding: number
+  }> {
+    return this.withLogging('getCustomerStats', async () => {
+      const [
+        totalCount,
+        activeCount,
+        totalCreditLimit,
+        totalOutstanding
+      ] = await Promise.all([
+        prisma.customer.count(),
+        prisma.customer.count({ where: { isActive: true } }),
+        prisma.customer.aggregate({
+          _sum: { creditLimit: true },
+          where: { isActive: true }
+        }),
+        prisma.account.aggregate({
+          _sum: { balance: true },
+          where: {
+            customer: { isActive: true },
+            balance: { gt: 0 }
+          }
+        })
+      ])
+
+      return {
+        total: totalCount,
+        active: activeCount,
+        inactive: totalCount - activeCount,
+        totalCreditLimit: totalCreditLimit._sum.creditLimit || 0,
+        totalOutstanding: totalOutstanding._sum.balance || 0
+      }
     })
   }
 
@@ -506,5 +657,92 @@ export class CustomerService extends BaseService {
       // Return empty string to allow customer creation to continue without parent
       return ''
     }
+  }
+
+  async hasActiveTransactions(customerId: string): Promise<boolean> {
+    return this.withLogging('hasActiveTransactions', async () => {
+      // Check for active sales orders
+      const activeSalesOrders = await prisma.salesOrder.count({
+        where: {
+          salesCase: {
+            customerId
+          },
+          status: {
+            in: ['DRAFT', 'OPEN', 'PARTIALLY_SHIPPED']
+          }
+        }
+      })
+
+      if (activeSalesOrders > 0) {
+        return true
+      }
+
+      // Check for unpaid invoices
+      const unpaidInvoices = await prisma.invoice.count({
+        where: {
+          customerId,
+          status: {
+            in: ['DRAFT', 'SENT', 'PARTIALLY_PAID']
+          }
+        }
+      })
+
+      if (unpaidInvoices > 0) {
+        return true
+      }
+
+      // Check for active quotations
+      const activeQuotations = await prisma.quotation.count({
+        where: {
+          salesCase: {
+            customerId
+          },
+          status: {
+            in: ['DRAFT', 'SENT', 'ACCEPTED']
+          }
+        }
+      })
+
+      return activeQuotations > 0
+    })
+  }
+
+  async softDeleteCustomer(customerId: string, userId: string): Promise<void> {
+    return this.withLogging('softDeleteCustomer', async () => {
+      const existingCustomer = await this.getCustomer(customerId)
+      if (!existingCustomer) {
+        throw new Error('Customer not found')
+      }
+
+      // Update customer to inactive
+      await prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          isActive: false,
+          updatedAt: new Date()
+        }
+      })
+
+      // Update associated account to inactive
+      if (existingCustomer.accountId) {
+        await prisma.account.update({
+          where: { id: existingCustomer.accountId },
+          data: {
+            isActive: false,
+            updatedAt: new Date()
+          }
+        })
+      }
+
+      // Log the soft delete action
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.DELETE,
+        entityType: 'Customer',
+        entityId: customerId,
+        beforeData: existingCustomer,
+        afterData: { isActive: false }
+      })
+    })
   }
 }

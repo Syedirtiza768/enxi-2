@@ -6,7 +6,7 @@
 
 import { PrismaClient } from '@/lib/generated/prisma'
 
-async function testQuotationToInvoiceWorkflow() {
+async function testQuotationToInvoiceWorkflow(): Promise<void> {
   console.warn('🧪 Testing Quotation-to-Invoice Workflow...\n')
   
   const prisma = new PrismaClient()

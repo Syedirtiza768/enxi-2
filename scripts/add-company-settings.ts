@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 
-async function addCompanySettings() {
+async function addCompanySettings(): Promise<CompanySettings> {
   try {
     console.log('Checking for existing company settings...')
     

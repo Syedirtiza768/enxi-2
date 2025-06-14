@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting comprehensive accounting seed...')
 
   // Clear existing data in correct order to avoid foreign key constraints

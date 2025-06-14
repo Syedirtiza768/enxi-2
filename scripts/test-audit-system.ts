@@ -3,7 +3,7 @@
 import { prisma } from '../lib/db/prisma'
 import { AuditService } from '../lib/services/audit.service'
 
-async function testAuditSystem() {
+async function testAuditSystem(): Promise<void> {
   console.warn('Testing Audit System...\n')
   
   const auditService = new AuditService()

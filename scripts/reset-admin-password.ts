@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-async function resetAdminPassword() {
+async function resetAdminPassword(): Promise<void> {
   console.warn('🔐 Resetting admin password...\n')
 
   try {

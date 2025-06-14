@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 const API_URL = 'http://localhost:3001/api'
 
-async function testCompanySettings() {
+async function testCompanySettings(): Promise<void> {
   console.log('Testing Company Settings API...\n')
 
   try {

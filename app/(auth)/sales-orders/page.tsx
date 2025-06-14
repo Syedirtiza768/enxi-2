@@ -22,6 +22,7 @@ import {
   XCircle, AlertCircle, ChevronRight 
 } from 'lucide-react'
 import { useCurrency } from '@/lib/contexts/currency-context'
+import { ExportButton } from '@/components/export/export-button'
 
 interface SalesOrder {
   id: string
@@ -60,7 +61,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
 
   // Fetch sales orders
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchOrders = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -108,9 +109,9 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
     const searchLower = search.toLowerCase()
     return (
       order.orderNumber.toLowerCase().includes(searchLower) ||
-      order.salesCase.customer.name.toLowerCase().includes(searchLower) ||
-      order.salesCase.caseNumber.toLowerCase().includes(searchLower) ||
-      order.customerPO?.toLowerCase().includes(searchLower)
+      (order.salesCase?.customer?.name?.toLowerCase().includes(searchLower) || false) ||
+      (order.salesCase?.caseNumber?.toLowerCase().includes(searchLower) || false) ||
+      (order.customerPO?.toLowerCase().includes(searchLower) || false)
     )
   })
 
@@ -149,9 +150,9 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
       COMPLETED: { text: 'Completed', variant: 'success' as const },
       CANCELLED: { text: 'Cancelled', variant: 'error' as const },
       ON_HOLD: { text: 'On Hold', variant: 'warning' as const }
-    }
+    } as const
 
-    const config = statusConfig[status] || { text: status, variant: 'secondary' as const }
+    const config = statusConfig[status as keyof typeof statusConfig] || { text: status, variant: 'secondary' as const }
     return (
       <Badge variant={config.variant} size="sm" className="gap-1">
         {getStatusIcon(status)}
@@ -203,13 +204,21 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
           description="Manage and track customer orders"
           centered={false}
           actions={
-            <Button
-              variant="primary"
-              leftIcon={<Plus />}
-              onClick={() => window.location.href = '/sales-orders/new'}
-            >
-              New Order
-            </Button>
+            <div className="flex gap-2">
+              <ExportButton 
+                dataType="sales-orders" 
+                defaultFilters={{
+                  status: statusFilter === 'all' ? undefined : statusFilter
+                }}
+              />
+              <Button
+                variant="primary"
+                leftIcon={<Plus />}
+                onClick={() => window.location.href = '/sales-orders/new'}
+              >
+                New Order
+              </Button>
+            </div>
           }
         />
 
@@ -221,7 +230,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <HStack justify="between" align="center" className="mb-4">
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Total Orders</Text>
-                  <Text size="2xl" weight="bold">{stats.total}</Text>
+                  <Text size="xl" weight="bold">{stats.total}</Text>
                 </VStack>
                 <div className="p-3 bg-[var(--color-neutral-100)] dark:bg-[var(--color-neutral-800)] rounded-[var(--radius-lg)]">
                   <Package className="h-6 w-6 text-[var(--color-neutral-600)]" />
@@ -235,7 +244,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <HStack justify="between" align="center" className="mb-4">
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Approved</Text>
-                  <Text size="2xl" weight="bold">{stats.approved}</Text>
+                  <Text size="xl" weight="bold">{stats.approved}</Text>
                 </VStack>
                 <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-[var(--radius-lg)]">
                   <CheckCircle className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -249,7 +258,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <HStack justify="between" align="center" className="mb-4">
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Processing</Text>
-                  <Text size="2xl" weight="bold">{stats.processing}</Text>
+                  <Text size="xl" weight="bold">{stats.processing}</Text>
                 </VStack>
                 <div className="p-3 bg-[var(--color-semantic-warning-100)] dark:bg-[var(--color-semantic-warning-900)] rounded-[var(--radius-lg)]">
                   <Clock className="h-6 w-6 text-[var(--color-semantic-warning-600)]" />
@@ -263,7 +272,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <HStack justify="between" align="center" className="mb-4">
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Delivered</Text>
-                  <Text size="2xl" weight="bold">{stats.delivered}</Text>
+                  <Text size="xl" weight="bold">{stats.delivered}</Text>
                 </VStack>
                 <div className="p-3 bg-[var(--color-semantic-success-100)] dark:bg-[var(--color-semantic-success-900)] rounded-[var(--radius-lg)]">
                   <CheckCircle className="h-6 w-6 text-[var(--color-semantic-success-600)]" />
@@ -277,7 +286,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <HStack justify="between" align="center" className="mb-4">
                 <VStack gap="xs">
                   <Text size="sm" weight="medium" color="secondary">Total Value</Text>
-                  <Text size="2xl" weight="bold">{formatCurrency(stats.totalValue)}</Text>
+                  <Text size="xl" weight="bold">{formatCurrency(stats.totalValue)}</Text>
                 </VStack>
                 <div className="p-3 bg-[var(--color-semantic-success-100)] dark:bg-[var(--color-semantic-success-900)] rounded-[var(--radius-lg)]">
                   <Package className="h-6 w-6 text-[var(--color-semantic-success-600)]" />
@@ -411,12 +420,12 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-[var(--text-primary)]">{order.salesCase.customer.name}</div>
-                    <div className="text-xs text-[var(--text-tertiary)]">{order.salesCase.customer.email}</div>
+                    <div className="text-sm text-[var(--text-primary)]">{order.salesCase?.customer?.name || '-'}</div>
+                    <div className="text-xs text-[var(--text-tertiary)]">{order.salesCase?.customer?.email || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-[var(--text-primary)]">{order.salesCase.caseNumber}</div>
-                    <div className="text-xs text-[var(--text-tertiary)]">{order.salesCase.title}</div>
+                    <div className="text-sm text-[var(--text-primary)]">{order.salesCase?.caseNumber || '-'}</div>
+                    <div className="text-xs text-[var(--text-tertiary)]">{order.salesCase?.title || '-'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-primary)]">
                     {order.customerPO || '-'}

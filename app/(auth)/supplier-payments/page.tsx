@@ -84,12 +84,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     fetchPayments()
   }, [])
 
-  const fetchPayments = async () => {
+  const fetchPayments = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/supplier-payments', {
+      const response = await apiClient<{ data: any[]; total?: number } | any[]>('/api/supplier-payments', {
         method: 'GET'
       })
       
@@ -97,7 +97,8 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         throw new Error('Failed to fetch supplier payments')
       }
       
-      const data = response.data?.data || []
+      const responseData = response.data
+      const data = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setPayments(data)
       
       // Calculate stats
@@ -235,12 +236,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         {/* Statistics */}
         <PageSection>
           <Grid cols={4} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Payments</Text>
-                    <Text size="2xl" weight="bold">{stats.totalPayments}</Text>
+                    <Text size="xl" weight="bold">{stats.totalPayments}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <DollarSign className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -249,12 +250,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Amount</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -265,12 +266,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">This Month</Text>
-                    <Text size="2xl" weight="bold">{stats.thisMonth}</Text>
+                    <Text size="xl" weight="bold">{stats.thisMonth}</Text>
                   </VStack>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
                     <Calendar className="h-6 w-6 text-blue-600" />
@@ -279,12 +280,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">This Month Amount</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.thisMonthAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -299,7 +300,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -342,7 +343,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Payments Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Supplier Payments ({filteredPayments.length})</CardTitle>
             </CardHeader>

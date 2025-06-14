@@ -64,7 +64,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     fetchCreditCheck()
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchCustomer = async () => {
+  const fetchCustomer = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/customers/${id}`)
       if (!response.ok) throw new Error('Failed to fetch customer')
@@ -78,7 +78,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const fetchCreditCheck = async () => {
+  const fetchCreditCheck = async (): Promise<boolean> => {
     try {
       const response = await fetch(`/api/customers/${id}/credit-check`)
       if (!response.ok) throw new Error('Failed to fetch credit check')
@@ -89,7 +89,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const handleUpdateCreditLimit = async () => {
+  const handleUpdateCreditLimit = async (): Promise<void> => {
     setError('')
     setSubmitting(true)
 

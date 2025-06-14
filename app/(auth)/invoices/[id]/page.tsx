@@ -6,6 +6,7 @@ import { ArrowLeft, Edit, Send, FileText, Trash2, DollarSign, Download } from 'l
 import { InvoiceForm } from '@/components/invoices/invoice-form'
 import { PaymentForm } from '@/components/payments/payment-form'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface Invoice {
   id: string
@@ -69,12 +70,12 @@ const params = useParams()
   const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   // Fetch invoice details
-  const fetchInvoice = async () => {
+  const fetchInvoice = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)
 
-      const response = await apiClient(`/api/invoices/${invoiceId}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}`, {
         method: 'GET'
       })
 
@@ -100,7 +101,7 @@ const params = useParams()
 
   const handleUpdate = async (invoiceData: Record<string, unknown>) => {
     try {
-      const response = await apiClient(`/api/invoices/${invoiceId}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}`, {
         method: 'PUT',
         body: JSON.stringify(invoiceData)
       })
@@ -116,9 +117,9 @@ const params = useParams()
     }
   }
 
-  const handleSend = async () => {
+  const handleSend = async (): Promise<void> => {
     try {
-      const response = await apiClient(`/api/invoices/${invoiceId}/send`, {
+      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}/send`, {
         method: 'POST'
       })
 
@@ -136,12 +137,12 @@ const params = useParams()
     setShowPaymentModal(true)
   }
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = async (): Promise<void> => {
     // TODO: Implement PDF download
     console.warn('Download PDF functionality coming soon')
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!confirm('Are you sure you want to delete this invoice?')) {
       return
     }
@@ -171,9 +172,9 @@ const params = useParams()
       OVERDUE: { text: 'Overdue', className: 'bg-red-100 text-red-800' },
       CANCELLED: { text: 'Cancelled', className: 'bg-gray-100 text-gray-800' },
       REFUNDED: { text: 'Refunded', className: 'bg-purple-100 text-purple-800' }
-    }
+    } as const
 
-    const config = statusConfig[status]
+    const config = statusConfig[status as keyof typeof statusConfig]
     return (
       <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.className}`}>
         {config.text}

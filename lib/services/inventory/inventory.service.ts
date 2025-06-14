@@ -502,6 +502,139 @@ export class InventoryService {
     return oldestLot?.id
   }
 
+  async allocateFIFOStock(
+    itemId: string,
+    requiredQuantity: number,
+    tx?: Prisma.TransactionClient
+  ): Promise<Array<{ stockLotId: string; lotNumber: string; quantity: number; unitCost: number }>> {
+    const client = tx || prisma
+    
+    const availableLots = await client.stockLot.findMany({
+      where: {
+        itemId,
+        availableQty: { gt: 0 },
+        isActive: true
+      },
+      orderBy: { receivedDate: 'asc' }
+    })
+
+    const allocations: Array<{ stockLotId: string; lotNumber: string; quantity: number; unitCost: number }> = []
+    let remainingQty = requiredQuantity
+
+    for (const lot of availableLots) {
+      if (remainingQty <= 0) break
+
+      const allocatedQty = Math.min(lot.availableQty, remainingQty)
+      allocations.push({
+        stockLotId: lot.id,
+        lotNumber: lot.lotNumber,
+        quantity: allocatedQty,
+        unitCost: lot.unitCost
+      })
+
+      remainingQty -= allocatedQty
+    }
+
+    if (remainingQty > 0) {
+      throw new Error(`Insufficient stock. Required: ${requiredQuantity}, Available: ${requiredQuantity - remainingQty}`)
+    }
+
+    return allocations
+  }
+
+  async calculateFIFOCost(
+    itemId: string,
+    quantity: number,
+    tx?: Prisma.TransactionClient
+  ): Promise<{ totalCost: number; averageCost: number; allocations: Array<{ stockLotId: string; quantity: number; unitCost: number; cost: number }> }> {
+    const allocations = await this.allocateFIFOStock(itemId, quantity, tx)
+    
+    let totalCost = 0
+    const detailedAllocations = allocations.map(allocation => {
+      const cost = allocation.quantity * allocation.unitCost
+      totalCost += cost
+      return {
+        stockLotId: allocation.stockLotId,
+        quantity: allocation.quantity,
+        unitCost: allocation.unitCost,
+        cost
+      }
+    })
+
+    const averageCost = totalCost / quantity
+
+    return {
+      totalCost,
+      averageCost,
+      allocations: detailedAllocations
+    }
+  }
+
+  async reserveFIFOStock(
+    itemId: string,
+    quantity: number,
+    referenceType: string,
+    referenceId: string,
+    tx?: Prisma.TransactionClient
+  ): Promise<void> {
+    const client = tx || prisma
+    const allocations = await this.allocateFIFOStock(itemId, quantity, client)
+
+    for (const allocation of allocations) {
+      await client.stockLot.update({
+        where: { id: allocation.stockLotId },
+        data: {
+          availableQty: { decrement: allocation.quantity },
+          reservedQty: { increment: allocation.quantity }
+        }
+      })
+
+      // Create reservation record if needed (would require StockReservation model)
+      // This is already in the schema, so we can implement it later
+    }
+  }
+
+  async releaseFIFOReservation(
+    itemId: string,
+    quantity: number,
+    referenceType: string,
+    referenceId: string,
+    tx?: Prisma.TransactionClient
+  ): Promise<void> {
+    const client = tx || prisma
+    
+    // Find lots with reservations for this reference
+    // This would be implemented when we have StockReservation tracking
+    // For now, we'll update based on the oldest reserved lots
+    
+    const reservedLots = await client.stockLot.findMany({
+      where: {
+        itemId,
+        reservedQty: { gt: 0 },
+        isActive: true
+      },
+      orderBy: { receivedDate: 'asc' }
+    })
+
+    let remainingQty = quantity
+
+    for (const lot of reservedLots) {
+      if (remainingQty <= 0) break
+
+      const releaseQty = Math.min(lot.reservedQty, remainingQty)
+      
+      await client.stockLot.update({
+        where: { id: lot.id },
+        data: {
+          availableQty: { increment: releaseQty },
+          reservedQty: { decrement: releaseQty }
+        }
+      })
+
+      remainingQty -= releaseQty
+    }
+  }
+
   private async updateOrCreateStockLot(
     itemId: string,
     quantity: number,

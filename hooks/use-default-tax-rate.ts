@@ -18,7 +18,7 @@ export function useDefaultTaxRate(options: UseDefaultTaxRateOptions = {}) {
     }
   }, [taxType, enabled])
 
-  const fetchDefaultTaxRate = async () => {
+  const fetchDefaultTaxRate = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)

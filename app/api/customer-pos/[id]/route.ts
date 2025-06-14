@@ -13,10 +13,11 @@ const customerPOService = new CustomerPOService()
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const customerPO = await customerPOService.getCustomerPO(params.id)
+    const { id } = await params
+    const customerPO = await customerPOService.getCustomerPO(id)
     
     if (!customerPO) {
       return NextResponse.json(
@@ -37,17 +38,18 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
+    const { id } = await params
     const body = await request.json()
     const data = updateCustomerPOSchema.parse(body)
     
     const customerPO = await customerPOService.updateCustomerPO(
-      params.id,
+      id,
       { ...data, updatedBy: userId }
     )
     

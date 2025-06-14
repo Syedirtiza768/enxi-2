@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService, UpdateItemInput } from '@/lib/services/inventory/item.service'
 
-type RouteParams = {
-  params: Promise<{
-    id: string
-  }>
-}
+
 
 // GET /api/inventory/items/[id] - Get single item
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -38,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 // PUT /api/inventory/items/[id] - Update item
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -99,7 +95,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/inventory/items/[id] - Delete item
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {

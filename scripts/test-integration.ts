@@ -5,7 +5,7 @@ import { prisma } from '../lib/db/prisma'
 import { AuthService } from '../lib/services/auth.service'
 import { AuditService } from '../lib/services/audit.service'
 
-async function testIntegration() {
+async function testIntegration(): Promise<void> {
   console.warn('🧪 Testing Full Integration...\n')
   
   const authService = new AuthService()

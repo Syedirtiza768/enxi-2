@@ -1,65 +1,54 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Define public routes that don't require authentication
-const publicRoutes = [
-  '/login',
-  '/api/auth/login',
-  '/api/auth/logout',   // Logout endpoint
-  '/api/auth/register',
-  '/api/auth/validate', // Token validation endpoint
-  '/api/health',        // Health check endpoint
-  '/api/system/health', // System health check
-  '/api/system/errors', // System error reports
-  '/api/system/auto-fix', // System auto-fix
-  '/api/system/route-test', // Route testing system
-  '/api/test-wrapper',  // Test route
-  '/api/test-auth',     // Test auth route
-  '/_next',            // Next.js internals
-  '/favicon.ico',      // Favicon
-  '/robots.txt'        // SEO file
+// List of allowed origins - configure based on your environment
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://enxi-erp.vercel.app' // Replace with your production domain
 ]
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
+  // Handle CORS for API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    const origin = request.headers.get('origin')
+    const response = NextResponse.next()
 
-
-  // Allow public routes
-  if (publicRoutes.some(route => path.startsWith(route))) {
-    return NextResponse.next()
-  }
-
-  // Allow root path to redirect to dashboard
-  if (path === '/') {
-    return NextResponse.next()
-  }
-
-  // Check for token in cookies OR Authorization header
-  const cookieToken = request.cookies.get('auth-token')?.value
-  const authHeader = request.headers.get('authorization')
-  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null
-  const token = cookieToken || bearerToken
-  
-
-  if (!token) {
-    // For API routes, return 401
-    if (path.startsWith('/api/')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    // Check if origin is allowed
+    if (origin && allowedOrigins.includes(origin)) {
+      response.headers.set('Access-Control-Allow-Origin', origin)
+    } else if (!origin) {
+      // Allow requests with no origin (e.g., server-side requests)
+      response.headers.set('Access-Control-Allow-Origin', '*')
     }
-    
-    // For pages, redirect to login
-    const url = new URL('/login', request.url)
-    return NextResponse.redirect(url)
+
+    // Handle preflight requests
+    if (request.method === 'OPTIONS') {
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+      response.headers.set('Access-Control-Max-Age', '86400')
+      return new NextResponse(null, { status: 200, headers: response.headers })
+    }
+
+    // Set CORS headers for actual requests
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
+
+    // Add security headers
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('X-Frame-Options', 'DENY')
+    response.headers.set('X-XSS-Protection', '1; mode=block')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+    return response
   }
 
-  // Token exists, let the request proceed
+  // For non-API routes, just continue
   return NextResponse.next()
 }
 
-// Configure which routes to run middleware on
 export const config = {
   matcher: [
     /*
@@ -67,8 +56,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }

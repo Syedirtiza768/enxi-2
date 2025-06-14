@@ -54,7 +54,7 @@ async function makeRequest(
   }
 }
 
-async function login() {
+async function login(): Promise<{ user: any, session?: any }> {
   console.log('\n🔐 Logging in...');
   const response = await makeRequest('/auth/login', 'POST', {
     username: 'admin',
@@ -63,7 +63,7 @@ async function login() {
   return response.token;
 }
 
-async function testCompleteWorkflow() {
+async function testCompleteWorkflow(): Promise<void> {
   let token: string;
   
   try {

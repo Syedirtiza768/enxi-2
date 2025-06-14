@@ -17,13 +17,13 @@ export default function StandardChartPage() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
-  const handleCreateStandardCOA = async () => {
+  const handleCreateStandardCOA = async (): Promise<void> => {
     try {
       setLoading(true)
       setError('')
       setSuccess(false)
 
-      const response = await apiClient('/api/accounting/accounts/standard', {
+      const response = await apiClient<{ data: any }>('/api/accounting/accounts/standard', {
         method: 'POST',
         body: JSON.stringify({ currency })
       })

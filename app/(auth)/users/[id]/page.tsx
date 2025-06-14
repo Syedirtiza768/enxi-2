@@ -76,7 +76,7 @@ export default function UserDetailPage() {
     }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchUserData = async () => {
+  const fetchUserData = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)

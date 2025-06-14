@@ -218,7 +218,7 @@ const SPARE_PARTS_TEMPLATE = [
 ]
 
 // Main seed function
-async function main() {
+async function main(): Promise<void> {
   console.log('🌱 Starting UAE Marine Engine Maintenance Company comprehensive seed...')
   console.log(`📅 Generating ${CONFIG.DATE_RANGE_MONTHS} months of historical data`)
   
@@ -294,7 +294,7 @@ async function main() {
 }
 
 // Clear database
-async function clearDatabase() {
+async function clearDatabase(): Promise<void> {
   const tablesToClear = [
     'auditLog',
     'stockMovement',
@@ -347,7 +347,7 @@ async function clearDatabase() {
 }
 
 // Phase 1: Base Data
-async function createBaseData() {
+async function createBaseData(): Promise<T> {
   const hashedPassword = await bcrypt.hash('Password123!', 10)
   
   // Create company settings

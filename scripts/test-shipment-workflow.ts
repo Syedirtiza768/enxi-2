@@ -2,7 +2,7 @@
 
 import { prisma } from '../lib/db/prisma'
 
-async function testShipmentWorkflow() {
+async function testShipmentWorkflow(): Promise<void> {
   console.warn('Testing Shipment Workflow...\n')
   
   try {

@@ -3,18 +3,16 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
 
 // GET /api/supplier-payments/[id] - Get specific supplier payment
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supplierPaymentService = new SupplierPaymentService()
-    const payment = await supplierPaymentService.getSupplierPayment(params.id)
+    const payment = await supplierPaymentService.getSupplierPayment(resolvedParams.id)
 
     if (!payment) {
       return NextResponse.json(
@@ -34,17 +32,15 @@ export async function GET(
 }
 
 // PUT /api/supplier-payments/[id] - Update supplier payment
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const { reference, notes, paymentMethod, amount } = body
 
     // Prevent modification of amount and other critical fields
@@ -62,9 +58,9 @@ export async function PUT(
 
     const supplierPaymentService = new SupplierPaymentService()
     const payment = await supplierPaymentService.updateSupplierPayment(
-      params.id,
+      resolvedParams.id,
       updateData,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({ data: payment })

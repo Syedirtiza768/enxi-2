@@ -3,17 +3,15 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 // POST /api/three-way-matching/[id]/approve - Approve matching exception
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const { approvalReason, overrideDiscrepancies } = body
 
     if (!approvalReason || !approvalReason.trim()) {
@@ -24,8 +22,8 @@ export async function POST(
     }
 
     const threeWayMatchingService = new ThreeWayMatchingService()
-    const result = await threeWayMatchingService.approveMatching(params.id, {
-      approvedBy: _user.id,
+    const result = await threeWayMatchingService.approveMatching(resolvedParams.id, {
+      approvedBy: user.id,
       approvalReason: approvalReason.trim(),
       overrideDiscrepancies: overrideDiscrepancies || false
     })

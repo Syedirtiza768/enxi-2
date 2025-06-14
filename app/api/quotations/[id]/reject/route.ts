@@ -8,11 +8,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
-    const quotation = await quotationService.rejectQuotation(resolvedParams.id, _user.id)
+    const quotation = await quotationService.rejectQuotation(resolvedParams.id, user.id)
 
     return NextResponse.json({
       success: true,

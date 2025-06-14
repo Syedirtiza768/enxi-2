@@ -37,7 +37,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const loadCurrencySettings = async () => {
+  const loadCurrencySettings = async (): Promise<unknown> => {
     try {
       setIsLoading(true)
       const token = localStorage.getItem('token')
@@ -80,7 +80,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const refreshSettings = async () => {
+  const refreshSettings = async (): Promise<void> => {
     await loadCurrencySettings()
   }
 

@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ salesCaseId: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params

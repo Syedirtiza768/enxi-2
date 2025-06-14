@@ -6,12 +6,12 @@ const financialSummarySchema = z.object({
   asOfDate: z.string().datetime().optional()
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // TODO: Add proper authentication
-    const _userId = 'system' // Replace with actual user authentication
+    const userId = 'system' // Replace with actual user authentication
     
-    const { searchParams } = new URL(_request.url)
+    const { searchParams } = new URL(request.url)
     const asOfDateParam = searchParams.get('asOfDate')
     
     const data = financialSummarySchema.parse({

@@ -48,7 +48,7 @@ export default function PaymentsPage() {
     loadData()
   }, [])
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
       setLoading(true)
       const [paymentsResponse, customersResponse] = await Promise.all([
@@ -58,7 +58,7 @@ export default function PaymentsPage() {
       
       // Handle payments response
       if (paymentsResponse.ok && paymentsResponse.data) {
-        const paymentsData = paymentsResponse.data.data || paymentsResponse.data
+        const paymentsData = paymentsResponse.data?.data || paymentsResponse.data
         setPayments(Array.isArray(paymentsData) ? paymentsData : [])
       } else {
         console.error('Failed to load payments:', paymentsResponse.error)
@@ -67,7 +67,7 @@ export default function PaymentsPage() {
       
       // Handle customers response
       if (customersResponse.ok && customersResponse.data) {
-        const customersData = customersResponse.data.data || customersResponse.data
+        const customersData = customersResponse.data?.data || customersResponse.data
         setCustomers(Array.isArray(customersData) ? customersData : [])
       } else {
         console.error('Failed to load customers:', customersResponse.error)

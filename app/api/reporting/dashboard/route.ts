@@ -11,14 +11,14 @@ const dashboardMetricsSchema = z.object({
   includeSales: z.string().optional()
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(_request)
+    const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const { searchParams } = new URL(_request.url)
+    const { searchParams } = new URL(request.url)
     const asOfDateParam = searchParams.get('asOfDate')
     const includeInventoryParam = searchParams.get('includeInventory')
     const includeSalesParam = searchParams.get('includeSales')

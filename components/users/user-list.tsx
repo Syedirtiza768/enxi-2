@@ -93,9 +93,9 @@ export function UserList() {
       const response = await api.get<UserListResponse>(`/api/users?${params}`)
       
       if (response.ok && response.data) {
-        setUsers(response.data.data)
-        setTotal(response.data.total)
-        setTotalPages(response.data.totalPages)
+        setUsers(response.data?.data || [])
+        setTotal(response.data?.total || 0)
+        setTotalPages(response.data?.totalPages || 0)
       } else {
         throw new Error(response.error || 'Failed to fetch users')
       }
@@ -130,9 +130,9 @@ export function UserList() {
       WAREHOUSE: { label: 'Warehouse', color: 'bg-orange-100 text-orange-800' },
       VIEWER: { label: 'Viewer', color: 'bg-gray-100 text-gray-800' },
       USER: { label: 'User', color: 'bg-gray-100 text-gray-800' },
-    }
+    } as const
 
-    const config = roleConfig[role] || { label: role, color: 'bg-gray-100 text-gray-800' }
+    const config = roleConfig[role as keyof typeof roleConfig] || { label: role, color: 'bg-gray-100 text-gray-800' }
     return (
       <Badge className={config.color}>
         {config.label}

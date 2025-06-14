@@ -5,7 +5,7 @@ import { SalesTeamService } from '../lib/services/sales-team.service'
 import { Role } from '../lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 
-async function testSalesTeamIntegration() {
+async function testSalesTeamIntegration(): Promise<void> {
   console.warn('🚀 Testing Sales Team Integration...\n')
   
   const salesTeamService = new SalesTeamService()

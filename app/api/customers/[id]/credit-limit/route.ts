@@ -7,13 +7,10 @@ interface RouteParams {
 }
 
 // PUT /api/customers/[id]/credit-limit - Update customer credit limit
-export async function PUT(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const { creditLimit } = body
@@ -27,9 +24,9 @@ export async function PUT(
 
     const customerService = new CustomerService()
     const customer = await customerService.updateCreditLimit(
-      params.id,
+      id,
       creditLimit,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

@@ -5,7 +5,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 const API_URL = 'http://localhost:3000/api'
 
-async function testLogin() {
+async function testLogin(): Promise<{ user: any, session?: any }> {
   console.warn('🔐 Testing login...\n')
 
   try {

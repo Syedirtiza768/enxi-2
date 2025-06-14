@@ -53,7 +53,7 @@ export default function RolesPage() {
     fetchData()
   }, [])
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)

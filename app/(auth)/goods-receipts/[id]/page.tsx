@@ -92,17 +92,20 @@ const params = useParams()
     setError(null)
 
     try {
-      const response = await apiClient(`/api/goods-receipts/${id}`, {
+      const response = await apiClient<GoodsReceipt>(`/api/goods-receipts/${id}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error('Failed to fetch goods receipt')
+        throw new Error(response.error || 'Failed to fetch goods receipt')
       }
       
-      setGoodsReceipt(response.data)
+      if (response.data) {
+        setGoodsReceipt(response.data)
+      }
     } catch (error) {
       console.error('Error fetching goods receipt:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch goods receipt')
     } finally {
       setLoading(false)
     }
@@ -113,21 +116,21 @@ const params = useParams()
       PENDING: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
 
-  const getQualityBadge = (status: string) => {
+  const getQualityBadge = (status: 'ACCEPTED' | 'REJECTED' | 'PARTIALLY_ACCEPTED' | string) => {
     const config = {
       ACCEPTED: { label: 'Accepted', className: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-3 w-3" /> },
       REJECTED: { label: 'Rejected', className: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-3 w-3" /> },
       PARTIALLY_ACCEPTED: { label: 'Partial', className: 'bg-yellow-100 text-yellow-800', icon: <AlertTriangle className="h-3 w-3" /> }
-    }
+    } as const
     
-    const { label, className, icon } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800', icon: null }
+    const { label, className, icon } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800', icon: null }
     
     return (
       <Badge className={`${className} gap-1`}>

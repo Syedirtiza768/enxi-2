@@ -8,16 +8,14 @@ const confirmShipmentSchema = z.object({
   actualTrackingNumber: z.string().optional(),
 })
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const body = await _request.json()
+    const resolvedParams = await params
+    const body = await request.json()
     const validatedData = confirmShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
-    const shipment = await shipmentService.confirmShipment(params.id, validatedData)
+    const shipment = await shipmentService.confirmShipment(resolvedParams.id, validatedData)
     
     return NextResponse.json(shipment)
   } catch (error) {

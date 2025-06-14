@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
 
-async function seedAdmin() {
+async function seedAdmin(): Promise<User> {
   try {
     // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({

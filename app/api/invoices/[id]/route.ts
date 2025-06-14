@@ -18,13 +18,11 @@ const updateInvoiceSchema = z.object({
   })).optional()
 })
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const invoiceService = new InvoiceService()
-    const invoice = await invoiceService.getInvoice(params.id)
+    const invoice = await invoiceService.getInvoice(resolvedParams.id)
     
     if (!invoice) {
       return NextResponse.json(
@@ -43,11 +41,9 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
@@ -62,7 +58,7 @@ export async function PUT(
       updatedBy: userId
     }
     
-    const invoice = await invoiceService.updateInvoice(params.id, updateData)
+    const invoice = await invoiceService.updateInvoice(resolvedParams.id, updateData)
     
     return NextResponse.json(invoice)
   } catch (error) {

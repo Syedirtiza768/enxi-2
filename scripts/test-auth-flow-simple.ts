@@ -4,7 +4,7 @@
  * Test the complete authentication flow
  */
 
-async function testLoginAndAPI() {
+async function testLoginAndAPI(): Promise<{ user: any, session?: any }> {
   const baseUrl = 'http://localhost:3001'
   
   console.log('🔐 Testing authentication flow...\n')
@@ -90,7 +90,7 @@ async function testLoginAndAPI() {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   // Give the server time to fully start
   await new Promise(resolve => setTimeout(resolve, 2000))
   await testLoginAndAPI()

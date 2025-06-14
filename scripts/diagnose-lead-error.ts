@@ -4,7 +4,7 @@ import { api } from '../lib/api/client';
 
 const BASE_URL = 'http://localhost:3000';
 
-async function diagnoseLeadCreation() {
+async function diagnoseLeadCreation(): Promise<void> {
   console.warn('🔍 Diagnosing Lead Creation Issues\n');
 
   try {

@@ -4,7 +4,7 @@ import { withAuth } from '@/lib/utils/auth'
 import { TaxType } from '@/lib/generated/prisma'
 
 // GET /api/tax-rates/default
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   return withAuth(request, async (session) => {
     try {
       const { searchParams } = new URL(request.url)

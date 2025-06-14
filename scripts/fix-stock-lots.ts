@@ -2,7 +2,7 @@ import { PrismaClient, MovementType } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🔧 Fixing stock lots for opening movements...\n')
   
   // Get all OPENING movements without stock lots

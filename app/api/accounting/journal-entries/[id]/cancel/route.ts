@@ -7,16 +7,13 @@ interface RouteParams {
 }
 
 // POST /api/accounting/journal-entries/[id]/cancel - Cancel a journal entry
-export async function POST(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const journalEntryService = new JournalEntryService()
     
-    const journalEntry = await journalEntryService.cancelJournalEntry(params.id, _user.id)
+    const journalEntry = await journalEntryService.cancelJournalEntry(id, user.id)
 
     return NextResponse.json({
       success: true,

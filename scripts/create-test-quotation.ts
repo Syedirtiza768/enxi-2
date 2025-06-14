@@ -6,7 +6,7 @@
 
 import { PrismaClient } from '@/lib/generated/prisma'
 
-async function createTestQuotation() {
+async function createTestQuotation(): Promise<T> {
   console.warn('🚀 Creating test quotation...\n')
   
   const prisma = new PrismaClient()

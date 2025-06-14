@@ -11,7 +11,7 @@
  * 5. Check GL balance updates
  */
 
-async function testInvoicePaymentGLWorkflow() {
+async function testInvoicePaymentGLWorkflow(): Promise<void> {
   console.warn('🧪 Testing Complete Invoice-Payment-GL Workflow\n');
   
   const BASE_URL = 'http://localhost:3000';

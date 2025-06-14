@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
-async function testAuth() {
+async function testAuth(): Promise<void> {
   try {
     // Check if admin user exists
     const admin = await prisma.user.findUnique({

@@ -36,7 +36,7 @@ class QuickFrontendTests {
     };
   }
 
-  async setup() {
+  async setup(): Promise<void> {
     console.log('🚀 Setting up quick test environment...');
     
     this.browser = await chromium.launch({
@@ -60,7 +60,7 @@ class QuickFrontendTests {
     await this.login();
   }
 
-  async teardown() {
+  async teardown(): Promise<void> {
     if (this.page) await this.page.close();
     if (this.context) await this.context.close();
     if (this.browser) await this.browser.close();
@@ -87,7 +87,7 @@ class QuickFrontendTests {
     }
   }
 
-  async testCriticalPath() {
+  async testCriticalPath(): Promise<void> {
     console.log('\n🧪 Running Critical Path Tests...\n');
     
     // Test 1: Customer Creation
@@ -121,7 +121,7 @@ class QuickFrontendTests {
     console.log('✅ Payment page loaded');
   }
 
-  async testFormInteractions() {
+  async testFormInteractions(): Promise<void> {
     console.log('\n🧪 Testing Form Interactions...\n');
     
     // Test customer form
@@ -147,7 +147,7 @@ class QuickFrontendTests {
     }
   }
 
-  async testNavigation() {
+  async testNavigation(): Promise<void> {
     console.log('\n🧪 Testing Navigation...\n');
     
     const navLinks = [
@@ -169,7 +169,7 @@ class QuickFrontendTests {
     }
   }
 
-  async run() {
+  async run(): Promise<void> {
     try {
       await this.setup();
       await this.testCriticalPath();
@@ -187,7 +187,7 @@ class QuickFrontendTests {
 }
 
 // Command line interface
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const config: Partial<QuickTestConfig> = {};
   

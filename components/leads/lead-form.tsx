@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { 
   VStack, 
   HStack, 
@@ -13,7 +13,24 @@ import {
 } from '@/components/design-system'
 import { LeadSource, LeadStatus } from '@/lib/types/shared-enums'
 import { LeadResponse, CreateLeadData, UpdateLeadData } from '@/lib/types/lead.types'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  validateEmail,
+  validatePhone,
+  checkMaxLength,
+  notesValidator,
+  positiveNumberValidator
+} from '@/lib/validators/common.validator'
+import { useDebounce } from '@/lib/hooks/use-debounce'
+import { apiClient } from '@/lib/api/client'
+
+// Backend constraints matching schema and validator
+const MAX_NAME_LENGTH = 100
+const MAX_EMAIL_LENGTH = 255
+const MAX_COMPANY_LENGTH = 255
+const MAX_JOBTITLE_LENGTH = 100
+const MAX_NOTES_LENGTH = 1000
+const MAX_PHONE_LENGTH = 20
 
 interface LeadFormProps {
   initialData?: Partial<LeadResponse>
@@ -21,9 +38,19 @@ interface LeadFormProps {
   isEdit?: boolean
 }
 
+interface ValidationErrors {
+  [key: string]: string
+}
+
+interface FieldStatus {
+  [key: string]: 'checking' | 'valid' | 'error'
+}
+
 export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [fieldStatus, setFieldStatus] = useState<FieldStatus>({})
+  const [checkingEmail, setCheckingEmail] = useState(false)
 
   const [formData, setFormData] = useState({
     firstName: initialData?.firstName || '',
@@ -34,29 +61,76 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     jobTitle: initialData?.jobTitle || '',
     source: initialData?.source || LeadSource.WEBSITE,
     status: initialData?.status || LeadStatus.NEW,
-    notes: initialData?.notes || '',
+    notes: initialData?.notes || ''
   })
+
+  // Debounce email for duplicate checking
+  const debouncedEmail = useDebounce(formData.email, 500)
+
+  // Check for duplicate email
+  const checkDuplicateEmail = useCallback(async (email: string) => {
+    if (!email || validateEmail(email)) return
+    
+    setCheckingEmail(true)
+    setFieldStatus(prev => ({ ...prev, email: 'checking' }))
+    
+    try {
+      const response = await apiClient<{ data: any }>(`/api/leads?email=${encodeURIComponent(email)}`)
+      if (response.data && response.data.length > 0 && !isEdit) {
+        // Only check for duplicates if not editing or if email changed
+        const existingLead = response.data.find((lead: any) => 
+          lead.email === email && lead.id !== initialData?.id
+        )
+        if (existingLead) {
+          setErrors(prev => ({ ...prev, email: 'A lead with this email already exists' }))
+          setFieldStatus(prev => ({ ...prev, email: 'error' }))
+        } else {
+          setFieldStatus(prev => ({ ...prev, email: 'valid' }))
+          if (errors.email === 'A lead with this email already exists') {
+            setErrors(prev => {
+              const newErrors = { ...prev }
+              delete newErrors.email
+              return newErrors
+            })
+          }
+        }
+      } else {
+        setFieldStatus(prev => ({ ...prev, email: 'valid' }))
+      }
+    } catch (error) {
+      console.error('Error checking email:', error)
+    } finally {
+      setCheckingEmail(false)
+    }
+  }, [errors.email, isEdit, initialData?.id])
+
+  // Run email duplicate check when debounced email changes
+  useEffect(() => {
+    if (debouncedEmail && (!isEdit || debouncedEmail !== initialData?.email)) {
+      checkDuplicateEmail(debouncedEmail)
+    }
+  }, [debouncedEmail, checkDuplicateEmail, isEdit, initialData?.email])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrors({})
 
-    // Basic validation
-    const newErrors: Record<string, string> = {}
+    // Comprehensive validation
+    const newErrors: ValidationErrors = {}
     
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
-    }
-    
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format'
+    // Validate all fields before submission
+    const fieldsToValidate = ['firstName', 'lastName', 'email', 'phone', 'company', 'jobTitle', 'notes']
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field as keyof typeof formData])
+      if (error) {
+        newErrors[field] = error
+      }
+    })
+
+    // Check for existing lead with same email if email has error status
+    if (fieldStatus.email === 'error' && errors.email) {
+      newErrors.email = errors.email
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -91,11 +165,81 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const validateField = useCallback((field: string, value: any): string | null => {
+    switch (field) {
+      case 'firstName':
+      case 'lastName':
+        if (!value?.trim()) return `${field === 'firstName' ? 'First' : 'Last'} name is required`
+        return checkMaxLength(value, MAX_NAME_LENGTH, field === 'firstName' ? 'First name' : 'Last name')
+      
+      case 'email':
+        const emailError = validateEmail(value)
+        if (emailError) return emailError
+        return checkMaxLength(value, MAX_EMAIL_LENGTH, 'Email')
+      
+      case 'phone':
+        if (value) {
+          const phoneError = validatePhone(value)
+          if (phoneError) return phoneError
+        }
+        return null
+      
+      case 'company':
+        if (value) {
+          return checkMaxLength(value, MAX_COMPANY_LENGTH, 'Company')
+        }
+        return null
+      
+      case 'jobTitle':
+        if (value) {
+          return checkMaxLength(value, MAX_JOBTITLE_LENGTH, 'Job title')
+        }
+        return null
+      
+      case 'notes':
+        if (value) {
+          return checkMaxLength(value, MAX_NOTES_LENGTH, 'Notes')
+        }
+        return null
+      
+      case 'source':
+        if (!value) return 'Lead source is required'
+        if (!Object.values(LeadSource).includes(value as LeadSource)) {
+          return 'Invalid lead source'
+        }
+        return null
+      
+      case 'status':
+        if (isEdit && !value) return 'Lead status is required'
+        if (value && !Object.values(LeadStatus).includes(value as LeadStatus)) {
+          return 'Invalid lead status'
+        }
+        return null
+      
+      default:
+        return null
+    }
+  }, [])
+
+  const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+    
+    // Real-time validation
+    const error = validateField(field, value)
+    
+    if (error) {
+      setErrors(prev => ({ ...prev, [field]: error }))
+      setFieldStatus(prev => ({ ...prev, [field]: 'error' }))
+    } else {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+      // Don't set email to valid immediately if it needs async validation
+      if (field !== 'email' || (isEdit && value === initialData?.email)) {
+        setFieldStatus(prev => ({ ...prev, [field]: 'valid' }))
+      }
     }
   }
 
@@ -112,125 +256,202 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
         )}
 
         <Grid cols={2} gap="md">
-          <Input
-            label="First Name"
-            type="text"
-            value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
-            disabled={isLoading}
-            error={errors.firstName}
-            required
-            fullWidth
-          />
+          <div className="relative">
+            <Input
+              label="First Name"
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
+              disabled={isLoading}
+              error={errors.firstName}
+              required
+              fullWidth
+              maxLength={MAX_NAME_LENGTH}
+              placeholder="John"
+            />
+            {fieldStatus.firstName === 'valid' && (
+              <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+            )}
+          </div>
 
-          <Input
-            label="Last Name"
-            type="text"
-            value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
-            disabled={isLoading}
-            error={errors.lastName}
-            required
-            fullWidth
-          />
+          <div className="relative">
+            <Input
+              label="Last Name"
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
+              disabled={isLoading}
+              error={errors.lastName}
+              required
+              fullWidth
+              maxLength={MAX_NAME_LENGTH}
+              placeholder="Doe"
+            />
+            {fieldStatus.lastName === 'valid' && (
+              <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+            )}
+          </div>
         </Grid>
 
-        <Input
-          label="Email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => handleInputChange('email', e.target.value)}
-          disabled={isLoading}
-          error={errors.email}
-          required
-          fullWidth
-        />
+        <div className="relative">
+          <Input
+            label="Email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange('email', e.target.value.toLowerCase())}
+            disabled={isLoading || checkingEmail}
+            error={errors.email}
+            required
+            fullWidth
+            maxLength={MAX_EMAIL_LENGTH}
+            placeholder="john.doe@example.com"
+          />
+          {fieldStatus.email === 'checking' && (
+            <div className="absolute right-3 top-9 h-5 w-5">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 dark:border-white"></div>
+            </div>
+          )}
+          {fieldStatus.email === 'valid' && (
+            <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+          )}
+          {fieldStatus.email === 'error' && errors.email && (
+            <AlertCircle className="absolute right-3 top-9 h-5 w-5 text-red-500" />
+          )}
+        </div>
 
         <Grid cols={2} gap="md">
-          <Input
-            label="Phone"
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            disabled={isLoading}
-            fullWidth
-          />
+          <div className="relative">
+            <Input
+              label="Phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              disabled={isLoading}
+              error={errors.phone}
+              fullWidth
+              maxLength={MAX_PHONE_LENGTH}
+              placeholder="+971 50 123 4567"
+            />
+            {fieldStatus.phone === 'valid' && formData.phone && (
+              <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+            )}
+          </div>
 
-          <Input
-            label="Company"
-            type="text"
-            value={formData.company}
-            onChange={(e) => handleInputChange('company', e.target.value)}
-            disabled={isLoading}
-            fullWidth
-          />
+          <div className="relative">
+            <Input
+              label="Company"
+              type="text"
+              value={formData.company}
+              onChange={(e) => handleInputChange('company', e.target.value)}
+              disabled={isLoading}
+              error={errors.company}
+              fullWidth
+              maxLength={MAX_COMPANY_LENGTH}
+              placeholder="Acme Corporation"
+            />
+            {fieldStatus.company === 'valid' && formData.company && (
+              <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+            )}
+          </div>
         </Grid>
 
-        <Input
-          label="Job Title"
-          type="text"
-          value={formData.jobTitle}
-          onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-          disabled={isLoading}
-          fullWidth
-        />
+        <div className="relative">
+          <Input
+            label="Job Title"
+            type="text"
+            value={formData.jobTitle}
+            onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+            disabled={isLoading}
+            error={errors.jobTitle}
+            fullWidth
+            maxLength={MAX_JOBTITLE_LENGTH}
+            placeholder="Sales Manager"
+          />
+          {fieldStatus.jobTitle === 'valid' && formData.jobTitle && (
+            <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+          )}
+        </div>
 
         <Grid cols={isEdit ? 2 : 1} gap="md">
-          <Select
-            label="Source"
-            value={formData.source}
-            onValueChange={(value) => handleInputChange('source', value)}
-            disabled={isLoading}
-            options={[
-              { value: 'WEBSITE', label: 'Website' },
-              { value: 'REFERRAL', label: 'Referral' },
-              { value: 'SOCIAL_MEDIA', label: 'Social Media' },
-              { value: 'EMAIL_CAMPAIGN', label: 'Email Campaign' },
-              { value: 'PHONE_CALL', label: 'Phone Call' },
-              { value: 'TRADE_SHOW', label: 'Trade Show' },
-              { value: 'ADVERTISING', label: 'Advertising' },
-              { value: 'OTHER', label: 'Other' },
-            ]}
-            fullWidth
-          />
-
-          {isEdit && (
+          <div className="relative">
             <Select
-              label="Status"
-              value={formData.status}
-              onValueChange={(value) => handleInputChange('status', value)}
+              label="Lead Source"
+              value={formData.source}
+              onChange={(e) => handleInputChange('source', e.target.value)}
               disabled={isLoading}
+              error={errors.source}
+              required
               options={[
-                { value: 'NEW', label: 'New' },
-                { value: 'CONTACTED', label: 'Contacted' },
-                { value: 'QUALIFIED', label: 'Qualified' },
-                { value: 'PROPOSAL_SENT', label: 'Proposal Sent' },
-                { value: 'NEGOTIATING', label: 'Negotiating' },
-                { value: 'CONVERTED', label: 'Converted' },
-                { value: 'LOST', label: 'Lost' },
-                { value: 'DISQUALIFIED', label: 'Disqualified' },
+                { value: LeadSource.WEBSITE, label: 'Website' },
+                { value: LeadSource.REFERRAL, label: 'Referral' },
+                { value: LeadSource.SOCIAL_MEDIA, label: 'Social Media' },
+                { value: LeadSource.EMAIL_CAMPAIGN, label: 'Email Campaign' },
+                { value: LeadSource.PHONE_CALL, label: 'Phone Call' },
+                { value: LeadSource.TRADE_SHOW, label: 'Trade Show' },
+                { value: LeadSource.ADVERTISING, label: 'Advertising' },
+                { value: LeadSource.OTHER, label: 'Other' },
               ]}
               fullWidth
             />
+            {fieldStatus.source === 'valid' && (
+              <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+            )}
+          </div>
+
+          {isEdit && (
+            <div className="relative">
+              <Select
+                label="Status"
+                value={formData.status}
+                onChange={(e) => handleInputChange('status', e.target.value)}
+                disabled={isLoading}
+                error={errors.status}
+                required
+                options={[
+                  { value: LeadStatus.NEW, label: 'New' },
+                  { value: LeadStatus.CONTACTED, label: 'Contacted' },
+                  { value: LeadStatus.QUALIFIED, label: 'Qualified' },
+                  { value: LeadStatus.PROPOSAL_SENT, label: 'Proposal Sent' },
+                  { value: LeadStatus.NEGOTIATING, label: 'Negotiating' },
+                  { value: LeadStatus.CONVERTED, label: 'Converted' },
+                  { value: LeadStatus.LOST, label: 'Lost' },
+                  { value: LeadStatus.DISQUALIFIED, label: 'Disqualified' },
+                ]}
+                fullWidth
+              />
+              {fieldStatus.status === 'valid' && (
+                <CheckCircle2 className="absolute right-3 top-9 h-5 w-5 text-green-500" />
+              )}
+            </div>
           )}
         </Grid>
 
-        <Textarea
-          label="Notes"
-          value={formData.notes}
-          onChange={(e) => handleInputChange('notes', e.target.value)}
-          disabled={isLoading}
-          rows={3}
-          placeholder="Additional notes about this lead..."
-          fullWidth
-        />
+        <div className="relative">
+          <Textarea
+            label="Notes"
+            value={formData.notes}
+            onChange={(e) => handleInputChange('notes', e.target.value)}
+            disabled={isLoading}
+            error={errors.notes}
+            rows={3}
+            placeholder="Additional notes about this lead..."
+            fullWidth
+            maxLength={MAX_NOTES_LENGTH}
+          />
+          <div className="absolute right-3 bottom-3 text-xs text-gray-500">
+            {formData.notes?.length || 0}/{MAX_NOTES_LENGTH}
+          </div>
+        </div>
 
-        <HStack justify="end" className="pt-4">
+        <HStack justify="end" className="pt-4" gap="md">
+          <Text size="sm" color="secondary">
+            <span className="text-red-500">*</span> Required fields
+          </Text>
           <Button
             type="submit"
             variant="primary"
             size="lg"
-            disabled={isLoading}
+            disabled={isLoading || checkingEmail || fieldStatus.email === 'error'}
             loading={isLoading}
           >
             {isEdit ? 'Update Lead' : 'Create Lead'}

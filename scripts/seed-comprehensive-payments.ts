@@ -17,7 +17,7 @@ const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 
 // Helper to generate random amounts
 const randomAmount = (min: number, max: number) => Math.round((Math.random() * (max - min) + min) * 100) / 100
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Comprehensive Payment & Customer Ledger Seed...\n')
 
   try {
@@ -49,7 +49,7 @@ async function main() {
     }
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<void> {
   console.warn('🧹 Cleaning database...')
   
   const cleanupOperations = [
@@ -88,7 +88,7 @@ async function cleanDatabase() {
   console.warn('✅ Database cleaned')
 }
 
-async function createBaseData() {
+async function createBaseData(): Promise<void> {
   console.warn('👥 Creating base users and accounts...')
   
   const hashedPassword = await bcrypt.hash('demo123', 10)
@@ -906,7 +906,7 @@ async function createAgingData(baseData: any) {
   }
 }
 
-async function printComprehensiveSummary() {
+async function printComprehensiveSummary(): Promise<void> {
   console.warn('\n' + '='.repeat(70))
   console.warn('📊 COMPREHENSIVE PAYMENT & CUSTOMER LEDGER SEED SUMMARY')
   console.warn('='.repeat(70))

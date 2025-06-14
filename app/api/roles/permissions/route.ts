@@ -9,7 +9,7 @@ const userService = new UserService()
  * GET /api/roles/permissions - Get all role permissions
  */
 export const GET = createProtectedHandler(
-  async (_request) => {
+  async (request) => {
     try {
       // Get all role permissions
       const rolePermissions: Record<Role, string[]> = {} as Record<Role, string[]>

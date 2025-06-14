@@ -2,18 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // POST /api/purchase-orders/[id]/approve - Approve purchase order
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,8 +15,8 @@ export async function POST(
 
     const purchaseOrderService = new PurchaseOrderService()
     const purchaseOrder = await purchaseOrderService.approvePurchaseOrder(
-      params.id,
-      _user.id
+      resolvedParams.id,
+      user.id
     )
 
     return NextResponse.json({ data: purchaseOrder })

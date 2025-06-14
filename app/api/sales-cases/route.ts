@@ -5,7 +5,7 @@ import { SalesCaseStatus } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/db/prisma'
 
 // GET /api/sales-cases - List all sales cases with filtering
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getUserFromRequest(request)
     const salesCaseService = new SalesCaseService()
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/sales-cases - Create new sales case
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getUserFromRequest(request)
     const body = await request.json()

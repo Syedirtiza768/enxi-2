@@ -4,18 +4,16 @@ import { QuotationPDF } from '@/lib/pdf/quotation-template'
 import { QuotationService } from '@/lib/services/quotation.service'
 import { authenticateUser } from '@/lib/auth/jwt'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // Authenticate user
     const user = await authenticateUser(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const quotationId = params.id
+    const quotationId = resolvedParams.id
 
     // Get quotation with full details
     const quotationService = new QuotationService()

@@ -16,12 +16,10 @@ const createExpenseSchema = z.object({
 
 const salesCaseService = new SalesCaseService()
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const expenses = await salesCaseService.getExpensesByCase(params.id)
+    const resolvedParams = await params
+    const expenses = await salesCaseService.getExpensesByCase(resolvedParams.id)
     
     return NextResponse.json(expenses)
   } catch (error) {
@@ -33,11 +31,9 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
@@ -45,7 +41,7 @@ export async function POST(
     const data = createExpenseSchema.parse(body)
     
     const expense = await salesCaseService.createExpense({
-      salesCaseId: params.id,
+      salesCaseId: resolvedParams.id,
       expenseDate: new Date(data.expenseDate),
       category: data.category,
       description: data.description,

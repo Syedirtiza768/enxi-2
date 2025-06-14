@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   // Check if admin user exists
   let adminUser = await prisma.user.findFirst({
     where: { email: 'admin@enxi.com' }

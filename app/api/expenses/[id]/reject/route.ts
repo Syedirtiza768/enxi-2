@@ -8,18 +8,16 @@ const rejectExpenseSchema = z.object({
 
 const salesCaseService = new SalesCaseService()
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
     const body = await request.json()
     const { reason } = rejectExpenseSchema.parse(body)
     
-    const expense = await salesCaseService.rejectExpense(params.id, userId, reason)
+    const expense = await salesCaseService.rejectExpense(resolvedParams.id, userId, reason)
     
     return NextResponse.json(expense)
   } catch (error) {

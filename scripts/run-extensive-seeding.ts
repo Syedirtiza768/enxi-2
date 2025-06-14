@@ -8,7 +8,7 @@ import { seedEdgeCases } from './seed-edge-cases'
 
 const prisma = new PrismaClient()
 
-async function runExtensiveSeeding() {
+async function runExtensiveSeeding(): Promise<void> {
   console.warn('🌱 STARTING COMPREHENSIVE EXTENSIVE DATABASE SEEDING')
   console.warn('='.repeat(60))
   console.warn('This will create a massive, realistic dataset including:')
@@ -66,7 +66,7 @@ async function runExtensiveSeeding() {
     }
 }
 
-async function generateFinalStatistics() {
+async function generateFinalStatistics(): Promise<void> {
   try {
     // Customer statistics
     const customerCount = await prisma.customer.count()

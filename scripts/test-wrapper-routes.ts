@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function testWrapperRoutes() {
+async function testWrapperRoutes(): Promise<void> {
   console.warn('🧪 Testing Wrapper Routes\n');
   
   const BASE_URL = 'http://localhost:3000';

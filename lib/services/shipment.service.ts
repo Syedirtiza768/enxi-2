@@ -1,29 +1,14 @@
 import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
-import { Prisma } from '@prisma/client'
-
-// Define status constants
-const ShipmentStatus = {
-  PREPARING: 'PREPARING' as const,
-  READY: 'READY' as const,
-  SHIPPED: 'SHIPPED' as const,
-  IN_TRANSIT: 'IN_TRANSIT' as const,
-  DELIVERED: 'DELIVERED' as const,
-  RETURNED: 'RETURNED' as const,
-  CANCELLED: 'CANCELLED' as const,
-}
-
-const OrderStatus = {
-  PENDING: 'PENDING' as const,
-  APPROVED: 'APPROVED' as const,
-  PROCESSING: 'PROCESSING' as const,
-  SHIPPED: 'SHIPPED' as const,
-  DELIVERED: 'DELIVERED' as const,
-  INVOICED: 'INVOICED' as const,
-  COMPLETED: 'COMPLETED' as const,
-  CANCELLED: 'CANCELLED' as const,
-  ON_HOLD: 'ON_HOLD' as const,
-}
+import { AuditService } from './audit.service'
+import { InventoryService } from './inventory/inventory.service'
+import { 
+  Prisma,
+  ShipmentStatus,
+  OrderStatus,
+  MovementType
+} from '@/lib/generated/prisma'
+import { AuditAction } from '@/lib/validators/audit.validator'
 
 interface CreateShipmentDto {
   items: {
@@ -56,8 +41,13 @@ interface CancelShipmentDto {
 }
 
 export class ShipmentService extends BaseService {
+  private auditService: AuditService
+  private inventoryService: InventoryService
+
   constructor() {
     super('ShipmentService')
+    this.auditService = new AuditService()
+    this.inventoryService = new InventoryService()
   }
 
   async createShipmentFromOrder(salesOrderId: string, data: CreateShipmentDto) {
@@ -66,8 +56,16 @@ export class ShipmentService extends BaseService {
       const order = await prisma.salesOrder.findUnique({
         where: { id: salesOrderId },
         include: {
-          items: true,
-          customer: true,
+          items: {
+            include: {
+              item: true
+            }
+          },
+          salesCase: {
+            include: {
+              customer: true
+            }
+          }
         },
       })
 
@@ -75,7 +73,7 @@ export class ShipmentService extends BaseService {
         throw new Error('Sales order not found')
       }
 
-      if (order.status !== OrderStatus.APPROVED) {
+      if (order.status !== OrderStatus.APPROVED && order.status !== OrderStatus.PROCESSING) {
         throw new Error('Order must be approved before creating shipment')
       }
 
@@ -172,20 +170,51 @@ export class ShipmentService extends BaseService {
           },
         })
 
-        // Create stock movements for inventory deduction
+        // Create stock movements for inventory deduction using FIFO
         for (const item of shipment.items) {
-          await tx.stockMovement.create({
-            data: {
-              type: 'OUT',
-              itemId: item.itemId,
-              quantity: item.quantityShipped,
-              reason: 'SHIPMENT',
-              referenceType: 'SHIPMENT',
-              referenceId: shipment.id,
-              description: `Shipment ${shipment.shipmentNumber}`,
-              performedBy: data.shippedBy,
-            },
+          // Check if item tracks inventory
+          const itemData = await tx.item.findUnique({
+            where: { id: item.itemId }
           })
+          
+          if (itemData && itemData.trackInventory) {
+            // Get FIFO allocations
+            const fifoAllocations = await this.inventoryService.allocateFIFOStock(
+              item.itemId,
+              item.quantityShipped,
+              tx
+            )
+            
+            // Calculate weighted average cost from FIFO
+            const totalCost = fifoAllocations.reduce((sum, alloc) => 
+              sum + (alloc.quantity * alloc.unitCost), 0
+            )
+            const avgCost = totalCost / item.quantityShipped
+            
+            // Create stock movement
+            await this.inventoryService.processStockIssue(
+              item.itemId,
+              item.quantityShipped,
+              {
+                type: 'SHIPMENT',
+                id: shipment.id,
+                number: shipment.shipmentNumber
+              },
+              data.shippedBy
+            )
+            
+            // Update FIFO lots
+            for (const allocation of fifoAllocations) {
+              await tx.stockLot.update({
+                where: { id: allocation.stockLotId },
+                data: {
+                  availableQty: {
+                    decrement: allocation.quantity
+                  }
+                }
+              })
+            }
+          }
 
           // Update sales order item shipped quantity
           await tx.salesOrderItem.update({
@@ -418,6 +447,80 @@ export class ShipmentService extends BaseService {
         data: trackingData,
       })
     })
+  }
+
+  async getOrderDeliveryStatus(salesOrderId: string): Promise<{
+    orderStatus: string
+    totalItems: number
+    fullyDeliveredItems: number
+    partiallyDeliveredItems: number
+    undeliveredItems: number
+    deliveryPercentage: number
+    items: Array<{
+      id: string
+      itemCode: string
+      description: string
+      orderedQuantity: number
+      shippedQuantity: number
+      remainingQuantity: number
+      deliveryStatus: 'UNDELIVERED' | 'PARTIAL' | 'COMPLETE'
+    }>
+  }> {
+    const order = await prisma.salesOrder.findUnique({
+      where: { id: salesOrderId },
+      include: {
+        items: true
+      }
+    })
+
+    if (!order) {
+      throw new Error('Sales order not found')
+    }
+
+    const items = order.items.map(item => {
+      const remainingQuantity = item.quantity - item.quantityShipped
+      let deliveryStatus: 'UNDELIVERED' | 'PARTIAL' | 'COMPLETE' = 'UNDELIVERED'
+      
+      if (item.quantityShipped >= item.quantity) {
+        deliveryStatus = 'COMPLETE'
+      } else if (item.quantityShipped > 0) {
+        deliveryStatus = 'PARTIAL'
+      }
+
+      return {
+        id: item.id,
+        itemCode: item.itemCode,
+        description: item.description,
+        orderedQuantity: item.quantity,
+        shippedQuantity: item.quantityShipped,
+        remainingQuantity,
+        deliveryStatus
+      }
+    })
+
+    const fullyDeliveredItems = items.filter(i => i.deliveryStatus === 'COMPLETE').length
+    const partiallyDeliveredItems = items.filter(i => i.deliveryStatus === 'PARTIAL').length
+    const undeliveredItems = items.filter(i => i.deliveryStatus === 'UNDELIVERED').length
+
+    const totalOrderedQty = items.reduce((sum, item) => sum + item.orderedQuantity, 0)
+    const totalShippedQty = items.reduce((sum, item) => sum + item.shippedQuantity, 0)
+    const deliveryPercentage = totalOrderedQty > 0 ? (totalShippedQty / totalOrderedQty) * 100 : 0
+
+    return {
+      orderStatus: order.status,
+      totalItems: items.length,
+      fullyDeliveredItems,
+      partiallyDeliveredItems,
+      undeliveredItems,
+      deliveryPercentage,
+      items
+    }
+  }
+
+  async createPartialShipment(salesOrderId: string, data: CreateShipmentDto) {
+    // This method is essentially the same as createShipmentFromOrder
+    // but emphasizes that partial shipments are supported
+    return this.createShipmentFromOrder(salesOrderId, data)
   }
 
   private async generateShipmentNumber(): Promise<string> {

@@ -264,7 +264,7 @@ export default function DesignSystemPage() {
                         { value: 'guest', label: 'Guest', disabled: true }
                       ]}
                       value={formData.role}
-                      onValueChange={(value: string) => setFormData({ ...formData, role: value })}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       placeholder="Select a role"
                     />
                   </GridItem>
@@ -325,7 +325,7 @@ export default function DesignSystemPage() {
                       label="Country"
                       options={[{ value: 'us', label: 'United States' }]}
                       value=""
-                      onValueChange={(_value: string) => {}} // Read-only for demo
+                      onChange={() => {}} // Read-only for demo
                       error="Please select your country"
                     />
                     <Textarea

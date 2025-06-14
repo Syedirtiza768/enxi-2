@@ -39,7 +39,7 @@ function checkFileContent(filePath: string, patterns: { pattern: string | RegExp
   return results
 }
 
-async function verifyQuotationUICompletion() {
+async function verifyQuotationUICompletion(): Promise<void> {
   console.warn('🔍 Verifying Quotation UI Schema Alignment Completion...\n')
   
   const results: CheckResult[] = []

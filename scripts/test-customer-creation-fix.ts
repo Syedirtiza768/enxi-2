@@ -25,7 +25,7 @@ function logResult(result: TestResult) {
   results.push(result)
 }
 
-async function testLogin() {
+async function testLogin(): Promise<{ user: any, session?: any }> {
   console.log('\n🔐 Testing Login...')
   
   try {
@@ -156,7 +156,7 @@ async function testGetCustomers(token: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🧪 Testing Customer Creation Fix')
   console.log('================================')
   

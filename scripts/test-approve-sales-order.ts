@@ -2,7 +2,7 @@
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-async function testApprove() {
+async function testApprove(): Promise<void> {
   try {
     // Login
     const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {

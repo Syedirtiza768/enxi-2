@@ -49,12 +49,12 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
 
   // Load inventory items
   useEffect(() => {
-    const fetchInventoryItems = async () => {
+    const fetchInventoryItems = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
         
-        const response = await apiClient('/api/inventory/items', {
+        const response = await apiClient<{ data: InventoryItem[]; total?: number } | InventoryItem[]>('/api/inventory/items', {
           method: 'GET'
         })
         
@@ -62,7 +62,8 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
           throw new Error('Failed to load inventory items')
         }
         
-        const inventoryData = response.data?.data || response.data || []
+        const responseData = response.data
+        const inventoryData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setInventoryItems(Array.isArray(inventoryData) ? inventoryData : [])
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load inventory items')

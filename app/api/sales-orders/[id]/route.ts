@@ -23,13 +23,11 @@ const updateSalesOrderSchema = z.object({
   })).optional()
 })
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const salesOrderService = new SalesOrderService()
-    const salesOrder = await salesOrderService.getSalesOrder(params.id)
+    const salesOrder = await salesOrderService.getSalesOrder(resolvedParams.id)
     
     if (!salesOrder) {
       return NextResponse.json(
@@ -48,15 +46,13 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await _request.json()
+    const body = await request.json()
     const data = updateSalesOrderSchema.parse(body)
     
     const salesOrderService = new SalesOrderService()
@@ -68,7 +64,7 @@ export async function PUT(
       updatedBy: userId
     }
     
-    const salesOrder = await salesOrderService.updateSalesOrder(params.id, updateData)
+    const salesOrder = await salesOrderService.updateSalesOrder(resolvedParams.id, updateData)
     
     return NextResponse.json(salesOrder)
   } catch (error) {

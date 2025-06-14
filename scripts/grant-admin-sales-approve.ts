@@ -4,7 +4,7 @@ import { PrismaClient } from '@/lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
-async function grantSalesApprovePermission() {
+async function grantSalesApprovePermission(): Promise<void> {
   try {
     // First, check if the permission exists
     let permission = await prisma.permission.findUnique({

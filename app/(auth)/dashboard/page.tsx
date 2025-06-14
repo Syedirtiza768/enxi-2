@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchStats = async (): Promise<void> => {
       try {
         const response = await api.get<LeadStatsType>('/api/leads/stats')
         if (response.ok) {
@@ -59,7 +59,7 @@ export default function DashboardPage() {
                 <HStack justify="between" align="center" className="mb-4">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Leads</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       {isLoading ? '-' : totalLeads}
                     </Text>
                   </VStack>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
                 <HStack justify="between" align="center" className="mb-4">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Converted</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       {isLoading ? '-' : leadStats?.CONVERTED || 0}
                     </Text>
                   </VStack>
@@ -97,7 +97,7 @@ export default function DashboardPage() {
                 <HStack justify="between" align="center" className="mb-4">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">New This Month</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       {isLoading ? '-' : leadStats?.NEW || 0}
                     </Text>
                   </VStack>

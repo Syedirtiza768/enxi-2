@@ -4,7 +4,7 @@ import { CompanySettingsService } from '../lib/services/company-settings.service
 const prisma = new PrismaClient()
 const companySettingsService = new CompanySettingsService()
 
-async function testCurrencyAndLeads() {
+async function testCurrencyAndLeads(): Promise<void> {
   try {
     console.log('Testing Currency Settings...')
     

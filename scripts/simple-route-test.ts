@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function simpleRouteTest() {
+async function simpleRouteTest(): Promise<void> {
   console.warn('🚀 Simple Route Testing and Fixing Demo\n');
   
   const BASE_URL = 'http://localhost:3000';

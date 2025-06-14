@@ -71,9 +71,24 @@ export async function withAudit<T>(
 }
 
 export function extractAuditContext(request: NextRequest): AuditContext {
-  const userId = request.headers.get('x-user-id') || 'anonymous'
+  // Try to extract user ID from various sources
+  let userId = request.headers.get('x-user-id') || 'anonymous'
+  
+  // Try to get user from auth token if available
+  const authHeader = request.headers.get('authorization')
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      // This is a simplified approach - in production you might want to decode the JWT
+      // For now, we'll use the header approach or fallback to anonymous
+      userId = request.headers.get('x-user-id') || 'anonymous'
+    } catch (error) {
+      // If token parsing fails, keep as anonymous
+    }
+  }
+  
   const ipAddress = request.headers.get('x-forwarded-for') || 
                     request.headers.get('x-real-ip') || 
+                    request.ip ||
                     'unknown'
   const userAgent = request.headers.get('user-agent') || 'unknown'
   

@@ -13,7 +13,7 @@ export function prismaWithAudit(auditOptions: AuditOptions) {
     query: {
       // Intercept all model operations
       $allModels: {
-        async create({ model, args, query }) {
+        async create({ model, args, query }): Promise<T> {
           const result = await query(args)
           
           // Skip audit logs for AuditLog model to prevent infinite loop
@@ -34,7 +34,7 @@ export function prismaWithAudit(auditOptions: AuditOptions) {
           return result
         },
         
-        async update({ model, args, query }) {
+        async update({ model, args, query }): Promise<T> {
           // Fetch before state
           let beforeData = null
           if (model !== 'AuditLog' && args.where) {
@@ -62,7 +62,7 @@ export function prismaWithAudit(auditOptions: AuditOptions) {
           return result
         },
         
-        async delete({ model, args, query }) {
+        async delete({ model, args, query }): Promise<void> {
           // Fetch before state
           let beforeData = null
           if (model !== 'AuditLog' && args.where) {

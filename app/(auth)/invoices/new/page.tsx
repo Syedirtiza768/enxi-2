@@ -13,7 +13,7 @@ function NewInvoiceContent() {
 
   const handleSubmit = async (invoiceData: Record<string, unknown>) => {
     try {
-      const response = await apiClient('/api/invoices', {
+      const response = await apiClient<{ data: any[] }>('/api/invoices', {
         method: 'POST',
         body: JSON.stringify(invoiceData)
       })

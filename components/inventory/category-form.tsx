@@ -57,7 +57,7 @@ export function CategoryForm({
 
   // Load GL accounts on mount
   useEffect(() => {
-    const loadGLAccounts = async () => {
+    const loadGLAccounts = async (): Promise<number> => {
       try {
         const response = await fetch('/api/accounting/accounts')
         if (response.ok) {

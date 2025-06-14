@@ -10,12 +10,12 @@ const bulkUpdateStatusSchema = z.object({
 
 const leadService = new LeadService()
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await _request.json()
+    const body = await request.json()
     const { leadIds, status } = bulkUpdateStatusSchema.parse(body)
     
     const updatedCount = await leadService.bulkUpdateLeadStatus(

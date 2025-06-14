@@ -4,9 +4,9 @@ import { LeadSource } from '@/lib/generated/prisma'
 
 const leadService = new LeadService()
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(_request.url)
+    const { searchParams } = new URL(request.url)
     
     const filters: unknown = {}
     

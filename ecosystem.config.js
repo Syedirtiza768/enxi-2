@@ -2,15 +2,14 @@ module.exports = {
   apps: [{
     name: 'enxi-erp',
     script: 'node_modules/.bin/next',
-    args: 'start',
-    cwd: '.',
+    args: 'dev',
+    cwd: '/Users/irtizahassan/apps/enxi/enxi-erp/enxi-2',
     instances: 1,
     exec_mode: 'fork',
     autorestart: true,
     watch: false,
     max_memory_restart: '1G',
     env: {
-      NODE_ENV: 'production',
       PORT: 3000,
       DATABASE_URL: 'file:/Users/irtizahassan/apps/enxi/enxi-erp/enxi-2/prisma/prisma/dev.db',
       NEXTAUTH_URL: 'http://localhost:3000',

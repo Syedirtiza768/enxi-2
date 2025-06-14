@@ -2,18 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // POST /api/stock-transfers/[id]/approve - Approve stock transfer
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,8 +15,8 @@ export async function POST(
 
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.approveStockTransfer(
-      params.id,
-      _user.id
+      resolvedParams.id,
+      user.id
     )
 
     return NextResponse.json({ data: transfer })

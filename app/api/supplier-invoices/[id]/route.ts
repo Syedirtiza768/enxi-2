@@ -3,18 +3,16 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierInvoiceService } from '@/lib/services/purchase/supplier-invoice.service'
 
 // GET /api/supplier-invoices/[id] - Get specific supplier invoice
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supplierInvoiceService = new SupplierInvoiceService()
-    const invoice = await supplierInvoiceService.getSupplierInvoice(params.id)
+    const invoice = await supplierInvoiceService.getSupplierInvoice(resolvedParams.id)
 
     if (!invoice) {
       return NextResponse.json(
@@ -34,17 +32,15 @@ export async function GET(
 }
 
 // PUT /api/supplier-invoices/[id] - Update supplier invoice
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const {
       invoiceNumber,
       invoiceDate,
@@ -84,9 +80,9 @@ export async function PUT(
 
     const supplierInvoiceService = new SupplierInvoiceService()
     const invoice = await supplierInvoiceService.updateSupplierInvoice(
-      params.id,
+      resolvedParams.id,
       updateData,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({ data: invoice })
@@ -116,18 +112,16 @@ export async function PUT(
 }
 
 // DELETE /api/supplier-invoices/[id] - Cancel supplier invoice
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supplierInvoiceService = new SupplierInvoiceService()
-    const invoice = await supplierInvoiceService.cancelSupplierInvoice(params.id, _user.id)
+    const invoice = await supplierInvoiceService.cancelSupplierInvoice(resolvedParams.id, user.id)
 
     return NextResponse.json({ data: invoice })
   } catch (error: unknown) {

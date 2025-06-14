@@ -53,7 +53,7 @@ async function fixApiRouteFile(filePath: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🔧 Fixing ALL remaining API route parameter naming issues...\n')
   
   // Find all route.ts files in the API directory

@@ -92,16 +92,16 @@ export function ThreeWayMatchingDashboard() {
     fetchDashboardData()
   }, [])
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/three-way-matching/dashboard', {
+      const response = await apiClient<MatchingDashboardData>('/api/three-way-matching/dashboard', {
         method: 'GET'
       })
 
-      if (!response.ok) {
+      if (!response.ok || !response.data) {
         throw new Error('Failed to fetch matching data')
       }
 
@@ -125,12 +125,12 @@ export function ThreeWayMatchingDashboard() {
     setShowRejectionDialog(true)
   }
 
-  const confirmApproval = async () => {
+  const confirmApproval = async (): Promise<unknown> => {
     if (!selectedException || !approvalReason.trim()) return
 
     setActionLoading('approve')
     try {
-      const response = await apiClient(`/api/three-way-matching/${selectedException.id}/approve`, {
+      const response = await apiClient<{ success: boolean }>(`/api/three-way-matching/${selectedException.id}/approve`, {
         method: 'POST',
         body: JSON.stringify({
           approvalReason: approvalReason.trim(),
@@ -153,12 +153,12 @@ export function ThreeWayMatchingDashboard() {
     }
   }
 
-  const confirmRejection = async () => {
+  const confirmRejection = async (): Promise<unknown> => {
     if (!selectedException || !rejectionReason.trim()) return
 
     setActionLoading('reject')
     try {
-      const response = await apiClient(`/api/three-way-matching/${selectedException.id}/reject`, {
+      const response = await apiClient<{ success: boolean }>(`/api/three-way-matching/${selectedException.id}/reject`, {
         method: 'POST',
         body: JSON.stringify({
           rejectionReason: rejectionReason.trim(),
@@ -181,9 +181,9 @@ export function ThreeWayMatchingDashboard() {
     }
   }
 
-  const exportReport = async () => {
+  const exportReport = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/three-way-matching/export', {
+      const response = await apiClient<Blob>('/api/three-way-matching/export', {
         method: 'GET'
       })
 
@@ -232,7 +232,7 @@ export function ThreeWayMatchingDashboard() {
   const filteredExceptions = data?.exceptions.filter(exception => {
     const matchesSearch = search === '' || 
       exception.purchaseOrder.poNumber.toLowerCase().includes(search.toLowerCase()) ||
-      exception.purchaseOrder.supplier.name.toLowerCase().includes(search.toLowerCase()) ||
+      exception.purchaseOrder.supplier?.name?.toLowerCase().includes(search.toLowerCase()) ||
       exception.description.toLowerCase().includes(search.toLowerCase())
     
     const matchesType = typeFilter === 'all' || exception.type === typeFilter
@@ -272,7 +272,7 @@ export function ThreeWayMatchingDashboard() {
       {/* Header */}
       <HStack justify="between" align="center">
         <VStack gap="xs">
-          <Text size="2xl" weight="bold">Three-Way Matching Dashboard</Text>
+          <Text size="xl" weight="bold">Three-Way Matching Dashboard</Text>
           <Text color="secondary">Monitor procurement document matching and exceptions</Text>
         </VStack>
         <HStack gap="sm">
@@ -299,26 +299,26 @@ export function ThreeWayMatchingDashboard() {
 
       {/* Summary Statistics */}
       <Grid cols={4} gap="lg">
-        <Card variant="elevated">
+        <Card>
           <CardContent className="p-6">
             <VStack gap="sm">
               <HStack gap="sm" align="center">
                 <FileText className="h-5 w-5 text-[var(--color-brand-primary-600)]" />
                 <Text size="sm" weight="medium" color="secondary">Total Transactions</Text>
               </HStack>
-              <Text size="2xl" weight="bold">{data.summary.totalTransactions}</Text>
+              <Text size="xl" weight="bold">{data.summary.totalTransactions}</Text>
             </VStack>
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card>
           <CardContent className="p-6">
             <VStack gap="sm">
               <HStack gap="sm" align="center">
                 <CheckCircle className="h-5 w-5 text-green-600" />
                 <Text size="sm" weight="medium" color="secondary">Fully Matched</Text>
               </HStack>
-              <Text size="2xl" weight="bold">{data.summary.fullyMatched}</Text>
+              <Text size="xl" weight="bold">{data.summary.fullyMatched}</Text>
               <Text size="sm" color="secondary">
                 {data.summary.fullyMatchedRate.toFixed(1)}% success rate
               </Text>
@@ -326,26 +326,26 @@ export function ThreeWayMatchingDashboard() {
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card>
           <CardContent className="p-6">
             <VStack gap="sm">
               <HStack gap="sm" align="center">
                 <AlertTriangle className="h-5 w-5 text-yellow-600" />
                 <Text size="sm" weight="medium" color="secondary">Pending Review</Text>
               </HStack>
-              <Text size="2xl" weight="bold">{data.summary.pendingReview}</Text>
+              <Text size="xl" weight="bold">{data.summary.pendingReview}</Text>
             </VStack>
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card>
           <CardContent className="p-6">
             <VStack gap="sm">
               <HStack gap="sm" align="center">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <Text size="sm" weight="medium" color="secondary">Avg. Matching Time</Text>
               </HStack>
-              <Text size="2xl" weight="bold">{data.summary.averageMatchingTime.toFixed(1)}h</Text>
+              <Text size="xl" weight="bold">{data.summary.averageMatchingTime.toFixed(1)}h</Text>
             </VStack>
           </CardContent>
         </Card>
@@ -353,7 +353,7 @@ export function ThreeWayMatchingDashboard() {
 
       {/* Trends Section */}
       <Grid cols={2} gap="lg">
-        <Card variant="elevated">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -372,7 +372,7 @@ export function ThreeWayMatchingDashboard() {
           </CardContent>
         </Card>
 
-        <Card variant="elevated">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
@@ -393,7 +393,7 @@ export function ThreeWayMatchingDashboard() {
       </Grid>
 
       {/* Filters */}
-      <Card variant="elevated">
+      <Card>
         <CardContent className="p-6">
           <HStack gap="md" className="flex-col sm:flex-row">
             <div className="flex-1">
@@ -434,7 +434,7 @@ export function ThreeWayMatchingDashboard() {
       </Card>
 
       {/* Exceptions Table */}
-      <Card variant="elevated">
+      <Card>
         <CardHeader>
           <CardTitle>Matching Exceptions ({filteredExceptions.length})</CardTitle>
         </CardHeader>
@@ -472,7 +472,7 @@ export function ThreeWayMatchingDashboard() {
                   <TableCell className="font-medium">
                     {exception.purchaseOrder.poNumber}
                   </TableCell>
-                  <TableCell>{exception.purchaseOrder.supplier.name}</TableCell>
+                  <TableCell>{exception.purchaseOrder.supplier?.name || 'N/A'}</TableCell>
                   <TableCell>
                     <Badge className="bg-blue-100 text-blue-800">
                       {getTypeDescription(exception.type)}

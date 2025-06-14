@@ -4,7 +4,7 @@ import { JournalEntryService } from '@/lib/services/accounting/journal-entry.ser
 import { JournalStatus } from '@/lib/generated/prisma'
 
 // GET /api/accounting/journal-entries - List journal entries with filtering
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getUserFromRequest(request)
     const journalEntryService = new JournalEntryService()
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/accounting/journal-entries - Create new journal entry
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await getUserFromRequest(request)
     const body = await request.json()
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         debitAmount: line.debitAmount || 0,
         creditAmount: line.creditAmount || 0
       })),
-      createdBy: _user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

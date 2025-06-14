@@ -49,7 +49,7 @@ async function fixFile(filePath: string) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   const appDir = resolve(process.cwd(), 'app')
   
   // Find all route.ts files in dynamic segments

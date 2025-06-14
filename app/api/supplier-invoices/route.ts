@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierInvoiceService } from '@/lib/services/purchase/supplier-invoice.service'
 
 // GET /api/supplier-invoices - Get all supplier invoices
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/supplier-invoices - Create supplier invoice
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       totalAmount: parseFloat(totalAmount),
       taxAccountId: taxAccountId || undefined,
       notes: notes || undefined,
-      createdBy: _user.id
+      createdBy: user.id
     }
 
     const supplierInvoiceService = new SupplierInvoiceService()

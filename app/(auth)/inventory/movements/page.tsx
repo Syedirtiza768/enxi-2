@@ -93,21 +93,21 @@ export default function StockMovementsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeFilter, dateFilter, locationFilter])
 
-  const fetchLocations = async () => {
+  const fetchLocations = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/locations', {
+      const response = await apiClient<Array<{id: string, name: string}>>('/api/locations', {
         method: 'GET'
       })
       
       if (response.ok && response.data) {
-        setLocations(response.data)
+        setLocations(Array.isArray(response.data) ? response.data : [])
       }
     } catch (error) {
       console.error('Error fetching locations:', error)
     }
   }
 
-  const fetchMovements = async () => {
+  const fetchMovements = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
@@ -117,7 +117,7 @@ export default function StockMovementsPage() {
       if (dateFilter !== 'all') params.append('days', dateFilter)
       if (locationFilter !== 'all') params.append('locationId', locationFilter)
 
-      const response = await apiClient(`/api/inventory/stock-movements?${params}`, {
+      const response = await apiClient<{ movements: StockMovement[] }>(`/api/inventory/stock-movements?${params}`, {
         method: 'GET'
       })
       
@@ -210,9 +210,9 @@ export default function StockMovementsPage() {
       ADJUSTMENT: { label: 'Adjustment', className: 'bg-blue-100 text-blue-800' },
       TRANSFER: { label: 'Transfer', className: 'bg-purple-100 text-purple-800' },
       OPENING: { label: 'Opening', className: 'bg-gray-100 text-gray-800' }
-    }
+    } as const
     
-    const { label, className } = config[type] || { label: type, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[type as keyof typeof config] || { label: type, className: 'bg-gray-100 text-gray-800' }
     
     return (
       <Badge className={`${className} gap-1`}>
@@ -295,12 +295,12 @@ export default function StockMovementsPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={3} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total In</Text>
-                    <Text size="2xl" weight="bold">{stats.totalIn}</Text>
+                    <Text size="xl" weight="bold">{stats.totalIn}</Text>
                   </VStack>
                   <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
                     <TrendingUp className="h-6 w-6 text-green-600" />
@@ -309,12 +309,12 @@ export default function StockMovementsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Out</Text>
-                    <Text size="2xl" weight="bold">{stats.totalOut}</Text>
+                    <Text size="xl" weight="bold">{stats.totalOut}</Text>
                   </VStack>
                   <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
                     <TrendingDown className="h-6 w-6 text-red-600" />
@@ -323,12 +323,12 @@ export default function StockMovementsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Adjustments</Text>
-                    <Text size="2xl" weight="bold">{stats.totalAdjustments}</Text>
+                    <Text size="xl" weight="bold">{stats.totalAdjustments}</Text>
                   </VStack>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
                     <RefreshCw className="h-6 w-6 text-blue-600" />
@@ -337,12 +337,12 @@ export default function StockMovementsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Transfers</Text>
-                    <Text size="2xl" weight="bold">{stats.totalTransfers}</Text>
+                    <Text size="xl" weight="bold">{stats.totalTransfers}</Text>
                   </VStack>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
                     <Activity className="h-6 w-6 text-purple-600" />
@@ -351,12 +351,12 @@ export default function StockMovementsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Today</Text>
-                    <Text size="2xl" weight="bold">{stats.todayMovements}</Text>
+                    <Text size="xl" weight="bold">{stats.todayMovements}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-neutral-100)] dark:bg-[var(--color-neutral-800)] rounded-lg">
                     <Calendar className="h-6 w-6 text-[var(--color-neutral-600)]" />
@@ -365,12 +365,12 @@ export default function StockMovementsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">This Week</Text>
-                    <Text size="2xl" weight="bold">{stats.weekMovements}</Text>
+                    <Text size="xl" weight="bold">{stats.weekMovements}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <Package className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -383,7 +383,7 @@ export default function StockMovementsPage() {
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -447,7 +447,7 @@ export default function StockMovementsPage() {
 
         {/* Movements Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-hidden">
+          <Card className="overflow-hidden">
             <CardHeader>
               <CardTitle>Movement History ({filteredMovements.length})</CardTitle>
             </CardHeader>

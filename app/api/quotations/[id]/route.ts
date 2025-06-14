@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
@@ -40,7 +40,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     const body = await request.json()
     
     const { 
@@ -63,7 +63,13 @@ export async function PUT(
       }
     }
 
-    const updateData: any = {}
+    const updateData: {
+      validUntil?: Date
+      paymentTerms?: string
+      deliveryTerms?: string
+      notes?: string
+      items?: typeof items
+    } = {}
     if (validUntil) updateData.validUntil = new Date(validUntil)
     if (paymentTerms !== undefined) updateData.paymentTerms = paymentTerms
     if (deliveryTerms !== undefined) updateData.deliveryTerms = deliveryTerms
@@ -74,7 +80,7 @@ export async function PUT(
     const resolvedParams = await params
     const quotation = await quotationService.createNewVersion(resolvedParams.id, {
       ...updateData,
-      createdBy: _user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

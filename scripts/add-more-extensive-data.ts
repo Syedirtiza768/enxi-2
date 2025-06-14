@@ -12,7 +12,7 @@ const LEAD_SOURCES: LeadSource[] = [
   'TRADE_SHOW', 'ADVERTISING', 'DIRECT_MAIL', 'SEO', 'CONTENT_MARKETING'
 ]
 
-async function createAdditionalCustomers() {
+async function createAdditionalCustomers(): Promise<void> {
   console.warn('🔥 Creating additional 50+ customers...')
   
   const additionalCustomers = [
@@ -129,7 +129,7 @@ async function createAdditionalCustomers() {
   console.warn(`✅ Created ${additionalCustomers.length} additional customers`)
 }
 
-async function generateFinalComprehensiveStats() {
+async function generateFinalComprehensiveStats(): Promise<void> {
   console.warn('\n📊 FINAL COMPREHENSIVE DATABASE STATISTICS')
   console.warn('='.repeat(60))
   
@@ -247,7 +247,7 @@ async function generateFinalComprehensiveStats() {
     
 } catch {}
 
-async function runAdditionalSeeding() {
+async function runAdditionalSeeding(): Promise<void> {
   console.warn('🔥 ADDING EXTENSIVE ADDITIONAL DATA TO EXISTING SEED')
   console.warn('='.repeat(60))
   

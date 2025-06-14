@@ -3,24 +3,22 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierInvoiceService } from '@/lib/services/purchase/supplier-invoice.service'
 
 // GET /api/suppliers/[id]/invoices - Get supplier invoices for specific supplier
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = _request.nextUrl.searchParams
+    const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
 
     const supplierInvoiceService = new SupplierInvoiceService()
     const invoices = await supplierInvoiceService.getSupplierInvoicesBySupplier(
-      params.id,
+      resolvedParams.id,
       {
         status: status || undefined,
         limit: limit ? parseInt(limit) : undefined,

@@ -106,38 +106,41 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }, [invoiceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchInvoice = async () => {
+  const fetchInvoice = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient(`/api/supplier-invoices/${invoiceId}`, {
+      const response = await apiClient<SupplierInvoice>(`/api/supplier-invoices/${invoiceId}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to fetch supplier invoice')
+        throw new Error(response.error || 'Failed to fetch supplier invoice')
       }
       
-      setInvoice(response.data)
+      if (response.data) {
+        setInvoice(response.data)
+      }
     } catch (error) {
       console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch invoice')
     } finally {
       setLoading(false)
     }
   }
 
-  const handlePostInvoice = async () => {
+  const handlePostInvoice = async (): Promise<NextResponse> => {
     if (!invoice || invoice.status !== 'DRAFT') return
 
     setActionLoading('post')
     try {
-      const response = await apiClient(`/api/supplier-invoices/${invoice.id}/post`, {
+      const response = await apiClient<{ data: any[] }>(`/api/supplier-invoices/${invoice.id}/post`, {
         method: 'POST'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to post invoice')
+        throw new Error(response.error || 'Failed to post invoice')
       }
       
       await fetchInvoice() // Refresh invoice data
@@ -147,7 +150,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleCancelInvoice = async () => {
+  const handleCancelInvoice = async (): Promise<any[]> => {
     if (!invoice || invoice.status === 'CANCELLED') return
 
     if (!confirm('Are you sure you want to cancel this invoice? This action cannot be undone.')) {
@@ -156,12 +159,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
     setActionLoading('cancel')
     try {
-      const response = await apiClient(`/api/supplier-invoices/${invoice.id}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/supplier-invoices/${invoice.id}`, {
         method: 'DELETE'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to cancel invoice')
+        throw new Error(response.error || 'Failed to cancel invoice')
       }
       
       await fetchInvoice() // Refresh invoice data
@@ -176,9 +179,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
       DRAFT: { label: 'Draft', className: 'bg-gray-100 text-gray-800' },
       POSTED: { label: 'Posted', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
@@ -190,9 +193,9 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
       OVER_MATCHED: { label: 'Over Matched', className: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-3 w-3" /> },
       UNDER_MATCHED: { label: 'Under Matched', className: 'bg-orange-100 text-orange-800', icon: <AlertTriangle className="h-3 w-3" /> },
       PENDING: { label: 'Pending', className: 'bg-gray-100 text-gray-800', icon: <Clock className="h-3 w-3" /> }
-    }
+    } as const
     
-    const { label, className, icon } = config[matchingStatus] || { 
+    const { label, className, icon } = config[matchingStatus as keyof typeof config] || { 
       label: matchingStatus, 
       className: 'bg-gray-100 text-gray-800',
       icon: <Clock className="h-3 w-3" />
@@ -304,7 +307,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         />
 
         {error && (
-          <Card variant="outlined" className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4">
               <HStack gap="sm" align="center">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -316,7 +319,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Invoice Overview */}
         <Grid cols={4} gap="lg">
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -331,7 +334,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -343,7 +346,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -357,7 +360,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -375,7 +378,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         {/* Invoice Details */}
         <Grid cols={2} gap="lg">
           {/* Supplier Information */}
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -415,7 +418,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           </Card>
 
           {/* Invoice Information */}
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -460,7 +463,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         </Grid>
 
         {/* Invoice Items */}
-        <Card variant="elevated">
+        <Card>
           <CardHeader>
             <CardTitle>Invoice Items</CardTitle>
           </CardHeader>
@@ -523,7 +526,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         </Card>
 
         {/* Invoice Totals */}
-        <Card variant="elevated">
+        <Card>
           <CardHeader>
             <CardTitle>Invoice Summary</CardTitle>
           </CardHeader>
@@ -555,7 +558,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Notes */}
         {invoice.notes && (
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle>Notes</CardTitle>
             </CardHeader>

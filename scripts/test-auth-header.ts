@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function testAuthHeader() {
+async function testAuthHeader(): Promise<void> {
   console.warn('🔍 Testing Auth Header Processing\n');
 
   const BASE_URL = 'http://localhost:3000';

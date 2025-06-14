@@ -199,7 +199,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Load user info and company settings
   useEffect(() => {
-    const loadUserInfo = async () => {
+    const loadUserInfo = async (): Promise<void> => {
       // Get user info from token
       const token = localStorage.getItem('token')
       if (token) {
@@ -279,7 +279,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [])
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       await fetch('/api/auth/logout', { 
         method: 'POST',

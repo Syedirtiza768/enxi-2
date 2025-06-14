@@ -3,12 +3,10 @@ import { SalesCaseService } from '@/lib/services/sales-case.service'
 
 const salesCaseService = new SalesCaseService()
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const summary = await salesCaseService.getSalesCaseSummary(params.id)
+    const resolvedParams = await params
+    const summary = await salesCaseService.getSalesCaseSummary(resolvedParams.id)
     
     return NextResponse.json(summary)
   } catch (error) {

@@ -7,7 +7,7 @@
 
 import { runQuotationExpiryCheck } from '@/lib/cron/quotation-expiry'
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('Manual quotation expiry check starting...')
   
   try {

@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Package, Grid3X3, TrendingUp, FileText, BarChart3, PackagePlus, PackageMinus } from 'lucide-react'
+import { Package, Grid3X3, TrendingUp, FileText, BarChart3, PackagePlus, PackageMinus, LineChart } from 'lucide-react'
 
 export function InventoryNav() {
   const pathname = usePathname()
@@ -50,6 +50,12 @@ export function InventoryNav() {
       href: '/inventory/reports',
       icon: FileText,
       description: 'Inventory reports'
+    },
+    {
+      title: 'Analytics',
+      href: '/inventory/analytics',
+      icon: LineChart,
+      description: 'Visual analytics dashboard'
     }
   ]
 

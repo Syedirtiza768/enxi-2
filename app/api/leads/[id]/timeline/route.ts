@@ -3,12 +3,10 @@ import { LeadService } from '@/lib/services/lead.service'
 
 const leadService = new LeadService()
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const timeline = await leadService.getLeadTimeline(params.id)
+    const resolvedParams = await params
+    const timeline = await leadService.getLeadTimeline(resolvedParams.id)
     
     return NextResponse.json(timeline)
   } catch (error) {

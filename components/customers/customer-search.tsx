@@ -33,12 +33,13 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
     loadCustomers()
   }, [])
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (): Promise<void> => {
     setLoading(true)
     try {
-      const response = await apiClient('/api/customers', { method: 'GET' })
+      const response = await apiClient<{ data: Customer[]; total?: number } | Customer[]>('/api/customers', { method: 'GET' })
       if (response.ok && response.data) {
-        const customersData = response.data.data || response.data
+        const responseData = response.data
+        const customersData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
     } catch (error) {

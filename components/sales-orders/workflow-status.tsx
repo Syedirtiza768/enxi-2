@@ -60,7 +60,7 @@ export function WorkflowStatus({ salesOrder }: WorkflowStatusProps) {
     return 'text-gray-400'
   }
 
-  const handleApproveOrder = async () => {
+  const handleApproveOrder = async (): Promise<void> => {
     setApproving(true)
     try {
       const response = await api.post(`/api/sales-orders/${salesOrder.id}/approve`, {
@@ -73,8 +73,9 @@ export function WorkflowStatus({ salesOrder }: WorkflowStatusProps) {
       } else {
         console.error('Failed to approve order:', response.error)
       }
-} catch (error) {
-      console.error('Error:', error);
+    } catch (error) {
+      console.error('Error:', error)
+    } finally {
       setApproving(false)
     }
   }

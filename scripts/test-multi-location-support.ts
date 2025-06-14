@@ -31,7 +31,7 @@ interface TestResults {
   warnings: string[]
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🏢 Starting Multi-Location Support System Test...\n')
   
   const results: TestResults = {

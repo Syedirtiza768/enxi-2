@@ -64,12 +64,12 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
   const loadJournalEntry = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await apiClient(`/api/accounting/journal-entries/${resolvedParams.id}`, {
+      const response = await apiClient<{ data: JournalEntry } | JournalEntry>(`/api/accounting/journal-entries/${resolvedParams.id}`, {
         method: 'GET'
       })
 
       if (response.ok && response.data) {
-        const entryData = response.data.data || response.data
+        const entryData = response.data && 'data' in response.data ? response.data.data : response.data
         setJournalEntry(entryData)
       } else {
         setError('Failed to load journal entry')
@@ -87,12 +87,12 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
   }, [loadJournalEntry])
 
 
-  const handlePost = async () => {
+  const handlePost = async (): Promise<NextResponse> => {
     if (!journalEntry || journalEntry.status !== 'DRAFT') return
 
     try {
       setProcessing(true)
-      const response = await apiClient(`/api/accounting/journal-entries/${resolvedParams.id}/post`, {
+      const response = await apiClient<{ data: any }>(`/api/accounting/journal-entries/${resolvedParams.id}/post`, {
         method: 'POST'
       })
 
@@ -107,12 +107,12 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
     }
   }
 
-  const handleCancel = async () => {
+  const handleCancel = async (): Promise<unknown> => {
     if (!journalEntry || journalEntry.status !== 'DRAFT') return
 
     try {
       setProcessing(true)
-      const response = await apiClient(`/api/accounting/journal-entries/${resolvedParams.id}/cancel`, {
+      const response = await apiClient<{ data: any }>(`/api/accounting/journal-entries/${resolvedParams.id}/cancel`, {
         method: 'POST'
       })
 

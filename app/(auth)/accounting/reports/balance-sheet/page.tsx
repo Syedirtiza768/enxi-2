@@ -31,7 +31,7 @@ export default function BalanceSheetPage() {
   const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split('T')[0])
   const [currency, setCurrency] = useState('USD')
 
-  const fetchBalanceSheet = async () => {
+  const fetchBalanceSheet = async (): Promise<void> => {
     setLoading(true)
     setError('')
     

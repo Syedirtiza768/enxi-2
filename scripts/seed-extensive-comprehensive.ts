@@ -99,7 +99,7 @@ interface InvoiceData {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 }
 
-async function createComprehensiveUsers() {
+async function createComprehensiveUsers(): Promise<T> {
   console.warn('🔧 Creating comprehensive user accounts...')
   
   const users = [
@@ -138,7 +138,9 @@ async function createComprehensiveUsers() {
         }
       })
       createdUsers.push(user)
-} catch {    }
+    } catch (error) {
+      console.error(`Failed to create user ${userData.email}:`, error)
+    }
   }
   
   console.warn(`✅ Created ${createdUsers.length} users`)
@@ -220,7 +222,9 @@ async function createExtensiveCustomers(): Promise<CustomerData[]> {
           updatedAt: customer.createdAt
         }
       })
-} catch {    }
+    } catch (error) {
+      console.error(`Failed to create customer ${customer.name}:`, error)
+    }
   }
   
   console.warn(`✅ Created ${customers.length} customers across ${INDUSTRIES.length} industries`)
@@ -322,7 +326,9 @@ async function createExtensiveInvoices(customers: CustomerData[], users: any[]):
           createdBy: accountant.id
         }
       })
-} catch {    }
+    } catch (error) {
+      console.error(`Failed to create invoice ${invoice.id}:`, error)
+    }
   }
   
   console.warn(`✅ Created ${invoices.length} invoices`)
@@ -381,7 +387,9 @@ async function createExtensivePayments(customers: CustomerData[], invoices: Invo
             customerBalances[customer.id] -= pattern.amount
             totalPayments++
             paymentCounter++
-} catch {          }
+          } catch (error) {
+            console.error(`Failed to create payment ${paymentCounter}:`, error)
+          }
         }
       }
     }
@@ -394,7 +402,9 @@ async function createExtensivePayments(customers: CustomerData[], invoices: Invo
         where: { id: customerId },
         data: { currentBalance: Math.max(0, balance) }
       })
-} catch {    }
+    } catch (error) {
+      console.error(`Failed to update customer balance for ${customerId}:`, error)
+    }
   }
   
   console.warn(`✅ Created ${totalPayments} payments`)
@@ -576,7 +586,9 @@ async function createBusinessRelationshipEvents(customers: CustomerData[], users
           }
         })
         eventCounter++
-} catch {      }
+      } catch (error) {
+        console.error(`Failed to create event ${eventCounter}:`, error)
+      }
     }
   }
   
@@ -630,7 +642,9 @@ async function createCustomerSupport(customers: CustomerData[], users: any[]) {
           }
         })
         interactionCounter++
-} catch {      }
+      } catch (error) {
+        console.error(`Failed to create support interaction ${interactionCounter}:`, error)
+      }
     }
   }
   
@@ -689,7 +703,9 @@ async function createSeasonalTrends(customers: CustomerData[], users: any[]) {
               }
             })
             trendCounter++
-} catch {          }
+          } catch (error) {
+            console.error(`Failed to create trend ${trendCounter}:`, error)
+          }
         }
       }
     }
@@ -698,7 +714,7 @@ async function createSeasonalTrends(customers: CustomerData[], users: any[]) {
   console.warn(`✅ Created ${trendCounter} seasonal trend records`)
 }
 
-async function generateComprehensiveReports() {
+async function generateComprehensiveReports(): Promise<void> {
   console.warn('📊 Generating comprehensive business reports...')
   
   // Customer summary statistics
@@ -759,7 +775,7 @@ async function generateComprehensiveReports() {
   console.warn('\n✅ EXTENSIVE SEEDING COMPLETED SUCCESSFULLY!')
 }
 
-export async function seedExtensiveComprehensive() {
+export async function seedExtensiveComprehensive(): Promise<void> {
   try {
     console.warn('🚀 Starting extensive and comprehensive database seeding...')
     
@@ -787,10 +803,10 @@ export async function seedExtensiveComprehensive() {
     // Step 8: Generate comprehensive reports
     await generateComprehensiveReports()
     
-} catch (error) {
-      console.error('Error:', error);
-      await prisma.$disconnect()
-    }
+  } catch (error) {
+    console.error('Error:', error);
+    await prisma.$disconnect()
+  }
 }
 
 // Run if called directly

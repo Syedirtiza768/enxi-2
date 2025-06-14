@@ -817,4 +817,65 @@ export class StockMovementService {
       }
     })
   }
+
+  async getAggregatedMovements(options: {
+    from: Date
+    to: Date
+    groupBy: 'daily' | 'weekly' | 'monthly'
+  }): Promise<Array<{
+    date: string
+    inbound: number
+    outbound: number
+    net: number
+  }>> {
+    const { from, to, groupBy } = options
+
+    // Define date format based on groupBy
+    let dateFormat: string
+    let groupByClause: string
+    
+    switch (groupBy) {
+      case 'daily':
+        dateFormat = '%Y-%m-%d'
+        groupByClause = 'DATE(movement_date)'
+        break
+      case 'weekly':
+        dateFormat = '%Y-%u'
+        groupByClause = 'YEARWEEK(movement_date)'
+        break
+      case 'monthly':
+        dateFormat = '%Y-%m'
+        groupByClause = 'DATE_FORMAT(movement_date, "%Y-%m")'
+        break
+      default:
+        dateFormat = '%Y-%m-%d'
+        groupByClause = 'DATE(movement_date)'
+    }
+
+    // Raw SQL query for aggregation
+    const result = await prisma.$queryRaw`
+      SELECT 
+        DATE_FORMAT(movement_date, ${dateFormat}) as date,
+        COALESCE(SUM(CASE WHEN quantity > 0 THEN quantity ELSE 0 END), 0) as inbound,
+        COALESCE(SUM(CASE WHEN quantity < 0 THEN ABS(quantity) ELSE 0 END), 0) as outbound,
+        COALESCE(SUM(quantity), 0) as net
+      FROM stock_movements 
+      WHERE movement_date >= ${from} 
+        AND movement_date <= ${to}
+      GROUP BY ${Prisma.raw(groupByClause)}
+      ORDER BY movement_date ASC
+    ` as Array<{
+      date: string
+      inbound: number
+      outbound: number
+      net: number
+    }>
+
+    return result.map(row => ({
+      date: row.date,
+      inbound: Number(row.inbound),
+      outbound: Number(row.outbound),
+      net: Number(row.net)
+    }))
+  }
 }

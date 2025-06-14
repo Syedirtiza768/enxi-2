@@ -133,7 +133,7 @@ async function fixFile(filePath: string, fixType: 'request' | 'user' | 'both') {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🔧 Starting API parameter naming fixes...\n')
   
   let totalFixed = 0

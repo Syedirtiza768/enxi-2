@@ -215,7 +215,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     return true
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<unknown> => {
     if (!user || !salesOrder || !validateForm()) return
 
     try {

@@ -49,7 +49,7 @@ async function makeRequest(
   }
 }
 
-async function testWorkflow() {
+async function testWorkflow(): Promise<void> {
   let token: string;
   
   try {

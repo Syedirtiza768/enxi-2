@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
 import { Item } from '@/components/inventory/item-list'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 export default function ItemDetailPage() {
   
@@ -20,7 +21,7 @@ const params = useParams()
 
   // Fetch item details
   useEffect(() => {
-    const fetchItem = async () => {
+    const fetchItem = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -57,7 +58,7 @@ const params = useParams()
     window.location.href = `/inventory/items/${itemId}/edit`
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/inventory/items/${itemId}`, {
         method: 'DELETE',

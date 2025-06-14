@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function testBearerToken() {
+async function testBearerToken(): Promise<void> {
   console.warn('🔍 Testing Bearer Token Processing\n');
   
   const BASE_URL = 'http://localhost:3000';

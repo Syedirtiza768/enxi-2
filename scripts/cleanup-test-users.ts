@@ -2,7 +2,7 @@
 
 import { prisma } from '../lib/db/prisma'
 
-async function cleanupTestUsers() {
+async function cleanupTestUsers(): Promise<void> {
   console.warn('Cleaning up test data...')
   
   try {

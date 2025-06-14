@@ -135,7 +135,7 @@ export function InvoiceForm({
 
   // Load reference data
   useEffect(() => {
-    const fetchReferenceData = async () => {
+    const fetchReferenceData = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
@@ -182,7 +182,7 @@ export function InvoiceForm({
               // Pre-populate form with quotation data
               setFormData(prev => ({
                 ...prev,
-                customerId: quotationData.salesCase.customerId,
+                customerId: quotationData.salesCase?.customerId || '',
                 paymentTerms: quotationData.paymentTerms || 'Net 30',
                 dueDate: dueDate.toISOString().split('T')[0],
                 notes: `Invoice created from quotation ${quotationData.quotationNumber}\n\n${quotationData.notes || ''}`,
@@ -247,10 +247,10 @@ export function InvoiceForm({
 
   // Calculate item totals
   const calculateItemTotal = useCallback((item: InvoiceItem): InvoiceItem => {
-    const subtotal = item.quantity * item.unitPrice
-    const discountAmount = subtotal * (item.discount / 100)
+    const subtotal = Number(item.quantity || 0) * Number(item.unitPrice || 0)
+    const discountAmount = subtotal * (Number(item.discount || 0) / 100)
     const discountedAmount = subtotal - discountAmount
-    const taxAmount = discountedAmount * (item.taxRate / 100)
+    const taxAmount = discountedAmount * (Number(item.taxRate || 0) / 100)
     const totalAmount = discountedAmount + taxAmount
 
     return {

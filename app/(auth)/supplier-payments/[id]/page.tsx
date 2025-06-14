@@ -28,6 +28,7 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SupplierPayment {
   id: string
@@ -101,17 +102,20 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     setError(null)
 
     try {
-      const response = await apiClient(`/api/supplier-payments/${paymentId}`, {
+      const response = await apiClient<SupplierPayment>(`/api/supplier-payments/${paymentId}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to fetch supplier payment')
+        throw new Error(response.error || 'Failed to fetch supplier payment')
       }
       
-      setPayment(response.data)
+      if (response.data) {
+        setPayment(response.data)
+      }
     } catch (error) {
       console.error('Error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch payment')
     } finally {
       setLoading(false)
     }
@@ -192,7 +196,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         />
 
         {error && (
-          <Card variant="outlined" className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50">
             <CardContent className="p-4">
               <HStack gap="sm" align="center">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -204,7 +208,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Payment Overview */}
         <Grid cols={4} gap="lg">
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -223,7 +227,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -235,7 +239,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -249,7 +253,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             </CardContent>
           </Card>
 
-          <Card variant="elevated">
+          <Card>
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
@@ -269,7 +273,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         {/* Payment Details */}
         <Grid cols={2} gap="lg">
           {/* Supplier Information */}
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -309,7 +313,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           </Card>
 
           {/* Payment Information */}
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Receipt className="h-5 w-5" />
@@ -353,7 +357,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Invoice Information (if applicable) */}
         {payment.supplierInvoice && (
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -404,7 +408,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Journal Entry */}
         {payment.journalEntry && (
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Banknote className="h-5 w-5" />
@@ -460,7 +464,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
         {/* Notes */}
         {payment.notes && (
-          <Card variant="elevated">
+          <Card>
             <CardHeader>
               <CardTitle>Notes</CardTitle>
             </CardHeader>

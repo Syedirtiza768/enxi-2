@@ -34,7 +34,7 @@ import {
   JournalStatus
 } from '../lib/generated/prisma'
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Comprehensive ERP Seed...\n')
 
   // Clean existing data
@@ -122,7 +122,7 @@ async function main() {
   console.warn('\n🚀 Ready to test complete business workflows!')
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<Account> {
   console.warn('🧹 Cleaning existing data...')
   
   // Clean in correct order to respect foreign key constraints
@@ -155,7 +155,7 @@ async function cleanDatabase() {
     console.warn('✅ Database cleaned')
 } catch {}
 
-async function createUsers() {
+async function createUsers(): Promise<T> {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
   const admin = await prisma.user.create({
@@ -1914,7 +1914,7 @@ async function createCurrencyData(adminId: string) {
   ])
 }
 
-async function printSeedSummary() {
+async function printSeedSummary(): Promise<void> {
   console.warn('\n' + '='.repeat(60))
   console.warn('📊 COMPREHENSIVE SEED SUMMARY')
   console.warn('='.repeat(60))

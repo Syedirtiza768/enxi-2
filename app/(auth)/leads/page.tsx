@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react'
 import { LeadForm } from '@/components/leads/lead-form'
 import { LeadStats } from '@/components/leads/lead-stats'
+import { ExportButton } from '@/components/export/export-button'
 import { useLeads } from '@/hooks/use-leads'
 import { LeadStatus, LeadSource } from '@/lib/types/shared-enums'
 import { LeadResponse } from '@/lib/types/lead.types'
@@ -94,7 +95,7 @@ export default function LeadsPage() {
     }
   }
 
-  const handleConvertLead = async () => {
+  const handleConvertLead = async (): Promise<unknown> => {
     if (!selectedLead) return
     try {
       const response = await api.post(`/api/leads/${selectedLead.id}/convert`, convertFormData)
@@ -136,23 +137,32 @@ export default function LeadsPage() {
           description="Manage your sales leads and prospects"
           centered={false}
           actions={
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Lead
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create New Lead</DialogTitle>
-                  <DialogDescription>
-                    Add a new lead to your sales pipeline
-                  </DialogDescription>
-                </DialogHeader>
-                <LeadForm onSubmit={handleCreateLead} />
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <ExportButton 
+                dataType="leads" 
+                defaultFilters={{
+                  status: statusFilter === 'ALL' ? undefined : statusFilter,
+                  source: sourceFilter === 'ALL' ? undefined : sourceFilter
+                }}
+              />
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Lead
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Create New Lead</DialogTitle>
+                    <DialogDescription>
+                      Add a new lead to your sales pipeline
+                    </DialogDescription>
+                  </DialogHeader>
+                  <LeadForm onSubmit={handleCreateLead} />
+                </DialogContent>
+              </Dialog>
+            </div>
           }
         />
 

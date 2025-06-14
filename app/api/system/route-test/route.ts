@@ -4,7 +4,7 @@ import { routeTester } from '@/lib/testing/route-tester';
 import { routeFixer } from '@/lib/testing/route-fixer';
 import { getUserFromRequest } from '@/lib/utils/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify user authentication (optional - could be admin only)
     let user;
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Get route testing status and configuration
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const routes = await routeDiscovery.discoverAllRoutes();
     const categorizedRoutes = routeDiscovery.getRoutesByCategory();

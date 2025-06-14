@@ -85,12 +85,12 @@ export default function GoodsReceiptsPage() {
     fetchGoodsReceipts()
   }, [])
 
-  const fetchGoodsReceipts = async () => {
+  const fetchGoodsReceipts = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/goods-receipts', {
+      const response = await apiClient<{ data: GoodsReceipt[] }>('/api/goods-receipts', {
         method: 'GET'
       })
       
@@ -122,9 +122,9 @@ export default function GoodsReceiptsPage() {
       PENDING: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
@@ -197,12 +197,12 @@ export default function GoodsReceiptsPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={4} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Receipts</Text>
-                    <Text size="2xl" weight="bold">{stats.totalReceipts}</Text>
+                    <Text size="xl" weight="bold">{stats.totalReceipts}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <Package className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -211,12 +211,12 @@ export default function GoodsReceiptsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Pending Receipts</Text>
-                    <Text size="2xl" weight="bold">{stats.pendingReceipts}</Text>
+                    <Text size="xl" weight="bold">{stats.pendingReceipts}</Text>
                   </VStack>
                   <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                     <Clock className="h-6 w-6 text-yellow-600" />
@@ -225,12 +225,12 @@ export default function GoodsReceiptsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Value</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -241,12 +241,12 @@ export default function GoodsReceiptsPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Rejected Items</Text>
-                    <Text size="2xl" weight="bold">{stats.rejectedItems}</Text>
+                    <Text size="xl" weight="bold">{stats.rejectedItems}</Text>
                   </VStack>
                   <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
                     <TrendingDown className="h-6 w-6 text-red-600" />
@@ -259,7 +259,7 @@ export default function GoodsReceiptsPage() {
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -289,7 +289,7 @@ export default function GoodsReceiptsPage() {
 
         {/* Goods Receipts Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-x-auto">
+          <Card className="overflow-x-auto">
             <CardHeader>
               <CardTitle>Goods Receipts ({filteredGoodsReceipts.length})</CardTitle>
             </CardHeader>

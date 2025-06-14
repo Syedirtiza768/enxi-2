@@ -14,7 +14,7 @@ import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function seedBasicAccounting() {
+async function seedBasicAccounting(): Promise<number> {
   console.warn('🏦 Starting Basic Accounting Data Seeding...\n')
 
   try {

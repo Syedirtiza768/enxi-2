@@ -54,7 +54,7 @@ async function debugEndpoint(url: string, description: string) {
   console.log('') // Empty line for readability
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🚨 Debugging supplier-related endpoint failures...\n')
   
   await debugEndpoint('http://localhost:3001/api/supplier-invoices', 'Supplier Invoices')

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@/lib/generated/prisma'
 const prisma = new PrismaClient()
 
-async function testLeadConversion() {
+async function testLeadConversion(): Promise<void> {
   try {
     console.log('🧪 Testing Lead Conversion...\n')
     

@@ -88,12 +88,12 @@ export default function PurchaseOrdersPage() {
     fetchPurchaseOrders()
   }, [])
 
-  const fetchPurchaseOrders = async () => {
+  const fetchPurchaseOrders = async (): Promise<boolean> => {
     setLoading(true)
     setError(null)
 
     try {
-      const response = await apiClient('/api/purchase-orders', {
+      const response = await apiClient<{ data: PurchaseOrder[] }>('/api/purchase-orders', {
         method: 'GET'
       })
       
@@ -121,7 +121,7 @@ export default function PurchaseOrdersPage() {
 
   const handleSendPO = async (id: string) => {
     try {
-      const response = await apiClient(`/api/purchase-orders/${id}/send`, {
+      const response = await apiClient<{ data: any }>(`/api/purchase-orders/${id}/send`, {
         method: 'POST'
       })
       
@@ -135,7 +135,7 @@ export default function PurchaseOrdersPage() {
 
   const handleApprovePO = async (id: string) => {
     try {
-      const response = await apiClient(`/api/purchase-orders/${id}/approve`, {
+      const response = await apiClient<{ data: any }>(`/api/purchase-orders/${id}/approve`, {
         method: 'POST'
       })
       
@@ -155,9 +155,9 @@ export default function PurchaseOrdersPage() {
       PARTIALLY_RECEIVED: { label: 'Partially Received', className: 'bg-orange-100 text-orange-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }
@@ -242,12 +242,12 @@ export default function PurchaseOrdersPage() {
         {/* Statistics */}
         <PageSection>
           <Grid cols={4} gap="lg">
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Orders</Text>
-                    <Text size="2xl" weight="bold">{stats.totalOrders}</Text>
+                    <Text size="xl" weight="bold">{stats.totalOrders}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
                     <FileText className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
@@ -256,12 +256,12 @@ export default function PurchaseOrdersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Draft Orders</Text>
-                    <Text size="2xl" weight="bold">{stats.draftOrders}</Text>
+                    <Text size="xl" weight="bold">{stats.draftOrders}</Text>
                   </VStack>
                   <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
                     <Clock className="h-6 w-6 text-gray-600" />
@@ -270,12 +270,12 @@ export default function PurchaseOrdersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Pending Orders</Text>
-                    <Text size="2xl" weight="bold">{stats.pendingOrders}</Text>
+                    <Text size="xl" weight="bold">{stats.pendingOrders}</Text>
                   </VStack>
                   <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                     <AlertCircle className="h-6 w-6 text-yellow-600" />
@@ -284,12 +284,12 @@ export default function PurchaseOrdersPage() {
               </CardContent>
             </Card>
 
-            <Card variant="elevated" padding="lg">
+            <Card>
               <CardContent>
                 <HStack justify="between" align="center" className="mb-2">
                   <VStack gap="xs">
                     <Text size="sm" weight="medium" color="secondary">Total Value</Text>
-                    <Text size="2xl" weight="bold">
+                    <Text size="xl" weight="bold">
                       ${stats.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                   </VStack>
@@ -304,7 +304,7 @@ export default function PurchaseOrdersPage() {
 
         {/* Filters */}
         <PageSection>
-          <Card variant="elevated" padding="lg">
+          <Card>
             <CardContent>
               <HStack gap="md" className="flex-col sm:flex-row">
                 <div className="flex-1">
@@ -337,7 +337,7 @@ export default function PurchaseOrdersPage() {
 
         {/* Purchase Orders Table */}
         <PageSection>
-          <Card variant="elevated" className="overflow-x-auto">
+          <Card className="overflow-x-auto">
             <CardHeader>
               <CardTitle>Purchase Orders ({filteredPurchaseOrders.length})</CardTitle>
             </CardHeader>

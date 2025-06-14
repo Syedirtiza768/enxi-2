@@ -72,7 +72,7 @@ function SalesTeamAssignContent() {
     fetchData()
   }, [])
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)
@@ -80,7 +80,7 @@ function SalesTeamAssignContent() {
       // Fetch users with appropriate roles
       const usersResponse = await api.get('/api/users?limit=100')
       if (usersResponse.ok && usersResponse.data) {
-        const users = usersResponse.data.data || []
+        const users = usersResponse.data?.data || usersResponse.data || []
         setSalespeople(users.filter((u: User) => u.role === Role.SALES_REP || u.role === Role.MANAGER))
         setManagers(users.filter((u: User) => u.role === Role.MANAGER))
       }
@@ -88,7 +88,7 @@ function SalesTeamAssignContent() {
       // Fetch customers
       const customersResponse = await api.get('/api/customers?limit=100')
       if (customersResponse.ok && customersResponse.data) {
-        setCustomers(customersResponse.data.data || [])
+        setCustomers(customersResponse.data?.data || customersResponse.data || [])
       }
     } catch (err) {
       console.error('Error fetching data:', err)
@@ -98,7 +98,7 @@ function SalesTeamAssignContent() {
     }
   }
 
-  const handleCustomerAssignment = async () => {
+  const handleCustomerAssignment = async (): Promise<unknown> => {
     if (!selectedCustomer || !selectedSalesperson) {
       setError('Please select both a customer and a salesperson')
       return
@@ -117,7 +117,7 @@ function SalesTeamAssignContent() {
       if (response.ok) {
         router.push('/sales-team')
       } else {
-        throw new Error(response.data?.error || 'Failed to assign customer')
+        throw new Error(response.error || 'Failed to assign customer')
       }
     } catch (err) {
       console.error('Error assigning customer:', err)
@@ -127,7 +127,7 @@ function SalesTeamAssignContent() {
     }
   }
 
-  const handleManagerAssignment = async () => {
+  const handleManagerAssignment = async (): Promise<unknown> => {
     if (!selectedSalesperson || !selectedManager) {
       setError('Please select both a salesperson and a manager')
       return
@@ -145,7 +145,7 @@ function SalesTeamAssignContent() {
       if (response.ok) {
         router.push('/sales-team')
       } else {
-        throw new Error(response.data?.error || 'Failed to assign manager')
+        throw new Error(response.error || 'Failed to assign manager')
       }
     } catch (err) {
       console.error('Error assigning manager:', err)

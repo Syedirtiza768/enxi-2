@@ -3,7 +3,7 @@
 
 import { AuthService } from '../lib/services/auth.service'
 
-async function testLoginFlow() {
+async function testLoginFlow(): Promise<{ user: any, session?: any }> {
   console.warn('🧪 Testing Complete Login Flow...\n')
   
   try {

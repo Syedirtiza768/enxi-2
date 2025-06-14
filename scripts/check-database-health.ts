@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { dbHealthMonitor } from '@/lib/utils/db-health'
 
-async function checkDatabaseHealth() {
+async function checkDatabaseHealth(): Promise<boolean> {
   console.log('🔍 Checking database health...\n')
   
   try {

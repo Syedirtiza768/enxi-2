@@ -256,7 +256,7 @@ const rolePermissions: Record<Role, string[]> = {
   USER: [], // Deprecated role - no permissions
 };
 
-async function seedPermissions() {
+async function seedPermissions(): Promise<void> {
   try {
     console.warn('🌱 Starting permissions seeding...\n');
 

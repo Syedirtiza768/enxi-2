@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Simple Comprehensive Seed...\n')
 
   try {

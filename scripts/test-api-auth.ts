@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient()
 
-async function testApiAuth() {
+async function testApiAuth(): Promise<void> {
   try {
     console.log('🧪 Testing API authentication...')
     

@@ -77,25 +77,23 @@ const [items, setItems] = useState<Item[]>([])
     fetchRecentMovements()
   }, [])
 
-  const fetchItems = async () => {
+  const fetchItems = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/inventory/items', { method: 'GET' })
+      const response = await apiClient<Item[]>('/api/inventory/items', { method: 'GET' })
       if (response.ok && response.data) {
-        const itemsData = response.data.data || response.data
-        setItems(Array.isArray(itemsData) ? itemsData : [])
+        setItems(Array.isArray(response.data) ? response.data : [])
       }
     } catch (error) {
       console.error('Error:', error)
     }
   }
 
-  const fetchRecentMovements = async () => {
+  const fetchRecentMovements = async (): Promise<void> => {
     setLoading(true)
     try {
       // We need to fetch stock movements differently - get all items first
-      const itemsResponse = await apiClient('/api/inventory/items', { method: 'GET' })
+      const itemsResponse = await apiClient<Item[]>('/api/inventory/items', { method: 'GET' })
       if (itemsResponse.ok && itemsResponse.data) {
-        const _itemsData = itemsResponse.data.data || itemsResponse.data
         const allMovements: StockMovement[] = []
         
         // For now, we'll show a message that recent movements will be available after creating some
@@ -131,13 +129,13 @@ const [items, setItems] = useState<Item[]>([])
     }
 
     const unitCost = formData.unitCost ? parseFloat(formData.unitCost) : undefined
-    if (formData.unitCost && (isNaN(unitCost!) || unitCost! < 0)) {
+    if (formData.unitCost && unitCost !== undefined && (isNaN(unitCost) || unitCost < 0)) {
       setFormError('Unit cost must be a non-negative number')
       return
     }
 
     try {
-      const response = await apiClient('/api/inventory/stock-movements', {
+      const response = await apiClient<StockMovement>('/api/inventory/stock-movements', {
         method: 'POST',
         body: JSON.stringify({
           itemId: formData.itemId,
@@ -332,7 +330,7 @@ const [items, setItems] = useState<Item[]>([])
                         onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
                         placeholder="0.00"
                       />
-                      {formData.quantity && formData.unitCost && (
+                      {formData.quantity && formData.unitCost && !isNaN(parseFloat(formData.quantity)) && !isNaN(parseFloat(formData.unitCost)) && (
                         <p className="text-sm text-gray-500">
                           Total: {formatCurrency(parseFloat(formData.quantity) * parseFloat(formData.unitCost))}
                         </p>

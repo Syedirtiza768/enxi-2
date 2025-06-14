@@ -4,7 +4,7 @@ import { PrismaClient } from '../lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<Quotation> {
   console.log('🧪 Starting Simple Tax System Test\n')
 
   try {

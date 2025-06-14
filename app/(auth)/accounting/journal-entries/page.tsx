@@ -52,7 +52,7 @@ export default function JournalEntriesPage() {
     fetchAccounts()
   }, [])
 
-  const fetchEntries = async () => {
+  const fetchEntries = async (): Promise<void> => {
     try {
       const response = await fetch('/api/accounting/journal-entries')
       if (!response.ok) throw new Error('Failed to fetch entries')
@@ -65,7 +65,7 @@ export default function JournalEntriesPage() {
     }
   }
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (): Promise<number> => {
     try {
       const response = await fetch('/api/accounting/accounts')
       if (!response.ok) throw new Error('Failed to fetch accounts')

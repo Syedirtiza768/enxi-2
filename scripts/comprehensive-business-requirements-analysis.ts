@@ -11,7 +11,7 @@ interface RequirementStatus {
   priority: 'critical' | 'high' | 'medium' | 'low';
 }
 
-async function comprehensiveBusinessAnalysis() {
+async function comprehensiveBusinessAnalysis(): Promise<boolean> {
   console.warn('🔍 Comprehensive Business Requirements Analysis\n');
   
   const requirements: RequirementStatus[] = [];

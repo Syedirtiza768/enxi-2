@@ -3,10 +3,7 @@ import { taxService } from '@/lib/services/tax.service'
 import { withAuth } from '@/lib/utils/auth'
 
 // GET /api/tax-categories/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   return withAuth(request, async (session) => {
     try {
       const category = await taxService.getTaxCategoryById(params.id)
@@ -33,10 +30,7 @@ export async function GET(
 }
 
 // PUT /api/tax-categories/[id]
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   return withAuth(request, async (session) => {
     try {
       const body = await request.json()

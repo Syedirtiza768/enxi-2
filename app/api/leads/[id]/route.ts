@@ -10,9 +10,9 @@ export async function GET(
   const params = await context.params
   try {
     // Try to authenticate user but don't fail hard
-    let _user
+    let user
     try {
-      _user = await getUserFromRequest(request)
+      user = await getUserFromRequest(request)
     } catch (authError) {
       console.warn('Auth check failed in lead detail route:', authError)
       // For now, continue anyway since we're in "bare minimum" auth mode
@@ -46,7 +46,7 @@ export async function PUT(
   const params = await context.params
   try {
     // Authenticate user
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     
     // Parse and validate request body
     const body = await request.json()
@@ -54,7 +54,7 @@ export async function PUT(
     
     // Update lead
     const leadService = new LeadService()
-    const lead = await leadService.updateLead(params.id, validatedData, _user.id)
+    const lead = await leadService.updateLead(params.id, validatedData, user.id)
     
     return NextResponse.json(lead)
   } catch (error) {
@@ -88,7 +88,7 @@ export async function DELETE(
   const params = await context.params
   try {
     // Authenticate user
-    const _user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     
     // Delete lead
     const leadService = new LeadService()

@@ -32,7 +32,7 @@ interface TestResults {
   warnings: string[]
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🚀 Starting Purchase Order Management System Test...\n')
   
   const results: TestResults = {

@@ -198,7 +198,7 @@ async function testAPIAccess(cookie: string): Promise<TestResult> {
   }
 }
 
-async function runTests() {
+async function runTests(): Promise<void> {
   console.warn('🔍 Testing Authentication Flow\n')
   
   let allPassed = true

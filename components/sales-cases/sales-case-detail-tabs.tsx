@@ -76,9 +76,10 @@ export function SalesCaseDetailTabs({
   const fetchQuotations = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient(`/api/quotations?salesCaseId=${salesCaseId}`, { method: 'GET' })
+      const response = await apiClient<{ data: Quotation[]; total?: number } | Quotation[]>(`/api/quotations?salesCaseId=${salesCaseId}`, { method: 'GET' })
       if (response.ok && response.data) {
-        const quotationsData = response.data.data || response.data
+        const responseData = response.data
+        const quotationsData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setQuotations(Array.isArray(quotationsData) ? quotationsData : [])
       }
 } catch (error) {
@@ -91,9 +92,10 @@ export function SalesCaseDetailTabs({
   const fetchInvoices = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient(`/api/invoices?salesCaseId=${salesCaseId}`, { method: 'GET' })
+      const response = await apiClient<{ data: Invoice[]; total?: number } | Invoice[]>(`/api/invoices?salesCaseId=${salesCaseId}`, { method: 'GET' })
       if (response.ok && response.data) {
-        const invoicesData = response.data.data || response.data
+        const responseData = response.data
+        const invoicesData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
       }
 } catch (error) {
@@ -106,9 +108,10 @@ export function SalesCaseDetailTabs({
   const fetchSummary = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient(`/api/sales-cases/${salesCaseId}/summary`, { method: 'GET' })
+      const response = await apiClient<{ data: SalesCaseSummary; total?: number } | SalesCaseSummary>(`/api/sales-cases/${salesCaseId}/summary`, { method: 'GET' })
       if (response.ok && response.data) {
-        setSummary(response.data.data || response.data)
+        const responseData = response.data
+        setSummary(Array.isArray(responseData) ? responseData[0] : (responseData.data || responseData))
       }
 } catch (error) {
       console.error('Error:', error);

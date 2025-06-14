@@ -67,10 +67,10 @@ export default function TaxConfigurationPage() {
     fetchCategories()
   }, [])
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (): Promise<void> => {
     try {
       setLoading(true)
-      const response = await apiClient('/api/tax-categories', { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>('/api/tax-categories', { method: 'GET' })
       if (response.ok && response.data) {
         setCategories(response.data)
       } else {
@@ -83,7 +83,7 @@ export default function TaxConfigurationPage() {
     }
   }
 
-  const handleCreateCategory = async () => {
+  const handleCreateCategory = async (): Promise<void> => {
     try {
       const response = await apiClient('/api/tax-categories', {
         method: 'POST',
@@ -102,7 +102,7 @@ export default function TaxConfigurationPage() {
     }
   }
 
-  const handleUpdateCategory = async () => {
+  const handleUpdateCategory = async (): Promise<void> => {
     if (!editingCategory) return
     
     try {
@@ -124,7 +124,7 @@ export default function TaxConfigurationPage() {
     }
   }
 
-  const handleCreateRate = async () => {
+  const handleCreateRate = async (): Promise<void> => {
     try {
       const response = await apiClient('/api/tax-rates', {
         method: 'POST',
@@ -159,7 +159,7 @@ export default function TaxConfigurationPage() {
     }
   }
 
-  const handleUpdateRate = async () => {
+  const handleUpdateRate = async (): Promise<void> => {
     if (!editingRate) return
     
     try {
@@ -253,7 +253,7 @@ export default function TaxConfigurationPage() {
       <PageLayout>
         <PageHeader
           title="Tax Configuration"
-          subtitle="Manage tax categories and rates"
+          description="Manage tax categories and rates"
         />
         <PageSection>
           <Text>Loading...</Text>
@@ -267,7 +267,7 @@ export default function TaxConfigurationPage() {
       <PageLayout>
         <PageHeader
           title="Tax Configuration"
-          subtitle="Manage tax categories and rates"
+          description="Manage tax categories and rates"
         />
         <PageSection>
           <Text color="error">{error}</Text>
@@ -280,7 +280,7 @@ export default function TaxConfigurationPage() {
     <PageLayout>
       <PageHeader
         title="Tax Configuration"
-        subtitle="Manage tax categories and rates"
+        description="Manage tax categories and rates"
         actions={
           <Button onClick={() => openCategoryDialog()}>
             <Plus className="h-4 w-4 mr-2" />

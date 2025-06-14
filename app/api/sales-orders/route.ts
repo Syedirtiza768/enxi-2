@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SalesOrderService } from '@/lib/services/sales-order.service'
 import { OrderStatus } from '@/lib/generated/prisma'
 import { z } from 'zod'
+import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 
 const createSalesOrderSchema = z.object({
   quotationId: z.string().optional(),
@@ -26,7 +27,7 @@ const createSalesOrderSchema = z.object({
   })).min(1)
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const salesOrderService = new SalesOrderService()
     const { searchParams } = new URL(request.url)
@@ -54,10 +55,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // TODO: Add proper authentication
-    const userId = 'system' // Replace with actual user authentication
+    const user = await verifyJWTFromRequest(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     
     const body = await request.json()
     const data = createSalesOrderSchema.parse(body)
@@ -68,7 +71,7 @@ export async function POST(request: NextRequest) {
       ...data,
       requestedDate: data.requestedDate ? new Date(data.requestedDate) : undefined,
       promisedDate: data.promisedDate ? new Date(data.promisedDate) : undefined,
-      createdBy: userId
+      createdBy: user.id
     }
     
     const salesOrder = await salesOrderService.createSalesOrder(salesOrderData)

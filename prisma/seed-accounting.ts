@@ -4,7 +4,7 @@ import { JournalEntryService } from '../lib/services/accounting/journal-entry.se
 
 const prisma = new PrismaClient()
 
-async function seedAccounting() {
+async function seedAccounting(): Promise<number> {
   console.warn('🌱 Seeding accounting data...')
 
   try {
@@ -242,8 +242,11 @@ async function seedAccounting() {
     trialBalance.forEach(account => {
       console.warn(`   ${account.code} - ${account.name}: ${account.currency} ${account.balance.toFixed(2)}`)
     })
-
-} catch {}
+  } catch (error) {
+    console.error('Error in seedAccounting:', error)
+    throw error
+  }
+}
 
 // Run the seed function
 seedAccounting()

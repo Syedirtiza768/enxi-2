@@ -6,7 +6,7 @@
 
 import { PrismaClient } from '@/lib/generated/prisma'
 
-async function createTestInvoices() {
+async function createTestInvoices(): Promise<Invoice> {
   console.warn('🚀 Creating test invoices...\n')
   
   const prisma = new PrismaClient()

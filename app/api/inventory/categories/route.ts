@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { CategoryService, CreateCategoryInput } from '@/lib/services/inventory/category.service'
 
 // GET /api/inventory/categories - Get all categories with filters
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/inventory/categories - Create new category
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       name,
       description,
       parentId,
-      createdBy: _user.id
+      createdBy: user.id
     }
 
     const categoryService = new CategoryService()

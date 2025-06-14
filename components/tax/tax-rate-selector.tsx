@@ -30,7 +30,7 @@ export function TaxRateSelector({
     fetchTaxRates()
   }, [taxType])
 
-  const fetchTaxRates = async () => {
+  const fetchTaxRates = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)

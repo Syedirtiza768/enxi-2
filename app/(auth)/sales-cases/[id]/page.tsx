@@ -88,17 +88,19 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     fetchTimeline()
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchSalesCase = async () => {
+  const fetchSalesCase = async (): Promise<void> => {
     try {
-      const response = await apiClient(`/api/sales-cases/${id}`, { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>(`/api/sales-cases/${id}`, { method: 'GET' })
       if (!response.ok) throw new Error('Failed to fetch sales case')
-      const data = response.data.data || response.data
+      const data = response.data?.data || response.data || null
       setSalesCase(data)
-      setCloseData({
-        status: 'WON',
-        actualValue: data.estimatedValue,
-        cost: 0
-      })
+      if (data) {
+        setCloseData({
+          status: 'WON',
+          actualValue: data.estimatedValue,
+          cost: 0
+        })
+      }
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -106,18 +108,18 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     }
   }
 
-  const fetchTimeline = async () => {
+  const fetchTimeline = async (): Promise<void> => {
     try {
-      const response = await apiClient(`/api/sales-cases/${id}/timeline`, { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>(`/api/sales-cases/${id}/timeline`, { method: 'GET' })
       if (!response.ok) throw new Error('Failed to fetch timeline')
-      const data = response.data.data || response.data
+      const data = response.data?.data || response.data || []
       setTimeline(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error:', error)
     }
   }
 
-  const handleStatusTransition = async () => {
+  const handleStatusTransition = async (): Promise<unknown> => {
     if (!newStatus) return
     
     setError('')
@@ -143,7 +145,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     }
   }
 
-  const handleCloseSalesCase = async () => {
+  const handleCloseSalesCase = async (): Promise<void> => {
     setError('')
     setSubmitting(true)
 
@@ -167,7 +169,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     }
   }
 
-  const handleAssignSalesCase = async () => {
+  const handleAssignSalesCase = async (): Promise<void> => {
     setError('')
     setSubmitting(true)
 

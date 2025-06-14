@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { globalErrorHandler } from '@/lib/utils/global-error-handler';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(_request.url);
+    const { searchParams } = new URL(request.url);
     
     // Parse filters from query parameters
     const resolved = searchParams.get('resolved') === 'true' ? true : 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Mark error as resolved
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const errorId = searchParams.get('id');
@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 // Clear old error reports
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const olderThanHours = parseInt(searchParams.get('olderThanHours') || '72');

@@ -7,16 +7,14 @@ const cancelShipmentSchema = z.object({
   reason: z.string().min(1, 'Cancellation reason is required'),
 })
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const body = await _request.json()
+    const resolvedParams = await params
+    const body = await request.json()
     const validatedData = cancelShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
-    const shipment = await shipmentService.cancelShipment(params.id, validatedData)
+    const shipment = await shipmentService.cancelShipment(resolvedParams.id, validatedData)
     
     return NextResponse.json(shipment)
   } catch (error) {

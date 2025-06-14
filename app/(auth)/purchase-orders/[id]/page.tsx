@@ -91,28 +91,31 @@ const params = useParams()
     setError(null)
 
     try {
-      const response = await apiClient(`/api/purchase-orders/${id}`, {
+      const response = await apiClient<PurchaseOrder>(`/api/purchase-orders/${id}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error('Failed to fetch purchase order')
+        throw new Error(response.error || 'Failed to fetch purchase order')
       }
       
-      setPurchaseOrder(response.data)
+      if (response.data) {
+        setPurchaseOrder(response.data)
+      }
     } catch (error) {
       console.error('Error fetching purchase order:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch purchase order')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSendPO = async () => {
+  const handleSendPO = async (): Promise<unknown> => {
     if (!purchaseOrder) return
     
     setActionLoading(true)
     try {
-      const response = await apiClient(`/api/purchase-orders/${purchaseOrder.id}/send`, {
+      const response = await apiClient<{ success: boolean }>(`/api/purchase-orders/${purchaseOrder.id}/send`, {
         method: 'POST'
       })
       
@@ -125,12 +128,12 @@ const params = useParams()
     }
   }
 
-  const handleApprovePO = async () => {
+  const handleApprovePO = async (): Promise<unknown> => {
     if (!purchaseOrder) return
     
     setActionLoading(true)
     try {
-      const response = await apiClient(`/api/purchase-orders/${purchaseOrder.id}/approve`, {
+      const response = await apiClient<{ success: boolean }>(`/api/purchase-orders/${purchaseOrder.id}/approve`, {
         method: 'POST'
       })
       
@@ -151,9 +154,9 @@ const params = useParams()
       PARTIALLY_RECEIVED: { label: 'Partially Received', className: 'bg-orange-100 text-orange-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
       CANCELLED: { label: 'Cancelled', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
     
-    const { label, className } = config[status] || { label: status, className: 'bg-gray-100 text-gray-800' }
+    const { label, className } = config[status as keyof typeof config] || { label: status, className: 'bg-gray-100 text-gray-800' }
     
     return <Badge className={className}>{label}</Badge>
   }

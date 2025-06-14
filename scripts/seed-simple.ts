@@ -14,7 +14,7 @@ import bcrypt from 'bcryptjs'
 const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting Simple ERP Data Seed...\n')
 
   try {
@@ -369,7 +369,7 @@ async function main() {
     }
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<void> {
   console.warn('🧹 Cleaning database...')
   
   try {

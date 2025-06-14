@@ -2,25 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierService } from '@/lib/services/purchase/supplier.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // GET /api/suppliers/[id] - Get supplier by ID
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supplierService = new SupplierService()
-    const supplier = await supplierService.getSupplier(params.id)
+    const supplier = await supplierService.getSupplier(resolvedParams.id)
 
     if (!supplier) {
       return NextResponse.json(
@@ -40,17 +34,15 @@ export async function GET(
 }
 
 // PUT /api/suppliers/[id] - Update supplier
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const {
       name,
       email,
@@ -74,7 +66,7 @@ export async function PUT(
 
     const supplierService = new SupplierService()
     const supplier = await supplierService.updateSupplier(
-      params.id,
+      resolvedParams.id,
       {
         name,
         email,
@@ -95,7 +87,7 @@ export async function PUT(
         isActive,
         isPreferred
       },
-      _user.id
+      user.id
     )
 
     return NextResponse.json({ data: supplier })
@@ -124,18 +116,16 @@ export async function PUT(
 }
 
 // DELETE /api/suppliers/[id] - Deactivate supplier
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const supplierService = new SupplierService()
-    const supplier = await supplierService.deactivateSupplier(params.id, _user.id)
+    const supplier = await supplierService.deactivateSupplier(resolvedParams.id, user.id)
 
     return NextResponse.json({ data: supplier })
   } catch (error: unknown) {

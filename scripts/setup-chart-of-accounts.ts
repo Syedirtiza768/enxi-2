@@ -12,7 +12,7 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 const coaService = new ChartOfAccountsService()
 
-async function setupChartOfAccounts() {
+async function setupChartOfAccounts(): Promise<number> {
   console.warn('🏦 Setting up Chart of Accounts for production...')
   
   try {

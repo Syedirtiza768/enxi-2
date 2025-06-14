@@ -45,7 +45,7 @@ export default function SupplierDetailPage() {
     setError(null)
 
     try {
-      const response = await apiClient(`/api/suppliers/${id}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/suppliers/${id}`, {
         method: 'GET'
       })
       

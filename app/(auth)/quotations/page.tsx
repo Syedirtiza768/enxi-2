@@ -83,7 +83,7 @@ export default function QuotationsPage() {
   const [salesCases, setSalesCases] = useState<SalesCase[]>([])
 
   // Fetch quotations from API
-  const fetchQuotations = async () => {
+  const fetchQuotations = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)
@@ -98,7 +98,7 @@ export default function QuotationsPage() {
       if (salesCaseFilter) params.append('salesCaseId', salesCaseFilter)
       if (dateRangeFilter) params.append('dateRange', dateRangeFilter)
 
-      const response = await apiClient(`/api/quotations?${params}`, {
+      const response = await apiClient<{ data: Quotation[]; total?: number } | Quotation[]>(`/api/quotations?${params}`, {
         method: 'GET'
       })
 
@@ -106,10 +106,12 @@ export default function QuotationsPage() {
         throw new Error('Failed to load quotations')
       }
 
-      const quotationsData = response.data?.data || response.data || []
+      const responseData = response.data
+      const quotationsData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setQuotations(Array.isArray(quotationsData) ? quotationsData : [])
-      setTotalItems(response.data?.total || quotationsData.length || 0)
-      setTotalPages(Math.ceil((response.data?.total || quotationsData.length || 0) / limit))
+      const total = Array.isArray(responseData) ? quotationsData.length : (responseData?.total || quotationsData.length || 0)
+      setTotalItems(total)
+      setTotalPages(Math.ceil(total / limit))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load quotations')
       console.error('Error fetching quotations:', err)
@@ -119,13 +121,14 @@ export default function QuotationsPage() {
   }
 
   // Fetch sales cases for filter
-  const fetchSalesCases = async () => {
+  const fetchSalesCases = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/sales-cases', {
+      const response = await apiClient<{ data: SalesCase[]; total?: number } | SalesCase[]>('/api/sales-cases', {
         method: 'GET'
       })
       if (response.ok) {
-        const salesCasesData = response.data?.data || response.data || []
+        const responseData = response.data
+        const salesCasesData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
       }
     } catch (error) {
@@ -157,9 +160,9 @@ export default function QuotationsPage() {
       ACCEPTED: { text: 'Accepted', className: 'bg-green-100 text-green-800' },
       REJECTED: { text: 'Rejected', className: 'bg-red-100 text-red-800' },
       EXPIRED: { text: 'Expired', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
 
-    const config = statusConfig[status]
+    const config = statusConfig[status as keyof typeof statusConfig]
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
         {config.text}

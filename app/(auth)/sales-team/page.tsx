@@ -66,7 +66,7 @@ export default function SalesTeamPage() {
     }
   }, [selectedTab, searchUnassigned]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
       setLoading(true)
       _setError(null)
@@ -83,7 +83,7 @@ export default function SalesTeamPage() {
     }
   }
 
-  const fetchUnassignedCustomers = async () => {
+  const fetchUnassignedCustomers = async (): Promise<void> => {
     try {
       const params = new URLSearchParams()
       if (searchUnassigned) params.append('search', searchUnassigned)

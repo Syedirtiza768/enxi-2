@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { AuthService } from '@/lib/services/auth.service'
 import { prisma } from '@/lib/db/prisma'
 
@@ -42,13 +42,10 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
     })
 
     if (!dbUser || !dbUser.isActive) {
-      console.log('Auth attempt: User not found or inactive', { userId: user.id })
       throw new Error('User not found or inactive')
     }
 
     // Authentication successful
-    console.log('Auth successful for user:', dbUser.username)
-
     return {
       id: dbUser.id,
       username: dbUser.username,
@@ -58,5 +55,40 @@ export async function getUserFromRequest(request: NextRequest): Promise<AuthUser
   } catch (error) {
     console.error('Authentication error:', error instanceof Error ? error.message : error)
     throw new Error('Unauthorized')
+  }
+}
+
+/**
+ * Higher-order function to wrap API routes with authentication
+ * @param request - The NextRequest object
+ * @param handler - The route handler function
+ * @param allowedRoles - Optional array of allowed roles
+ */
+export async function withAuth(
+  request: NextRequest,
+  handler: (session: { user: AuthUser }) => Promise<NextResponse>,
+  allowedRoles?: string[]
+): Promise<NextResponse> {
+  try {
+    const user = await getUserFromRequest(request)
+    
+    // Check role authorization if specified
+    if (allowedRoles && allowedRoles.length > 0) {
+      if (!allowedRoles.includes(user.role)) {
+        return NextResponse.json(
+          { error: 'Forbidden - insufficient role' },
+          { status: 403 }
+        )
+      }
+    }
+    
+    // Call the handler with the authenticated session
+    return await handler({ user })
+  } catch (error) {
+    console.error('Auth middleware error:', error)
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
   }
 }

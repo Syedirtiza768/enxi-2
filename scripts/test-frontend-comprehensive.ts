@@ -36,7 +36,7 @@ class FrontendTestSuite {
     };
   }
 
-  async setup() {
+  async setup(): Promise<void> {
     console.log('🚀 Setting up test environment...');
     
     // Create test user
@@ -58,7 +58,7 @@ class FrontendTestSuite {
     await this.login();
   }
 
-  async teardown() {
+  async teardown(): Promise<void> {
     console.log('\n🧹 Cleaning up test environment...');
     
     if (this.page) await this.page.close();
@@ -138,7 +138,7 @@ class FrontendTestSuite {
   }
 
   // Test 1: Customer Creation Form
-  async testCustomerCreation() {
+  async testCustomerCreation(): Promise<void> {
     await this.runTest('Customer Creation Form', async () => {
       await this.page!.goto(`${this.baseUrl}/customers`);
       await this.page!.click('text="New Customer"');
@@ -177,7 +177,7 @@ class FrontendTestSuite {
   }
 
   // Test 2: Sales Case Creation
-  async testSalesCaseCreation() {
+  async testSalesCaseCreation(): Promise<void> {
     await this.runTest('Sales Case Creation', async () => {
       await this.page!.goto(`${this.baseUrl}/sales-cases`);
       await this.page!.click('text="New Sales Case"');
@@ -206,7 +206,7 @@ class FrontendTestSuite {
   }
 
   // Test 3: Quotation Creation with Line Items
-  async testQuotationCreation() {
+  async testQuotationCreation(): Promise<void> {
     await this.runTest('Quotation Creation with Line Items', async () => {
       await this.page!.goto(`${this.baseUrl}/quotations/new`);
       
@@ -244,7 +244,7 @@ class FrontendTestSuite {
   }
 
   // Test 4: Quotation PDF Generation
-  async testQuotationPDF() {
+  async testQuotationPDF(): Promise<void> {
     await this.runTest('Quotation PDF Generation', async () => {
       await this.page!.goto(`${this.baseUrl}/quotations`);
       
@@ -269,7 +269,7 @@ class FrontendTestSuite {
   }
 
   // Test 5: Customer PO Recording
-  async testCustomerPORecording() {
+  async testCustomerPORecording(): Promise<void> {
     await this.runTest('Customer PO Recording', async () => {
       await this.page!.goto(`${this.baseUrl}/customer-pos/new`);
       
@@ -295,7 +295,7 @@ class FrontendTestSuite {
   }
 
   // Test 6: Sales Order Workflow
-  async testSalesOrderWorkflow() {
+  async testSalesOrderWorkflow(): Promise<void> {
     await this.runTest('Sales Order Workflow', async () => {
       await this.page!.goto(`${this.baseUrl}/sales-orders`);
       
@@ -321,7 +321,7 @@ class FrontendTestSuite {
   }
 
   // Test 7: Invoice Creation
-  async testInvoiceCreation() {
+  async testInvoiceCreation(): Promise<void> {
     await this.runTest('Invoice Creation', async () => {
       await this.page!.goto(`${this.baseUrl}/invoices/new`);
       
@@ -345,7 +345,7 @@ class FrontendTestSuite {
   }
 
   // Test 8: Payment Recording
-  async testPaymentRecording() {
+  async testPaymentRecording(): Promise<void> {
     await this.runTest('Payment Recording', async () => {
       await this.page!.goto(`${this.baseUrl}/payments`);
       await this.page!.click('text="Record Payment"');
@@ -372,7 +372,7 @@ class FrontendTestSuite {
   }
 
   // Test 9: List Views and Filters
-  async testListViewsAndFilters() {
+  async testListViewsAndFilters(): Promise<{ data: Promise<void>[], total: number }> {
     await this.runTest('List Views and Filters', async () => {
       // Test customer list
       await this.page!.goto(`${this.baseUrl}/customers`);
@@ -407,7 +407,7 @@ class FrontendTestSuite {
   }
 
   // Test 10: Navigation and Permissions
-  async testNavigationAndPermissions() {
+  async testNavigationAndPermissions(): Promise<void> {
     await this.runTest('Navigation and Permissions', async () => {
       // Test main navigation
       const navItems = [
@@ -437,7 +437,7 @@ class FrontendTestSuite {
 
   // Additional Tests
 
-  async testFormValidation() {
+  async testFormValidation(): Promise<void> {
     await this.runTest('Form Validation', async () => {
       await this.page!.goto(`${this.baseUrl}/customers`);
       await this.page!.click('text="New Customer"');
@@ -461,7 +461,7 @@ class FrontendTestSuite {
     });
   }
 
-  async testUIResponsiveness() {
+  async testUIResponsiveness(): Promise<void> {
     await this.runTest('UI Responsiveness', async () => {
       // Test mobile viewport
       await this.page!.setViewportSize({ width: 375, height: 812 });
@@ -481,7 +481,7 @@ class FrontendTestSuite {
     });
   }
 
-  async testErrorHandling() {
+  async testErrorHandling(): Promise<void> {
     await this.runTest('Error Handling', async () => {
       // Test 404 page
       await this.page!.goto(`${this.baseUrl}/non-existent-page`);
@@ -503,7 +503,7 @@ class FrontendTestSuite {
     });
   }
 
-  async testDataPersistence() {
+  async testDataPersistence(): Promise<void> {
     await this.runTest('Data Persistence', async () => {
       // Create a customer
       await this.page!.goto(`${this.baseUrl}/customers`);
@@ -588,7 +588,7 @@ class FrontendTestSuite {
     });
   }
 
-  async runAllTests() {
+  async runAllTests(): Promise<void> {
     console.log('🧪 Starting Comprehensive Frontend Tests\n');
     
     try {
@@ -621,7 +621,7 @@ class FrontendTestSuite {
 }
 
 // Run tests
-async function main() {
+async function main(): Promise<void> {
   const testSuite = new FrontendTestSuite();
   await testSuite.runAllTests();
   

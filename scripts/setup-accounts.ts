@@ -5,7 +5,7 @@ import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accou
 
 const prisma = new PrismaClient()
 
-async function setupAccounts() {
+async function setupAccounts(): Promise<number> {
   try {
     const accounts = await prisma.account.findMany({ select: { code: true, name: true } })
     console.warn(`Existing accounts: ${accounts.length}`)

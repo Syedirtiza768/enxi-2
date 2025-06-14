@@ -312,8 +312,9 @@ export class SalesOrderService extends BaseService {
       throw new Error('Sales order not found')
     }
 
-    if (existingOrder.status !== OrderStatus.PENDING) {
-      throw new Error('Only pending orders can be updated')
+    // Allow updates for PENDING and APPROVED orders
+    if (!['PENDING', 'APPROVED'].includes(existingOrder.status)) {
+      throw new Error('Only pending or approved orders can be updated')
     }
 
     return await prisma.$transaction(async (tx) => {
@@ -336,8 +337,14 @@ export class SalesOrderService extends BaseService {
           where: { salesOrderId: id }
         })
 
+        // Get customer ID for tax calculations
+        const salesCase = await tx.salesCase.findUnique({
+          where: { id: existingOrder.salesCase.id },
+          select: { customerId: true }
+        })
+        
         // Calculate new totals
-        const { subtotal, taxAmount, discountAmount, totalAmount } = this.calculateTotals(data.items)
+        const { subtotal, taxAmount, discountAmount, totalAmount } = await this.calculateTotals(data.items, salesCase?.customerId)
         
         updateData = {
           ...updateData,
@@ -350,7 +357,7 @@ export class SalesOrderService extends BaseService {
         // Create new items
         await Promise.all(
           data.items.map(async (itemData, index) => {
-            const itemCalculations = this.calculateItemTotals(itemData)
+            const itemCalculations = await this.calculateItemTotals(itemData, salesCase?.customerId)
             
             return await tx.salesOrderItem.create({
               data: {
@@ -526,6 +533,16 @@ export class SalesOrderService extends BaseService {
 
       return result
     })
+  }
+
+  async createFromQuotation(
+    quotationId: string,
+    additionalData: {
+      customerPO?: string
+      createdBy: string
+    }
+  ): Promise<SalesOrderWithDetails> {
+    return this.convertQuotationToSalesOrder(quotationId, additionalData)
   }
 
   // Private helper methods

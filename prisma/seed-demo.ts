@@ -14,7 +14,7 @@ import {
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting seed...')
 
   // Clean existing data
@@ -59,7 +59,7 @@ async function main() {
   console.warn('🎉 Seed completed successfully!')
 }
 
-async function cleanDatabase() {
+async function cleanDatabase(): Promise<void> {
   // Delete in correct order to respect foreign keys
   await prisma.auditLog.deleteMany()
   await prisma.journalLine.deleteMany()
@@ -80,7 +80,7 @@ async function cleanDatabase() {
   await prisma.user.deleteMany()
 }
 
-async function createUsers() {
+async function createUsers(): Promise<T> {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
   const admin = await prisma.user.create({

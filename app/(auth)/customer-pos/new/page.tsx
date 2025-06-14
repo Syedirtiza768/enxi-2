@@ -32,7 +32,7 @@ function NewCustomerPOContent() {
 
   // Fetch quotation if ID provided
   useEffect(() => {
-    const fetchQuotation = async () => {
+    const fetchQuotation = async (): Promise<unknown> => {
       if (!quotationId) {
         setLoading(false)
         return

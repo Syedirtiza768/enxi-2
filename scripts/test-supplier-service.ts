@@ -8,7 +8,7 @@ import { SupplierInvoiceService } from '@/lib/services/purchase/supplier-invoice
 import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
-async function testSupplierInvoiceService() {
+async function testSupplierInvoiceService(): Promise<void> {
   console.log('🧪 Testing SupplierInvoiceService...')
   
   try {
@@ -23,7 +23,7 @@ async function testSupplierInvoiceService() {
   }
 }
 
-async function testSupplierPaymentService() {
+async function testSupplierPaymentService(): Promise<void> {
   console.log('\n🧪 Testing SupplierPaymentService...')
   
   try {
@@ -38,7 +38,7 @@ async function testSupplierPaymentService() {
   }
 }
 
-async function testThreeWayMatchingService() {
+async function testThreeWayMatchingService(): Promise<void> {
   console.log('\n🧪 Testing ThreeWayMatchingService...')
   
   try {
@@ -58,7 +58,7 @@ async function testThreeWayMatchingService() {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🔍 Testing supplier service implementations directly...\n')
   
   const results = await Promise.all([

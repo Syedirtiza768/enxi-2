@@ -32,13 +32,18 @@ export default function CustomerPaymentsPage() {
     loadCustomer()
   }, [customerId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadCustomer = async () => {
+  const loadCustomer = async (): Promise<void> => {
     try {
       setLoading(true)
-      const response = await apiClient(`/api/customers/${customerId}`, { method: 'GET' })
-      setCustomer(response.data)
-} catch (error) {
+      const response = await apiClient<Customer>(`/api/customers/${customerId}`, { method: 'GET' })
+      if (response.ok && response.data) {
+        setCustomer(response.data)
+      } else {
+        setCustomer(null)
+      }
+    } catch (error) {
       console.error('Error:', error);
+      setCustomer(null)
     } finally {
       setLoading(false)
     }

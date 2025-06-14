@@ -77,7 +77,7 @@ export default function SalesCasesPage() {
     setCurrentPage(1)
   }, [statusFilter, search])
 
-  const fetchSalesCases = async () => {
+  const fetchSalesCases = async (): Promise<void> => {
     try {
       const params = new URLSearchParams()
       if (statusFilter !== 'ALL') params.append('status', statusFilter)
@@ -99,7 +99,7 @@ export default function SalesCasesPage() {
     }
   }
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (): Promise<void> => {
     try {
       const response = await fetch('/api/customers')
       if (!response.ok) throw new Error('Failed to fetch customers')
@@ -110,7 +110,7 @@ export default function SalesCasesPage() {
     }
   }
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = async (): Promise<void> => {
     try {
       const response = await fetch('/api/sales-cases/metrics')
       if (!response.ok) throw new Error('Failed to fetch metrics')

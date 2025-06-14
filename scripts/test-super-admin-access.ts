@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
-async function testSuperAdminAccess() {
+async function testSuperAdminAccess(): Promise<void> {
   console.warn('🔐 Testing Super Admin Access...\n')
 
   try {

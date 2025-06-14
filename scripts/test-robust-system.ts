@@ -2,7 +2,7 @@
 
 import { logger } from '../lib/utils/debug-logger';
 
-async function testRobustSystem() {
+async function testRobustSystem(): Promise<void> {
   console.warn('🔧 Testing Robust Error Handling & Monitoring System\n');
   
   const BASE_URL = 'http://localhost:3000';

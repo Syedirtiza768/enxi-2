@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 
-async function testLeadCreation() {
+async function testLeadCreation(): Promise<void> {
   try {
     console.log('Testing Lead Creation via API...')
     

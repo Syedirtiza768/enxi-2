@@ -48,12 +48,12 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     discount: 0
   });
 
-  const searchInventory = async () => {
+  const searchInventory = async (): Promise<unknown> => {
     if (!searchQuery.trim()) return;
     
     setLoading(true);
     try {
-      const response = await apiClient(`/api/inventory/items?search=${searchQuery}`);
+      const response = await apiClient<{ data: any }>(`/api/inventory/items?search=${searchQuery}`);
       if (response.ok && response.data) {
         setInventoryItems(response.data);
       }
@@ -98,7 +98,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
   const addManualItem = () => {
     if (!manualItem.name || manualItem.unitPrice <= 0) return;
 
-    const subtotal = manualItem.quantity * manualItem.unitPrice * (1 - manualItem.discount / 100);
+    const subtotal = Number(manualItem.quantity || 0) * Number(manualItem.unitPrice || 0) * (1 - Number(manualItem.discount || 0) / 100);
     const newItem = {
       ...manualItem,
       code: 'CUSTOM',
@@ -124,7 +124,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     const item = { ...newItems[index], ...updates };
     
     // Recalculate totals
-    const subtotal = item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100);
+    const subtotal = Number(item.quantity || 0) * Number(item.unitPrice || 0) * (1 - Number(item.discount || 0) / 100);
     item.subtotal = subtotal;
     item.total = subtotal; // Tax calculation happens on backend
     

@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 
 // POST /api/inventory/stock-movements/opening - Create opening stock
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       quantity,
       unitCost,
       asOfDate ? new Date(asOfDate) : new Date(),
-      _user.id,
+      user.id,
       lotNumber
     )
 

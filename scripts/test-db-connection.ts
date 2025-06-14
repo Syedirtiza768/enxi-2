@@ -4,7 +4,7 @@ import { PrismaClient } from '../lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
-async function testDatabaseConnection() {
+async function testDatabaseConnection(): Promise<void> {
   console.log('Testing database connection...\n');
   
   try {

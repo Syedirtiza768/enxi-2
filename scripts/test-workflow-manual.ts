@@ -70,7 +70,7 @@ const QUOTATION_DATA = {
   ]
 };
 
-async function runManualWorkflowTest() {
+async function runManualWorkflowTest(): Promise<void> {
   console.log('🚀 MANUAL WORKFLOW TEST - QUOTATION SRV-01-NM-0525');
   console.log('==================================================\n');
 

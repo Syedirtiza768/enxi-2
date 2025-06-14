@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/utils/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify user authentication (optional - could be admin only)
     try {
-      const _user = await getUserFromRequest(request);
-      console.warn('Auto-fix initiated by user', { userId: _user.id });
+      const user = await getUserFromRequest(request);
+      console.warn('Auto-fix initiated by user', { userId: user.id });
     } catch {
       // Allow in development mode
       if (process.env.NODE_ENV !== 'development') {
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Get auto-fix status and available fixes
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Auto-fix functionality has been removed
     return NextResponse.json({

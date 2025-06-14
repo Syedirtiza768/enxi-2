@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api/client'
 
-async function main() {
+async function main(): Promise<unknown> {
   console.warn('🧪 Testing Quotation Workflow...\n')
   
   try {

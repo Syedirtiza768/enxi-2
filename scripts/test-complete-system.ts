@@ -14,7 +14,7 @@ class ComprehensiveSystemTester {
   private results: TestResult[] = [];
   private startTime: number = Date.now();
 
-  async runAllTests() {
+  async runAllTests(): Promise<void> {
     console.log('🚀 ENXI ERP COMPREHENSIVE SYSTEM TEST');
     console.log('=====================================');
     console.log('Testing complete workflow based on Quotation SRV-01-NM-0525\n');

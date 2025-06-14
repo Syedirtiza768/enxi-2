@@ -2,20 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { CustomerService } from '@/lib/services/customer.service'
 
-interface RouteParams {
-  params: Promise<{ id: string }>
-}
-
 // GET /api/customers/[id] - Get specific customer
 export async function GET(
   request: NextRequest,
-  context: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const customerService = new CustomerService()
-    const customer = await customerService.getCustomer(params.id)
+    const customer = await customerService.getCustomer(id)
 
     if (!customer) {
       return NextResponse.json(
@@ -40,18 +36,18 @@ export async function GET(
 // PUT /api/customers/[id] - Update customer
 export async function PUT(
   request: NextRequest,
-  context: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const customerService = new CustomerService()
     const customer = await customerService.updateCustomer(
-      params.id,
+      id,
       body,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({
@@ -77,6 +73,97 @@ export async function PUT(
 
     return NextResponse.json(
       { error: 'Failed to update customer' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH /api/customers/[id] - Partial update customer
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getUserFromRequest(request)
+    const { id } = await params
+    const body = await request.json()
+    
+    const customerService = new CustomerService()
+    const customer = await customerService.updateCustomer(
+      id,
+      body,
+      user.id
+    )
+
+    return NextResponse.json({
+      success: true,
+      data: customer
+    })
+  } catch (error: unknown) {
+    console.error('Error updating customer:', error)
+    
+    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : String(error) },
+        { status: 404 }
+      )
+    }
+
+    if (error instanceof Error ? error.message : String(error)?.includes('already exists')) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : String(error) },
+        { status: 409 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to update customer' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/customers/[id] - Delete customer (soft delete)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getUserFromRequest(request)
+    const { id } = await params
+    
+    const customerService = new CustomerService()
+    
+    // Check if customer exists
+    const existingCustomer = await customerService.getCustomer(id)
+    if (!existingCustomer) {
+      return NextResponse.json(
+        { error: 'Customer not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Check if customer has active orders or invoices
+    const hasActiveTransactions = await customerService.hasActiveTransactions(id)
+    if (hasActiveTransactions) {
+      return NextResponse.json(
+        { error: 'Cannot delete customer with active transactions' },
+        { status: 400 }
+      )
+    }
+    
+    // Perform soft delete by setting isActive to false
+    await customerService.softDeleteCustomer(id, user.id)
+    
+    return NextResponse.json({
+      success: true,
+      message: 'Customer deleted successfully'
+    })
+  } catch (error: unknown) {
+    console.error('Error deleting customer:', error)
+    
+    return NextResponse.json(
+      { error: 'Failed to delete customer' },
       { status: 500 }
     )
   }

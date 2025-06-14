@@ -142,7 +142,7 @@ const EDGE_CASE_SCENARIOS = [
   }
 ]
 
-async function createEdgeCaseCustomers() {
+async function createEdgeCaseCustomers(): Promise<T> {
   console.warn('🔍 Creating edge case customers...')
   
   const edgeCustomers = []
@@ -599,7 +599,7 @@ function generateEdgeCasePaymentPattern(invoice: any, scenario: any) {
   return patterns
 }
 
-async function createStressTestData() {
+async function createStressTestData(): Promise<void> {
   console.warn('🔥 Creating stress test data...')
   
   // Create customer with 1000+ transactions
@@ -656,7 +656,7 @@ async function createStressTestData() {
       console.warn('✅ Created stress test data (1000+ transactions)')
     }
 
-export async function seedEdgeCases() {
+export async function seedEdgeCases(): Promise<void> {
   try {
     console.warn('🚀 Starting edge cases and stress test seeding...')
     

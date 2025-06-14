@@ -6,9 +6,9 @@ import { prisma } from '@/lib/db/prisma'
  * GET /api/permissions - List all available permissions
  */
 export const GET = createProtectedHandler(
-  async (_request) => {
+  async (request) => {
     try {
-      const { searchParams } = new URL(_request.url)
+      const { searchParams } = new URL(request.url)
       const moduleParam = searchParams.get('module')
 
       const where = moduleParam ? { module: moduleParam } : {}

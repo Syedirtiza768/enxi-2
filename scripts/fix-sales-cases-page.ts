@@ -2,7 +2,7 @@
 
 import { readFile, writeFile } from 'fs/promises';
 
-async function fixSalesCasesPage() {
+async function fixSalesCasesPage(): Promise<void> {
   console.warn('🔧 Fixing Sales Cases Page toFixed Error\n');
   
   const filePath = '/Users/irtizahassan/apps/enxi/enxi-erp/app/(auth)/sales-cases/page.tsx';

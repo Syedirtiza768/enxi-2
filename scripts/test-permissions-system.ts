@@ -4,7 +4,7 @@ import { PrismaClient } from '../lib/generated/prisma';
 
 const prisma = new PrismaClient();
 
-async function testPermissionsSystem() {
+async function testPermissionsSystem(): Promise<void> {
   try {
     console.warn('🧪 Testing Permissions System...\n');
 

@@ -37,7 +37,7 @@ export default function IncomeStatementPage() {
   const [toDate, setToDate] = useState(lastDayOfMonth.toISOString().split('T')[0])
   const [currency, setCurrency] = useState('USD')
 
-  const fetchIncomeStatement = async () => {
+  const fetchIncomeStatement = async (): Promise<void> => {
     setLoading(true)
     setError('')
     

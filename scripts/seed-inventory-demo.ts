@@ -13,7 +13,7 @@ function generateMovementNumber(): string {
   return `MOV-${timestamp}-${random}`
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🌱 Starting inventory demo seeding...')
 
   try {

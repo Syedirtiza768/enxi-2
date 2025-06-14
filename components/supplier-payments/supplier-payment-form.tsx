@@ -25,6 +25,7 @@ import {
   FileText
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface Supplier {
   id: string
@@ -81,6 +82,7 @@ export function SupplierPaymentForm({
   onSuccess 
 }: SupplierPaymentFormProps) {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const { formatCurrency } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -105,8 +107,8 @@ export function SupplierPaymentForm({
 
   const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
-      const response = await apiClient(`/api/suppliers/${supplierId}`, { method: 'GET' })
-      if (response.ok) {
+      const response = await apiClient<Supplier>(`/api/suppliers/${supplierId}`, { method: 'GET' })
+      if (response.ok && response.data) {
         const supplier = response.data
         setSelectedSupplier(supplier)
         
@@ -157,11 +159,12 @@ export function SupplierPaymentForm({
     }
   }, [formData.supplierInvoiceId, formData.amount, supplierInvoices])
 
-  const fetchSuppliers = async () => {
+  const fetchSuppliers = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/suppliers?status=active', { method: 'GET' })
-      if (response.ok) {
-        setSuppliers(response.data?.data || [])
+      const response = await apiClient<{ data: Supplier[]; total?: number } | Supplier[]>('/api/suppliers?status=active', { method: 'GET' })
+      if (response.ok && response.data) {
+        const suppliersData = response.data
+        setSuppliers(Array.isArray(suppliersData) ? suppliersData : (suppliersData.data || []))
       }
     } catch (error) {
       console.error('Failed to fetch suppliers:', error)
@@ -171,9 +174,10 @@ export function SupplierPaymentForm({
 
   const fetchSupplierInvoices = async (supplierId: string) => {
     try {
-      const response = await apiClient(`/api/supplier-invoices?supplierId=${supplierId}&status=POSTED`, { method: 'GET' })
-      if (response.ok) {
-        const invoices = response.data?.data || []
+      const response = await apiClient<{ data: SupplierInvoice[]; total?: number } | SupplierInvoice[]>(`/api/supplier-invoices?supplierId=${supplierId}&status=POSTED`, { method: 'GET' })
+      if (response.ok && response.data) {
+        const invoicesData = response.data
+        const invoices = Array.isArray(invoicesData) ? invoicesData : (invoicesData.data || [])
         // Filter to show only invoices with outstanding balance
         const unpaidInvoices = invoices.filter((inv: SupplierInvoice) => inv.balanceAmount > 0.01)
         setSupplierInvoices(unpaidInvoices)
@@ -183,11 +187,12 @@ export function SupplierPaymentForm({
     }
   }
 
-  const fetchBankAccounts = async () => {
+  const fetchBankAccounts = async (): Promise<number> => {
     try {
-      const response = await apiClient('/api/accounting/accounts?type=ASSET&subType=BANK', { method: 'GET' })
-      if (response.ok) {
-        setBankAccounts(response.data?.data || [])
+      const response = await apiClient<{ data: Account[]; total?: number } | Account[]>('/api/accounting/accounts?type=ASSET&subType=BANK', { method: 'GET' })
+      if (response.ok && response.data) {
+        const accountsData = response.data
+        setBankAccounts(Array.isArray(accountsData) ? accountsData : (accountsData.data || []))
       }
     } catch (error) {
       console.error('Failed to fetch bank accounts:', error)
@@ -216,7 +221,7 @@ export function SupplierPaymentForm({
       const url = supplierPayment ? `/api/supplier-payments/${supplierPayment.id}` : '/api/supplier-payments'
       const method = supplierPayment ? 'PUT' : 'POST'
 
-      const response = await apiClient(url, {
+      const response = await apiClient<{ success: boolean; paymentId?: string }>(url, {
         method,
         body: JSON.stringify({
           ...formData,
@@ -225,7 +230,7 @@ export function SupplierPaymentForm({
       })
 
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to save supplier payment')
+        throw new Error(response.error || 'Failed to save supplier payment')
       }
 
       if (onSuccess) {
@@ -298,7 +303,7 @@ export function SupplierPaymentForm({
                     />
                     <Select
                       value={formData.supplierId}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, supplierId: value }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, supplierId: e.target.value }))}
                       required
                     >
                       <option value="">Select supplier...</option>
@@ -315,7 +320,7 @@ export function SupplierPaymentForm({
                   <Text size="sm" weight="medium">Currency</Text>
                   <Select
                     value={formData.currency}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                     required
                   >
                     <option value="USD">USD</option>
@@ -362,7 +367,7 @@ export function SupplierPaymentForm({
                   <Text size="sm" weight="medium">Invoice</Text>
                   <Select
                     value={formData.supplierInvoiceId || ''}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, supplierInvoiceId: value || undefined }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, supplierInvoiceId: e.target.value || undefined }))}
                   >
                     <option value="">No specific invoice (prepayment)</option>
                     {supplierInvoices.map(invoice => (
@@ -457,7 +462,7 @@ export function SupplierPaymentForm({
                   <Text size="sm" weight="medium">Payment Method *</Text>
                   <Select
                     value={formData.paymentMethod}
-                    onValueChange={(value: string) => setFormData(prev => ({ ...prev, paymentMethod: value }))}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as any }))}
                     required
                   >
                     <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -482,7 +487,7 @@ export function SupplierPaymentForm({
                   <Text size="sm" weight="medium">Bank Account *</Text>
                   <Select
                     value={formData.bankAccountId}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, bankAccountId: value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bankAccountId: e.target.value }))}
                     required
                   >
                     <option value="">Select bank account...</option>
@@ -558,7 +563,7 @@ export function SupplierPaymentForm({
                         <VStack gap="xs">
                           <Text size="sm" color="secondary">USD Equivalent</Text>
                           <Text size="xl" weight="bold">
-                            {formatCurrency((formData.amount * formData.exchangeRate))} USD
+                            {formatCurrency((Number(formData.amount || 0) * Number(formData.exchangeRate || 1)))} USD
                           </Text>
                         </VStack>
                       </CardContent>

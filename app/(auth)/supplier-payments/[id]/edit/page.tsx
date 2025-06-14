@@ -41,12 +41,12 @@ export default function EditSupplierPaymentPage() {
     setError(null)
 
     try {
-      const response = await apiClient(`/api/supplier-payments/${paymentId}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/supplier-payments/${paymentId}`, {
         method: 'GET'
       })
       
       if (!response.ok) {
-        throw new Error(response.data?.error || 'Failed to fetch supplier payment')
+        throw new Error(response.error || 'Failed to fetch supplier payment')
       }
       
       const paymentData = response.data

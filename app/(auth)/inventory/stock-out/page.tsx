@@ -69,11 +69,11 @@ export default function StockOutPage() {
     fetchRecentMovements()
   }, [])
 
-  const fetchItems = async () => {
+  const fetchItems = async (): Promise<void> => {
     try {
-      const response = await apiClient('/api/inventory/items', { method: 'GET' })
+      const response = await apiClient<{ data: any[] }>('/api/inventory/items', { method: 'GET' })
       if (response.ok && response.data) {
-        const itemsData = response.data.data || response.data
+        const itemsData = response.data?.data || response.data || []
         setItems(Array.isArray(itemsData) ? itemsData : [])
       }
     } catch (error) {
@@ -81,7 +81,7 @@ export default function StockOutPage() {
     }
   }
 
-  const fetchRecentMovements = async () => {
+  const fetchRecentMovements = async (): Promise<void> => {
     setLoading(true)
     try {
       // For now, we'll show a message that recent movements will be available after creating some

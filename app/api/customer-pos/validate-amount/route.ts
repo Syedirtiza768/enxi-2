@@ -10,9 +10,9 @@ const validateAmountSchema = z.object({
 
 const customerPOService = new CustomerPOService()
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = await _request.json()
+    const body = await request.json()
     const { quotationId, poAmount, tolerance } = validateAmountSchema.parse(body)
     
     const validation = await customerPOService.validatePOAmount(

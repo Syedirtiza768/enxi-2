@@ -220,6 +220,31 @@ export class LeadService {
     return lead
   }
 
+  async findByEmail(email: string): Promise<LeadResponse[]> {
+    try {
+      const leads = await prisma.lead.findMany({
+        where: { 
+          email: email.toLowerCase()
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              email: true
+            }
+          },
+          customer: true
+        }
+      })
+
+      return leads
+    } catch (error) {
+      console.error('Error finding leads by email:', error)
+      throw error
+    }
+  }
+
   async updateLead(id: string, data: UpdateLeadData, userId: string): Promise<LeadResponse> {
     // Validate input data
     const validatedData = updateLeadSchema.parse(data)

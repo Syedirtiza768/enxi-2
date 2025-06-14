@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api/client'
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('Testing categories tree API...\n')
   
   try {

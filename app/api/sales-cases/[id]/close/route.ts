@@ -8,13 +8,10 @@ interface RouteParams {
 }
 
 // POST /api/sales-cases/[id]/close - Close a sales case
-export async function POST(
-  request: NextRequest,
-  context: RouteParams
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const _user = await getUserFromRequest(request)
-    const params = await context.params
+    const user = await getUserFromRequest(request)
+    const { id } = await params
     const body = await request.json()
     
     const { status, actualValue, cost } = body
@@ -43,11 +40,11 @@ export async function POST(
 
     const salesCaseService = new SalesCaseService()
     const salesCase = await salesCaseService.closeSalesCase(
-      params.id,
+      id,
       status,
       actualValue,
       cost,
-      _user.id
+      user.id
     )
 
     return NextResponse.json({

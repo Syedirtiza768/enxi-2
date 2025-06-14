@@ -3,7 +3,7 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 
 // POST /api/inventory/stock-movements/adjust - Create stock adjustment
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       itemId,
       adjustmentQuantity,
       reason,
-      _user.id,
+      user.id,
       unitCost
     )
 

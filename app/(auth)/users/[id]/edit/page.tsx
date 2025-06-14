@@ -38,7 +38,7 @@ export default function UserEditPage() {
     }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchUser = async () => {
+  const fetchUser = async (): Promise<void> => {
     try {
       setLoading(true)
       setError(null)

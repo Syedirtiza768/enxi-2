@@ -2,25 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // GET /api/stock-transfers/[id] - Get stock transfer by ID
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const stockTransferService = new StockTransferService()
-    const transfer = await stockTransferService.getStockTransfer(params.id)
+    const transfer = await stockTransferService.getStockTransfer(resolvedParams.id)
 
     if (!transfer) {
       return NextResponse.json(
@@ -40,23 +34,21 @@ export async function GET(
 }
 
 // DELETE /api/stock-transfers/[id] - Cancel stock transfer
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json().catch(() => ({}))
+    const body = await request.json().catch(() => ({}))
     const { reason } = body
 
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.cancelStockTransfer(
-      params.id,
-      _user.id,
+      resolvedParams.id,
+      user.id,
       reason
     )
 

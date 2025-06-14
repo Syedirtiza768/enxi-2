@@ -3,6 +3,19 @@
 import React, { useState, useEffect } from 'react'
 import { Item } from './item-list'
 import { Category } from './category-tree'
+import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { 
+  codeValidator,
+  nameValidator,
+  descriptionValidator,
+  nonNegativeNumberValidator,
+  currencyAmountValidator,
+  validateRequired,
+  MAX_CODE_LENGTH,
+  MAX_NAME_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  checkMaxLength
+} from '@/lib/validators/common.validator'
 
 interface UnitOfMeasure {
   id: string
@@ -79,10 +92,12 @@ export function ItemForm({
   const [units, setUnits] = useState<UnitOfMeasure[]>([])
   const [glAccounts, setGlAccounts] = useState<GLAccount[]>([])
   const [generatingCode, setGeneratingCode] = useState(false)
+  const [checkingCodeUniqueness, setCheckingCodeUniqueness] = useState(false)
+  const [fieldTouched, setFieldTouched] = useState<Record<string, boolean>>({})
 
   // Load reference data on mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = async (): Promise<void> => {
       try {
         // Load categories
         const catResponse = await fetch('/api/inventory/categories')
@@ -119,7 +134,7 @@ export function ItemForm({
     }
   }, [formData.type])
 
-  const generateCode = async () => {
+  const generateCode = async (): Promise<unknown> => {
     if (!formData.categoryId) {
       setErrors(prev => ({ ...prev, categoryId: 'Select a category first' }))
       return
@@ -140,15 +155,58 @@ export function ItemForm({
       }
   }
 
+  const checkCodeUniqueness = async (code: string) => {
+    if (!code || mode !== 'create') return
+
+    setCheckingCodeUniqueness(true)
+    try {
+      const response = await fetch(`/api/inventory/items/check-code?code=${encodeURIComponent(code)}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (!data.available) {
+          setErrors(prev => ({ ...prev, code: 'This item code already exists' }))
+        }
+      }
+    } catch (error) {
+      console.error('Error checking code uniqueness:', error)
+    } finally {
+      setCheckingCodeUniqueness(false)
+    }
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    // Item code validation using common validator
     if (!formData.code.trim()) {
       newErrors.code = 'Item code is required'
+    } else {
+      const codeResult = codeValidator.safeParse(formData.code)
+      if (!codeResult.success) {
+        newErrors.code = codeResult.error.errors[0].message
+      } else if (formData.code.length < 3) {
+        newErrors.code = 'Item code must be at least 3 characters long'
+      }
     }
 
+    // Item name validation using common validator
     if (!formData.name.trim()) {
       newErrors.name = 'Item name is required'
+    } else {
+      const nameResult = nameValidator.safeParse(formData.name)
+      if (!nameResult.success) {
+        newErrors.name = nameResult.error.errors[0].message
+      } else if (formData.name.length < 3) {
+        newErrors.name = 'Item name must be at least 3 characters long'
+      }
+    }
+
+    // Description validation using common validator
+    if (formData.description) {
+      const descResult = descriptionValidator.safeParse(formData.description)
+      if (!descResult.success) {
+        newErrors.description = descResult.error.errors[0].message
+      }
     }
 
     if (!formData.categoryId) {
@@ -159,24 +217,70 @@ export function ItemForm({
       newErrors.unitOfMeasureId = 'Unit of measure is required'
     }
 
-    if (formData.minStockLevel < 0) {
-      newErrors.minStockLevel = 'Min stock level must be non-negative'
+    // Stock level validations
+    if (formData.trackInventory) {
+      if (formData.minStockLevel < 0) {
+        newErrors.minStockLevel = 'Min stock level must be non-negative'
+      }
+
+      if (formData.maxStockLevel < 0) {
+        newErrors.maxStockLevel = 'Max stock level must be non-negative'
+      }
+
+      if (formData.maxStockLevel > 0 && formData.minStockLevel > formData.maxStockLevel) {
+        newErrors.minStockLevel = 'Min stock level cannot exceed max stock level'
+      }
+
+      if (formData.reorderPoint < 0) {
+        newErrors.reorderPoint = 'Reorder point must be non-negative'
+      }
+
+      if (formData.reorderPoint > 0 && formData.minStockLevel > 0 && formData.reorderPoint < formData.minStockLevel) {
+        newErrors.reorderPoint = 'Reorder point should not be less than min stock level'
+      }
+
+      if (formData.maxStockLevel > 0 && formData.reorderPoint > formData.maxStockLevel) {
+        newErrors.reorderPoint = 'Reorder point should not exceed max stock level'
+      }
     }
 
-    if (formData.maxStockLevel < 0) {
-      newErrors.maxStockLevel = 'Max stock level must be non-negative'
-    }
-
-    if (formData.reorderPoint < 0) {
-      newErrors.reorderPoint = 'Reorder point must be non-negative'
-    }
-
+    // Cost and price validations
     if (formData.standardCost < 0) {
       newErrors.standardCost = 'Standard cost must be non-negative'
     }
 
     if (formData.listPrice < 0) {
       newErrors.listPrice = 'List price must be non-negative'
+    }
+
+    if (formData.isSaleable && formData.listPrice === 0) {
+      newErrors.listPrice = 'List price is required for saleable items'
+    }
+
+    if (formData.listPrice > 0 && formData.standardCost > formData.listPrice) {
+      newErrors.standardCost = 'Standard cost should not exceed list price'
+    }
+
+    // GL Account validations
+    if (formData.trackInventory && !formData.inventoryAccountId) {
+      newErrors.inventoryAccountId = 'Inventory account is required for items that track inventory'
+    }
+
+    if (formData.isSaleable && !formData.salesAccountId) {
+      newErrors.salesAccountId = 'Sales account is required for saleable items'
+    }
+
+    if ((formData.isSaleable || formData.trackInventory) && !formData.cogsAccountId) {
+      newErrors.cogsAccountId = 'COGS account is required'
+    }
+
+    // Business rule validations
+    if (formData.type === 'SERVICE' && formData.trackInventory) {
+      newErrors.trackInventory = 'Services cannot track inventory'
+    }
+
+    if (!formData.isSaleable && !formData.isPurchaseable) {
+      newErrors.isSaleable = 'Item must be either saleable or purchaseable'
     }
 
     setErrors(newErrors)
@@ -239,8 +343,10 @@ export function ItemForm({
                   disabled={mode === 'edit'}
                   value={formData.code}
                   onChange={(e) => handleInputChange('code', e.target.value.toUpperCase())}
+                  onBlur={() => mode === 'create' && formData.code && checkCodeUniqueness(formData.code)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                   placeholder="Enter or generate code"
+                  maxLength={20}
                 />
                 {mode === 'create' && (
                   <button
@@ -272,6 +378,7 @@ export function ItemForm({
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter item name"
+                maxLength={100}
               />
               {errors.name && (
                 <div role="alert" className="mt-1 text-sm text-red-600">
@@ -291,7 +398,16 @@ export function ItemForm({
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Optional description"
+                maxLength={500}
               />
+              {errors.description && (
+                <div role="alert" className="mt-1 text-sm text-red-600">
+                  {errors.description}
+                </div>
+              )}
+              <div className="mt-1 text-xs text-gray-500">
+                {formData.description.length}/500 characters
+              </div>
             </div>
 
             <div>
@@ -376,6 +492,9 @@ export function ItemForm({
               <label htmlFor="trackInventory" className="ml-2 text-sm text-gray-700">
                 Track Inventory
               </label>
+              {formData.type === 'SERVICE' && (
+                <span className="ml-2 text-xs text-gray-500">(Inventory tracking disabled)</span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -599,7 +718,7 @@ export function ItemForm({
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || checkingCodeUniqueness}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {isSubmitting 

@@ -61,12 +61,12 @@ export default function QuotationDetailPage() {
 
   // Fetch quotation details
   useEffect(() => {
-    const fetchQuotation = async () => {
+    const fetchQuotation = async (): Promise<void> => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await apiClient(`/api/quotations/${quotationId}`, {
+        const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}`, {
           method: 'GET'
         })
 
@@ -90,7 +90,7 @@ export default function QuotationDetailPage() {
 
   const handleUpdate = async (quotationData: Partial<Quotation>) => {
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}`, {
+      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}`, {
         method: 'PUT',
         body: JSON.stringify(quotationData)
       })
@@ -106,9 +106,9 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleSend = async () => {
+  const handleSend = async (): Promise<void> => {
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}/send`, {
+      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/send`, {
         method: 'POST'
       })
 
@@ -122,9 +122,9 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleDuplicate = async () => {
+  const handleDuplicate = async (): Promise<void> => {
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}/duplicate`, {
+      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/duplicate`, {
         method: 'POST'
       })
 
@@ -139,7 +139,7 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     if (!confirm('Are you sure you want to delete this quotation?')) {
       return
     }
@@ -159,13 +159,13 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleAccept = async () => {
+  const handleAccept = async (): Promise<any[]> => {
     if (!confirm('Are you sure you want to accept this quotation? This will create a sales order.')) {
       return
     }
 
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}/accept`, {
+      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/accept`, {
         method: 'POST'
       })
 
@@ -187,14 +187,14 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleReject = async () => {
+  const handleReject = async (): Promise<any[]> => {
     const reason = prompt('Please provide a reason for rejecting this quotation:')
     if (!reason) {
       return
     }
 
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}/reject`, {
+      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/reject`, {
         method: 'POST',
         body: JSON.stringify({ reason })
       })
@@ -217,9 +217,9 @@ export default function QuotationDetailPage() {
       ACCEPTED: { text: 'Accepted', className: 'bg-green-100 text-green-800' },
       REJECTED: { text: 'Rejected', className: 'bg-red-100 text-red-800' },
       EXPIRED: { text: 'Expired', className: 'bg-red-100 text-red-800' }
-    }
+    } as const
 
-    const config = statusConfig[status]
+    const config = statusConfig[status as keyof typeof statusConfig]
     return (
       <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.className}`}>
         {config.text}

@@ -3,7 +3,7 @@
 import fetch from 'node-fetch'
 import jwt from 'jsonwebtoken'
 
-async function testSalesTeamAPI() {
+async function testSalesTeamAPI(): Promise<void> {
   console.warn('🧪 Testing Sales Team API endpoints...\n')
 
   try {

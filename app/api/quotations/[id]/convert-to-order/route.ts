@@ -11,11 +11,9 @@ const convertQuotationSchema = z.object({
   notes: z.string().optional()
 })
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
@@ -32,7 +30,7 @@ export async function POST(
     }
     
     const salesOrder = await salesOrderService.convertQuotationToSalesOrder(
-      params.id,
+      resolvedParams.id,
       additionalData
     )
     

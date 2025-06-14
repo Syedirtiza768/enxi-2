@@ -69,10 +69,10 @@ export function SimplifiedItemEditor({
     
     // Recalculate totals
     const item = newItems[index];
-    const subtotal = item.quantity * item.unit_price;
-    const discountAmount = subtotal * (item.discount_percentage / 100);
+    const subtotal = Number(item.quantity || 0) * Number(item.unit_price || 0);
+    const discountAmount = subtotal * (Number(item.discount_percentage || 0) / 100);
     const afterDiscount = subtotal - discountAmount;
-    const taxAmount = afterDiscount * (item.tax_rate / 100);
+    const taxAmount = afterDiscount * (Number(item.tax_rate || 0) / 100);
     
     newItems[index].subtotal = afterDiscount;
     newItems[index].total = afterDiscount + taxAmount;

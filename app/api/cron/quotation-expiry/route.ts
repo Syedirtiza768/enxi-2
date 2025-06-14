@@ -3,10 +3,10 @@ import { QuotationService } from '@/lib/services/quotation.service'
 import { AuditService } from '@/lib/services/audit.service'
 
 // GET /api/cron/quotation-expiry - Check and mark expired quotations
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Verify this is running from cron (basic security)
-    const authHeader = _request.headers.get('authorization')
+    const authHeader = request.headers.get('authorization')
     const expectedToken = process.env.CRON_SECRET || 'default-cron-secret'
     
     if (authHeader !== `Bearer ${expectedToken}`) {

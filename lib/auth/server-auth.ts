@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { NextRequest } from 'next/server'
 import { AuthService } from '../services/auth.service'
 
-export async function getServerUser() {
+export async function getServerUser(): Promise<T | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get('auth-token')?.value
 
@@ -26,7 +26,7 @@ export async function getServerUser() {
   }
 }
 
-export async function requireAuth() {
+export async function requireAuth(): Promise<unknown> {
   return await getServerUser()
 }
 

@@ -14,7 +14,7 @@ const salesOrderService = new SalesOrderService()
 const invoiceService = new InvoiceService()
 const purchaseOrderService = new PurchaseOrderService()
 
-async function main() {
+async function main(): Promise<void> {
   console.log('🧪 Starting Tax System Integration Test\n')
 
   try {

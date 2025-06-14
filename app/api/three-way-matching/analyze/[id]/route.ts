@@ -3,17 +3,15 @@ import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 // GET /api/three-way-matching/analyze/[id] - Analyze three-way matching for specific purchase order
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const searchParams = _request.nextUrl.searchParams
+    const searchParams = request.nextUrl.searchParams
     const includeTolerance = searchParams.get('includeTolerance') === 'true'
     
     const threeWayMatchingService = new ThreeWayMatchingService()
@@ -27,9 +25,9 @@ export async function GET(
         amountTolerancePercent: parseFloat(searchParams.get('amountTolerance') || '2')
       }
       
-      analysis = await threeWayMatchingService.analyzeWithTolerance(params.id, tolerance)
+      analysis = await threeWayMatchingService.analyzeWithTolerance(resolvedParams.id, tolerance)
     } else {
-      analysis = await threeWayMatchingService.analyzeThreeWayMatching(params.id)
+      analysis = await threeWayMatchingService.analyzeThreeWayMatching(resolvedParams.id)
     }
 
     return NextResponse.json(analysis)

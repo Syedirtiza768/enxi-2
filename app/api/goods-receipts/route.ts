@@ -4,7 +4,7 @@ import { GoodsReceiptService } from '@/lib/services/purchase/goods-receipt.servi
 import { ReceiptStatus } from '@/lib/generated/prisma'
 
 // GET /api/goods-receipts - Get all goods receipts
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/goods-receipts - Create goods receipt
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await verifyJWTFromRequest(request)
     if (!user) {
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       condition,
       notes,
       items,
-      receivedBy: _user.id
+      receivedBy: user.id
     })
 
     return NextResponse.json({ data: receipt }, { status: 201 })

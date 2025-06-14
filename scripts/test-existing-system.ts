@@ -14,7 +14,7 @@ import { PrismaClient } from '../lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function main(): Promise<void> {
   console.warn('🧪 Testing Existing ERP System Functionality\n')
 
   try {

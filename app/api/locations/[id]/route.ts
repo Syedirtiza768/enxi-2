@@ -2,25 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { LocationService } from '@/lib/services/warehouse/location.service'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
+
 
 // GET /api/locations/[id] - Get location by ID
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const locationService = new LocationService()
-    const location = await locationService.getLocation(params.id)
+    const location = await locationService.getLocation(resolvedParams.id)
 
     if (!location) {
       return NextResponse.json(
@@ -40,17 +34,15 @@ export async function GET(
 }
 
 // PUT /api/locations/[id] - Update location
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await _request.json()
+    const body = await request.json()
     const {
       name,
       type,
@@ -71,7 +63,7 @@ export async function PUT(
 
     const locationService = new LocationService()
     const location = await locationService.updateLocation(
-      params.id,
+      resolvedParams.id,
       {
         name,
         type,
@@ -89,7 +81,7 @@ export async function PUT(
         maxCapacity,
         inventoryAccountId
       },
-      _user.id
+      user.id
     )
 
     return NextResponse.json({ data: location })
@@ -118,18 +110,16 @@ export async function PUT(
 }
 
 // DELETE /api/locations/[id] - Deactivate location
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
+    const resolvedParams = await params
     const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const locationService = new LocationService()
-    const location = await locationService.deactivateLocation(params.id, _user.id)
+    const location = await locationService.deactivateLocation(resolvedParams.id, user.id)
 
     return NextResponse.json({ data: location })
   } catch (error: unknown) {
