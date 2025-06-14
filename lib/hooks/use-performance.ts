@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export function usePerformance(componentName: string) {
+export function usePerformance(componentName: string): unknown {
   const mountTime = useRef<number>(Date.now());
   const renderCount = useRef<number>(0);
 
@@ -21,7 +21,7 @@ export function usePerformance(componentName: string) {
 
   // Return a function to track custom metrics
   return {
-    trackMetric: (metric: string, value: number, unit?: string) => {
+    trackMetric: (metric: string, value: number, unit?: string): void => {
       console.warn(`${componentName}_${metric}`, value, unit);
     },
     trackOperation: async <T,>(

@@ -1,7 +1,7 @@
 import { LoginForm } from '@/components/auth/login-form'
 import { Container, VStack, Text, Logo } from '@/components/design-system'
 
-export default function LoginPage() {
+export default function LoginPage(): React.JSX.Element {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-tertiary)] p-4">
       <Container size="sm" padding="none" className="w-full max-w-md">

@@ -2,11 +2,35 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { QuotationService } from '@/lib/services/quotation.service'
 import { QuotationStatus } from '@/lib/generated/prisma'
+import { withCrudAudit } from '@/lib/middleware/audit.middleware'
+import { EntityType } from '@/lib/validators/audit.validator'
+import { z } from 'zod'
+
+// Schema for creating quotations
+const createQuotationSchema = z.object({
+  salesCaseId: z.string(),
+  validUntil: z.string().datetime(),
+  paymentTerms: z.string().optional(),
+  deliveryTerms: z.string().optional(),
+  notes: z.string().optional(),
+  items: z.array(z.object({
+    itemId: z.string().optional(),
+    itemCode: z.string(),
+    description: z.string(),
+    quantity: z.number().positive(),
+    unitPrice: z.number().min(0),
+    discount: z.number().min(0).max(100).optional(),
+    taxRate: z.number().min(0).max(100).optional(),
+    unitOfMeasureId: z.string().optional()
+  })).min(1)
+})
 
 // GET /api/quotations - List all quotations with filtering
-export async function GET(request: NextRequest): Promise<NextResponse> {
+const getHandler = async (request: NextRequest): Promise<NextResponse> => {
   try {
+    // Authenticate user
     const user = await getUserFromRequest(request)
+    
     const quotationService = new QuotationService()
     const searchParams = request.nextUrl.searchParams
     
@@ -47,89 +71,137 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const offset = searchParams.get('offset')
     if (offset) options.offset = parseInt(offset)
 
-    const quotations = await quotationService.getAllQuotations(options)
+    const result = await quotationService.getAllQuotations(options)
 
     return NextResponse.json({
       success: true,
-      data: quotations
+      data: result,
+      total: result.length
     })
-} catch (error) {
-    console.error('Error:', error);
+  } catch (error) {
+    console.error('Error fetching quotations:', error)
+    
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Failed to fetch quotations',
+        code: 'FETCH_QUOTATIONS_ERROR',
+        message: 'Unable to retrieve quotation list. Please try again.',
+        context: {
+          operation: 'fetch_quotations',
+          timestamp: new Date().toISOString()
+        }
+      },
       { status: 500 }
     )
   }
 }
 
 // POST /api/quotations - Create new quotation
-export async function POST(request: NextRequest): Promise<NextResponse> {
+const postHandler = async (request: NextRequest): Promise<NextResponse> => {
   try {
+    // Authenticate user
     const user = await getUserFromRequest(request)
+    
     const body = await request.json()
     
-    const { 
-      salesCaseId,
-      validUntil,
-      paymentTerms,
-      deliveryTerms,
-      notes,
-      items
-    } = body
-
-    // Validate required fields
-    if (!salesCaseId || !validUntil || !items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json(
-        { error: 'Sales case ID, valid until date, and items are required' },
-        { status: 400 }
-      )
-    }
-
-    // Validate items structure
-    for (const item of items) {
-      if (!item.itemCode || !item.description || typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number') {
+    // Validate request body
+    let data;
+    try {
+      data = createQuotationSchema.parse(body)
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
         return NextResponse.json(
-          { error: 'Each item must have itemCode, description, quantity, and unitPrice' },
+          { 
+            error: 'Validation failed',
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid quotation data provided.',
+            details: validationError.errors
+          },
           { status: 400 }
         )
       }
+      throw validationError
     }
 
     const quotationService = new QuotationService()
-    const quotation = await quotationService.createQuotation({
-      salesCaseId,
-      validUntil: new Date(validUntil),
-      paymentTerms,
-      deliveryTerms,
-      notes,
-      items,
+    
+    // Prepare quotation data with user context
+    const quotationData = {
+      ...data,
+      validUntil: new Date(data.validUntil),
       createdBy: user.id
-    })
+    }
+    
+    const quotation = await quotationService.createQuotation(quotationData)
 
     return NextResponse.json({
       success: true,
       data: quotation
     }, { status: 201 })
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error creating quotation:', error)
     
-    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    
+    // Handle specific error cases
+    if (errorMessage.includes('Sales case not found')) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : String(error) },
+        { 
+          error: 'Sales case not found',
+          code: 'SALES_CASE_NOT_FOUND',
+          message: 'The specified sales case does not exist.'
+        },
         { status: 404 }
       )
     }
-
-    if (error instanceof Error ? error.message : String(error)?.includes('Can only create quotations')) {
+    
+    if (errorMessage.includes('Can only create quotations')) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : String(error) },
+        { 
+          error: 'Invalid sales case status',
+          code: 'INVALID_SALES_CASE_STATUS',
+          message: 'Quotations can only be created for sales cases in OPEN or NEGOTIATION status.'
+        },
         { status: 400 }
       )
     }
-
+    
+    if (errorMessage.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create quotation' },
+      { 
+        error: 'Failed to create quotation',
+        code: 'CREATE_QUOTATION_ERROR',
+        message: 'An error occurred while creating the quotation. Please try again.',
+        context: {
+          operation: 'create_quotation',
+          timestamp: new Date().toISOString()
+        }
+      },
       { status: 500 }
     )
   }
 }
+
+// Export audit-wrapped handlers
+export const GET = withCrudAudit(getHandler, EntityType.QUOTATION, 'GET', {
+  metadata: { operation: 'list_quotations' }
+})
+
+export const POST = withCrudAudit(postHandler, EntityType.QUOTATION, 'POST', {
+  entityIdField: 'id',
+  metadata: { operation: 'create_quotation' }
+})

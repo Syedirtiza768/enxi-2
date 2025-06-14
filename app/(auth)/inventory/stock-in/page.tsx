@@ -27,32 +27,39 @@ interface Item {
   currentStock?: number
 }
 
-interface StockMovement {
+// Extended StockMovement type with relations
+interface StockMovementWithDetails {
   id: string
   movementNumber: string
-  movementDate: string
+  movementDate: Date | string
+  movementType: 'STOCK_IN' | 'STOCK_OUT' | 'TRANSFER' | 'ADJUSTMENT' | 'OPENING'
   quantity: number
-  unitCost?: number
-  totalCost?: number
-  referenceNumber?: string
-  supplier?: string
-  notes?: string
-  createdAt: string
+  unitCost?: number | null
+  totalCost?: number | null
+  referenceNumber?: string | null
+  notes?: string | null
+  createdBy: string
+  createdAt: Date | string
   item: {
     id: string
     code: string
     name: string
   }
-  createdByUser?: {
-    username: string
+  unitOfMeasure: {
+    id: string
+    code: string
+    name: string
   }
+  // Custom fields stored in notes or referenceNumber
+  supplier?: string
+  purchaseRef?: string
 }
 
 export default function StockInPage() {
   
   const { formatCurrency } = useCurrency()
 const [items, setItems] = useState<Item[]>([])
-  const [recentMovements, setRecentMovements] = useState<StockMovement[]>([])
+  const [recentMovements, setRecentMovements] = useState<StockMovementWithDetails[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -91,14 +98,21 @@ const [items, setItems] = useState<Item[]>([])
   const fetchRecentMovements = async (): Promise<void> => {
     setLoading(true)
     try {
-      // We need to fetch stock movements differently - get all items first
-      const itemsResponse = await apiClient<Item[]>('/api/inventory/items', { method: 'GET' })
-      if (itemsResponse.ok && itemsResponse.data) {
-        const allMovements: StockMovement[] = []
-        
-        // For now, we'll show a message that recent movements will be available after creating some
-        // In a real app, we'd have a different endpoint for this
-        setRecentMovements(allMovements)
+      const params = new URLSearchParams({
+        type: 'STOCK_IN',
+        limit: '50'
+      })
+      const response = await apiClient<{ movements: StockMovementWithDetails[] }>(`/api/inventory/stock-movements?${params}`, {
+        method: 'GET'
+      })
+      if (response.ok && response.data) {
+        // Parse supplier and purchaseRef from notes if available
+        const movements = response.data.movements.map((m: StockMovementWithDetails) => ({
+          ...m,
+          supplier: m.notes?.split('|')[0]?.replace('Supplier:', '').trim(),
+          purchaseRef: m.notes?.split('|')[1]?.replace('PurchaseRef:', '').trim()
+        }))
+        setRecentMovements(movements)
       }
     } catch (error) {
       console.error('Error:', error)
@@ -135,7 +149,7 @@ const [items, setItems] = useState<Item[]>([])
     }
 
     try {
-      const response = await apiClient<StockMovement>('/api/inventory/stock-movements', {
+      const response = await apiClient<StockMovementWithDetails>('/api/inventory/stock-movements', {
         method: 'POST',
         body: JSON.stringify({
           itemId: formData.itemId,
@@ -144,11 +158,14 @@ const [items, setItems] = useState<Item[]>([])
           quantity: quantity,
           unitCost: unitCost,
           unitOfMeasureId: selectedItem?.unitOfMeasure.id,
-          supplier: formData.supplier || undefined,
-          purchaseRef: formData.purchaseRef || undefined,
           lotNumber: formData.lotNumber || undefined,
           expiryDate: formData.expiryDate || undefined,
-          notes: formData.notes || undefined,
+          // Store supplier and purchaseRef in notes field
+          notes: [
+            formData.supplier ? `Supplier:${formData.supplier}` : '',
+            formData.purchaseRef ? `PurchaseRef:${formData.purchaseRef}` : '',
+            formData.notes
+          ].filter(Boolean).join(' | ') || undefined,
           autoCreateLot: true
         })
       })
@@ -467,7 +484,7 @@ const [items, setItems] = useState<Item[]>([])
                         <p className="text-sm text-gray-500">{movement.item.name}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{movement.supplier || '-'}</TableCell>
+                    <TableCell>{movement.supplier || movement.notes?.split('|')[0]?.replace('Supplier:', '').trim() || '-'}</TableCell>
                     <TableCell>{movement.referenceNumber || '-'}</TableCell>
                     <TableCell className="text-right">{movement.quantity}</TableCell>
                     <TableCell className="text-right">
@@ -476,7 +493,7 @@ const [items, setItems] = useState<Item[]>([])
                     <TableCell className="text-right font-medium">
                       {movement.totalCost ? formatCurrency(movement.totalCost) : '-'}
                     </TableCell>
-                    <TableCell>{movement.createdByUser?.username || 'System'}</TableCell>
+                    <TableCell>{movement.createdBy || 'System'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

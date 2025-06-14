@@ -11,6 +11,7 @@ import {
   QuotationStatus,
   Prisma
 } from '@/lib/generated/prisma'
+import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 
 export interface SalesOrderWithDetails extends SalesOrder {
   salesCase: {
@@ -182,8 +183,8 @@ export class SalesOrderService extends BaseService {
         // Audit log
         await this.auditService.logAction({
           userId: data.createdBy,
-          action: 'CREATE',
-          entityType: 'SalesOrder',
+          action: AuditAction.CREATE,
+          entityType: EntityType.SALES_ORDER,
           entityId: salesOrder.id,
           metadata: {
             orderNumber: salesOrder.orderNumber,
@@ -254,7 +255,8 @@ export class SalesOrderService extends BaseService {
     dateFrom?: Date
     dateTo?: Date
   } = {}): Promise<SalesOrderWithDetails[]> {
-    const where: Record<string, unknown> = {}
+    return this.withLogging('getAllSalesOrders', async () => {
+      const where: Prisma.SalesOrderWhereInput = {}
 
     if (filters.status) where.status = filters.status
     if (filters.salesCaseId) where.salesCaseId = filters.salesCaseId
@@ -300,17 +302,19 @@ export class SalesOrderService extends BaseService {
       orderBy: { orderDate: 'desc' }
     })
 
-    return salesOrders as SalesOrderWithDetails[]
+      return salesOrders as SalesOrderWithDetails[]
+    })
   }
 
   async updateSalesOrder(
     id: string,
     data: UpdateSalesOrderInput & { updatedBy: string }
   ): Promise<SalesOrderWithDetails> {
-    const existingOrder = await this.getSalesOrder(id)
-    if (!existingOrder) {
-      throw new Error('Sales order not found')
-    }
+    return this.withLogging('updateSalesOrder', async () => {
+      const existingOrder = await this.getSalesOrder(id)
+      if (!existingOrder) {
+        throw new Error('Sales order not found')
+      }
 
     // Allow updates for PENDING and APPROVED orders
     if (!['PENDING', 'APPROVED'].includes(existingOrder.status)) {
@@ -390,8 +394,8 @@ export class SalesOrderService extends BaseService {
       // Audit log
       await this.auditService.logAction({
         userId: data.updatedBy,
-        action: 'UPDATE',
-        entityType: 'SalesOrder',
+        action: AuditAction.UPDATE,
+        entityType: EntityType.SALES_ORDER,
         entityId: id,
         metadata: {
           orderNumber: existingOrder.orderNumber,
@@ -399,7 +403,8 @@ export class SalesOrderService extends BaseService {
         }
       })
 
-      return this.getSalesOrder(id, tx)
+        return this.getSalesOrder(id, tx) as Promise<SalesOrderWithDetails>
+      })
     })
   }
 
@@ -435,8 +440,8 @@ export class SalesOrderService extends BaseService {
       // Audit log
       await this.auditService.logAction({
         userId,
-        action: 'APPROVE',
-        entityType: 'SalesOrder',
+        action: AuditAction.APPROVE,
+        entityType: EntityType.SALES_ORDER,
         entityId: id,
         metadata: {
           orderNumber: salesOrder.orderNumber,
@@ -455,10 +460,11 @@ export class SalesOrderService extends BaseService {
     reason: string,
     userId: string
   ): Promise<SalesOrderWithDetails> {
-    const salesOrder = await this.getSalesOrder(id)
-    if (!salesOrder) {
-      throw new Error('Sales order not found')
-    }
+    return this.withLogging('cancelSalesOrder', async () => {
+      const salesOrder = await this.getSalesOrder(id)
+      if (!salesOrder) {
+        throw new Error('Sales order not found')
+      }
 
     if ([OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.COMPLETED].includes(salesOrder.status)) {
       throw new Error('Cannot cancel shipped, delivered, or completed orders')
@@ -477,8 +483,8 @@ export class SalesOrderService extends BaseService {
     // Audit log
     await this.auditService.logAction({
       userId,
-      action: 'CANCEL',
-      entityType: 'SalesOrder',
+      action: AuditAction.CANCEL,
+      entityType: EntityType.SALES_ORDER,
       entityId: id,
       metadata: {
         orderNumber: salesOrder.orderNumber,
@@ -487,7 +493,8 @@ export class SalesOrderService extends BaseService {
       }
     })
 
-    return this.getSalesOrder(id)
+      return this.getSalesOrder(id) as Promise<SalesOrderWithDetails>
+    })
   }
 
   async convertQuotationToSalesOrder(
@@ -542,12 +549,19 @@ export class SalesOrderService extends BaseService {
       createdBy: string
     }
   ): Promise<SalesOrderWithDetails> {
-    return this.convertQuotationToSalesOrder(quotationId, additionalData)
+    return this.withLogging('createFromQuotation', async () => {
+      return this.convertQuotationToSalesOrder(quotationId, additionalData)
+    })
   }
 
   // Private helper methods
 
-  private async calculateTotals(items: CreateSalesOrderItemInput[], customerId?: string) {
+  private async calculateTotals(items: CreateSalesOrderItemInput[], customerId?: string): Promise<{
+    subtotal: number
+    taxAmount: number
+    discountAmount: number
+    totalAmount: number
+  }> {
     let subtotal = 0
     let taxAmount = 0
     let discountAmount = 0
@@ -564,7 +578,13 @@ export class SalesOrderService extends BaseService {
     return { subtotal, taxAmount, discountAmount, totalAmount }
   }
 
-  private async calculateItemTotals(item: CreateSalesOrderItemInput, customerId?: string) {
+  private async calculateItemTotals(item: CreateSalesOrderItemInput, customerId?: string): Promise<{
+    subtotal: number
+    discountAmount: number
+    taxAmount: number
+    totalAmount: number
+    effectiveTaxRate: number
+  }> {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * ((item.discount || 0) / 100)
     const afterDiscount = subtotal - discountAmount

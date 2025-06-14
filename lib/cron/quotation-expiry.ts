@@ -6,7 +6,7 @@ import { AuditService } from '@/lib/services/audit.service'
  * Quotation Expiry Cron Job
  * Runs daily at 02:00 server time to check and mark expired quotations
  */
-export function initializeQuotationExpiryCron() {
+export function initializeQuotationExpiryCron(): void {
   // Validate that cron should run in this environment
   const enableCron = process.env.ENABLE_CRON_JOBS === 'true' || process.env.NODE_ENV === 'production'
   

@@ -26,7 +26,7 @@ interface ConvertFormData {
   paymentTerms: number
 }
 
-export default function LeadsPage() {
+export default function LeadsPage(): React.JSX.Element {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL')
@@ -61,7 +61,7 @@ export default function LeadsPage() {
     source: sourceFilter === 'ALL' ? undefined : sourceFilter
   })
 
-  const handleCreateLead = async (data: Partial<LeadResponse>) => {
+  const handleCreateLead = async (data: Partial<LeadResponse>): void => {
     try {
       await createLead(data)
       setIsCreateDialogOpen(false)
@@ -73,7 +73,7 @@ export default function LeadsPage() {
     }
   }
 
-  const handleUpdateLead = async (data: Partial<LeadResponse>) => {
+  const handleUpdateLead = async (data: Partial<LeadResponse>): void => {
     if (!selectedLead) return
     try {
       await updateLead(selectedLead.id, data)
@@ -85,7 +85,7 @@ export default function LeadsPage() {
     }
   }
 
-  const handleDeleteLead = async (id: string) => {
+  const handleDeleteLead = async (id: string): void => {
     if (!confirm('Are you sure you want to delete this lead?')) return
     try {
       await deleteLead(id)
@@ -114,7 +114,7 @@ export default function LeadsPage() {
     }
   }
 
-  const getStatusBadgeColor = (status: LeadStatus) => {
+  const getStatusBadgeColor = (status: LeadStatus): void => {
     const colors = {
       NEW: 'bg-blue-100 text-blue-800',
       CONTACTED: 'bg-yellow-100 text-yellow-800',
@@ -184,11 +184,11 @@ export default function LeadsPage() {
                   <Input
                     placeholder="Search leads..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e): void => setSearch(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as LeadStatus | 'ALL')}>
+                <Select value={statusFilter} onValueChange={(value): void => setStatusFilter(value as LeadStatus | 'ALL')}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -201,7 +201,7 @@ export default function LeadsPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={sourceFilter} onValueChange={(value) => setSourceFilter(value as LeadSource | 'ALL')}>
+                <Select value={sourceFilter} onValueChange={(value): void => setSourceFilter(value as LeadSource | 'ALL')}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by source" />
                   </SelectTrigger>
@@ -272,7 +272,7 @@ export default function LeadsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
+                                onClick={(): void => {
                                   setSelectedLead(lead)
                                   setIsViewDialogOpen(true)
                                 }}
@@ -282,7 +282,7 @@ export default function LeadsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
+                                onClick={(): void => {
                                   setSelectedLead(lead)
                                   setIsEditDialogOpen(true)
                                 }}
@@ -292,7 +292,7 @@ export default function LeadsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDeleteLead(lead.id)}
+                                onClick={(): void => handleDeleteLead(lead.id)}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -300,7 +300,7 @@ export default function LeadsPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => {
+                                  onClick={(): void => {
                                     setSelectedLead(lead)
                                     setIsConvertDialogOpen(true)
                                   }}
@@ -324,7 +324,7 @@ export default function LeadsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(page - 1)}
+                        onClick={(): void => setPage(page - 1)}
                         disabled={page === 1}
                       >
                         Previous
@@ -335,7 +335,7 @@ export default function LeadsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(page + 1)}
+                        onClick={(): void => setPage(page + 1)}
                         disabled={page >= Math.ceil((leads?.total || 0) / 10)}
                       >
                         Next
@@ -433,7 +433,7 @@ export default function LeadsPage() {
                 <label className="text-sm font-medium">Address</label>
                 <Input
                   value={convertFormData.address}
-                  onChange={(e) => setConvertFormData(prev => ({ ...prev, address: e.target.value }))}
+                  onChange={(e): void => setConvertFormData(prev => ({ ...prev, address: e.target.value }))}
                   placeholder="Customer address"
                 />
               </div>
@@ -441,13 +441,13 @@ export default function LeadsPage() {
                 <label className="text-sm font-medium">Tax ID</label>
                 <Input
                   value={convertFormData.taxId}
-                  onChange={(e) => setConvertFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                  onChange={(e): void => setConvertFormData(prev => ({ ...prev, taxId: e.target.value }))}
                   placeholder="Tax identification number"
                 />
               </div>
               <div>
                 <label className="text-sm font-medium">Currency</label>
-                <Select value={convertFormData.currency} onValueChange={(value) => setConvertFormData(prev => ({ ...prev, currency: value }))}>
+                <Select value={convertFormData.currency} onValueChange={(value): void => setConvertFormData(prev => ({ ...prev, currency: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -464,7 +464,7 @@ export default function LeadsPage() {
                 <Input
                   type="number"
                   value={convertFormData.creditLimit}
-                  onChange={(e) => setConvertFormData(prev => ({ ...prev, creditLimit: Number(e.target.value) }))}
+                  onChange={(e): void => setConvertFormData(prev => ({ ...prev, creditLimit: Number(e.target.value) }))}
                   placeholder="0"
                 />
               </div>
@@ -473,13 +473,13 @@ export default function LeadsPage() {
                 <Input
                   type="number"
                   value={convertFormData.paymentTerms}
-                  onChange={(e) => setConvertFormData(prev => ({ ...prev, paymentTerms: Number(e.target.value) }))}
+                  onChange={(e): void => setConvertFormData(prev => ({ ...prev, paymentTerms: Number(e.target.value) }))}
                   placeholder="30"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsConvertDialogOpen(false)}>
+              <Button variant="outline" onClick={(): void => setIsConvertDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleConvertLead}>

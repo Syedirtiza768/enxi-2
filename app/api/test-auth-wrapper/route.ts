@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper';
 import { getUserFromRequest } from '@/lib/utils/auth';
 
-const testAuthHandler = async (request: NextRequest) => {
+const testAuthHandler = async (request: NextRequest): void => {
   const user = await getUserFromRequest(request);
   
   return NextResponse.json({ 

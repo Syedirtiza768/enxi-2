@@ -60,7 +60,7 @@ interface ShipmentListResponse {
   limit: number
 }
 
-export function ShipmentList() {
+export function ShipmentList(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [loading, setLoading] = useState(true)
@@ -108,7 +108,7 @@ export function ShipmentList() {
     fetchShipments()
   }, [fetchShipments])
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): void => {
     switch (status) {
       case 'PREPARING':
         return <Clock className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function ShipmentList() {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): void => {
     switch (status) {
       case 'PREPARING':
         return 'bg-yellow-100 text-yellow-800'
@@ -144,7 +144,7 @@ export function ShipmentList() {
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -154,11 +154,11 @@ export function ShipmentList() {
     })
   }
 
-  const handleRowClick = (shipmentId: string) => {
+  const handleRowClick = (shipmentId: string): void => {
     router.push(`/shipments/${shipmentId}`)
   }
 
-  const handleCreateShipment = () => {
+  const handleCreateShipment = (): void => {
     router.push('/shipments/new')
   }
 
@@ -203,7 +203,7 @@ export function ShipmentList() {
                 <Input
                   placeholder="Search by shipment number, order number, or customer..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e): void => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -268,7 +268,7 @@ export function ShipmentList() {
                   {shipments.map((shipment) => (
                     <TableRow
                       key={shipment.id}
-                      onClick={() => handleRowClick(shipment.id)}
+                      onClick={(): void => handleRowClick(shipment.id)}
                       className="cursor-pointer hover:bg-gray-50"
                     >
                       <TableCell className="font-medium">
@@ -318,7 +318,7 @@ export function ShipmentList() {
                 <div className="flex items-center justify-between mt-4">
                   <Button
                     variant="outline"
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    onClick={(): void => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" />
@@ -331,7 +331,7 @@ export function ShipmentList() {
                   
                   <Button
                     variant="outline"
-                    onClick={() => setPage(p => p + 1)}
+                    onClick={(): void => setPage(p => p + 1)}
                     disabled={page >= totalPages}
                   >
                     Next

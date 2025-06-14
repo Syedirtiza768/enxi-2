@@ -23,7 +23,7 @@ interface CustomerSearchProps {
   required?: boolean
 }
 
-export function CustomerSearch({ value, onChange, disabled, error, required }: CustomerSearchProps) {
+export function CustomerSearch({ value, onChange, disabled, error, required }: CustomerSearchProps): React.JSX.Element {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,7 +59,7 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
     )
   })
 
-  const handleChange = (customerId: string) => {
+  const handleChange = (customerId: string): void => {
     const selectedCustomer = customers.find(c => c.id === customerId)
     onChange(customerId, selectedCustomer)
   }
@@ -89,9 +89,9 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
               <Input
                 placeholder="Search customers..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e): void => setSearchTerm(e.target.value)}
                 className="pl-8 h-9"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e): void => e.stopPropagation()}
               />
             </div>
           </div>

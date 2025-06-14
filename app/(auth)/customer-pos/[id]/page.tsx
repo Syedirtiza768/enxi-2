@@ -41,7 +41,7 @@ interface CustomerPO {
   createdAt: string
 }
 
-export default function CustomerPODetailPage() {
+export default function CustomerPODetailPage(): React.JSX.Element {
   
   const { formatCurrency } = useCurrency()
 const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -121,11 +121,11 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleDownload = (url: string) => {
+  const handleDownload = (url: string): void => {
     window.open(url, '_blank')
   }
 
-  const getStatusBadge = (po: CustomerPO) => {
+  const getStatusBadge = (po: CustomerPO): void => {
     if (po.isAccepted) {
       return (
         <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
@@ -145,7 +145,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string): void => {
     return new Date(date).toLocaleDateString()
   }
 
@@ -172,7 +172,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           {error || 'Customer PO not found'}
         </h3>
         <button
-          onClick={() => router.push('/customer-pos')}
+          onClick={(): void => router.push('/customer-pos')}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -190,7 +190,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           {/* Breadcrumb */}
           <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
             <button
-              onClick={() => router.push('/customer-pos')}
+              onClick={(): void => router.push('/customer-pos')}
               className="flex items-center hover:text-gray-900"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
@@ -233,7 +233,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
               </button>
               
               <button
-                onClick={() => router.push(`/customer-pos/${poId}/edit`)}
+                onClick={(): void => router.push(`/customer-pos/${poId}/edit`)}
                 className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
               >
                 <Edit className="h-4 w-4 mr-2" />
@@ -295,7 +295,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                   <dt className="text-sm font-medium text-gray-500">Attachment</dt>
                   <dd className="mt-1">
                     <button
-                      onClick={() => handleDownload(po.attachmentUrl!)}
+                      onClick={(): void => handleDownload(po.attachmentUrl!)}
                       className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                     >
                       <Download className="h-4 w-4 mr-1" />
@@ -326,7 +326,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                 <dt className="text-sm font-medium text-gray-500">Quotation</dt>
                 <dd className="mt-1">
                   <button
-                    onClick={() => router.push(`/quotations/${po.quotation.id}`)}
+                    onClick={(): void => router.push(`/quotations/${po.quotation.id}`)}
                     className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
                   >
                     {po.quotation.quotationNumber}
@@ -339,7 +339,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                 <dt className="text-sm font-medium text-gray-500">Sales Case</dt>
                 <dd className="mt-1">
                   <button
-                    onClick={() => router.push(`/sales-cases/${po.salesCase.id}`)}
+                    onClick={(): void => router.push(`/sales-cases/${po.salesCase.id}`)}
                     className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
                   >
                     {po.salesCase.caseNumber}
@@ -357,7 +357,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                   </dt>
                   <dd className="mt-1">
                     <button
-                      onClick={() => router.push(`/sales-orders/${po.salesOrder!.id}`)}
+                      onClick={(): void => router.push(`/sales-orders/${po.salesOrder!.id}`)}
                       className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
                     >
                       {po.salesOrder.orderNumber}

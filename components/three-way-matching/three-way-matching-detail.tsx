@@ -241,7 +241,7 @@ const validateDocumentCompleteness = (analysis: ThreeWayMatchingAnalysis): Array
   return issues
 }
 
-export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDetailProps) {
+export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDetailProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [analysis, setAnalysis] = useState<ThreeWayMatchingAnalysis | null>(null)
   const [loading, setLoading] = useState(true)
@@ -310,7 +310,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     }
   }, [purchaseOrderId, fetchAnalysis])
 
-  const toggleDiscrepancy = (discrepancyId: string) => {
+  const toggleDiscrepancy = (discrepancyId: string): void => {
     setExpandedDiscrepancies(prev => {
       const next = new Set(prev)
       if (next.has(discrepancyId)) {
@@ -322,7 +322,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     })
   }
 
-  const getMatchingStatusBadge = (status: string) => {
+  const getMatchingStatusBadge = (status: string): void => {
     const config = {
       FULLY_MATCHED: { 
         label: 'Fully Matched', 
@@ -386,7 +386,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     )
   }
 
-  const getSeverityBadge = (severity: string) => {
+  const getSeverityBadge = (severity: string): void => {
     const config = {
       CRITICAL: { 
         className: 'bg-purple-100 text-purple-800 border-purple-300',
@@ -434,7 +434,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     )
   }
 
-  const getDiscrepancyIcon = (type: string) => {
+  const getDiscrepancyIcon = (type: string): void => {
     const icons = {
       QUANTITY_OVER_MATCH: <TrendingUp className="h-4 w-4 text-red-600" />,
       QUANTITY_UNDER_MATCH: <TrendingDown className="h-4 w-4 text-orange-600" />,
@@ -445,7 +445,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
     return icons[type as keyof typeof icons] || <AlertTriangle className="h-4 w-4 text-gray-600" />
   }
 
-  const getQualityBadge = (status: string) => {
+  const getQualityBadge = (status: string): void => {
     const config = {
       ACCEPTED: { label: 'Accepted', className: 'bg-green-100 text-green-800' },
       REJECTED: { label: 'Rejected', className: 'bg-red-100 text-red-800' },
@@ -546,11 +546,11 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
               </Text>
             </VStack>
             <HStack gap="sm">
-              <Button variant="primary" onClick={() => fetchAnalysis()}>
+              <Button variant="primary" onClick={(): void => fetchAnalysis()}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Retry Analysis
               </Button>
-              <Button variant="outline" onClick={() => window.history.back()}>
+              <Button variant="outline" onClick={(): void => window.history.back()}>
                 Go Back
               </Button>
             </HStack>
@@ -606,7 +606,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => fetchAnalysis(true)}
+              onClick={(): void => fetchAnalysis(true)}
               disabled={refreshing}
             >
               <RefreshCw className={cn("h-4 w-4 mr-2", refreshing && "animate-spin")} />
@@ -727,7 +727,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
         <Card 
           variant="elevated"
           className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-green-500"
-          onClick={() => setSelectedTab('discrepancies')}
+          onClick={(): void => setSelectedTab('discrepancies')}
         >
           <CardContent className="p-6">
             <VStack gap="sm">
@@ -755,7 +755,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
         <Card 
           variant="elevated"
           className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-red-500"
-          onClick={() => setSelectedTab('discrepancies')}
+          onClick={(): void => setSelectedTab('discrepancies')}
         >
           <CardContent className="p-6">
             <VStack gap="sm">
@@ -785,7 +785,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
         <Card 
           variant="elevated"
           className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-orange-500"
-          onClick={() => setSelectedTab('discrepancies')}
+          onClick={(): void => setSelectedTab('discrepancies')}
         >
           <CardContent className="p-6">
             <VStack gap="sm">
@@ -815,7 +815,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
         <Card 
           variant="elevated"
           className="cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-l-yellow-500"
-          onClick={() => setSelectedTab('discrepancies')}
+          onClick={(): void => setSelectedTab('discrepancies')}
         >
           <CardContent className="p-6">
             <VStack gap="sm">
@@ -917,7 +917,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                           isExpanded && 'shadow-md'
                         )}
                       >
-                        <Collapsible open={isExpanded} onOpenChange={() => toggleDiscrepancy(discrepancy.id)}>
+                        <Collapsible open={isExpanded} onOpenChange={(): void => toggleDiscrepancy(discrepancy.id)}>
                           <CollapsibleTrigger asChild>
                             <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors">
                               <HStack justify="between" align="center">

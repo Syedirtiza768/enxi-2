@@ -41,7 +41,7 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     // Controlled vs uncontrolled
     const checkedState = checked !== undefined ? checked : isChecked
 
-    const handleChange = () => {
+    const handleChange = (): void => {
       if (disabled) return
 
       const newChecked = !checkedState
@@ -133,7 +133,7 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
             name={name}
             value={value || 'on'}
             checked={checkedState}
-            onChange={() => {}}
+            onChange={(): void => {}}
             className="sr-only"
             aria-hidden="true"
           />

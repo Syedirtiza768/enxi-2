@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Save, X, FileText, Clock, Edit3, CheckCircle, AlertCircle, AlertTriangle, Info, CheckCircle2 } from 'lucide-react'
 import { LineItemEditorV2 } from './line-item-editor-v2'
 import { useAuth } from '@/lib/hooks/use-auth'
-import { apiClient } from '@/lib/api/client'
+import { apiClient, type ApiResponse } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { useDebounce } from '@/lib/hooks/use-debounce'
 import { 
@@ -43,6 +43,9 @@ interface QuotationItem {
   discount?: number
   taxRate?: number
   taxRateId?: string
+  unitOfMeasureId?: string
+  availabilityStatus?: string
+  availableQuantity?: number
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -52,18 +55,28 @@ interface QuotationItem {
 interface Quotation {
   id?: string
   number?: string
+  quotationNumber?: string
   salesCaseId: string
-  validUntil: string
+  validUntil: string | Date
   paymentTerms: string
-  deliveryTerms?: string
-  notes: string
-  internalNotes?: string
+  deliveryTerms?: string | null
+  notes: string | null
+  internalNotes?: string | null
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED'
   subtotal: number
   taxAmount: number
   discountAmount: number
   totalAmount: number
   items: QuotationItem[]
+  createdBy?: string
+  approvedBy?: string | null
+  approvedAt?: string | Date | null
+  rejectedBy?: string | null
+  rejectedAt?: string | Date | null
+  expiredAt?: string | Date | null
+  rejectionReason?: string | null
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 interface SalesCase {
@@ -100,11 +113,11 @@ export function QuotationForm({
   // Form state
   const [formData, setFormData] = useState<Quotation>({
     salesCaseId: quotation?.salesCaseId || '',
-    validUntil: quotation?.validUntil || '',
+    validUntil: quotation?.validUntil ? (typeof quotation.validUntil === 'string' ? quotation.validUntil : quotation.validUntil.toISOString().split('T')[0]) : '',
     paymentTerms: quotation?.paymentTerms || 'Net 30',
-    deliveryTerms: quotation?.deliveryTerms || '',
-    notes: quotation?.notes || '',
-    internalNotes: quotation?.internalNotes || '',
+    deliveryTerms: quotation?.deliveryTerms || null,
+    notes: quotation?.notes || null,
+    internalNotes: quotation?.internalNotes || null,
     status: quotation?.status || 'DRAFT',
     subtotal: quotation?.subtotal || 0,
     taxAmount: quotation?.taxAmount || 0,
@@ -112,7 +125,8 @@ export function QuotationForm({
     totalAmount: quotation?.totalAmount || 0,
     items: quotation?.items || [],
     ...(quotation?.id && { id: quotation.id }),
-    ...(quotation?.number && { number: quotation.number })
+    ...(quotation?.number && { number: quotation.number }),
+    ...(quotation?.quotationNumber && { quotationNumber: quotation.quotationNumber })
   })
 
   // UI state
@@ -145,15 +159,15 @@ export function QuotationForm({
         setLoading(true)
         setError(null)
         
-        const response = await apiClient<{ data?: SalesCase[] }>('/api/sales-cases?status=OPEN', {
+        const response = await apiClient<SalesCase[]>('/api/sales-cases?status=OPEN', {
           method: 'GET'
         })
         
-        if (!response.ok) {
-          throw new Error('Failed to load sales cases')
+        if (!('data' in response)) {
+          throw new Error(response.error || 'Failed to load sales cases')
         }
         
-        const salesCasesData = response.data?.data || response.data || []
+        const salesCasesData = response.data || []
         setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
         
         // Set selected sales case if editing
@@ -177,7 +191,8 @@ export function QuotationForm({
   // Run validation when form data or touched fields change
   useEffect(() => {
     validateForm()
-  }, [formData, touchedFields, validateForm])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, touchedFields])
 
   // Calculate totals from items
   const calculateTotals = useCallback((items: QuotationItem[]) => {
@@ -247,31 +262,33 @@ export function QuotationForm({
         
       case 'validUntil':
         if (!value) return 'Valid until date is required'
-        return validateValidUntilDate(value)
+        return validateValidUntilDate(value as string | Date)
         
       case 'paymentTerms':
-        return validatePaymentTerms(value)
+        return validatePaymentTerms(value as string)
         
       case 'deliveryTerms':
-        if (value && value.length > MAX_DELIVERY_TERMS_LENGTH) {
+        if (value && typeof value === 'string' && value.length > MAX_DELIVERY_TERMS_LENGTH) {
           return `Delivery terms must be ${MAX_DELIVERY_TERMS_LENGTH} characters or less`
         }
         return null
         
       case 'notes':
-        return checkMaxLength(value, MAX_NOTES_LENGTH, 'Notes')
+        return checkMaxLength(value as string, MAX_NOTES_LENGTH, 'Notes')
         
       case 'internalNotes':
-        return checkMaxLength(value, MAX_NOTES_LENGTH, 'Internal notes')
+        return checkMaxLength(value as string, MAX_NOTES_LENGTH, 'Internal notes')
         
       case 'items':
         if (!Array.isArray(value) || value.length === 0) {
           return 'At least one quotation item is required'
         }
         
+        const items = value as QuotationItem[]
+        
         // Validate each item
-        for (let i = 0; i < value.length; i++) {
-          const item = value[i]
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
           
           // Item code validation
           const itemCodeError = validateItemCode(item.itemCode)
@@ -326,7 +343,7 @@ export function QuotationForm({
         
         // Check for duplicate items within same line
         const lineItems = new Map<number, string[]>()
-        value.forEach(item => {
+        items.forEach(item => {
           if (!lineItems.has(item.lineNumber)) {
             lineItems.set(item.lineNumber, [])
           }
@@ -341,7 +358,7 @@ export function QuotationForm({
         }
         
         // Validate totals
-        const calculatedTotals = calculateTotals(value)
+        const calculatedTotals = calculateTotals(items)
         if (calculatedTotals.totalAmount > 9999999.99) {
           return 'Total quotation amount exceeds maximum allowed value'
         }
@@ -630,7 +647,7 @@ export function QuotationForm({
                   <input
                     type="date"
                     id="validUntil"
-                    value={formData.validUntil}
+                    value={typeof formData.validUntil === 'string' ? formData.validUntil : formData.validUntil.toISOString().split('T')[0]}
                     onChange={(e) => {
                       updateFormData({ validUntil: e.target.value })
                       setTouchedFields(prev => new Set(prev).add('validUntil'))
@@ -799,7 +816,7 @@ export function QuotationForm({
                 <input
                   type="text"
                   id="deliveryTerms"
-                  value={formData.deliveryTerms || ''}
+                  value={formData.deliveryTerms ?? ''}
                   onChange={(e) => {
                     updateFormData({ deliveryTerms: e.target.value })
                     setTouchedFields(prev => new Set(prev).add('deliveryTerms'))
@@ -854,7 +871,7 @@ export function QuotationForm({
                 <textarea
                   id="notes"
                   rows={3}
-                  value={formData.notes}
+                  value={formData.notes ?? ''}
                   onChange={(e) => {
                     updateFormData({ notes: e.target.value })
                     setTouchedFields(prev => new Set(prev).add('notes'))
@@ -906,7 +923,7 @@ export function QuotationForm({
                 <textarea
                   id="internalNotes"
                   rows={3}
-                  value={formData.internalNotes || ''}
+                  value={formData.internalNotes ?? ''}
                   onChange={(e) => {
                     updateFormData({ internalNotes: e.target.value })
                     setTouchedFields(prev => new Set(prev).add('internalNotes'))

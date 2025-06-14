@@ -60,7 +60,7 @@ interface LineItemEditorEnhancedProps {
   disabled?: boolean
 }
 
-export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = false }: LineItemEditorEnhancedProps) {
+export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = false }: LineItemEditorEnhancedProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('internal')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
@@ -121,7 +121,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
   }, [])
 
   // Helper functions
-  const generateId = () => Math.random().toString(36).substr(2, 9)
+  const generateId = (): void => Math.random().toString(36).substr(2, 9)
 
   const calculateItemAmounts = (item: Partial<QuotationItem>): Partial<QuotationItem> => {
     const quantity = item.quantity || 0
@@ -147,7 +147,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
   // formatCurrency function removed - use useCurrency hook instead
 
   // Line management
-  const addLine = () => {
+  const addLine = (): void => {
     const newLineNumber = Math.max(...lines.map(l => l.lineNumber), 0) + 1
     const newItem: QuotationItem = {
       id: generateId(),
@@ -167,11 +167,11 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
     setExpandedLines(new Set([...expandedLines, newLineNumber]))
   }
 
-  const removeLine = (lineNumber: number) => {
+  const removeLine = (lineNumber: number): void => {
     onChange(quotationItems.filter(item => item.lineNumber !== lineNumber))
   }
 
-  const updateLineDescription = (lineNumber: number, description: string) => {
+  const updateLineDescription = (lineNumber: number, description: string): void => {
     onChange(quotationItems.map(item => 
       item.lineNumber === lineNumber 
         ? { ...item, lineDescription: description }
@@ -180,7 +180,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
   }
 
   // Item management
-  const addItemToLine = (lineNumber: number) => {
+  const addItemToLine = (lineNumber: number): void => {
     const lineItems = quotationItems.filter(item => item.lineNumber === lineNumber)
     const maxSortOrder = Math.max(...lineItems.map(item => item.sortOrder), -1)
     
@@ -200,11 +200,11 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
     onChange([...quotationItems, newItem])
   }
 
-  const removeItem = (itemId: string) => {
+  const removeItem = (itemId: string): void => {
     onChange(quotationItems.filter(item => item.id !== itemId))
   }
 
-  const updateItem = (itemId: string, updates: Partial<QuotationItem>) => {
+  const updateItem = (itemId: string, updates: Partial<QuotationItem>): void => {
     onChange(quotationItems.map(item => 
       item.id === itemId 
         ? { ...item, ...updates, ...calculateItemAmounts({ ...item, ...updates }) }
@@ -212,7 +212,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
     ))
   }
 
-  const selectInventoryItem = (itemId: string, inventoryItem: InventoryItem) => {
+  const selectInventoryItem = (itemId: string, inventoryItem: InventoryItem): void => {
     updateItem(itemId, {
       itemId: inventoryItem.id,
       itemCode: inventoryItem.code,
@@ -229,7 +229,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
   const totalTax = quotationItems.reduce((sum, item) => sum + item.taxAmount, 0)
   const grandTotal = quotationItems.reduce((sum, item) => sum + item.totalAmount, 0)
 
-  const toggleLine = (lineNumber: number) => {
+  const toggleLine = (lineNumber: number): void => {
     const newExpanded = new Set(expandedLines)
     if (newExpanded.has(lineNumber)) {
       newExpanded.delete(lineNumber)
@@ -248,7 +248,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
           <Button
             variant={viewMode === 'client' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode('client')}
+            onClick={(): void => setViewMode('client')}
             disabled={disabled}
           >
             <Eye className="h-4 w-4 mr-1" />
@@ -257,7 +257,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
           <Button
             variant={viewMode === 'internal' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode('internal')}
+            onClick={(): void => setViewMode('internal')}
             disabled={disabled}
           >
             <Settings className="h-4 w-4 mr-1" />
@@ -274,7 +274,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 flex-1">
                 <button
-                  onClick={() => toggleLine(line.lineNumber)}
+                  onClick={(): void => toggleLine(line.lineNumber)}
                   className="p-1 hover:bg-gray-100 rounded"
                   disabled={disabled}
                 >
@@ -286,7 +286,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                 </button>
                 <Input
                   value={line.lineDescription}
-                  onChange={(e) => updateLineDescription(line.lineNumber, e.target.value)}
+                  onChange={(e): void => updateLineDescription(line.lineNumber, e.target.value)}
                   placeholder="Line description"
                   className="flex-1"
                   disabled={disabled}
@@ -297,7 +297,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeLine(line.lineNumber)}
+                  onClick={(): void => removeLine(line.lineNumber)}
                   disabled={disabled}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -317,7 +317,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                           <div className="col-span-1">
                             <Select
                               value={item.itemType}
-                              onValueChange={(value) => updateItem(item.id, { itemType: value as 'PRODUCT' | 'SERVICE' })}
+                              onValueChange={(value): void => updateItem(item.id, { itemType: value as 'PRODUCT' | 'SERVICE' })}
                               disabled={disabled}
                             >
                               <SelectTrigger>
@@ -339,7 +339,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                           <div className="col-span-2">
                             <Select
                               value={item.itemId || 'custom'}
-                              onValueChange={(value) => {
+                              onValueChange={(value): void => {
                                 if (value !== 'custom') {
                                   const invItem = inventoryItems.find(i => i.id === value)
                                   if (invItem) selectInventoryItem(item.id, invItem)
@@ -364,7 +364,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                           <div className="col-span-3">
                             <Input
                               value={item.description}
-                              onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                              onChange={(e): void => updateItem(item.id, { description: e.target.value })}
                               placeholder="Item description"
                               disabled={disabled}
                             />
@@ -374,7 +374,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Input
                               type="number"
                               value={item.quantity}
-                              onChange={(e) => updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
+                              onChange={(e): void => updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                               placeholder="Qty"
                               disabled={disabled}
                             />
@@ -384,7 +384,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Input
                               type="number"
                               value={item.unitPrice}
-                              onChange={(e) => updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
+                              onChange={(e): void => updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
                               placeholder="Unit price"
                               disabled={disabled}
                             />
@@ -394,7 +394,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Input
                               type="number"
                               value={item.discount || 0}
-                              onChange={(e) => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
+                              onChange={(e): void => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
                               placeholder="Disc %"
                               disabled={disabled}
                             />
@@ -404,7 +404,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Input
                               type="number"
                               value={item.taxRate || 0}
-                              onChange={(e) => updateItem(item.id, { taxRate: parseFloat(e.target.value) || 0 })}
+                              onChange={(e): void => updateItem(item.id, { taxRate: parseFloat(e.target.value) || 0 })}
                               placeholder="Tax %"
                               disabled={disabled}
                             />
@@ -414,7 +414,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => removeItem(item.id)}
+                              onClick={(): void => removeItem(item.id)}
                               disabled={disabled}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -426,7 +426,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                         <div>
                           <Textarea
                             value={item.internalDescription || ''}
-                            onChange={(e) => updateItem(item.id, { internalDescription: e.target.value })}
+                            onChange={(e): void => updateItem(item.id, { internalDescription: e.target.value })}
                             placeholder="Internal notes (not shown to client)"
                             className="h-16"
                             disabled={disabled}
@@ -440,7 +440,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                             <Input
                               type="number"
                               value={item.cost || 0}
-                              onChange={(e) => updateItem(item.id, { cost: parseFloat(e.target.value) || 0 })}
+                              onChange={(e): void => updateItem(item.id, { cost: parseFloat(e.target.value) || 0 })}
                               disabled={disabled}
                             />
                           </div>
@@ -486,7 +486,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => addItemToLine(line.lineNumber)}
+                    onClick={(): void => addItemToLine(line.lineNumber)}
                     disabled={disabled}
                     className="w-full"
                   >

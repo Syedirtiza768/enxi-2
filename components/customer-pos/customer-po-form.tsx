@@ -37,7 +37,7 @@ interface CustomerPOFormProps {
   onCancel: () => void
 }
 
-export default function CustomerPOForm({ quotation, onSubmit, onCancel }: CustomerPOFormProps) {
+export default function CustomerPOForm({ quotation, onSubmit, onCancel }: CustomerPOFormProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [formData, setFormData] = useState<CustomerPOFormData>({
     poNumber: '',
@@ -85,7 +85,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     }
   }, [formData.poAmount, quotation, formatCurrency])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>): void => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -101,7 +101,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -131,13 +131,13 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     setUploadedFile(file)
   }
 
-  const removeFile = () => {
+  const removeFile = (): void => {
     setUploadedFile(null)
     setUploadError('')
     setFormData(prev => ({ ...prev, attachmentUrl: undefined }))
   }
 
-  const generatePONumber = () => {
+  const generatePONumber = (): void => {
     const year = new Date().getFullYear()
     const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
     const poNumber = `PO-${year}-${randomNum}`
@@ -191,7 +191,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     return result.url
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
 
     if (!validateForm()) {

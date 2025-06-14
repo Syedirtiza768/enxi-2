@@ -30,7 +30,7 @@ interface StockAlertsProps {
   onCreatePO?: (itemId: string) => void
 }
 
-export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
+export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps): React.JSX.Element {
   const [alerts, setAlerts] = useState<StockAlert[]>([])
   const [filteredAlerts, setFilteredAlerts] = useState<StockAlert[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,7 +79,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
     }
   }
 
-  const filterAlerts = () => {
+  const filterAlerts = (): void => {
     let filtered = [...alerts]
 
     if (selectedType !== 'ALL') {
@@ -111,7 +111,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
     setFilteredAlerts(filtered)
   }
 
-  const acknowledgeAlert = async (alertId: string) => {
+  const acknowledgeAlert = async (alertId: string): void => {
     try {
       const response = await fetch(`/api/inventory/stock-alerts/${alertId}/acknowledge`, {
         method: 'POST'
@@ -130,7 +130,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
     }
   }
 
-  const getAlertIcon = (type: string) => {
+  const getAlertIcon = (type: string): void => {
     switch (type) {
       case 'OUT_OF_STOCK':
         return <Package className="h-5 w-5" />
@@ -143,7 +143,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
     }
   }
 
-  const getAlertColor = (severity: string) => {
+  const getAlertColor = (severity: string): void => {
     switch (severity) {
       case 'CRITICAL':
         return 'text-red-600 bg-red-50'
@@ -158,7 +158,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
     }
   }
 
-  const getAlertMessage = (alert: StockAlert) => {
+  const getAlertMessage = (alert: StockAlert): void => {
     switch (alert.alertType) {
       case 'OUT_OF_STOCK':
         return `Out of stock at ${alert.location || 'all locations'}`
@@ -262,7 +262,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
 
           <select
             value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
+            onChange={(e): void => setSelectedType(e.target.value)}
             className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="ALL">All Types</option>
@@ -275,7 +275,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
 
           <select
             value={selectedSeverity}
-            onChange={(e) => setSelectedSeverity(e.target.value)}
+            onChange={(e): void => setSelectedSeverity(e.target.value)}
             className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="ALL">All Severities</option>
@@ -289,7 +289,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
             <input
               type="checkbox"
               checked={showAcknowledged}
-              onChange={(e) => setShowAcknowledged(e.target.checked)}
+              onChange={(e): void => setShowAcknowledged(e.target.checked)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2"
             />
             <span className="text-gray-700">Show Acknowledged</span>
@@ -321,7 +321,7 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => onItemClick?.(alert.itemId)}
+                        onClick={(): void => onItemClick?.(alert.itemId)}
                         className="text-sm font-medium text-gray-900 hover:text-blue-600"
                       >
                         {alert.itemCode} - {alert.itemName}
@@ -354,14 +354,14 @@ export function StockAlerts({ onItemClick, onCreatePO }: StockAlertsProps) {
                   {!alert.acknowledged && (
                     <>
                       <button
-                        onClick={() => acknowledgeAlert(alert.id)}
+                        onClick={(): void => acknowledgeAlert(alert.id)}
                         className="text-sm text-gray-600 hover:text-gray-900"
                       >
                         Acknowledge
                       </button>
                       {alert.alertType === 'LOW_STOCK' && onCreatePO && (
                         <button
-                          onClick={() => onCreatePO(alert.itemId)}
+                          onClick={(): void => onCreatePO(alert.itemId)}
                           className="text-sm text-blue-600 hover:text-blue-800"
                         >
                           Create PO

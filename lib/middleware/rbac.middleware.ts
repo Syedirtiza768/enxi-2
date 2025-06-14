@@ -61,7 +61,7 @@ export async function authenticateUser(request: NextRequest): Promise<User | nul
 /**
  * Authorization middleware - checks if user has required permission
  */
-export function requirePermission(permission: string) {
+export function requirePermission(permission: string): unknown {
   return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
     const user = request.user || await authenticateUser(request)
     
@@ -99,7 +99,7 @@ export function requirePermission(permission: string) {
 /**
  * Role-based authorization middleware
  */
-export function requireRole(allowedRoles: string[]) {
+export function requireRole(allowedRoles: string[]): unknown {
   return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
     const user = request.user || await authenticateUser(request)
     
@@ -126,8 +126,8 @@ export function requireRole(allowedRoles: string[]) {
 /**
  * Composite middleware that chains multiple middleware functions
  */
-export function withAuth(...middlewares: Array<(req: AuthenticatedRequest) => Promise<NextResponse | null>>) {
-  return async (request: NextRequest) => {
+export function withAuth(...middlewares: Array<(req: AuthenticatedRequest) => Promise<NextResponse | null>>): unknown {
+  return async (request: NextRequest): void => {
     const authRequest = request as AuthenticatedRequest
 
     for (const middleware of middlewares) {
@@ -150,8 +150,8 @@ export function createProtectedHandler(
     permissions?: string[]
     roles?: string[]
   } = {}
-) {
-  return async (request: NextRequest, ...args: unknown[]) => {
+): unknown {
+  return async (request: NextRequest, ...args: unknown[]): void => {
     const authRequest = request as AuthenticatedRequest
 
     // Authenticate user
@@ -198,7 +198,7 @@ export function createProtectedHandler(
  */
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
-export function rateLimit(maxRequests: number = 100, windowMs: number = 15 * 60 * 1000) {
+export function rateLimit(maxRequests: number = 100, windowMs: number = 15 * 60 * 1000): unknown {
   return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
     const user = request.user
     if (!user) return null // Skip rate limiting for unauthenticated requests
@@ -249,7 +249,7 @@ export function rateLimit(maxRequests: number = 100, windowMs: number = 15 * 60 
 /**
  * Audit logging middleware
  */
-export function auditLog(action: string, entityType: string) {
+export function auditLog(action: string, entityType: string): unknown {
   return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
     const user = request.user
     if (!user) return null
@@ -288,7 +288,7 @@ export function auditLog(action: string, entityType: string) {
 /**
  * Resource ownership middleware - checks if user owns the resource
  */
-export function requireOwnership(getResourceUserId: (request: AuthenticatedRequest) => Promise<string | null>) {
+export function requireOwnership(getResourceUserId: (request: AuthenticatedRequest) => Promise<string | null>): unknown {
   return async (request: AuthenticatedRequest): Promise<NextResponse | null> => {
     const user = request.user
     if (!user) return null

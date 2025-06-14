@@ -64,7 +64,7 @@ async function createTestUser(): Promise<T> {
   return testUser
 }
 
-async function createTestChartOfAccounts(userId: string) {
+async function createTestChartOfAccounts(userId: string): Promise<unknown> {
   console.warn('📊 Creating test chart of accounts...')
   
   // Create parent accounts first
@@ -304,7 +304,7 @@ async function createTestChartOfAccounts(userId: string) {
   }
 }
 
-async function createTestUnitsAndCategories(userId: string) {
+async function createTestUnitsAndCategories(userId: string): Promise<unknown> {
   console.warn('📦 Creating test units and categories...')
   
   // Units of Measure
@@ -353,7 +353,7 @@ async function createTestUnitsAndCategories(userId: string) {
   }
 }
 
-export async function createTestCustomer(userId: string, accounts: any) {
+export async function createTestCustomer(userId: string, accounts: unknown): Promise<unknown> {
   const customer = await prisma.customer.create({
     data: {
       customerNumber: 'TEST-001',
@@ -387,7 +387,7 @@ export async function createTestCustomer(userId: string, accounts: any) {
   return customer
 }
 
-export async function createTestLead(userId: string) {
+export async function createTestLead(userId: string): Promise<unknown> {
   const lead = await prisma.lead.create({
     data: {
       firstName: 'John',

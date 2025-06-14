@@ -102,7 +102,7 @@ export class FinancialStatementsService {
   ): Promise<IncomeStatement> {
     // Validate date range
     if (startDate >= endDate) {
-      throw new Error('fromDate must be before toDate')
+      throw new Error('startDate must be before endDate')
     }
 
     // Get accounts and their balances for the period

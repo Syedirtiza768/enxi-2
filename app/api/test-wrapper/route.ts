@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper';
 
-const testHandler = async (request: NextRequest) => {
+const testHandler = async (request: NextRequest): void => {
   return NextResponse.json({ 
     message: 'Test wrapper working',
     timestamp: new Date().toISOString(),

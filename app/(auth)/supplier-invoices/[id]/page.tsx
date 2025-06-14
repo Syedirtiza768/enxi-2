@@ -130,7 +130,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handlePostInvoice = async (): Promise<NextResponse> => {
+  const handlePostInvoice = async (): Promise<void> => {
     if (!invoice || invoice.status !== 'DRAFT') return
 
     setActionLoading('post')
@@ -150,7 +150,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }
 
-  const handleCancelInvoice = async (): Promise<any[]> => {
+  const handleCancelInvoice = async (): Promise<void> => {
     if (!invoice || invoice.status === 'CANCELLED') return
 
     if (!confirm('Are you sure you want to cancel this invoice? This action cannot be undone.')) {

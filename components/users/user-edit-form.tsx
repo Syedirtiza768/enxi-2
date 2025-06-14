@@ -39,7 +39,7 @@ interface UserEditFormProps {
   onCancel?: () => void
 }
 
-export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
+export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -69,7 +69,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
     { value: 'USER', label: 'User', color: 'bg-gray-100 text-gray-800' },
   ]
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -78,7 +78,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
     setSuccess(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
     setLoading(true)
     setError(null)
@@ -125,7 +125,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
     }
   }
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     if (onCancel) {
       onCancel()
     } else {
@@ -133,7 +133,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
     }
   }
 
-  const getRoleConfig = (roleValue: string) => {
+  const getRoleConfig = (roleValue: string): void => {
     return roles.find(r => r.value === roleValue) || roles.find(r => r.value === 'USER')
   }
 
@@ -178,7 +178,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Input
                 id="username"
                 value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
+                onChange={(e): void => handleInputChange('username', e.target.value)}
                 placeholder="Enter username"
                 required
               />
@@ -189,7 +189,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e): void => handleInputChange('email', e.target.value)}
                 placeholder="Enter email"
                 required
               />
@@ -210,7 +210,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+              <Select value={formData.role} onValueChange={(value): void => handleInputChange('role', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select role">
                     <div className="flex items-center space-x-2">
@@ -237,7 +237,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Label htmlFor="status">Status</Label>
               <Select 
                 value={formData.isActive.toString()} 
-                onValueChange={(value) => handleInputChange('isActive', value === 'true')}
+                onValueChange={(value): void => handleInputChange('isActive', value === 'true')}
               >
                 <SelectTrigger>
                   <SelectValue>
@@ -272,7 +272,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Input
                 id="firstName"
                 value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                onChange={(e): void => handleInputChange('firstName', e.target.value)}
                 placeholder="Enter first name"
               />
             </div>
@@ -281,7 +281,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Input
                 id="lastName"
                 value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                onChange={(e): void => handleInputChange('lastName', e.target.value)}
                 placeholder="Enter last name"
               />
             </div>
@@ -292,7 +292,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e): void => handleInputChange('phone', e.target.value)}
                 placeholder="Enter phone number"
               />
             </div>
@@ -301,7 +301,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
               <Input
                 id="department"
                 value={formData.department}
-                onChange={(e) => handleInputChange('department', e.target.value)}
+                onChange={(e): void => handleInputChange('department', e.target.value)}
                 placeholder="Enter department"
               />
             </div>
@@ -311,7 +311,7 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps) {
             <Input
               id="jobTitle"
               value={formData.jobTitle}
-              onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+              onChange={(e): void => handleInputChange('jobTitle', e.target.value)}
               placeholder="Enter job title"
             />
           </div>

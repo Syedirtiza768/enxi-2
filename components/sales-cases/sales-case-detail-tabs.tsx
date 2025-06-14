@@ -66,7 +66,7 @@ export function SalesCaseDetailTabs({
   salesCaseCurrency, 
   salesCaseStatus: _salesCaseStatus,
   onStatusChange: _onStatusChange 
-}: SalesCaseDetailTabsProps) {
+}: SalesCaseDetailTabsProps): React.JSX.Element {
   const [activeTab, setActiveTab] = useState('quotations')
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -130,14 +130,14 @@ export function SalesCaseDetailTabs({
     }
   }, [activeTab, salesCaseId, fetchQuotations, fetchInvoices, fetchSummary])
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: salesCaseCurrency
     }).format(amount)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): void => {
     switch (status) {
       case 'DRAFT':
         return 'bg-gray-100 text-gray-800'
@@ -160,7 +160,7 @@ export function SalesCaseDetailTabs({
     }
   }
 
-  const handleExpenseUpdate = () => {
+  const handleExpenseUpdate = (): void => {
     if (activeTab === 'profitability') {
       fetchSummary()
     }

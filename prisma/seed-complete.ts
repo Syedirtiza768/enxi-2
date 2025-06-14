@@ -109,7 +109,7 @@ async function createPermissions(): Promise<T> {
   return perms;
 }
 
-async function createAccounts(userId: string) {
+async function createAccounts(userId: string): Promise<unknown> {
   const cash = await prisma.account.create({
     data: {
       code: "1000",
@@ -158,7 +158,7 @@ async function createAccounts(userId: string) {
   return { cash, ar, ap, sales, cogs };
 }
 
-async function createCategoriesAndUnits(userId: string) {
+async function createCategoriesAndUnits(userId: string): Promise<unknown> {
   const pcs = await prisma.unitOfMeasure.create({
     data: { code: "PCS", name: "Pieces", isBaseUnit: true, createdBy: userId },
   });
@@ -168,7 +168,7 @@ async function createCategoriesAndUnits(userId: string) {
   return { pcs, cat };
 }
 
-async function createItems(userId: string, accounts: any, setup: any) {
+async function createItems(userId: string, accounts: unknown, setup: unknown): Promise<unknown> {
   const item = await prisma.item.create({
     data: {
       code: "ITM-001",
@@ -188,7 +188,7 @@ async function createItems(userId: string, accounts: any, setup: any) {
   return { item };
 }
 
-async function createLocations(userId: string, accounts: any) {
+async function createLocations(userId: string, accounts: unknown): Promise<unknown> {
   const loc = await prisma.location.create({
     data: {
       locationCode: "MAIN",
@@ -201,7 +201,7 @@ async function createLocations(userId: string, accounts: any) {
   return { loc };
 }
 
-async function createInventory(userId: string, item: any, loc: any) {
+async function createInventory(userId: string, item: unknown, loc: unknown): Promise<unknown> {
   const lot = await prisma.stockLot.create({
     data: {
       lotNumber: "LOT-001",
@@ -238,7 +238,7 @@ async function createInventory(userId: string, item: any, loc: any) {
   return { lot };
 }
 
-async function createCustomers(userId: string, salesId: string, accounts: any) {
+async function createCustomers(userId: string, salesId: string, accounts: unknown): Promise<unknown> {
   const cust = await prisma.customer.create({
     data: {
       customerNumber: "CUST-001",
@@ -254,7 +254,7 @@ async function createCustomers(userId: string, salesId: string, accounts: any) {
   return { cust };
 }
 
-async function createLeads(salesId: string) {
+async function createLeads(salesId: string): Promise<unknown> {
   const lead = await prisma.lead.create({
     data: {
       firstName: "John",
@@ -268,7 +268,7 @@ async function createLeads(salesId: string) {
   return { lead };
 }
 
-async function createSalesCases(salesId: string, cust: any, lead: any) {
+async function createSalesCases(salesId: string, cust: unknown, lead: unknown): Promise<unknown> {
   const sc = await prisma.salesCase.create({
     data: {
       caseNumber: "SC-001",
@@ -282,7 +282,7 @@ async function createSalesCases(salesId: string, cust: any, lead: any) {
   return { sc };
 }
 
-async function createQuotations(salesId: string, salesCase: any, item: any) {
+async function createQuotations(salesId: string, salesCase: unknown, item: unknown): Promise<unknown> {
   const quote = await prisma.quotation.create({
     data: {
       quotationNumber: "Q-001",
@@ -303,7 +303,7 @@ async function createQuotations(salesId: string, salesCase: any, item: any) {
   return { quote };
 }
 
-async function createSalesOrders(salesId: string, quote: any) {
+async function createSalesOrders(salesId: string, quote: unknown): Promise<unknown> {
   const order = await prisma.salesOrder.create({
     data: {
       orderNumber: "SO-001",
@@ -328,11 +328,11 @@ async function createSalesOrders(salesId: string, quote: any) {
 
 async function createShipments(
   userId: string,
-  order: any,
-  item: any,
-  loc: any,
-  lot: any,
-) {
+  order: unknown,
+  item: unknown,
+  loc: unknown,
+  lot: unknown,
+): Promise<unknown> {
   const shipment = await prisma.shipment.create({
     data: {
       shipmentNumber: "SHIP-001",
@@ -387,10 +387,10 @@ async function createShipments(
 
 async function createInvoices(
   accountantId: string,
-  order: any,
-  cust: any,
-  item: any,
-) {
+  order: unknown,
+  cust: unknown,
+  item: unknown,
+): Promise<unknown> {
   const inv = await prisma.invoice.create({
     data: {
       invoiceNumber: "INV-001",
@@ -417,9 +417,9 @@ async function createInvoices(
 
 async function createPayments(
   accountantId: string,
-  invoice: any,
-  accounts: any,
-) {
+  invoice: unknown,
+  accounts: unknown,
+): Promise<unknown> {
   const pay = await prisma.payment.create({
     data: {
       paymentNumber: "PAY-001",
@@ -435,7 +435,7 @@ async function createPayments(
   await logAction(accountantId, "Payment", pay.id);
 }
 
-async function createSuppliers(userId: string, accounts: any) {
+async function createSuppliers(userId: string, accounts: unknown): Promise<unknown> {
   const sup = await prisma.supplier.create({
     data: {
       supplierNumber: "SUP-001",
@@ -448,7 +448,7 @@ async function createSuppliers(userId: string, accounts: any) {
   return { sup };
 }
 
-async function createPurchaseOrders(userId: string, sup: any, item: any) {
+async function createPurchaseOrders(userId: string, sup: unknown, item: unknown): Promise<unknown> {
   const po = await prisma.purchaseOrder.create({
     data: {
       poNumber: "PO-001",
@@ -469,7 +469,7 @@ async function createPurchaseOrders(userId: string, sup: any, item: any) {
   return { po };
 }
 
-async function createGoodsReceipts(userId: string, po: any, item: any) {
+async function createGoodsReceipts(userId: string, po: unknown, item: unknown): Promise<unknown> {
   const receipt = await prisma.goodsReceipt.create({
     data: {
       receiptNumber: "GR-001",
@@ -494,7 +494,7 @@ async function createGoodsReceipts(userId: string, po: any, item: any) {
   return { receipt };
 }
 
-async function createSupplierInvoices(accountantId: string, sup: any, po: any) {
+async function createSupplierInvoices(accountantId: string, sup: unknown, po: unknown): Promise<unknown> {
   const sinv = await prisma.supplierInvoice.create({
     data: {
       invoiceNumber: "SI-001",
@@ -511,10 +511,10 @@ async function createSupplierInvoices(accountantId: string, sup: any, po: any) {
 
 async function createSupplierPayments(
   accountantId: string,
-  sup: any,
-  sinv: any,
-  accounts: any,
-) {
+  sup: unknown,
+  sinv: unknown,
+  accounts: unknown,
+): Promise<unknown> {
   await prisma.supplierPayment.create({
     data: {
       paymentNumber: "SP-001",
@@ -533,10 +533,10 @@ async function createSupplierPayments(
 // Customer purchase order referencing the quotation
 async function createCustomerPO(
   salesId: string,
-  cust: any,
-  sc: any,
-  quote: any,
-) {
+  cust: unknown,
+  sc: unknown,
+  quote: unknown,
+): Promise<unknown> {
   const cpo = await prisma.customerPO.create({
     data: {
       poNumber: "CPO-001",
@@ -555,9 +555,9 @@ async function createCustomerPO(
 // Expense recorded against the sales case
 async function createCaseExpenses(
   accountantId: string,
-  sc: any,
-  accounts: any,
-) {
+  sc: unknown,
+  accounts: unknown,
+): Promise<unknown> {
   await prisma.caseExpense.create({
     data: {
       salesCaseId: sc.id,
@@ -580,7 +580,7 @@ function logAction(
   entity: string,
   entityId: string,
   action = "CREATE",
-) {
+): unknown {
   return prisma.auditLog.create({
     data: {
       userId,
@@ -593,7 +593,7 @@ function logAction(
 }
 
 // Update profitability metrics on the sales case
-async function updateProfitability(sc: any, inv: any) {
+async function updateProfitability(sc: unknown, inv: unknown): Promise<unknown> {
   const revenue = 40;
   const cost = 35;
   const margin = ((revenue - cost) / revenue) * 100;

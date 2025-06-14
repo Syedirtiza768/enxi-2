@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
+import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 import { SalesCaseService } from './sales-case.service'
 import { taxService } from './tax.service'
-import { AuditAction } from '@/lib/validators/audit.validator'
 import { 
   Quotation,
   QuotationItem,
@@ -173,7 +173,7 @@ export class QuotationService extends BaseService {
       await this.auditService.logAction({
         userId: data.createdBy,
         action: AuditAction.CREATE,
-        entityType: 'Quotation',
+        entityType: EntityType.QUOTATION,
         entityId: result.id,
         afterData: result,
       })
@@ -187,10 +187,11 @@ export class QuotationService extends BaseService {
     quotationId: string,
     data: UpdateQuotationInput & { createdBy: string }
   ): Promise<QuotationWithDetails> {
-    const existingQuotation = await this.getQuotation(quotationId)
-    if (!existingQuotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('createNewVersion', async () => {
+      const existingQuotation = await this.getQuotation(quotationId)
+      if (!existingQuotation) {
+        throw new Error('Quotation not found')
+      }
 
     // Generate new quotation number with version
     const newVersion = existingQuotation.version + 1
@@ -251,23 +252,25 @@ export class QuotationService extends BaseService {
     await this.auditService.logAction({
       userId: data.createdBy,
       action: AuditAction.CREATE,
-      entityType: 'Quotation',
+      entityType: EntityType.QUOTATION,
       entityId: newQuotation.id,
       metadata: { version: newVersion, previousVersion: existingQuotation.version },
       afterData: newQuotation,
     })
 
-    return newQuotation
+      return newQuotation
+    })
   }
 
   async updateQuotation(
     quotationId: string,
     data: UpdateQuotationInput & { updatedBy: string }
   ): Promise<QuotationWithDetails> {
-    const existingQuotation = await this.getQuotation(quotationId)
-    if (!existingQuotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('updateQuotation', async () => {
+      const existingQuotation = await this.getQuotation(quotationId)
+      if (!existingQuotation) {
+        throw new Error('Quotation not found')
+      }
 
     // Only allow updates to draft quotations
     if (existingQuotation.status !== QuotationStatus.DRAFT) {
@@ -363,24 +366,26 @@ export class QuotationService extends BaseService {
       return updatedQuotation
     })
 
-    // Audit log
-    await this.auditService.logAction({
-      userId: data.updatedBy,
-      action: AuditAction.UPDATE,
-      entityType: 'Quotation',
-      entityId: quotationId,
-      beforeData: existingQuotation,
-      afterData: result,
-    })
+      // Audit log
+      await this.auditService.logAction({
+        userId: data.updatedBy,
+        action: AuditAction.UPDATE,
+        entityType: EntityType.QUOTATION,
+        entityId: quotationId,
+        beforeData: existingQuotation,
+        afterData: result,
+      })
 
-    return result
+      return result
+    })
   }
 
   async getQuotationClientView(quotationId: string): Promise<Record<string, unknown>> {
-    const quotation = await this.getQuotation(quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('getQuotationClientView', async () => {
+      const quotation = await this.getQuotation(quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
     // Group items by line number for client view
     const lineGroups = new Map<number, any[]>()
@@ -414,14 +419,16 @@ export class QuotationService extends BaseService {
       items: undefined // Remove detailed items from client view
     }
 
-    return clientQuotation
+      return clientQuotation
+    })
   }
 
   async getQuotationInternalView(quotationId: string): Promise<Record<string, unknown>> {
-    const quotation = await this.getQuotation(quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('getQuotationInternalView', async () => {
+      const quotation = await this.getQuotation(quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
     // Calculate margins for items
     const itemsWithMargins = quotation.items.map(item => ({
@@ -432,10 +439,11 @@ export class QuotationService extends BaseService {
         undefined
     }))
 
-    return {
-      ...quotation,
-      items: itemsWithMargins
-    }
+      return {
+        ...quotation,
+        items: itemsWithMargins
+      }
+    })
   }
 
   async updateQuotationStatus(
@@ -443,10 +451,11 @@ export class QuotationService extends BaseService {
     status: QuotationStatus,
     userId: string
   ): Promise<QuotationWithDetails> {
-    const quotation = await this.getQuotation(quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('updateQuotationStatus', async () => {
+      const quotation = await this.getQuotation(quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
     // Validate status transitions
     this.validateStatusTransition(quotation.status, status)
@@ -485,17 +494,18 @@ export class QuotationService extends BaseService {
       return updated
     })
 
-    // Audit log
-    await this.auditService.logAction({
-      userId,
-      action: AuditAction.UPDATE,
-      entityType: 'Quotation',
-      entityId: quotationId,
-      beforeData: { status: quotation.status },
-      afterData: { status },
-    })
+      // Audit log
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.UPDATE,
+        entityType: EntityType.QUOTATION,
+        entityId: quotationId,
+        beforeData: { status: quotation.status },
+        afterData: { status },
+      })
 
-    return updatedQuotation
+      return updatedQuotation
+    })
   }
 
   async getQuotation(id: string): Promise<QuotationWithDetails | null> {
@@ -526,18 +536,20 @@ export class QuotationService extends BaseService {
   }
 
   async getQuotationByNumber(quotationNumber: string): Promise<QuotationWithDetails | null> {
-    return prisma.quotation.findUnique({
-      where: { quotationNumber },
-      include: {
-        items: {
-          orderBy: { sortOrder: 'asc' }
-        },
-        salesCase: {
-          include: {
-            customer: true
+    return this.withLogging('getQuotationByNumber', async () => {
+      return prisma.quotation.findUnique({
+        where: { quotationNumber },
+        include: {
+          items: {
+            orderBy: { sortOrder: 'asc' }
+          },
+          salesCase: {
+            include: {
+              customer: true
+            }
           }
         }
-      }
+      })
     })
   }
 
@@ -551,7 +563,8 @@ export class QuotationService extends BaseService {
     limit?: number
     offset?: number
   }): Promise<QuotationWithDetails[]> {
-    const where: Prisma.QuotationWhereInput = {}
+    return this.withLogging('getAllQuotations', async () => {
+      const where: Prisma.QuotationWhereInput = {}
 
     if (options?.salesCaseId) {
       where.salesCaseId = options.salesCaseId
@@ -584,41 +597,44 @@ export class QuotationService extends BaseService {
       }
     }
 
-    return prisma.quotation.findMany({
-      where,
-      include: {
-        items: {
-          orderBy: { sortOrder: 'asc' }
-        },
-        salesCase: {
-          include: {
-            customer: true
+      return prisma.quotation.findMany({
+        where,
+        include: {
+          items: {
+            orderBy: { sortOrder: 'asc' }
+          },
+          salesCase: {
+            include: {
+              customer: true
+            }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: options?.limit,
-      skip: options?.offset
+        },
+        orderBy: { createdAt: 'desc' },
+        take: options?.limit,
+        skip: options?.offset
+      })
     })
   }
 
   async getQuotationVersions(salesCaseId: string): Promise<QuotationWithDetails[]> {
-    return prisma.quotation.findMany({
-      where: { salesCaseId },
-      include: {
-        items: {
-          orderBy: { sortOrder: 'asc' }
-        },
-        salesCase: {
-          include: {
-            customer: true
+    return this.withLogging('getQuotationVersions', async () => {
+      return prisma.quotation.findMany({
+        where: { salesCaseId },
+        include: {
+          items: {
+            orderBy: { sortOrder: 'asc' }
+          },
+          salesCase: {
+            include: {
+              customer: true
+            }
           }
-        }
-      },
-      orderBy: [
-        { quotationNumber: 'asc' },
-        { version: 'desc' }
-      ]
+        },
+        orderBy: [
+          { quotationNumber: 'asc' },
+          { version: 'desc' }
+        ]
+      })
     })
   }
 
@@ -675,57 +691,69 @@ export class QuotationService extends BaseService {
     quotationId: string,
     userId: string
   ): Promise<QuotationWithDetails> {
-    const quotation = await this.getQuotation(quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('rejectQuotation', async () => {
+      const quotation = await this.getQuotation(quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
-    if (quotation.status !== QuotationStatus.SENT) {
-      throw new Error('Only sent quotations can be rejected')
-    }
+      if (quotation.status !== QuotationStatus.SENT) {
+        throw new Error('Only sent quotations can be rejected')
+      }
 
-    return this.updateQuotationStatus(quotationId, QuotationStatus.REJECTED, userId)
+      return this.updateQuotationStatus(quotationId, QuotationStatus.REJECTED, userId)
+    })
   }
 
   async cancelQuotation(
     quotationId: string,
     userId: string
   ): Promise<QuotationWithDetails> {
-    const quotation = await this.getQuotation(quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    return this.withLogging('cancelQuotation', async () => {
+      const quotation = await this.getQuotation(quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
-    if (quotation.status === QuotationStatus.ACCEPTED) {
-      throw new Error('Cannot cancel accepted quotations')
-    }
+      if (quotation.status === QuotationStatus.ACCEPTED) {
+        throw new Error('Cannot cancel accepted quotations')
+      }
 
-    if (quotation.status === QuotationStatus.CANCELLED) {
-      throw new Error('Quotation is already cancelled')
-    }
+      if (quotation.status === QuotationStatus.CANCELLED) {
+        throw new Error('Quotation is already cancelled')
+      }
 
-    return this.updateQuotationStatus(quotationId, QuotationStatus.CANCELLED, userId)
+      return this.updateQuotationStatus(quotationId, QuotationStatus.CANCELLED, userId)
+    })
   }
 
   async checkExpiredQuotations(): Promise<void> {
-    const expiredQuotations = await prisma.quotation.findMany({
-      where: {
-        status: QuotationStatus.SENT,
-        validUntil: {
-          lt: new Date()
+    return this.withLogging('checkExpiredQuotations', async () => {
+      const expiredQuotations = await prisma.quotation.findMany({
+        where: {
+          status: QuotationStatus.SENT,
+          validUntil: {
+            lt: new Date()
+          }
         }
+      })
+
+      for (const quotation of expiredQuotations) {
+        await prisma.quotation.update({
+          where: { id: quotation.id },
+          data: { status: QuotationStatus.EXPIRED }
+        })
       }
     })
-
-    for (const quotation of expiredQuotations) {
-      await prisma.quotation.update({
-        where: { id: quotation.id },
-        data: { status: QuotationStatus.EXPIRED }
-      })
-    }
   }
 
-  private async calculateItemTotals(item: CreateQuotationItemInput, customerId?: string) {
+  private async calculateItemTotals(item: CreateQuotationItemInput, customerId?: string): Promise<{
+    subtotal: number
+    discountAmount: number
+    taxAmount: number
+    totalAmount: number
+    effectiveTaxRate: number
+  }> {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * (item.discount || 0) / 100
     const discountedAmount = subtotal - discountAmount
@@ -761,7 +789,12 @@ export class QuotationService extends BaseService {
     }
   }
 
-  private async calculateTotals(items: CreateQuotationItemInput[], customerId?: string) {
+  private async calculateTotals(items: CreateQuotationItemInput[], customerId?: string): Promise<{
+    subtotal: number
+    discountAmount: number
+    taxAmount: number
+    totalAmount: number
+  }> {
     let subtotal = 0
     let discountAmount = 0
     let taxAmount = 0
@@ -799,8 +832,9 @@ export class QuotationService extends BaseService {
   }
 
   private async enrichQuotationItems(items: CreateQuotationItemInput[]): Promise<CreateQuotationItemInput[]> {
-    const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
-    const itemService = new ItemService()
+    return this.withLogging('enrichQuotationItems', async () => {
+      const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
+      const itemService = new ItemService()
 
     const enrichedItems = []
 
@@ -830,14 +864,16 @@ export class QuotationService extends BaseService {
       enrichedItems.push(enrichedItem)
     }
 
-    return enrichedItems
+      return enrichedItems
+    })
   }
 
   private async checkInventoryAvailability(items: CreateQuotationItemInput[]): Promise<(CreateQuotationItemInput & { availabilityStatus?: string; availableQuantity?: number; fifoCost?: number })[]> {
-    const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
-    const InventoryService = await import('./inventory/inventory.service').then(m => m.InventoryService)
-    const itemService = new ItemService()
-    const inventoryService = new InventoryService()
+    return this.withLogging('checkInventoryAvailability', async () => {
+      const ItemService = await import('./inventory/item.service').then(m => m.ItemService)
+      const InventoryService = await import('./inventory/inventory.service').then(m => m.InventoryService)
+      const itemService = new ItemService()
+      const inventoryService = new InventoryService()
 
     const itemsWithAvailability = []
 
@@ -889,7 +925,8 @@ export class QuotationService extends BaseService {
       })
     }
 
-    return itemsWithAvailability
+      return itemsWithAvailability
+    })
   }
 
   private async validateQuotationHeader(data: CreateQuotationInput): Promise<void> {
@@ -1063,9 +1100,10 @@ export class QuotationService extends BaseService {
   }
 
   private async generateQuotationNumber(): Promise<string> {
-    // Generate a unique quotation number using timestamp and random suffix
-    const timestamp = Date.now()
-    const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+    return this.withLogging('generateQuotationNumber', async () => {
+      // Generate a unique quotation number using timestamp and random suffix
+      const timestamp = Date.now()
+      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
     
     // First try to get the count of existing quotations for numbering
     const count = await prisma.quotation.count()
@@ -1084,6 +1122,7 @@ export class QuotationService extends BaseService {
       return this.generateQuotationNumber()
     }
     
-    return quotationNumber
+      return quotationNumber
+    })
   }
 }

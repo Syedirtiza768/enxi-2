@@ -30,7 +30,7 @@ interface JournalEntry {
   createdAt: string
 }
 
-export default function JournalEntriesPage() {
+export default function JournalEntriesPage(): React.JSX.Element {
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,7 +65,7 @@ export default function JournalEntriesPage() {
     }
   }
 
-  const fetchAccounts = async (): Promise<number> => {
+  const fetchAccounts = async (): Promise<void> => {
     try {
       const response = await fetch('/api/accounting/accounts')
       if (!response.ok) throw new Error('Failed to fetch accounts')
@@ -76,29 +76,29 @@ export default function JournalEntriesPage() {
     }
   }
 
-  const addLine = () => {
+  const addLine = (): void => {
     setLines([...lines, { accountId: '', description: '', debitAmount: 0, creditAmount: 0 }])
   }
 
-  const removeLine = (index: number) => {
+  const removeLine = (index: number): void => {
     if (lines.length > 2) {
       setLines(lines.filter((_, i) => i !== index))
     }
   }
 
-  const updateLine = (index: number, field: keyof typeof lines[0], value: string | number) => {
+  const updateLine = (index: number, field: keyof typeof lines[0], value: string | number): void => {
     const updatedLines = [...lines]
     updatedLines[index] = { ...updatedLines[index], [field]: value }
     setLines(updatedLines)
   }
 
-  const calculateTotals = () => {
+  const calculateTotals = (): void => {
     const totalDebit = lines.reduce((sum, line) => sum + (line.debitAmount || 0), 0)
     const totalCredit = lines.reduce((sum, line) => sum + (line.creditAmount || 0), 0)
     return { totalDebit, totalCredit, isBalanced: Math.abs(totalDebit - totalCredit) < 0.01 }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
     setError('')
     setSubmitting(true)
@@ -138,7 +138,7 @@ export default function JournalEntriesPage() {
     }
   }
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setDate(new Date().toISOString().split('T')[0])
     setDescription('')
     setReference('')
@@ -149,7 +149,7 @@ export default function JournalEntriesPage() {
     setError('')
   }
 
-  const postEntry = async (entryId: string) => {
+  const postEntry = async (entryId: string): void => {
     try {
       const response = await fetch(`/api/accounting/journal-entries/${entryId}/post`, {
         method: 'POST'
@@ -172,7 +172,7 @@ export default function JournalEntriesPage() {
       <div className="mb-6 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Journal Entries</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={(): void => setShowForm(!showForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {showForm ? 'Cancel' : 'New Entry'}
@@ -189,7 +189,7 @@ export default function JournalEntriesPage() {
                 <input
                   type="date"
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e): void => setDate(e.target.value)}
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -199,7 +199,7 @@ export default function JournalEntriesPage() {
                 <input
                   type="text"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e): void => setDescription(e.target.value)}
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -209,7 +209,7 @@ export default function JournalEntriesPage() {
                 <input
                   type="text"
                   value={reference}
-                  onChange={(e) => setReference(e.target.value)}
+                  onChange={(e): void => setReference(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -254,7 +254,7 @@ export default function JournalEntriesPage() {
                         <td className="px-3 py-2">
                           <select
                             value={line.accountId}
-                            onChange={(e) => updateLine(index, 'accountId', e.target.value)}
+                            onChange={(e): void => updateLine(index, 'accountId', e.target.value)}
                             required
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                           >
@@ -270,7 +270,7 @@ export default function JournalEntriesPage() {
                           <input
                             type="text"
                             value={line.description}
-                            onChange={(e) => updateLine(index, 'description', e.target.value)}
+                            onChange={(e): void => updateLine(index, 'description', e.target.value)}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         </td>
@@ -278,7 +278,7 @@ export default function JournalEntriesPage() {
                           <input
                             type="number"
                             value={line.debitAmount || ''}
-                            onChange={(e) => updateLine(index, 'debitAmount', parseFloat(e.target.value) || 0)}
+                            onChange={(e): void => updateLine(index, 'debitAmount', parseFloat(e.target.value) || 0)}
                             min="0"
                             step="0.01"
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm text-right"
@@ -288,7 +288,7 @@ export default function JournalEntriesPage() {
                           <input
                             type="number"
                             value={line.creditAmount || ''}
-                            onChange={(e) => updateLine(index, 'creditAmount', parseFloat(e.target.value) || 0)}
+                            onChange={(e): void => updateLine(index, 'creditAmount', parseFloat(e.target.value) || 0)}
                             min="0"
                             step="0.01"
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm text-right"
@@ -298,7 +298,7 @@ export default function JournalEntriesPage() {
                           {lines.length > 2 && (
                             <button
                               type="button"
-                              onClick={() => removeLine(index)}
+                              onClick={(): void => removeLine(index)}
                               className="text-red-600 hover:text-red-700 text-sm"
                             >
                               Remove
@@ -333,7 +333,7 @@ export default function JournalEntriesPage() {
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
-                onClick={() => { setShowForm(false); resetForm() }}
+                onClick={(): void => { setShowForm(false); resetForm() }}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Cancel
@@ -403,7 +403,7 @@ export default function JournalEntriesPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   {entry.status === 'DRAFT' && (
                     <button
-                      onClick={() => postEntry(entry.id)}
+                      onClick={(): void => postEntry(entry.id)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
                       Post

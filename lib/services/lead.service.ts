@@ -1,3 +1,4 @@
+import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from './audit.service'
 import { CustomerService } from './customer.service'
@@ -70,17 +71,18 @@ export interface LeadMetrics {
   averageConversionTime: number
 }
 
-export class LeadService {
+export class LeadService extends BaseService {
   private auditService: AuditService
   private customerService: CustomerService
 
   constructor() {
+    super('LeadService')
     this.auditService = new AuditService()
     this.customerService = new CustomerService()
   }
   
   async createLead(data: CreateLeadData, userId: string): Promise<LeadResponse> {
-    try {
+    return this.withLogging('createLead', async () => {
       console.warn('[LeadService] Creating lead with data:', data)
       console.warn('[LeadService] User ID:', userId)
       
@@ -123,25 +125,11 @@ export class LeadService {
 
       console.warn('[LeadService] Lead created successfully:', result.id)
       return result
-    } catch (error) {
-      console.error('[LeadService] Error creating lead:', error);
-      
-      // Add more specific error messages
-      if (error instanceof Error) {
-        if (error.message.includes('P2002')) {
-          throw new Error('A lead with this email already exists')
-        }
-        if (error.message.includes('connect') || error.message.includes('ETIMEDOUT')) {
-          throw new Error('Database connection failed. Please try again later.')
-        }
-      }
-      
-      throw error;
-    }
+    })
   }
 
   async getLeads(query: LeadListQuery): Promise<LeadListResponse> {
-    try {
+    return this.withLogging('getLeads', async () => {
       const validatedQuery = leadListQuerySchema.parse(query)
       const { page, limit, search, status, source } = validatedQuery
       
@@ -196,14 +184,12 @@ export class LeadService {
         page,
         limit,
       }
-    } catch (error) {
-      console.error('Error getting leads:', error);
-      throw error;
-    }
+    })
   }
 
   async getLeadById(id: string): Promise<LeadWithDetails | null> {
-    const lead = await prisma.lead.findUnique({
+    return this.withLogging('getLeadById', async () => {
+      const lead = await prisma.lead.findUnique({
       where: { id },
       include: {
         creator: {
@@ -215,13 +201,14 @@ export class LeadService {
         },
         customer: true
       }
-    })
+      })
 
-    return lead
+      return lead
+    })
   }
 
   async findByEmail(email: string): Promise<LeadResponse[]> {
-    try {
+    return this.withLogging('findByEmail', async () => {
       const leads = await prisma.lead.findMany({
         where: { 
           email: email.toLowerCase()
@@ -239,14 +226,12 @@ export class LeadService {
       })
 
       return leads
-    } catch (error) {
-      console.error('Error finding leads by email:', error)
-      throw error
-    }
+    })
   }
 
   async updateLead(id: string, data: UpdateLeadData, userId: string): Promise<LeadResponse> {
-    // Validate input data
+    return this.withLogging('updateLead', async () => {
+      // Validate input data
     const validatedData = updateLeadSchema.parse(data)
     
     const existingLead = await this.getLeadById(id)
@@ -287,23 +272,24 @@ export class LeadService {
       entityId: id,
       beforeData: existingLead,
       afterData: lead
-    })
+      })
 
-    return lead
+      return lead
+    })
   }
 
   async deleteLead(id: string, deletedBy: string): Promise<boolean> {
-    const lead = await this.getLeadById(id)
+    return this.withLogging('deleteLead', async () => {
+      const lead = await this.getLeadById(id)
     
-    if (!lead) {
-      throw new Error('Lead not found')
-    }
+      if (!lead) {
+        throw new Error('Lead not found')
+      }
 
-    if (lead.status === LeadStatus.CONVERTED) {
-      throw new Error('Cannot delete converted leads')
-    }
+      if (lead.status === LeadStatus.CONVERTED) {
+        throw new Error('Cannot delete converted leads')
+      }
 
-    try {
       await prisma.lead.delete({
         where: { id },
       })
@@ -317,10 +303,7 @@ export class LeadService {
       })
 
       return true
-    } catch (error) {
-      console.error('Error updating lead status:', error);
-      throw error;
-    }
+    })
   }
 
   async convertLead(
@@ -329,7 +312,8 @@ export class LeadService {
     customer: Customer
     salesCase?: SalesCaseWithDetails
   }> {
-    const lead = await this.getLeadById(data.leadId)
+    return this.withLogging('convertLead', async () => {
+      const lead = await this.getLeadById(data.leadId)
     
     if (!lead) {
       throw new Error('Lead not found')
@@ -397,6 +381,7 @@ export class LeadService {
       console.error('Failed to update lead status after customer creation:', error)
       throw new Error(`Lead conversion partially failed. Customer ${customer.id} was created but lead status update failed.`)
     }
+    })
   }
 
   async updateLeadStatus(
@@ -404,25 +389,28 @@ export class LeadService {
     status: LeadStatus,
     updatedBy: string
   ): Promise<LeadResponse> {
-    const lead = await this.getLeadById(id)
+    return this.withLogging('updateLeadStatus', async () => {
+      const lead = await this.getLeadById(id)
     
-    if (!lead) {
-      throw new Error('Lead not found')
-    }
+      if (!lead) {
+        throw new Error('Lead not found')
+      }
 
-    if (lead.status === LeadStatus.CONVERTED) {
-      throw new Error('Cannot change status of converted leads')
-    }
+      if (lead.status === LeadStatus.CONVERTED) {
+        throw new Error('Cannot change status of converted leads')
+      }
 
-    if (status === LeadStatus.CONVERTED) {
-      throw new Error('Use convertLead method to convert leads to customers')
-    }
+      if (status === LeadStatus.CONVERTED) {
+        throw new Error('Use convertLead method to convert leads to customers')
+      }
 
-    return this.updateLead(id, { status }, updatedBy)
+      return this.updateLead(id, { status }, updatedBy)
+    })
   }
 
   async getLeadStats(): Promise<LeadStats> {
-    const stats = await prisma.lead.groupBy({
+    return this.withLogging('getLeadStats', async () => {
+      const stats = await prisma.lead.groupBy({
       by: ['status'],
       _count: true,
     })
@@ -442,9 +430,10 @@ export class LeadService {
     // Fill in actual counts
     stats.forEach((stat: { status: LeadStatus; _count: number }) => {
       result[stat.status as keyof LeadStats] = stat._count
-    })
+      })
 
-    return result
+      return result
+    })
   }
 
   async getLeadMetrics(filters: {
@@ -452,7 +441,8 @@ export class LeadService {
     dateFrom?: Date
     dateTo?: Date
   } = {}): Promise<LeadMetrics> {
-    const where: Prisma.LeadWhereInput = {}
+    return this.withLogging('getLeadMetrics', async () => {
+      const where: Prisma.LeadWhereInput = {}
 
     if (filters.source) {
       where.source = filters.source
@@ -524,11 +514,13 @@ export class LeadService {
       lostLeads,
       conversionRate,
       averageConversionTime
-    }
+      }
+    })
   }
 
   async getLeadTimeline(id: string): Promise<TimelineEvent[]> {
-    const lead = await this.getLeadById(id)
+    return this.withLogging('getLeadTimeline', async () => {
+      const lead = await this.getLeadById(id)
     if (!lead) {
       throw new Error('Lead not found')
     }
@@ -579,7 +571,8 @@ export class LeadService {
       ...customerEvents
     ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
-    return timeline
+      return timeline
+    })
   }
 
   async bulkUpdateLeadStatus(
@@ -587,7 +580,8 @@ export class LeadService {
     status: LeadStatus,
     updatedBy: string
   ): Promise<number> {
-    // Validate all leads exist and are not converted
+    return this.withLogging('bulkUpdateLeadStatus', async () => {
+      // Validate all leads exist and are not converted
     const leads = await prisma.lead.findMany({
       where: { 
         id: { in: leadIds },
@@ -624,8 +618,9 @@ export class LeadService {
         leadCount: result.count,
         newStatus: status
       }
-    })
+      })
 
-    return result.count
+      return result.count
+    })
   }
 }

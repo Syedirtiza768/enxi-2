@@ -57,7 +57,7 @@ export function ItemList({
   onItemEdit,
   onItemDelete,
   showStockDetails = false
-}: ItemListProps) {
+}: ItemListProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Item | null>(null)
@@ -87,7 +87,7 @@ export function ItemList({
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const getItemTypeBadge = (type: Item['type']) => {
+  const getItemTypeBadge = (type: Item['type']): JSX.Element => {
     const badges = {
       PRODUCT: { text: 'Product', className: 'bg-blue-100 text-blue-800' },
       SERVICE: { text: 'Service', className: 'bg-purple-100 text-purple-800' },
@@ -101,7 +101,7 @@ export function ItemList({
     )
   }
 
-  const getStockDisplay = (item: Item) => {
+  const getStockDisplay = (item: Item): JSX.Element => {
     if (!item.trackInventory || !item.stockSummary) {
       return <span className="text-gray-500">N/A</span>
     }
@@ -132,11 +132,11 @@ export function ItemList({
     )
   }
 
-  const handleDelete = (item: Item) => {
+  const handleDelete = (item: Item): void => {
     setDeleteConfirm(item)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = (): void => {
     if (deleteConfirm) {
       onItemDelete(deleteConfirm)
       setDeleteConfirm(null)
@@ -179,9 +179,9 @@ export function ItemList({
             <tr
               key={item.id}
               className="hover:bg-gray-50 cursor-pointer"
-              onClick={() => onItemSelect(item)}
-              onMouseEnter={() => setHoveredItem(item.id)}
-              onMouseLeave={() => setHoveredItem(null)}
+              onClick={(): void => onItemSelect(item)}
+              onMouseEnter={(): void => setHoveredItem(item.id)}
+              onMouseLeave={(): void => setHoveredItem(null)}
             >
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {item.code}
@@ -217,9 +217,9 @@ export function ItemList({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 {hoveredItem === item.id && (
-                  <div className="flex justify-end space-x-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex justify-end space-x-2" onClick={(e): void => e.stopPropagation()}>
                     <button
-                      onClick={(e) => {
+                      onClick={(e): void => {
                         e.stopPropagation()
                         onItemEdit(item)
                       }}
@@ -229,7 +229,7 @@ export function ItemList({
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={(e): void => {
                         e.stopPropagation()
                         handleDelete(item)
                       }}
@@ -256,7 +256,7 @@ export function ItemList({
             </p>
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setDeleteConfirm(null)}
+                onClick={(): void => setDeleteConfirm(null)}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancel

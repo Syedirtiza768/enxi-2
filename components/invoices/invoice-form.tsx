@@ -96,7 +96,7 @@ export function InvoiceForm({
   fromQuotation,
   onSubmit, 
   onCancel 
-}: InvoiceFormProps) {
+}: InvoiceFormProps): React.JSX.Element {
   const { user: _user } = useAuth() // eslint-disable-line @typescript-eslint/no-unused-vars
   const { defaultRate } = useDefaultTaxRate()
   
@@ -286,7 +286,7 @@ export function InvoiceForm({
   }, [])
 
   // Handle customer selection
-  const handleCustomerChange = (customerId: string) => {
+  const handleCustomerChange = (customerId: string): void => {
     const customer = customers.find(c => c.id === customerId)
     if (customer) {
       updateFormData({
@@ -297,7 +297,7 @@ export function InvoiceForm({
   }
 
   // Handle sales order selection
-  const handleSalesOrderChange = async (salesOrderId: string) => {
+  const handleSalesOrderChange = async (salesOrderId: string): void => {
     if (!salesOrderId) {
       updateFormData({ salesOrderId: '' })
       return
@@ -315,7 +315,7 @@ export function InvoiceForm({
   }
 
   // Add new item
-  const addItem = () => {
+  const addItem = (): void => {
     const newItem: InvoiceItem = {
       itemCode: '',
       description: '',
@@ -335,7 +335,7 @@ export function InvoiceForm({
   }
 
   // Update item
-  const updateItem = (index: number, updates: Partial<InvoiceItem>) => {
+  const updateItem = (index: number, updates: Partial<InvoiceItem>): void => {
     const items = [...(formData.items || [])]
     items[index] = calculateItemTotal({ ...items[index], ...updates })
     updateFormData({ items })
@@ -343,7 +343,7 @@ export function InvoiceForm({
   }
 
   // Remove item
-  const removeItem = (index: number) => {
+  const removeItem = (index: number): void => {
     const items = formData.items?.filter((_, i) => i !== index) || []
     updateFormData({ items })
     calculateInvoiceTotals(items)
@@ -397,7 +397,7 @@ export function InvoiceForm({
   }
 
   // Handle form submission
-  const handleSubmit = async (status: 'DRAFT' | 'SENT' = 'SENT') => {
+  const handleSubmit = async (status: 'DRAFT' | 'SENT' = 'SENT'): void => {
     if (!validateForm()) return
 
     try {
@@ -418,13 +418,13 @@ export function InvoiceForm({
   }
 
   // Format currency
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     const multiplier = formData.type === 'CREDIT_NOTE' ? -1 : 1
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(amount * multiplier)
   }
 
   // Get form title
-  const getFormTitle = () => {
+  const getFormTitle = (): void => {
     const typeLabels = {
       SALES: 'Invoice',
       CREDIT_NOTE: 'Credit Note',
@@ -490,7 +490,7 @@ export function InvoiceForm({
                 <select
                   id="customer"
                   value={formData.customerId}
-                  onChange={(e) => handleCustomerChange(e.target.value)}
+                  onChange={(e): void => handleCustomerChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select customer...</option>
@@ -513,7 +513,7 @@ export function InvoiceForm({
                 <select
                   id="type"
                   value={formData.type}
-                  onChange={(e) => updateFormData({ type: e.target.value as Invoice['type'] })}
+                  onChange={(e): void => updateFormData({ type: e.target.value as Invoice['type'] })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="SALES">Sales Invoice</option>
@@ -531,7 +531,7 @@ export function InvoiceForm({
                 <select
                   id="salesOrder"
                   value={formData.salesOrderId || ''}
-                  onChange={(e) => handleSalesOrderChange(e.target.value)}
+                  onChange={(e): void => handleSalesOrderChange(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">No sales order</option>
@@ -568,7 +568,7 @@ export function InvoiceForm({
                   type="date"
                   id="invoiceDate"
                   value={formData.invoiceDate}
-                  onChange={(e) => updateFormData({ invoiceDate: e.target.value })}
+                  onChange={(e): void => updateFormData({ invoiceDate: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
                 {validationErrors.invoiceDate && (
@@ -585,7 +585,7 @@ export function InvoiceForm({
                   type="date"
                   id="dueDate"
                   value={formData.dueDate}
-                  onChange={(e) => updateFormData({ dueDate: e.target.value })}
+                  onChange={(e): void => updateFormData({ dueDate: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
                 {validationErrors.dueDate && (
@@ -602,7 +602,7 @@ export function InvoiceForm({
                   type="text"
                   id="paymentTerms"
                   value={formData.paymentTerms}
-                  onChange={(e) => updateFormData({ paymentTerms: e.target.value })}
+                  onChange={(e): void => updateFormData({ paymentTerms: e.target.value })}
                   placeholder="e.g., Net 30, Net 15"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -618,7 +618,7 @@ export function InvoiceForm({
                 id="billingAddress"
                 rows={2}
                 value={formData.billingAddress}
-                onChange={(e) => updateFormData({ billingAddress: e.target.value })}
+                onChange={(e): void => updateFormData({ billingAddress: e.target.value })}
                 placeholder="Customer billing address..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
@@ -633,7 +633,7 @@ export function InvoiceForm({
                 id="notes"
                 rows={3}
                 value={formData.notes}
-                onChange={(e) => updateFormData({ notes: e.target.value })}
+                onChange={(e): void => updateFormData({ notes: e.target.value })}
                 placeholder="Additional notes or comments for this invoice..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
@@ -669,7 +669,7 @@ export function InvoiceForm({
                       <input
                         type="text"
                         value={item.itemCode}
-                        onChange={(e) => updateItem(index, { itemCode: e.target.value })}
+                        onChange={(e): void => updateItem(index, { itemCode: e.target.value })}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
@@ -682,7 +682,7 @@ export function InvoiceForm({
                       <input
                         type="text"
                         value={item.description}
-                        onChange={(e) => updateItem(index, { description: e.target.value })}
+                        onChange={(e): void => updateItem(index, { description: e.target.value })}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                       {validationErrors[`item_${index}_description`] && (
@@ -698,7 +698,7 @@ export function InvoiceForm({
                       <input
                         type="number"
                         value={item.quantity}
-                        onChange={(e) => updateItem(index, { quantity: Math.max(0, parseInt(e.target.value) || 0) })}
+                        onChange={(e): void => updateItem(index, { quantity: Math.max(0, parseInt(e.target.value) || 0) })}
                         min="0"
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -715,7 +715,7 @@ export function InvoiceForm({
                       <input
                         type="number"
                         value={item.unitPrice}
-                        onChange={(e) => updateItem(index, { unitPrice: Math.max(0, parseFloat(e.target.value) || 0) })}
+                        onChange={(e): void => updateItem(index, { unitPrice: Math.max(0, parseFloat(e.target.value) || 0) })}
                         min="0"
                         step="0.01"
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -733,7 +733,7 @@ export function InvoiceForm({
                       <input
                         type="number"
                         value={item.discount}
-                        onChange={(e) => updateItem(index, { discount: Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)) })}
+                        onChange={(e): void => updateItem(index, { discount: Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)) })}
                         min="0"
                         max="100"
                         step="0.01"
@@ -748,7 +748,7 @@ export function InvoiceForm({
                       </label>
                       <TaxRateSelector
                         value={item.taxRateId}
-                        onChange={(taxRateId, taxRate) => {
+                        onChange={(taxRateId, taxRate): void => {
                           updateItem(index, { 
                             taxRateId, 
                             taxRate 
@@ -762,7 +762,7 @@ export function InvoiceForm({
                     {/* Actions */}
                     <div className="col-span-1 flex items-end">
                       <button
-                        onClick={() => removeItem(index)}
+                        onClick={(): void => removeItem(index)}
                         aria-label="Remove item"
                         className="p-1 text-red-600 hover:bg-red-50 rounded"
                       >
@@ -838,7 +838,7 @@ export function InvoiceForm({
           <div className="bg-white p-6 rounded-lg border">
             <div className="space-y-3">
               <button
-                onClick={() => handleSubmit('SENT')}
+                onClick={(): void => handleSubmit('SENT')}
                 disabled={saving}
                 className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
@@ -847,7 +847,7 @@ export function InvoiceForm({
               </button>
               
               <button
-                onClick={() => handleSubmit('DRAFT')}
+                onClick={(): void => handleSubmit('DRAFT')}
                 disabled={saving}
                 className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
               >

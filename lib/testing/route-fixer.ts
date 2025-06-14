@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { RouteTestResult, RouteInfo } from './route-tester';
+import { NextRequest, NextResponse } from "next/server";
 
 export interface FixResult {
   route: RouteInfo;

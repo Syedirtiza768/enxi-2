@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Package, Grid3X3, TrendingUp, FileText, BarChart3, PackagePlus, PackageMinus, LineChart } from 'lucide-react'
 
-export function InventoryNav() {
+export function InventoryNav(): React.JSX.Element {
   const pathname = usePathname()
 
   const navItems = [

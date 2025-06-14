@@ -68,7 +68,7 @@ const justifyClasses = {
 
 export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ({ className, cols = 12, gap = 'md', align = 'stretch', justify = 'start', children, ...props }, ref) => {
-    const getColsClass = () => {
+    const getColsClass = (): void => {
       if (typeof cols === 'number') {
         return `grid-cols-${cols}`
       }
@@ -84,7 +84,7 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(
       return classes.join(' ')
     }
 
-    const getGapClass = () => {
+    const getGapClass = (): void => {
       if (typeof gap === 'string') {
         return gapClasses[gap]
       }
@@ -119,7 +119,7 @@ Grid.displayName = 'Grid'
 
 export const GridItem = forwardRef<HTMLDivElement, GridItemProps>(
   ({ className, span = 1, start, align = 'stretch', children, ...props }, ref) => {
-    const getSpanClass = () => {
+    const getSpanClass = (): void => {
       if (typeof span === 'number' || span === 'full') {
         return span === 'full' ? 'col-span-full' : `col-span-${span}`
       }
@@ -135,7 +135,7 @@ export const GridItem = forwardRef<HTMLDivElement, GridItemProps>(
       return classes.join(' ')
     }
 
-    const getStartClass = () => {
+    const getStartClass = (): void => {
       if (!start) return ''
       
       if (typeof start === 'number') {

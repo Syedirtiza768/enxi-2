@@ -1,3 +1,4 @@
+import type { SalesCaseMetrics } from '@/lib/services/sales-case.service'
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -26,19 +27,9 @@ interface SalesCase {
   closedAt?: string
 }
 
-interface SalesCaseMetrics {
-  totalCases: number
-  openCases: number
-  wonCases: number
-  lostCases: number
-  totalEstimatedValue: number
-  totalActualValue: number
-  totalProfit: number
-  averageWinRate: number
-  averageMargin: number
-}
+// SalesCaseMetrics moved to service
 
-export default function SalesCasesPage() {
+export default function SalesCasesPage(): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   
   const [salesCases, setSalesCases] = useState<SalesCase[]>([])
@@ -121,7 +112,7 @@ export default function SalesCasesPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
     setError('')
     setSubmitting(true)
@@ -149,7 +140,7 @@ export default function SalesCasesPage() {
     }
   }
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setFormData({
       customerId: '',
       title: '',
@@ -162,11 +153,11 @@ export default function SalesCasesPage() {
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string): void => {
     return new Date(date).toLocaleDateString()
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): void => {
     switch (status) {
       case 'OPEN':
         return 'bg-yellow-100 text-yellow-800'
@@ -193,7 +184,7 @@ export default function SalesCasesPage() {
           <p className="mt-1 text-sm text-gray-600">Manage your sales opportunities</p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={(): void => setShowForm(!showForm)}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           {showForm ? 'Cancel' : 'New Sales Case'}
@@ -247,13 +238,13 @@ export default function SalesCasesPage() {
             type="text"
             placeholder="Search cases..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e): void => setSearch(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => setStatusFilter('ALL')}
+            onClick={(): void => setStatusFilter('ALL')}
             className={`px-4 py-2 rounded-md ${
               statusFilter === 'ALL' 
                 ? 'bg-blue-600 text-white' 
@@ -263,7 +254,7 @@ export default function SalesCasesPage() {
             All
           </button>
           <button
-            onClick={() => setStatusFilter('OPEN')}
+            onClick={(): void => setStatusFilter('OPEN')}
             className={`px-4 py-2 rounded-md ${
               statusFilter === 'OPEN' 
                 ? 'bg-blue-600 text-white' 
@@ -273,7 +264,7 @@ export default function SalesCasesPage() {
             Open
           </button>
           <button
-            onClick={() => setStatusFilter('WON')}
+            onClick={(): void => setStatusFilter('WON')}
             className={`px-4 py-2 rounded-md ${
               statusFilter === 'WON' 
                 ? 'bg-blue-600 text-white' 
@@ -283,7 +274,7 @@ export default function SalesCasesPage() {
             Won
           </button>
           <button
-            onClick={() => setStatusFilter('LOST')}
+            onClick={(): void => setStatusFilter('LOST')}
             className={`px-4 py-2 rounded-md ${
               statusFilter === 'LOST' 
                 ? 'bg-blue-600 text-white' 
@@ -305,7 +296,7 @@ export default function SalesCasesPage() {
                 <label className="block text-sm font-medium text-gray-700">Customer *</label>
                 <select
                   value={formData.customerId}
-                  onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                  onChange={(e): void => setFormData({ ...formData, customerId: e.target.value })}
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
@@ -322,7 +313,7 @@ export default function SalesCasesPage() {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e): void => setFormData({ ...formData, title: e.target.value })}
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -332,7 +323,7 @@ export default function SalesCasesPage() {
                 <input
                   type="number"
                   value={formData.estimatedValue}
-                  onChange={(e) => setFormData({ ...formData, estimatedValue: parseFloat(e.target.value) || 0 })}
+                  onChange={(e): void => setFormData({ ...formData, estimatedValue: parseFloat(e.target.value) || 0 })}
                   min="0"
                   step="0.01"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -343,7 +334,7 @@ export default function SalesCasesPage() {
                 <input
                   type="text"
                   value={formData.assignedTo}
-                  onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+                  onChange={(e): void => setFormData({ ...formData, assignedTo: e.target.value })}
                   placeholder="User ID"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -352,7 +343,7 @@ export default function SalesCasesPage() {
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e): void => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
@@ -368,7 +359,7 @@ export default function SalesCasesPage() {
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
-                onClick={() => { setShowForm(false); resetForm() }}
+                onClick={(): void => { setShowForm(false); resetForm() }}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Cancel
@@ -478,14 +469,14 @@ export default function SalesCasesPage() {
         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={(): void => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={(): void => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -507,7 +498,7 @@ export default function SalesCasesPage() {
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  onClick={(): void => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -518,7 +509,7 @@ export default function SalesCasesPage() {
                 </button>
                 
                 {/* Page numbers */}
-                {(() => {
+                {((): void => {
                   const pages = []
                   const maxPagesToShow = 7
                   let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
@@ -532,7 +523,7 @@ export default function SalesCasesPage() {
                     pages.push(
                       <button
                         key={i}
-                        onClick={() => setCurrentPage(i)}
+                        onClick={(): void => setCurrentPage(i)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                           i === currentPage
                             ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
@@ -548,7 +539,7 @@ export default function SalesCasesPage() {
                 })()}
                 
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={(): void => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

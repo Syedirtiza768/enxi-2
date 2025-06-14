@@ -22,7 +22,7 @@ type ApiHandlerWithParams = (
  * Wrapper function that adds error handling to API routes
  */
 export function withErrorHandler(handler: ApiHandler): ApiHandler {
-  return async (request: NextRequest, context?: unknown) => {
+  return async (request: NextRequest, context?: unknown): void => {
     try {
       return await handler(request, context)
     } catch (error) {
@@ -40,7 +40,7 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
  * Wrapper function for API routes with params
  */
 export function withErrorHandlerParams(handler: ApiHandlerWithParams): ApiHandlerWithParams {
-  return async (request: NextRequest, context: { params: unknown }) => {
+  return async (request: NextRequest, context: { params: unknown }): void => {
     try {
       return await handler(request, context)
     } catch (error) {
@@ -58,7 +58,7 @@ export function withErrorHandlerParams(handler: ApiHandlerWithParams): ApiHandle
  * Performance monitoring wrapper
  */
 export function withPerformanceMonitoring(handler: ApiHandler): ApiHandler {
-  return async (request: NextRequest, context?: unknown) => {
+  return async (request: NextRequest, context?: unknown): void => {
     const startTime = Date.now()
     
     try {

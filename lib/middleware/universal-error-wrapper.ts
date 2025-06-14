@@ -18,7 +18,7 @@ export function withUniversalErrorHandling<T extends (...args: unknown[]) => Pro
   route: string,
   options: WrapperOptions = {}
 ): T {
-  return (async (request: NextRequest, ...args: unknown[]) => {
+  return (async (request: NextRequest, ...args: unknown[]): void => {
     const startTime = Date.now();
     const method = request.method;
     const requestId = crypto.randomUUID();
@@ -157,7 +157,7 @@ export function withUniversalErrorHandling<T extends (...args: unknown[]) => Pro
 /**
  * Quick wrapper for common API patterns
  */
-export const createApiHandler = (route: string, options?: WrapperOptions) => {
+export const createApiHandler = (route: string, options?: WrapperOptions): void => {
   return <T extends (...args: unknown[]) => Promise<NextResponse>>(handler: T): T => {
     return withUniversalErrorHandling(handler, route, options);
   };

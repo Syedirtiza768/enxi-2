@@ -59,7 +59,7 @@ interface SupplierListProps {
   embedded?: boolean
 }
 
-export function SupplierList({ onSelect, selectable = false, embedded = false }: SupplierListProps) {
+export function SupplierList({ onSelect, selectable = false, embedded = false }: SupplierListProps): React.JSX.Element {
   const router = useRouter()
   const { formatCurrency } = useCurrency()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -94,7 +94,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
     }
   }
 
-  const handleDeleteSupplier = async (supplierId: string) => {
+  const handleDeleteSupplier = async (supplierId: string): void => {
     if (!confirm('Are you sure you want to delete this supplier?')) return
 
     try {
@@ -109,7 +109,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string): JSX.Element => {
     const statusConfig = {
       ACTIVE: { label: 'Active', className: 'bg-green-100 text-green-800' },
       INACTIVE: { label: 'Inactive', className: 'bg-gray-100 text-gray-800' },
@@ -119,7 +119,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
     return <Badge className={config.className}>{config.label}</Badge>
   }
 
-  const getCategoryBadge = (category?: string) => {
+  const getCategoryBadge = (category?: string): JSX.Element | null => {
     if (!category) return null
     const categoryConfig = {
       MANUFACTURER: { label: 'Manufacturer', className: 'bg-blue-100 text-blue-800' },
@@ -145,13 +145,13 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
     return matchesSearch && matchesStatus
   })
 
-  const handleSupplierFormSuccess = () => {
+  const handleSupplierFormSuccess = (): void => {
     setShowSupplierForm(false)
     setSelectedSupplier(null)
     fetchSuppliers()
   }
 
-  const openSupplierForm = (mode: 'create' | 'edit' | 'view', supplier?: Supplier) => {
+  const openSupplierForm = (mode: 'create' | 'edit' | 'view', supplier?: Supplier): void => {
     setFormMode(mode)
     setSelectedSupplier(supplier || null)
     setShowSupplierForm(true)
@@ -199,7 +199,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => openSupplierForm('create')}>
+            <Button onClick={(): void => openSupplierForm('create')}>
               <Plus className="h-4 w-4 mr-2" />
               Add Supplier
             </Button>
@@ -217,7 +217,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
                 <Input
                   placeholder="Search suppliers by name, code, email, or contact person..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e): void => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -225,7 +225,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
             <div className="flex gap-2">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e): void => setStatusFilter(e.target.value)}
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm"
               >
                 <option value="ALL">All Status</option>
@@ -258,7 +258,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
               {searchTerm && (
                 <Button
                   variant="outline"
-                  onClick={() => setSearchTerm('')}
+                  onClick={(): void => setSearchTerm('')}
                   className="mt-2"
                 >
                   Clear Search
@@ -285,7 +285,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
                     <TableRow 
                       key={supplier.id}
                       className={selectable ? "cursor-pointer hover:bg-gray-50" : ""}
-                      onClick={selectable ? () => onSelect?.(supplier) : undefined}
+                      onClick={selectable ? (): void => onSelect?.(supplier) : undefined}
                     >
                       <TableCell>
                         <div>
@@ -354,16 +354,16 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openSupplierForm('view', supplier)}>
+                              <DropdownMenuItem onClick={(): void => openSupplierForm('view', supplier)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 View
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openSupplierForm('edit', supplier)}>
+                              <DropdownMenuItem onClick={(): void => openSupplierForm('edit', supplier)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => handleDeleteSupplier(supplier.id)}
+                                onClick={(): void => handleDeleteSupplier(supplier.id)}
                                 className="text-red-600"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />

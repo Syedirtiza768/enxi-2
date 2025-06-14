@@ -2,25 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import type { TrialBalance, TrialBalanceAccount, BalanceSheet, IncomeStatement, AccountBalance } from '@/lib/types/accounting.types'
 
-interface TrialBalanceAccount {
-  id: string
-  code: string
-  name: string
-  type: string
-  currency: string
-  debitBalance: number
-  creditBalance: number
-}
+// Interface moved to central types file
 
-interface TrialBalance {
-  asOfDate: string
-  currency: string
-  accounts: TrialBalanceAccount[]
-  totalDebits: number
-  totalCredits: number
-  isBalanced: boolean
-}
+// Interface moved to central types file
 
 export default function TrialBalancePage() {
   const [trialBalance, setTrialBalance] = useState<TrialBalance | null>(null)
@@ -68,10 +54,10 @@ export default function TrialBalancePage() {
     const grouped: Record<string, TrialBalanceAccount[]> = {}
     
     accounts.forEach(account => {
-      if (!grouped[account.type]) {
-        grouped[account.type] = []
+      if (!grouped[account.accountType]) {
+        grouped[account.accountType] = []
       }
-      grouped[account.type].push(account)
+      grouped[account.accountType].push(account)
     })
     
     return grouped
@@ -131,7 +117,7 @@ export default function TrialBalancePage() {
             <h3 className="text-lg font-medium text-gray-900">
               Trial Balance as of {new Date(trialBalance.asOfDate).toLocaleDateString()}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">Currency: {trialBalance.currency}</p>
+            <p className="mt-1 text-sm text-gray-500">Currency: {currency}</p>
           </div>
 
           <div className="overflow-x-auto">
@@ -161,12 +147,12 @@ export default function TrialBalancePage() {
                       </td>
                     </tr>
                     {accounts.map((account) => (
-                      <tr key={account.id}>
+                      <tr key={account.accountCode}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {account.code}
+                          {account.accountCode}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {account.name}
+                          {account.accountName}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
                           {account.debitBalance > 0 ? account.debitBalance.toFixed(2) : '-'}

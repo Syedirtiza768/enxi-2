@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export default function AccountingPage() {
+export default function AccountingPage(): React.JSX.Element {
   const accountingModules = [
     {
       title: 'Journal Entries',

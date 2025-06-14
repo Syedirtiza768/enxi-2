@@ -67,7 +67,7 @@ interface GoodsReceiptStats {
   rejectedItems: number
 }
 
-export default function GoodsReceiptsPage() {
+export default function GoodsReceiptsPage(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([])
   const [stats, setStats] = useState<GoodsReceiptStats>({
@@ -117,7 +117,7 @@ export default function GoodsReceiptsPage() {
     }
   }
 
-  const getStatusBadge = (status: GoodsReceipt['status']) => {
+  const getStatusBadge = (status: GoodsReceipt['status']): void => {
     const config = {
       PENDING: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
@@ -129,7 +129,7 @@ export default function GoodsReceiptsPage() {
     return <Badge className={className}>{label}</Badge>
   }
 
-  const getQualityBadge = (qualityStatus: string, rejectedQty: number) => {
+  const getQualityBadge = (qualityStatus: string, rejectedQty: number): void => {
     if (qualityStatus === 'REJECTED' || rejectedQty > 0) {
       return <Badge className="bg-red-100 text-red-800">Quality Issues</Badge>
     }
@@ -187,7 +187,7 @@ export default function GoodsReceiptsPage() {
             <Button
               variant="primary"
               leftIcon={<Plus />}
-              onClick={() => router.push('/goods-receipts/new')}
+              onClick={(): void => router.push('/goods-receipts/new')}
             >
               New Receipt
             </Button>
@@ -266,7 +266,7 @@ export default function GoodsReceiptsPage() {
                   <Input
                     placeholder="Search by receipt number, PO number, or supplier..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e): void => setSearch(e.target.value)}
                     leftIcon={<Search />}
                     fullWidth
                   />
@@ -274,7 +274,7 @@ export default function GoodsReceiptsPage() {
 
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e): void => setStatusFilter(e.target.value)}
                   className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[150px]"
                 >
                   <option value="all">All Status</option>
@@ -309,7 +309,7 @@ export default function GoodsReceiptsPage() {
                     <Button
                       variant="primary"
                       leftIcon={<Plus />}
-                      onClick={() => router.push('/goods-receipts/new')}
+                      onClick={(): void => router.push('/goods-receipts/new')}
                     >
                       New Receipt
                     </Button>
@@ -373,7 +373,7 @@ export default function GoodsReceiptsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push(`/goods-receipts/${receipt.id}`)}
+                            onClick={(): void => router.push(`/goods-receipts/${receipt.id}`)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>

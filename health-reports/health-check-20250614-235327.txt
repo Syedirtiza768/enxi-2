@@ -1,0 +1,9 @@
+Enxi ERP Health Check Report
+Date: Sat Jun 14 23:53:27 PKT 2025
+TypeScript Errors: 2331
+ESLint Errors: 0
+ESLint Warnings: 0
+Any Types:     1430
+TODOs:       43
+FIXMEs:        0
+Health Score: 50/100

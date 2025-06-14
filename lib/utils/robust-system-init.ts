@@ -2,7 +2,7 @@ import { globalErrorHandler } from './global-error-handler';
 
 let isInitialized = false;
 
-export function initializeRobustSystem() {
+export function initializeRobustSystem(): void {
   if (isInitialized) {
     console.warn('Robust system already initialized');
     return;

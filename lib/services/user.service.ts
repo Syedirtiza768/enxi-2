@@ -1,6 +1,14 @@
 import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
-import { Role, Prisma } from '@/lib/generated/prisma'
+import { 
+  Role, 
+  Prisma, 
+  User, 
+  UserProfile, 
+  UserSession,
+  UserPermission,
+  RolePermission
+} from '@/lib/generated/prisma'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -51,7 +59,7 @@ export class UserService extends BaseService {
 
   // ==================== USER CRUD ====================
 
-  async createUser(data: CreateUserDto, createdBy: string) {
+  async createUser(data: CreateUserDto, createdBy: string): Promise<User & { profile: UserProfile | null }> {
     return this.withLogging('createUser', async () => {
       const hashedPassword = await bcrypt.hash(data.password, 10)
 
@@ -88,7 +96,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async updateUser(userId: string, data: UpdateUserDto, updatedBy: string) {
+  async updateUser(userId: string, data: UpdateUserDto, updatedBy: string): Promise<User & { profile: UserProfile | null } | null> {
     return this.withLogging('updateUser', async () => {
       const existingUser = await prisma.user.findUnique({
         where: { id: userId },
@@ -147,7 +155,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async getUser(userId: string) {
+  async getUser(userId: string): Promise<User & { profile: UserProfile | null, _count: { sessions: number, userPermissions: number } }> {
     return this.withLogging('getUser', async () => {
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -170,7 +178,13 @@ export class UserService extends BaseService {
     })
   }
 
-  async listUsers(params: UserListParams) {
+  async listUsers(params: UserListParams): Promise<{
+    data: (User & { profile: UserProfile | null, _count: { sessions: number } })[]
+    total: number
+    page: number
+    limit: number
+    totalPages: number
+  }> {
     return this.withLogging('listUsers', async () => {
       const { page = 1, limit = 20, search, role, isActive, department } = params
 
@@ -215,7 +229,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async deactivateUser(userId: string, deactivatedBy: string) {
+  async deactivateUser(userId: string, deactivatedBy: string): Promise<User> {
     return this.withLogging('deactivateUser', async () => {
       const user = await prisma.user.update({
         where: { id: userId },
@@ -242,7 +256,7 @@ export class UserService extends BaseService {
 
   // ==================== AUTHENTICATION ====================
 
-  async login(data: LoginDto) {
+  async login(data: LoginDto): Promise<{ user: User & { profile: UserProfile | null }, session: UserSession }> {
     return this.withLogging('login', async () => {
       const user = await prisma.user.findUnique({
         where: { email: data.email },
@@ -315,7 +329,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async logout(sessionToken: string) {
+  async logout(sessionToken: string): Promise<void> {
     return this.withLogging('logout', async () => {
       const session = await prisma.userSession.findUnique({
         where: { token: sessionToken },
@@ -337,7 +351,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async validateSession(token: string) {
+  async validateSession(token: string): Promise<UserSession & { user: User }> {
     return this.withLogging('validateSession', async () => {
       const session = await prisma.userSession.findUnique({
         where: { token },
@@ -423,7 +437,7 @@ export class UserService extends BaseService {
     return permissions.includes(permissionCode)
   }
 
-  async assignPermission(userId: string, permissionCode: string, assignedBy: string, expiresAt?: Date) {
+  async assignPermission(userId: string, permissionCode: string, assignedBy: string, expiresAt?: Date): Promise<UserPermission> {
     return this.withLogging('assignPermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },
@@ -455,7 +469,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async revokePermission(userId: string, permissionCode: string, revokedBy: string) {
+  async revokePermission(userId: string, permissionCode: string, revokedBy: string): Promise<void> {
     return this.withLogging('revokePermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },
@@ -487,7 +501,7 @@ export class UserService extends BaseService {
 
   // ==================== SESSION MANAGEMENT ====================
 
-  async getUserSessions(userId: string) {
+  async getUserSessions(userId: string): Promise<UserSession[]> {
     return this.withLogging('getUserSessions', async () => {
       return prisma.userSession.findMany({
         where: {
@@ -499,7 +513,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async revokeSession(sessionId: string, revokedBy: string) {
+  async revokeSession(sessionId: string, revokedBy: string): Promise<void> {
     return this.withLogging('revokeSession', async () => {
       const session = await prisma.userSession.delete({
         where: { id: sessionId },
@@ -516,7 +530,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async revokeAllSessions(userId: string, revokedBy: string) {
+  async revokeAllSessions(userId: string, revokedBy: string): Promise<Prisma.BatchPayload> {
     return this.withLogging('revokeAllSessions', async () => {
       const result = await prisma.userSession.deleteMany({
         where: { userId },
@@ -537,7 +551,7 @@ export class UserService extends BaseService {
 
   // ==================== PASSWORD MANAGEMENT ====================
 
-  async resetPassword(userId: string, newPassword: string, resetBy: string) {
+  async resetPassword(userId: string, newPassword: string, resetBy: string): Promise<void> {
     return this.withLogging('resetPassword', async () => {
       const hashedPassword = await bcrypt.hash(newPassword, 10)
 
@@ -561,7 +575,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     return this.withLogging('changePassword', async () => {
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -595,7 +609,7 @@ export class UserService extends BaseService {
 
   // ==================== ACTIVITY MONITORING ====================
 
-  async getUserActivity(userId: string, days: number = 30) {
+  async getUserActivity(userId: string, days: number = 30): Promise<any[]> {
     return this.withLogging('getUserActivity', async () => {
       const since = new Date()
       since.setDate(since.getDate() - days)
@@ -617,7 +631,7 @@ export class UserService extends BaseService {
     userId?: string
     since?: Date
     limit?: number
-  }) {
+  }): Promise<any[]> {
     return this.withLogging('getSystemActivity', async () => {
       const { action, entityType, userId, since, limit = 100 } = params
 
@@ -646,7 +660,7 @@ export class UserService extends BaseService {
     metadata?: Record<string, unknown>
     beforeData?: Record<string, unknown>
     afterData?: Record<string, unknown>
-  }) {
+  }): Promise<void> {
     await prisma.auditLog.create({
       data: {
         userId: data.userId,
@@ -682,7 +696,11 @@ export class UserService extends BaseService {
     })
   }
 
-  async getIndividualPermissions(userId: string) {
+  async getIndividualPermissions(userId: string): Promise<Array<{
+    id: string
+    permission: any
+    granted: boolean
+  }>> {
     return this.withLogging('getIndividualPermissions', async () => {
       const userPermissions = await prisma.userPermission.findMany({
         where: { userId },
@@ -697,7 +715,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async removeUserPermission(userId: string, permissionCode: string, actionByUserId: string) {
+  async removeUserPermission(userId: string, permissionCode: string, actionByUserId: string): Promise<void> {
     return this.withLogging('removeUserPermission', async () => {
       // Find the permission
       const permission = await prisma.permission.findUnique({
@@ -741,7 +759,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async assignRolePermission(role: Role, permissionCode: string, assignedBy: string) {
+  async assignRolePermission(role: Role, permissionCode: string, assignedBy: string): Promise<RolePermission> {
     return this.withLogging('assignRolePermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },
@@ -785,7 +803,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async revokeRolePermission(role: Role, permissionCode: string, revokedBy: string) {
+  async revokeRolePermission(role: Role, permissionCode: string, revokedBy: string): Promise<void> {
     return this.withLogging('revokeRolePermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },

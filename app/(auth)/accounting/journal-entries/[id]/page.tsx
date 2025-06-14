@@ -87,7 +87,7 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
   }, [loadJournalEntry])
 
 
-  const handlePost = async (): Promise<NextResponse> => {
+  const handlePost = async (): Promise<void> => {
     if (!journalEntry || journalEntry.status !== 'DRAFT') return
 
     try {

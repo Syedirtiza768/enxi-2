@@ -79,7 +79,7 @@ interface Shipment {
   items: ShipmentItem[]
 }
 
-export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
+export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const { user } = useAuth()
   const [shipment, setShipment] = useState<Shipment | null>(null)
@@ -102,10 +102,6 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     trackingNumber: '',
     shippingMethod: '',
   })
-
-  useEffect(() => {
-    fetchShipment()
-  }, [shipmentId, fetchShipment])
 
   const fetchShipment = useCallback(async () => {
     try {
@@ -131,7 +127,11 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }, [shipmentId])
 
-  const handleConfirmShipment = async (): Promise<unknown> => {
+  useEffect(() => {
+    fetchShipment()
+  }, [shipmentId, fetchShipment])
+
+  const handleConfirmShipment = async (): Promise<void> => {
     if (!user) return
 
     try {
@@ -203,7 +203,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const handleUpdateTracking: () => Promise<void>= async() => {
+  const handleUpdateTracking: () => Promise<void>= async(): void => {
     try {
       setActionLoading(true)
       const response = await api.put(`/api/shipments/${shipmentId}`, trackingData)
@@ -221,7 +221,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string): void => {
     switch (status) {
       case 'PREPARING':
         return <Clock className="w-5 h-5" />
@@ -239,7 +239,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): void => {
     switch (status) {
       case 'PREPARING':
         return 'bg-yellow-100 text-yellow-800'
@@ -257,7 +257,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
     }
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -307,7 +307,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={() => router.back()}
+            onClick={(): void => router.back()}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -345,7 +345,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Input
                       id="carrier"
                       value={trackingData.carrier}
-                      onChange={(e) => setTrackingData(prev => ({
+                      onChange={(e): void => setTrackingData(prev => ({
                         ...prev,
                         carrier: e.target.value
                       }))}
@@ -357,7 +357,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Input
                       id="trackingNumber"
                       value={trackingData.trackingNumber}
-                      onChange={(e) => setTrackingData(prev => ({
+                      onChange={(e): void => setTrackingData(prev => ({
                         ...prev,
                         trackingNumber: e.target.value
                       }))}
@@ -369,7 +369,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Input
                       id="shippingMethod"
                       value={trackingData.shippingMethod}
-                      onChange={(e) => setTrackingData(prev => ({
+                      onChange={(e): void => setTrackingData(prev => ({
                         ...prev,
                         shippingMethod: e.target.value
                       }))}
@@ -379,7 +379,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={() => setShowEditTrackingDialog(false)}
+                      onClick={(): void => setShowEditTrackingDialog(false)}
                       disabled={actionLoading}
                     >
                       Cancel
@@ -417,7 +417,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                 <div className="flex justify-end space-x-2 mt-4">
                   <Button 
                     variant="outline" 
-                    onClick={() => setShowConfirmDialog(false)}
+                    onClick={(): void => setShowConfirmDialog(false)}
                     disabled={actionLoading}
                   >
                     Cancel
@@ -451,7 +451,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Input
                       id="recipientName"
                       value={recipientName}
-                      onChange={(e) => setRecipientName(e.target.value)}
+                      onChange={(e): void => setRecipientName(e.target.value)}
                       placeholder="Who received the package?"
                     />
                   </div>
@@ -460,7 +460,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Textarea
                       id="deliveryNotes"
                       value={deliveryNotes}
-                      onChange={(e) => setDeliveryNotes(e.target.value)}
+                      onChange={(e): void => setDeliveryNotes(e.target.value)}
                       placeholder="Left at front door, signed by John, etc."
                       rows={3}
                     />
@@ -468,7 +468,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={() => setShowDeliverDialog(false)}
+                      onClick={(): void => setShowDeliverDialog(false)}
                       disabled={actionLoading}
                     >
                       Cancel
@@ -503,7 +503,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                     <Textarea
                       id="cancelReason"
                       value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
+                      onChange={(e): void => setCancelReason(e.target.value)}
                       placeholder="Please provide a reason for cancellation..."
                       rows={3}
                       required
@@ -512,7 +512,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps) {
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={() => setShowCancelDialog(false)}
+                      onClick={(): void => setShowCancelDialog(false)}
                       disabled={actionLoading}
                     >
                       Keep Shipment

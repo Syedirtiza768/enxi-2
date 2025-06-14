@@ -36,7 +36,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-export default function DesignSystemPage() {
+export default function DesignSystemPage(): React.JSX.Element {
   const [modalOpen, setModalOpen] = React.useState(false)
   const [formData, setFormData] = React.useState({
     email: '',
@@ -219,7 +219,7 @@ export default function DesignSystemPage() {
             <Heading as="h2">Form Elements</Heading>
           </CardHeader>
           <CardContent>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={(e): void => e.preventDefault()}>
               <VStack gap="lg">
                 <Grid cols={{ xs: 1, md: 2 }} gap="lg">
                   <GridItem>
@@ -228,7 +228,7 @@ export default function DesignSystemPage() {
                       type="email"
                       placeholder="john@example.com"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e): void => setFormData({ ...formData, email: e.target.value })}
                       leftIcon={<Mail />}
                       required
                     />
@@ -239,7 +239,7 @@ export default function DesignSystemPage() {
                       type="password"
                       placeholder="Enter your password"
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e): void => setFormData({ ...formData, password: e.target.value })}
                       leftIcon={<Lock />}
                       hint="Must be at least 8 characters"
                       required
@@ -250,7 +250,7 @@ export default function DesignSystemPage() {
                       label="Full Name"
                       placeholder="John Doe"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e): void => setFormData({ ...formData, name: e.target.value })}
                       leftIcon={<User />}
                     />
                   </GridItem>
@@ -264,7 +264,7 @@ export default function DesignSystemPage() {
                         { value: 'guest', label: 'Guest', disabled: true }
                       ]}
                       value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      onChange={(e): void => setFormData({ ...formData, role: e.target.value })}
                       placeholder="Select a role"
                     />
                   </GridItem>
@@ -274,7 +274,7 @@ export default function DesignSystemPage() {
                   label="Bio"
                   placeholder="Tell us about yourself..."
                   value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  onChange={(e): void => setFormData({ ...formData, bio: e.target.value })}
                   rows={4}
                   showCount
                   maxLength={200}
@@ -286,7 +286,7 @@ export default function DesignSystemPage() {
                     <Checkbox
                       label="Subscribe to newsletter"
                       checked={formData.subscribe}
-                      onChange={(e) => setFormData({ ...formData, subscribe: e.target.checked })}
+                      onChange={(e): void => setFormData({ ...formData, subscribe: e.target.checked })}
                       hint="Get weekly updates about new features"
                     />
 
@@ -294,7 +294,7 @@ export default function DesignSystemPage() {
                       name="notifications"
                       label="Notification Preferences"
                       value={formData.notifications}
-                      onChange={(value) => setFormData({ ...formData, notifications: value })}
+                      onChange={(value): void => setFormData({ ...formData, notifications: value })}
                       options={[
                         { value: 'email', label: 'Email notifications' },
                         { value: 'sms', label: 'SMS notifications' },
@@ -305,7 +305,7 @@ export default function DesignSystemPage() {
                     <Switch
                       label="Enable dark mode"
                       checked={formData.theme}
-                      onChange={(checked) => setFormData({ ...formData, theme: checked })}
+                      onChange={(checked): void => setFormData({ ...formData, theme: checked })}
                     />
                   </VStack>
                 </div>
@@ -317,7 +317,7 @@ export default function DesignSystemPage() {
                     <Input
                       label="Username"
                       value="admin"
-                      onChange={() => {}} // Read-only for demo
+                      onChange={(): void => {}} // Read-only for demo
                       error="This username is already taken"
                       readOnly
                     />
@@ -325,13 +325,13 @@ export default function DesignSystemPage() {
                       label="Country"
                       options={[{ value: 'us', label: 'United States' }]}
                       value=""
-                      onChange={() => {}} // Read-only for demo
+                      onChange={(): void => {}} // Read-only for demo
                       error="Please select your country"
                     />
                     <Textarea
                       label="Message"
                       value=""
-                      onChange={() => {}} // Read-only for demo
+                      onChange={(): void => {}} // Read-only for demo
                       error="Message is required"
                       readOnly
                     />
@@ -454,7 +454,7 @@ export default function DesignSystemPage() {
               </GridItem>
 
               <GridItem>
-                <Card clickable onClick={() => alert('Card clicked!')}>
+                <Card clickable onClick={(): void => alert('Card clicked!')}>
                   <CardHeader action={<Badge variant="success">New</Badge>}>
                     <Heading as="h4">Clickable Card</Heading>
                   </CardHeader>
@@ -489,7 +489,7 @@ export default function DesignSystemPage() {
           </CardHeader>
           <CardContent>
             <HStack gap="md">
-              <Button onClick={() => setModalOpen(true)}>
+              <Button onClick={(): void => setModalOpen(true)}>
                 Open Modal
               </Button>
             </HStack>
@@ -523,12 +523,12 @@ export default function DesignSystemPage() {
         description="This is an example modal demonstrating the design system."
         footer={
           <>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={(): void => setModalOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="primary"
-              onClick={() => {
+              onClick={(): void => {
                 alert('Confirmed!')
                 setModalOpen(false)
               }}

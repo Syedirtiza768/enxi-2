@@ -19,7 +19,7 @@ export function PageLayout({
   containerSize = 'lg',
   maxWidth = 'max-w-6xl',
   centered = true
-}: PageLayoutProps) {
+}: PageLayoutProps): React.JSX.Element {
   return (
     <div className="w-full min-h-full flex flex-col">
       <Container size={containerSize} padding="lg" className="mx-auto">
@@ -47,7 +47,7 @@ interface PageHeaderProps {
   centered?: boolean
 }
 
-export function PageHeader({ title, description, actions, centered = true }: PageHeaderProps) {
+export function PageHeader({ title, description, actions, centered = true }: PageHeaderProps): React.JSX.Element {
   return (
     <div className={cn(
       'w-full',
@@ -78,7 +78,7 @@ interface PageSectionProps {
   className?: string
 }
 
-export function PageSection({ children, className }: PageSectionProps) {
+export function PageSection({ children, className }: PageSectionProps): React.JSX.Element {
   return (
     <div className={cn('w-full', className)}>
       {children}

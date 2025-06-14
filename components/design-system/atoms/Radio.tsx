@@ -156,7 +156,7 @@ export function RadioGroup({
   orientation = 'vertical',
   radioSize = 'md',
   required
-}: RadioGroupProps) {
+}: RadioGroupProps): React.JSX.Element {
   const groupId = React.useId()
 
   return (
@@ -189,7 +189,7 @@ export function RadioGroup({
             name={name}
             value={option.value}
             checked={value === option.value}
-            onChange={(e) => onChange?.(e.target.value)}
+            onChange={(e): void => onChange?.(e.target.value)}
             label={option.label}
             hint={option.hint}
             disabled={option.disabled}

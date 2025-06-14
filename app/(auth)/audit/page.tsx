@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { format, subDays, subMonths } from 'date-fns'
 
-export default function AuditDashboard() {
+export default function AuditDashboard(): React.JSX.Element {
   const [selectedPeriod, setSelectedPeriod] = useState('month')
   
   // Get current date ranges
@@ -146,7 +146,7 @@ export default function AuditDashboard() {
                 key={period}
                 variant={selectedPeriod === period ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setSelectedPeriod(period)}
+                onClick={(): void => setSelectedPeriod(period)}
                 className={`${selectedPeriod === period ? '' : 'border-0'}`}
               >
                 {period.charAt(0).toUpperCase() + period.slice(1)}

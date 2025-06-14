@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
+import type { StockMovement, InventoryItem } from '@/lib/types'
 
 interface QuotationItem {
   id: string
@@ -22,17 +23,7 @@ interface QuotationItem {
   totalAmount: number
 }
 
-interface InventoryItem {
-  id: string
-  code: string
-  name: string
-  type: 'PRODUCT' | 'SERVICE' | 'RAW_MATERIAL'
-  listPrice: number
-  standardCost: number
-  category: {
-    name: string
-  }
-}
+// Interface moved to central types file
 
 interface SimpleItemEditorProps {
   quotationItems: QuotationItem[]
@@ -40,7 +31,7 @@ interface SimpleItemEditorProps {
   disabled?: boolean
 }
 
-export function SimpleItemEditor({ quotationItems, onChange, disabled = false }: SimpleItemEditorProps) {
+export function SimpleItemEditor({ quotationItems, onChange, disabled = false }: SimpleItemEditorProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -77,7 +68,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
   }, [])
 
   // Helper functions
-  const generateId = () => Math.random().toString(36).substr(2, 9)
+  const generateId = (): void => Math.random().toString(36).substr(2, 9)
 
   const calculateItemAmounts = (item: Partial<QuotationItem>): QuotationItem => {
     const quantity = item.quantity || 0
@@ -112,7 +103,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
   // formatCurrency function removed - use useCurrency hook instead
 
   // Item management functions
-  const addQuotationItem = (fromInventoryItem?: InventoryItem) => {
+  const addQuotationItem = (fromInventoryItem?: InventoryItem): void => {
     const newItem = calculateItemAmounts({
       id: generateId(),
       itemId: fromInventoryItem?.id,
@@ -129,7 +120,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
     setShowInventorySelector(false)
   }
 
-  const updateQuotationItem = (itemId: string, updates: Partial<QuotationItem>) => {
+  const updateQuotationItem = (itemId: string, updates: Partial<QuotationItem>): void => {
     const updatedItems = quotationItems.map(item => {
       if (item.id === itemId) {
         return calculateItemAmounts({ ...item, ...updates })
@@ -139,7 +130,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
     onChange(updatedItems)
   }
 
-  const removeQuotationItem = (itemId: string) => {
+  const removeQuotationItem = (itemId: string): void => {
     const updatedItems = quotationItems.filter(item => item.id !== itemId)
     onChange(updatedItems)
   }
@@ -158,7 +149,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
         <h3 className="text-lg font-medium text-gray-900">Quotation Items</h3>
         <div className="flex space-x-2">
           <button
-            onClick={() => setShowInventorySelector(!showInventorySelector)}
+            onClick={(): void => setShowInventorySelector(!showInventorySelector)}
             disabled={disabled}
             className="flex items-center px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
           >
@@ -166,7 +157,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
             Add from Inventory
           </button>
           <button
-            onClick={() => addQuotationItem()}
+            onClick={(): void => addQuotationItem()}
             disabled={disabled}
             className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
@@ -184,7 +175,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
             {inventoryItems.map(item => (
               <button
                 key={item.id}
-                onClick={() => addQuotationItem(item)}
+                onClick={(): void => addQuotationItem(item)}
                 className="text-left p-3 border border-gray-200 rounded-md hover:bg-white hover:border-blue-300"
               >
                 <div className="font-medium text-sm">{item.code}</div>
@@ -220,7 +211,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                   <input
                     type="text"
                     value={item.itemCode}
-                    onChange={(e) => updateQuotationItem(item.id, { itemCode: e.target.value })}
+                    onChange={(e): void => updateQuotationItem(item.id, { itemCode: e.target.value })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -232,7 +223,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                   <input
                     type="text"
                     value={item.description}
-                    onChange={(e) => updateQuotationItem(item.id, { description: e.target.value })}
+                    onChange={(e): void => updateQuotationItem(item.id, { description: e.target.value })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -246,7 +237,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                     min="0"
                     step="0.01"
                     value={item.quantity}
-                    onChange={(e) => updateQuotationItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateQuotationItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -260,7 +251,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                     min="0"
                     step="0.01"
                     value={item.unitPrice}
-                    onChange={(e) => updateQuotationItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateQuotationItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -275,7 +266,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                     </div>
                   </div>
                   <button
-                    onClick={() => removeQuotationItem(item.id)}
+                    onClick={(): void => removeQuotationItem(item.id)}
                     disabled={disabled}
                     className="ml-2 p-1 text-red-600 hover:text-red-800 disabled:opacity-50"
                   >
@@ -294,7 +285,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                     max="100"
                     step="0.01"
                     value={item.discount || 0}
-                    onChange={(e) => updateQuotationItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateQuotationItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -308,7 +299,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                     max="100"
                     step="0.01"
                     value={item.taxRate || 0}
-                    onChange={(e) => updateQuotationItem(item.id, { taxRate: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateQuotationItem(item.id, { taxRate: parseFloat(e.target.value) || 0 })}
                     disabled={disabled}
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"
                   />
@@ -319,7 +310,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
                   <input
                     type="text"
                     value={item.internalDescription || ''}
-                    onChange={(e) => updateQuotationItem(item.id, { internalDescription: e.target.value })}
+                    onChange={(e): void => updateQuotationItem(item.id, { internalDescription: e.target.value })}
                     disabled={disabled}
                     placeholder="Internal notes (not visible to client)"
                     className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50"

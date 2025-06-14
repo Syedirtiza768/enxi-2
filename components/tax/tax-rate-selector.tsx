@@ -21,7 +21,7 @@ export function TaxRateSelector({
   disabled = false,
   required = false,
   placeholder = 'Select tax rate'
-}: TaxRateSelectorProps) {
+}: TaxRateSelectorProps): React.JSX.Element {
   const [taxRates, setTaxRates] = useState<TaxRate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -56,7 +56,7 @@ export function TaxRateSelector({
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const selectedId = e.target.value
     const selectedRate = taxRates.find(rate => rate.id === selectedId)
     

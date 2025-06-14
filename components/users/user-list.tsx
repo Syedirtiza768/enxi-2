@@ -60,7 +60,7 @@ interface UserListResponse {
   totalPages: number
 }
 
-export function UserList() {
+export function UserList(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -120,7 +120,7 @@ export function UserList() {
     }
   }, [search, page, fetchUsers])
 
-  const getRoleBadge = (role: Role) => {
+  const getRoleBadge = (role: Role): void => {
     const roleConfig = {
       SUPER_ADMIN: { label: 'Super Admin', color: 'bg-red-100 text-red-800' },
       ADMIN: { label: 'Admin', color: 'bg-purple-100 text-purple-800' },
@@ -140,7 +140,7 @@ export function UserList() {
     )
   }
 
-  const getStatusBadge = (isActive: boolean) => {
+  const getStatusBadge = (isActive: boolean): void => {
     return (
       <Badge className={isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
         {isActive ? (
@@ -158,7 +158,7 @@ export function UserList() {
     )
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -166,7 +166,7 @@ export function UserList() {
     })
   }
 
-  const getDisplayName = (user: User) => {
+  const getDisplayName = (user: User): void => {
     if (user.profile?.firstName || user.profile?.lastName) {
       return `${user.profile.firstName || ''} ${user.profile.lastName || ''}`.trim()
     }
@@ -197,14 +197,14 @@ export function UserList() {
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            onClick={() => router.push('/roles')}
+            onClick={(): void => router.push('/roles')}
             className="flex items-center space-x-2"
           >
             <Shield className="w-4 h-4" />
             <span>Manage Roles</span>
           </Button>
           <Button
-            onClick={() => router.push('/users/new')}
+            onClick={(): void => router.push('/users/new')}
             className="flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
@@ -226,7 +226,7 @@ export function UserList() {
               <Input
                 placeholder="Search users..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e): void => setSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -343,7 +343,7 @@ export function UserList() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/users/${user.id}`)}
+                          onClick={(): void => router.push(`/users/${user.id}`)}
                         >
                           <Settings className="w-4 h-4" />
                         </Button>
@@ -368,7 +368,7 @@ export function UserList() {
                     : 'Get started by creating your first user'}
                 </p>
                 {!search && roleFilter === 'all' && statusFilter === 'all' && (
-                  <Button onClick={() => router.push('/users/new')}>
+                  <Button onClick={(): void => router.push('/users/new')}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add User
                   </Button>
@@ -389,7 +389,7 @@ export function UserList() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onClick={(): void => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1 || loading}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -398,7 +398,7 @@ export function UserList() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              onClick={(): void => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages || loading}
             >
               Next

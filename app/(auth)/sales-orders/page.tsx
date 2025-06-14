@@ -48,7 +48,7 @@ interface SalesOrder {
   promisedDate?: string
 }
 
-export default function SalesOrdersPage() {
+export default function SalesOrdersPage(): React.JSX.Element {
   
   const { formatCurrency } = useCurrency()
 const [orders, setOrders] = useState<SalesOrder[]>([])
@@ -124,7 +124,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
     totalValue: safeOrders.reduce((sum, o) => sum + o.totalAmount, 0)
   }
 
-  const getStatusIcon = (status: SalesOrder['status']) => {
+  const getStatusIcon = (status: SalesOrder['status']): void => {
     switch (status) {
       case 'PENDING': return <Clock className="h-4 w-4" />
       case 'APPROVED': return <CheckCircle className="h-4 w-4" />
@@ -139,7 +139,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
     }
   }
 
-  const getStatusBadge = (status: SalesOrder['status']) => {
+  const getStatusBadge = (status: SalesOrder['status']): void => {
     const statusConfig = {
       PENDING: { text: 'Pending', variant: 'secondary' as const },
       APPROVED: { text: 'Approved', variant: 'primary' as const },
@@ -163,7 +163,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string | undefined) => {
+  const formatDate = (date: string | undefined): void => {
     if (!date) return '-'
     return new Date(date).toLocaleDateString()
   }
@@ -214,7 +214,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <Button
                 variant="primary"
                 leftIcon={<Plus />}
-                onClick={() => window.location.href = '/sales-orders/new'}
+                onClick={(): void => window.location.href = '/sales-orders/new'}
               >
                 New Order
               </Button>
@@ -306,7 +306,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
                 <Input
                   placeholder="Search orders..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e): void => setSearch(e.target.value)}
                   leftIcon={<Search />}
                   fullWidth
                 />
@@ -315,7 +315,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <div className="sm:w-48">
                 <Select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e): void => setStatusFilter(e.target.value)}
                   options={[
                     { value: 'all', label: 'All Status' },
                     { value: 'PENDING', label: 'Pending' },
@@ -335,7 +335,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
               <div className="sm:w-48">
                 <Select
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  onChange={(e): void => setDateFilter(e.target.value)}
                   options={[
                     { value: '7', label: 'Last 7 days' },
                     { value: '30', label: 'Last 30 days' },
@@ -369,7 +369,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
                   <Button
                     variant="primary"
                     leftIcon={<Plus />}
-                    onClick={() => window.location.href = '/sales-orders/new'}
+                    onClick={(): void => window.location.href = '/sales-orders/new'}
                   >
                     New Order
                   </Button>
@@ -411,7 +411,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
                 <tr 
                   key={order.id} 
                   className="hover:bg-[var(--bg-secondary)] cursor-pointer transition-colors duration-[var(--transition-fast)]"
-                  onClick={() => window.location.href = `/sales-orders/${order.id}`}
+                  onClick={(): void => window.location.href = `/sales-orders/${order.id}`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-[var(--text-primary)]">{order.orderNumber}</div>

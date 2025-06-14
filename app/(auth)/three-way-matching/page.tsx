@@ -3,7 +3,7 @@
 import { PageLayout, PageHeader, VStack } from '@/components/design-system'
 import { ThreeWayMatchingDashboard } from '@/components/three-way-matching/three-way-matching-dashboard'
 
-export default function ThreeWayMatchingPage() {
+export default function ThreeWayMatchingPage(): React.JSX.Element {
   return (
     <PageLayout>
       <VStack gap="xl" className="py-6">

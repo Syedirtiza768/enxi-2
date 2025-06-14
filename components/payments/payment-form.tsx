@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+// Accessibility components - commented out until implemented
 // import { AccessibleForm, FormFieldGroup } from '@/components/accessibility/AccessibleForm'
 // import { AccessibleInput } from '@/components/accessibility/AccessibleInput'
 // import { AccessibleButton } from '@/components/accessibility/AccessibleButton'
@@ -16,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { apiClient } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { AlertCircle, Banknote, CreditCard, Building2, Globe, Laptop, CheckCircle2, Loader2 } from 'lucide-react'
+import type { FormErrors } from '@/lib/types'
 import { 
   currencyAmountValidator,
   paymentMethodValidator,
@@ -52,19 +54,7 @@ interface PaymentFormData {
   notes: string
 }
 
-interface FormErrors {
-  amount?: string
-  paymentMethod?: string
-  paymentDate?: string
-  reference?: string
-  checkNumber?: string
-  bankName?: string
-  transactionId?: string
-  last4Digits?: string
-  accountNumber?: string
-  notes?: string
-  general?: string
-}
+// FieldValidationStatus interface moved to local definition
 
 type FieldStatus = 'idle' | 'checking' | 'valid' | 'error'
 
@@ -177,22 +167,22 @@ export function PaymentForm({
     // Validate amount
     if (formData.amount && formData.amount > 0) {
       const amountError = validateField('amount', formData.amount)
-      initialStatus.amount = amountError ? 'error' : 'valid'
+      initialStatus.amount = amountError ? 'error' as const : 'valid' as const
     }
     
     // Validate payment method
     if (formData.paymentMethod) {
-      initialStatus.paymentMethod = 'valid'
+      initialStatus.paymentMethod = 'valid' as const
     }
     
     // Validate payment date
     if (formData.paymentDate) {
       const dateError = validateField('paymentDate', formData.paymentDate)
-      initialStatus.paymentDate = dateError ? 'error' : 'valid'
+      initialStatus.paymentDate = dateError ? 'error' as const : 'valid' as const
     }
     
     setFieldStatus(initialStatus)
-  }, [validateField])
+  }, [])
 
   // Real-time field validation
   const validateField = useCallback((field: keyof FormErrors, value: unknown): string | null => {
@@ -218,15 +208,16 @@ export function PaymentForm({
         const methodError = validateRequired(value, 'Payment method')
         if (methodError) return methodError
         const validMethods = PAYMENT_METHODS.map(m => m.value)
-        if (!validMethods.includes(value)) {
+        if (!validMethods.includes(value as string)) {
           return 'Invalid payment method'
         }
         return null
 
       case 'paymentDate':
-        const dateError = validateRequired(value, 'Payment date')
+        const dateValue = value as string
+        const dateError = validateRequired(dateValue, 'Payment date')
         if (dateError) return dateError
-        const paymentDate = new Date(value)
+        const paymentDate = new Date(dateValue)
         const today = new Date()
         today.setHours(23, 59, 59, 999)
         const minDate = new Date()
@@ -244,11 +235,12 @@ export function PaymentForm({
         return null
 
       case 'reference':
-        if (value) {
-          const lengthError = checkMaxLength(value, MAX_REFERENCE_LENGTH, 'Reference')
+        const refValue = value as string
+        if (refValue) {
+          const lengthError = checkMaxLength(refValue, MAX_REFERENCE_LENGTH, 'Reference')
           if (lengthError) return lengthError
           if (['BANK_TRANSFER', 'WIRE_TRANSFER'].includes(formData.paymentMethod)) {
-            if (!BANK_REFERENCE_PATTERN.test(value)) {
+            if (!BANK_REFERENCE_PATTERN.test(refValue)) {
               return 'Reference must be 6-20 alphanumeric characters (hyphens allowed)'
             }
           }
@@ -257,9 +249,10 @@ export function PaymentForm({
 
       case 'checkNumber':
         if (formData.paymentMethod === 'CHECK') {
-          const checkError = validateRequired(value, 'Check number')
+          const checkValue = value as string
+          const checkError = validateRequired(checkValue, 'Check number')
           if (checkError) return checkError
-          if (!CHECK_NUMBER_PATTERN.test(value)) {
+          if (!CHECK_NUMBER_PATTERN.test(checkValue)) {
             return 'Check number must be 4-10 digits only'
           }
         }
@@ -267,40 +260,45 @@ export function PaymentForm({
 
       case 'bankName':
         if (['BANK_TRANSFER', 'WIRE_TRANSFER'].includes(formData.paymentMethod)) {
-          const bankError = validateRequired(value, 'Bank name')
+          const bankValue = value as string
+          const bankError = validateRequired(bankValue, 'Bank name')
           if (bankError) return bankError
-          const lengthError = checkMaxLength(value, MAX_BANK_NAME_LENGTH, 'Bank name')
+          const lengthError = checkMaxLength(bankValue, MAX_BANK_NAME_LENGTH, 'Bank name')
           if (lengthError) return lengthError
         }
         return null
 
       case 'accountNumber':
-        if (value && !ACCOUNT_NUMBER_PATTERN.test(value)) {
+        const accountValue = value as string
+        if (accountValue && !ACCOUNT_NUMBER_PATTERN.test(accountValue)) {
           return 'Account number must be 1-4 digits'
         }
         return null
 
       case 'transactionId':
         if (formData.paymentMethod === 'ONLINE') {
-          const transError = validateRequired(value, 'Transaction ID')
+          const transValue = value as string
+          const transError = validateRequired(transValue, 'Transaction ID')
           if (transError) return transError
-          if (!TRANSACTION_ID_PATTERN.test(value)) {
+          if (!TRANSACTION_ID_PATTERN.test(transValue)) {
             return 'Transaction ID must be 4-30 alphanumeric characters'
           }
-          const lengthError = checkMaxLength(value, MAX_TRANSACTION_ID_LENGTH, 'Transaction ID')
+          const lengthError = checkMaxLength(transValue, MAX_TRANSACTION_ID_LENGTH, 'Transaction ID')
           if (lengthError) return lengthError
         }
         return null
 
       case 'last4Digits':
-        if (value && !CREDIT_CARD_LAST4_PATTERN.test(value)) {
+        const last4Value = value as string
+        if (last4Value && !CREDIT_CARD_LAST4_PATTERN.test(last4Value)) {
           return 'Must be exactly 4 digits'
         }
         return null
 
       case 'notes':
-        if (value) {
-          const notesError = notesValidator.safeParse(value)
+        const notesValue = value as string
+        if (notesValue) {
+          const notesError = notesValidator.safeParse(notesValue)
           if (!notesError.success) {
             return notesError.error.errors[0].message
           }
@@ -310,7 +308,7 @@ export function PaymentForm({
       default:
         return null
     }
-  }, [formData.paymentMethod, currency, balanceAmount])
+  }, [formData.paymentMethod, currency, balanceAmount, formatCurrency])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -343,9 +341,9 @@ export function PaymentForm({
       const error = validateField(field, value)
       if (error) {
         newErrors[field] = error
-        newStatus[field] = 'error'
+        newStatus[field] = 'error' as const
       } else if (value || field === 'amount') {
-        newStatus[field] = 'valid'
+        newStatus[field] = 'valid' as const
       }
     })
 
@@ -367,7 +365,7 @@ export function PaymentForm({
     try {
       // Prepare payment data based on payment method
       let reference = formData.reference
-      const metadata: any = {}
+      const metadata: Record<string, string> = {}
 
       switch (formData.paymentMethod) {
         case 'CHECK':
@@ -396,7 +394,7 @@ export function PaymentForm({
           break
       }
 
-      const response = await apiClient<{ success: boolean; paymentId: string }>(`/api/invoices/${invoiceId}/payments`, {
+      const response = await apiClient<{ data?: { id: string }; success?: boolean; paymentId?: string }>(`/api/invoices/${invoiceId}/payments`, {
         method: 'POST',
         body: JSON.stringify({
           amount: formData.amount,
@@ -502,14 +500,14 @@ export function PaymentForm({
       })
       setFieldStatus(prev => ({ 
         ...prev, 
-        paymentMethod: 'valid',
+        paymentMethod: 'valid' as const,
         // Reset method-specific field statuses
-        reference: 'idle',
-        checkNumber: 'idle',
-        bankName: 'idle',
-        transactionId: 'idle',
-        last4Digits: 'idle',
-        accountNumber: 'idle'
+        reference: 'idle' as const,
+        checkNumber: 'idle' as const,
+        bankName: 'idle' as const,
+        transactionId: 'idle' as const,
+        last4Digits: 'idle' as const,
+        accountNumber: 'idle' as const
       }))
     }
   }
@@ -565,21 +563,37 @@ export function PaymentForm({
           <div>
             <Label htmlFor="amount">{`Payment Amount (${currency})`}</Label>
             <div className="space-y-2">
-              <AccessibleInput
-                id="amount"
-                type="number"
-                step="0.01"
-                min={MINIMUM_PAYMENT_AMOUNT}
-                max={balanceAmount}
-                value={formData.amount || ''}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                disabled={isSubmitting}
-                showValidationIcons={true}
-                announceValidation={true}
-                placeholder="0.00"
-                success={fieldStatus.amount === 'valid' ? 'Valid amount entered' : undefined}
-                validating={fieldStatus.amount === 'checking'}
-              />
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min={MINIMUM_PAYMENT_AMOUNT}
+                  max={balanceAmount}
+                  value={formData.amount || ''}
+                  onChange={(e) => handleAmountChange(e.target.value)}
+                  disabled={isSubmitting}
+                  placeholder="0.00"
+                  className={
+                    errors.amount 
+                      ? 'border-red-500 pr-10' 
+                      : fieldStatus.amount === 'valid' 
+                        ? 'border-green-500 pr-10' 
+                        : ''
+                  }
+                />
+                {fieldStatus.amount === 'checking' && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </div>
+                )}
+                {fieldStatus.amount === 'valid' && (
+                  <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500" />
+                )}
+                {fieldStatus.amount === 'error' && (
+                  <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-red-500" />
+                )}
+              </div>
               
               {/* Quick Amount Buttons */}
               <div className="flex gap-2">
@@ -1147,28 +1161,32 @@ export function PaymentForm({
 
           {/* Form Actions */}
           <div className="flex gap-3 pt-4">
-            <AccessibleButton
+            <Button
               type="submit"
               disabled={isSubmitting || Object.keys(errors).length > 0 || !formData.amount || formData.amount <= 0}
-              loading={isSubmitting}
               className="flex-1"
-              ariaLabel="Submit payment form"
             >
-              Record Payment
-            </AccessibleButton>
-            <AccessibleButton
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Recording...
+                </>
+              ) : (
+                'Record Payment'
+              )}
+            </Button>
+            <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={isSubmitting}
-              ariaLabel="Cancel payment form"
             >
               Cancel
-            </AccessibleButton>
+            </Button>
           </div>
 
-          {/* Live regions for form status */}
-          <ValidationStatus
+          {/* Live regions for form status - commented out until accessibility components are implemented */}
+          {/* <ValidationStatus
             errors={Object.values(errors)}
             submitting={isSubmitting}
           />
@@ -1185,7 +1203,7 @@ export function PaymentForm({
               showVisual={true}
               onDismiss={() => setSubmitError(null)}
             />
-          )}
+          )} */}
         </form>
       </CardContent>
     </Card>

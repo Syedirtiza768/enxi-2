@@ -1,5 +1,7 @@
 'use client'
 
+import type { Account } from '@/lib/types/accounting.types'
+
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
@@ -48,12 +50,7 @@ interface SupplierInvoice {
   status: string
 }
 
-interface Account {
-  id: string
-  accountNumber: string
-  accountName: string
-  accountType: string
-}
+// Account moved to accounting types
 
 interface SupplierPaymentFormData {
   supplierId: string
@@ -187,7 +184,7 @@ export function SupplierPaymentForm({
     }
   }
 
-  const fetchBankAccounts = async (): Promise<number> => {
+  const fetchBankAccounts = async (): Promise<void> => {
     try {
       const response = await apiClient<{ data: Account[]; total?: number } | Account[]>('/api/accounting/accounts?type=ASSET&subType=BANK', { method: 'GET' })
       if (response.ok && response.data) {

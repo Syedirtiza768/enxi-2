@@ -159,7 +159,7 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleAccept = async (): Promise<any[]> => {
+  const handleAccept = async (): Promise<void> => {
     if (!confirm('Are you sure you want to accept this quotation? This will create a sales order.')) {
       return
     }
@@ -187,7 +187,7 @@ export default function QuotationDetailPage() {
     }
   }
 
-  const handleReject = async (): Promise<any[]> => {
+  const handleReject = async (): Promise<void> => {
     const reason = prompt('Please provide a reason for rejecting this quotation:')
     if (!reason) {
       return

@@ -126,7 +126,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               {isPassword ? (
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={(): void => setShowPassword(!showPassword)}
                   className="hover:text-[var(--text-secondary)] transition-colors"
                   tabIndex={-1}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}

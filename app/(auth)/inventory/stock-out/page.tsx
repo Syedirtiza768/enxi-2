@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { apiClient } from '@/lib/api/client'
 import { Plus, Package, Calendar, FileText } from 'lucide-react'
 import { format } from 'date-fns'
+import { useCurrency } from '@/lib/contexts/currency-context'
+import type { InventoryItem } from '@/lib/types'
 
 interface Item {
   id: string
@@ -26,28 +28,37 @@ interface Item {
   currentStock?: number
 }
 
-interface StockMovement {
+// Extended StockMovement type with relations
+interface StockMovementWithDetails {
   id: string
   movementNumber: string
-  movementDate: string
+  movementDate: Date | string
+  movementType: 'STOCK_IN' | 'STOCK_OUT' | 'TRANSFER' | 'ADJUSTMENT' | 'OPENING'
   quantity: number
-  referenceNumber?: string
-  customer?: string
-  notes?: string
-  createdAt: string
+  unitCost?: number | null
+  totalCost?: number | null
+  referenceNumber?: string | null
+  notes?: string | null
+  createdBy: string
+  createdAt: Date | string
   item: {
     id: string
     code: string
     name: string
   }
-  createdByUser?: {
-    username: string
+  unitOfMeasure: {
+    id: string
+    code: string
+    name: string
   }
+  // Custom fields stored in notes
+  customer?: string
 }
 
 export default function StockOutPage() {
+  const { formatCurrency } = useCurrency()
   const [items, setItems] = useState<Item[]>([])
-  const [recentMovements, setRecentMovements] = useState<StockMovement[]>([])
+  const [recentMovements, setRecentMovements] = useState<StockMovementWithDetails[]>([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -84,9 +95,21 @@ export default function StockOutPage() {
   const fetchRecentMovements = async (): Promise<void> => {
     setLoading(true)
     try {
-      // For now, we'll show a message that recent movements will be available after creating some
-      const allMovements: StockMovement[] = []
-      setRecentMovements(allMovements)
+      const params = new URLSearchParams({
+        type: 'STOCK_OUT',
+        limit: '50'
+      })
+      const response = await apiClient<{ movements: StockMovementWithDetails[] }>(`/api/inventory/stock-movements?${params}`, {
+        method: 'GET'
+      })
+      if (response.ok && response.data) {
+        // Parse customer from notes if available
+        const movements = response.data.movements.map((m: StockMovementWithDetails) => ({
+          ...m,
+          customer: m.notes?.split('|')[0]?.replace('Customer:', '').trim()
+        }))
+        setRecentMovements(movements)
+      }
     } catch (error) {
       console.error('Error:', error)
     } finally {
@@ -131,9 +154,11 @@ export default function StockOutPage() {
           quantity: quantity,
           unitOfMeasureId: selectedItem?.unitOfMeasure.id,
           referenceNumber: formData.referenceNumber || undefined,
-          notes: formData.notes || undefined,
-          // Custom fields for stock out
-          customer: formData.customer || undefined
+          // Store customer in notes field
+          notes: [
+            formData.customer ? `Customer:${formData.customer}` : '',
+            formData.notes
+          ].filter(Boolean).join(' | ') || undefined
         })
       })
 
@@ -413,10 +438,10 @@ export default function StockOutPage() {
                         <p className="text-sm text-gray-500">{movement.item.name}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{movement.customer || '-'}</TableCell>
+                    <TableCell>{movement.customer || movement.notes?.split('|')[0]?.replace('Customer:', '').trim() || '-'}</TableCell>
                     <TableCell>{movement.referenceNumber || '-'}</TableCell>
                     <TableCell className="text-right">{movement.quantity}</TableCell>
-                    <TableCell>{movement.createdByUser?.username || 'System'}</TableCell>
+                    <TableCell>{movement.createdBy || 'System'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

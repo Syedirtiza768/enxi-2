@@ -2,26 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
-interface AccountAmount {
-  id: string
-  code: string
-  name: string
-  type: string
-  amount: number
-  currency: string
-}
-
-interface IncomeStatement {
-  fromDate: string
-  toDate: string
-  currency: string
-  revenue: AccountAmount[]
-  expenses: AccountAmount[]
-  totalRevenue: number
-  totalExpenses: number
-  netIncome: number
-}
+import type { IncomeStatement } from '@/lib/types/accounting.types'
 
 export default function IncomeStatementPage() {
   const [incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
@@ -56,8 +37,9 @@ export default function IncomeStatementPage() {
       
       const data = await response.json()
       setIncomeStatement(data.data)
-} catch (error) {
-      console.error('Error:', error);
+    } catch (error) {
+      console.error('Error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch income statement')
     } finally {
       setLoading(false)
     }
@@ -150,32 +132,32 @@ export default function IncomeStatementPage() {
               Income Statement
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              For the period from {new Date(incomeStatement.fromDate).toLocaleDateString()} to {new Date(incomeStatement.toDate).toLocaleDateString()}
+              For the period from {new Date(incomeStatement.startDate).toLocaleDateString()} to {new Date(incomeStatement.endDate).toLocaleDateString()}
             </p>
-            <p className="text-sm text-gray-500">Currency: {incomeStatement.currency}</p>
+            <p className="text-sm text-gray-500">Currency: {currency}</p>
           </div>
 
           <div className="px-6 py-4">
-            {/* Revenue Section */}
+            {/* Income Section */}
             <div className="mb-8">
-              <h4 className="text-lg font-medium text-gray-900 mb-4">REVENUE</h4>
+              <h4 className="text-lg font-medium text-gray-900 mb-4">INCOME</h4>
               <table className="min-w-full">
                 <tbody className="divide-y divide-gray-200">
-                  {Array.isArray(incomeStatement.revenue) ? incomeStatement.revenue.map((account) => (
-                    <tr key={account.id}>
-                      <td className="py-2 text-sm text-gray-900">{account.name}</td>
+                  {incomeStatement.income.accounts.map((account) => (
+                    <tr key={account.accountCode}>
+                      <td className="py-2 text-sm text-gray-900">{account.accountName}</td>
                       <td className="py-2 text-sm text-right text-gray-900">
-                        {formatCurrency(account.amount)}
+                        {formatCurrency(account.balance)}
                       </td>
                       <td className="py-2 text-sm text-right text-gray-500">
-                        {formatPercentage(account.amount, incomeStatement.totalRevenue)}
+                        {formatPercentage(account.balance, incomeStatement.totalIncome)}
                       </td>
                     </tr>
-                  )) : null}
+                  ))}
                   <tr className="border-t-2 border-gray-300">
-                    <td className="py-2 text-sm font-medium text-gray-900">Total Revenue</td>
+                    <td className="py-2 text-sm font-medium text-gray-900">Total Income</td>
                     <td className="py-2 text-sm text-right font-medium text-gray-900">
-                      {formatCurrency(incomeStatement.totalRevenue)}
+                      {formatCurrency(incomeStatement.totalIncome)}
                     </td>
                     <td className="py-2 text-sm text-right font-medium text-gray-500">
                       100.0%
@@ -190,24 +172,24 @@ export default function IncomeStatementPage() {
               <h4 className="text-lg font-medium text-gray-900 mb-4">EXPENSES</h4>
               <table className="min-w-full">
                 <tbody className="divide-y divide-gray-200">
-                  {Array.isArray(incomeStatement.expenses) ? incomeStatement.expenses.map((account) => (
-                    <tr key={account.id}>
-                      <td className="py-2 text-sm text-gray-900">{account.name}</td>
+                  {incomeStatement.expenses.accounts.map((account) => (
+                    <tr key={account.accountCode}>
+                      <td className="py-2 text-sm text-gray-900">{account.accountName}</td>
                       <td className="py-2 text-sm text-right text-gray-900">
-                        {formatCurrency(account.amount)}
+                        {formatCurrency(account.balance)}
                       </td>
                       <td className="py-2 text-sm text-right text-gray-500">
-                        {formatPercentage(account.amount, incomeStatement.totalRevenue)}
+                        {formatPercentage(account.balance, incomeStatement.totalIncome)}
                       </td>
                     </tr>
-                  )) : null}
+                  ))}
                   <tr className="border-t-2 border-gray-300">
                     <td className="py-2 text-sm font-medium text-gray-900">Total Expenses</td>
                     <td className="py-2 text-sm text-right font-medium text-gray-900">
                       {formatCurrency(incomeStatement.totalExpenses)}
                     </td>
                     <td className="py-2 text-sm text-right font-medium text-gray-500">
-                      {formatPercentage(incomeStatement.totalExpenses, incomeStatement.totalRevenue)}
+                      {formatPercentage(incomeStatement.totalExpenses, incomeStatement.totalIncome)}
                     </td>
                   </tr>
                 </tbody>
@@ -228,7 +210,7 @@ export default function IncomeStatementPage() {
                       {formatCurrency(incomeStatement.netIncome)}
                     </td>
                     <td className="py-2 text-sm text-right font-medium text-gray-500">
-                      {formatPercentage(incomeStatement.netIncome, incomeStatement.totalRevenue)}
+                      {formatPercentage(incomeStatement.netIncome, incomeStatement.totalIncome)}
                     </td>
                   </tr>
                 </tbody>
@@ -240,16 +222,16 @@ export default function IncomeStatementPage() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">Gross Margin</p>
                 <p className="text-lg font-semibold">
-                  {incomeStatement.totalRevenue > 0 
-                    ? formatPercentage(incomeStatement.netIncome, incomeStatement.totalRevenue)
+                  {incomeStatement.totalIncome > 0 
+                    ? formatPercentage(incomeStatement.netIncome, incomeStatement.totalIncome)
                     : '0.0%'}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">Operating Ratio</p>
                 <p className="text-lg font-semibold">
-                  {incomeStatement.totalRevenue > 0
-                    ? formatPercentage(incomeStatement.totalExpenses, incomeStatement.totalRevenue)
+                  {incomeStatement.totalIncome > 0
+                    ? formatPercentage(incomeStatement.totalExpenses, incomeStatement.totalIncome)
                     : '0.0%'}
                 </p>
               </div>

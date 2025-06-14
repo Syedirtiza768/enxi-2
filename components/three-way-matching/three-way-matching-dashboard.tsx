@@ -72,7 +72,7 @@ interface MatchingDashboardData {
   }
 }
 
-export function ThreeWayMatchingDashboard() {
+export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const { formatCurrency } = useCurrency()
   const [data, setData] = useState<MatchingDashboardData | null>(null)
@@ -113,13 +113,13 @@ export function ThreeWayMatchingDashboard() {
     }
   }
 
-  const handleApprove = async (exception: MatchingException) => {
+  const handleApprove = async (exception: MatchingException): void => {
     setSelectedException(exception)
     setApprovalReason('')
     setShowApprovalDialog(true)
   }
 
-  const handleReject = async (exception: MatchingException) => {
+  const handleReject = async (exception: MatchingException): void => {
     setSelectedException(exception)
     setRejectionReason('')
     setShowRejectionDialog(true)
@@ -206,7 +206,7 @@ export function ThreeWayMatchingDashboard() {
     }
   }
 
-  const getSeverityBadge = (severity: string) => {
+  const getSeverityBadge = (severity: string): void => {
     const config = {
       HIGH: { className: 'bg-red-100 text-red-800' },
       MEDIUM: { className: 'bg-yellow-100 text-yellow-800' },
@@ -217,7 +217,7 @@ export function ThreeWayMatchingDashboard() {
     return <Badge className={className}>{severity}</Badge>
   }
 
-  const getTypeDescription = (type: string) => {
+  const getTypeDescription = (type: string): void => {
     const descriptions = {
       QUANTITY_OVER_MATCH: 'Quantity Over Match',
       QUANTITY_UNDER_MATCH: 'Quantity Under Match',
@@ -400,7 +400,7 @@ export function ThreeWayMatchingDashboard() {
               <Input
                 placeholder="Search exceptions by PO number, supplier, or description..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e): void => setSearch(e.target.value)}
                 leftIcon={<Search />}
                 fullWidth
               />
@@ -408,7 +408,7 @@ export function ThreeWayMatchingDashboard() {
 
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={(e): void => setTypeFilter(e.target.value)}
               className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[150px]"
             >
               <option value="all">All Types</option>
@@ -421,7 +421,7 @@ export function ThreeWayMatchingDashboard() {
 
             <select
               value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
+              onChange={(e): void => setSeverityFilter(e.target.value)}
               className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[120px]"
             >
               <option value="all">All Severities</option>
@@ -506,7 +506,7 @@ export function ThreeWayMatchingDashboard() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => router.push(`/three-way-matching/${exception.id}`)}
+                        onClick={(): void => router.push(`/three-way-matching/${exception.id}`)}
                         title="View Details"
                       >
                         <Eye className="h-4 w-4" />
@@ -516,7 +516,7 @@ export function ThreeWayMatchingDashboard() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleApprove(exception)}
+                            onClick={(): void => handleApprove(exception)}
                             className="text-green-600 hover:text-green-700"
                             title="Approve"
                           >
@@ -525,7 +525,7 @@ export function ThreeWayMatchingDashboard() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleReject(exception)}
+                            onClick={(): void => handleReject(exception)}
                             className="text-red-600 hover:text-red-700"
                             title="Reject"
                           >
@@ -557,7 +557,7 @@ export function ThreeWayMatchingDashboard() {
               <Text size="sm" weight="medium">Approval Reason *</Text>
               <Textarea
                 value={approvalReason}
-                onChange={(e) => setApprovalReason(e.target.value)}
+                onChange={(e): void => setApprovalReason(e.target.value)}
                 placeholder="Enter the reason for approving this exception..."
                 rows={3}
               />
@@ -565,7 +565,7 @@ export function ThreeWayMatchingDashboard() {
             <HStack gap="sm" justify="end">
               <Button
                 variant="ghost"
-                onClick={() => setShowApprovalDialog(false)}
+                onClick={(): void => setShowApprovalDialog(false)}
                 disabled={!!actionLoading}
               >
                 Cancel
@@ -598,7 +598,7 @@ export function ThreeWayMatchingDashboard() {
               <Text size="sm" weight="medium">Rejection Reason *</Text>
               <Textarea
                 value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
+                onChange={(e): void => setRejectionReason(e.target.value)}
                 placeholder="Enter the reason for rejecting this exception..."
                 rows={3}
               />
@@ -606,7 +606,7 @@ export function ThreeWayMatchingDashboard() {
             <HStack gap="sm" justify="end">
               <Button
                 variant="ghost"
-                onClick={() => setShowRejectionDialog(false)}
+                onClick={(): void => setShowRejectionDialog(false)}
                 disabled={!!actionLoading}
               >
                 Cancel

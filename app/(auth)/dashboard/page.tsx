@@ -20,7 +20,7 @@ import { api } from '@/lib/api/client'
 import Link from 'next/link'
 import { Users, Plus, TrendingUp } from 'lucide-react'
 
-export default function DashboardPage() {
+export default function DashboardPage(): React.JSX.Element {
   const [leadStats, setLeadStats] = useState<LeadStatsType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 

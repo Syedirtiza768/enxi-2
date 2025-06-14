@@ -347,7 +347,7 @@ export function withHealthMonitoring<T extends (...args: unknown[]) => Promise<N
   handler: T,
   route: string
 ): T {
-  return (async (request: NextRequest, ...args: unknown[]) => {
+  return (async (request: NextRequest, ...args: unknown[]): void => {
     const method = request.method;
     const startTime = Date.now();
     

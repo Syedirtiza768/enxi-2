@@ -184,15 +184,15 @@ export function InventoryCharts({ className }: InventoryChartsProps) {
       
       // Extract categories
       const categories = [...new Set(transformedData.map((item: StockLevelData) => item.category))]
-      setAvailableCategories(categories)
+      setAvailableCategories(categories as string[])
       
     } catch (error) {
       console.error('Error fetching stock levels:', error)
       // Fallback to mock data
       const mockData = generateMockStockLevels(15)
-      setStockLevels(mockData)
+      setStockLevels(mockData as StockLevelData[])
       const categories = [...new Set(mockData.map(item => item.category))]
-      setAvailableCategories(categories)
+      setAvailableCategories(categories as string[])
     }
   }, [])
 

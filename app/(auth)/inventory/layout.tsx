@@ -5,7 +5,7 @@ interface InventoryLayoutProps {
   children: React.ReactNode
 }
 
-export default function InventoryLayout({ children }: InventoryLayoutProps) {
+export default function InventoryLayout({ children }: InventoryLayoutProps): React.JSX.Element {
   return (
     <div className="flex flex-col space-y-6">
       <InventoryNav />

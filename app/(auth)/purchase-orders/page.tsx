@@ -88,7 +88,7 @@ export default function PurchaseOrdersPage() {
     fetchPurchaseOrders()
   }, [])
 
-  const fetchPurchaseOrders = async (): Promise<boolean> => {
+  const fetchPurchaseOrders = async (): Promise<void> => {
     setLoading(true)
     setError(null)
 

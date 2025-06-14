@@ -8,7 +8,7 @@ export interface AuditOptions {
 }
 
 // Create a Prisma extension that automatically logs CRUD operations
-export function prismaWithAudit(auditOptions: AuditOptions) {
+export function prismaWithAudit(auditOptions: AuditOptions): unknown {
   return prisma.$extends({
     query: {
       // Intercept all model operations

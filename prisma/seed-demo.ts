@@ -335,7 +335,7 @@ async function createLeads(salesId: string) {
         industry: 'Software',
         estimatedValue: 50000,
         status: LeadStatus.NEW,
-        source: 'Website',
+        source: LeadSource.WEBSITE,
         notes: 'Interested in our enterprise solution',
         createdBy: salesId
       }
@@ -349,7 +349,7 @@ async function createLeads(salesId: string) {
         industry: 'Healthcare',
         estimatedValue: 75000,
         status: LeadStatus.CONTACTED,
-        source: 'Trade Show',
+        source: LeadSource.TRADE_SHOW,
         notes: 'Met at Healthcare Expo 2024',
         createdBy: salesId
       }
@@ -363,7 +363,7 @@ async function createLeads(salesId: string) {
         industry: 'Education',
         estimatedValue: 30000,
         status: LeadStatus.QUALIFIED,
-        source: 'Referral',
+        source: LeadSource.REFERRAL,
         notes: 'Referred by existing customer',
         createdBy: salesId
       }

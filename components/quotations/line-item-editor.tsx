@@ -1,5 +1,7 @@
 'use client'
 
+import type { InventoryItem } from '@/lib/types'
+
 import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, ChevronDown, ChevronRight, Eye, Settings } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
@@ -22,17 +24,7 @@ interface QuotationItem {
   totalAmount: number
 }
 
-interface InventoryItem {
-  id: string
-  code: string
-  name: string
-  type: 'PRODUCT' | 'SERVICE' | 'RAW_MATERIAL'
-  listPrice: number
-  standardCost: number
-  category: {
-    name: string
-  }
-}
+// InventoryItem moved to Prisma types
 
 interface LineItem {
   id: string
@@ -57,7 +49,7 @@ interface LineItemEditorProps {
   disabled?: boolean
 }
 
-export function LineItemEditor({ quotationItems, onChange, disabled = false }: LineItemEditorProps) {
+export function LineItemEditor({ quotationItems, onChange, disabled = false }: LineItemEditorProps): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('client')
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([])
@@ -94,7 +86,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   }, [])
 
   // Helper functions
-  const generateId = () => Math.random().toString(36).substr(2, 9)
+  const generateId = (): void => Math.random().toString(36).substr(2, 9)
 
   const calculateItemAmounts = (item: Partial<QuotationItem>): Partial<QuotationItem> => {
     const quantity = item.quantity || 0
@@ -120,7 +112,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   // formatCurrency function removed - use useCurrency hook instead
 
   // Item management functions
-  const _addQuotationItem = (fromInventoryItem?: InventoryItem) => {
+  const _addQuotationItem = (fromInventoryItem?: InventoryItem): void => {
     const newItem: QuotationItem = {
       id: generateId(),
       itemId: fromInventoryItem?.id,
@@ -142,7 +134,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
     onChange([...quotationItems, calculatedItem])
   }
 
-  const _updateQuotationItem = (itemId: string, updates: Partial<QuotationItem>) => {
+  const _updateQuotationItem = (itemId: string, updates: Partial<QuotationItem>): void => {
     const updatedItems = quotationItems.map(item => {
       if (item.id === itemId) {
         const updatedItem = { ...item, ...updates }
@@ -153,7 +145,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
     onChange(updatedItems)
   }
 
-  const _removeQuotationItem = (itemId: string) => {
+  const _removeQuotationItem = (itemId: string): void => {
     const updatedItems = quotationItems.filter(item => item.id !== itemId)
     onChange(updatedItems)
   }
@@ -161,30 +153,30 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   // Simplified quotation structure - using quotationItems directly
   const quotationLines: QuotationLine[] = []
   const expandedLines = new Set<string>()
-  const setExpandedLines = (_: Set<string>) => {} // Placeholder
+  const setExpandedLines = (_: Set<string>): void => {} // Placeholder
   
   // Helper functions for quotation line management
   const calculateItemTotal = (quantity: number, unitPrice: number): number => {
     return quantity * unitPrice
   }
 
-  const updateQuotationLine = (lineId: string, updates: Partial<QuotationLine>) => {
+  const updateQuotationLine = (lineId: string, updates: Partial<QuotationLine>): void => {
     // Update quotation line functionality not implemented in this simplified version
     console.log('updateQuotationLine called:', lineId, updates)
   }
 
-  const deleteQuotationLine = (lineId: string) => {
+  const deleteQuotationLine = (lineId: string): void => {
     // Delete quotation line functionality not implemented in this simplified version
     console.log('deleteQuotationLine called:', lineId)
   }
   
   // Helper functions for the render logic
-  const addQuotationLine = () => {
+  const addQuotationLine = (): void => {
     // Add quotation line functionality not implemented
   }
 
   // Line item management functions
-  const addLineItem = (lineId: string) => {
+  const addLineItem = (lineId: string): void => {
     const line = quotationLines.find(l => l.id === lineId)
     if (!line) return
 
@@ -201,7 +193,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
     updateQuotationLine(lineId, { lineItems: updatedLineItems })
   }
 
-  const deleteLineItem = (lineId: string, itemId: string) => {
+  const deleteLineItem = (lineId: string, itemId: string): void => {
     const line = quotationLines.find(l => l.id === lineId)
     if (!line) return
 
@@ -209,7 +201,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
     updateQuotationLine(lineId, { lineItems: updatedLineItems })
   }
 
-  const updateLineItem = (lineId: string, itemId: string, updates: Partial<LineItem>) => {
+  const updateLineItem = (lineId: string, itemId: string, updates: Partial<LineItem>): void => {
     const line = quotationLines.find(l => l.id === lineId)
     if (!line) return
 
@@ -232,7 +224,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   }
 
   // Handle inventory item selection
-  const handleInventoryItemSelection = (lineId: string, itemId: string, inventoryItemId: string) => {
+  const handleInventoryItemSelection = (lineId: string, itemId: string, inventoryItemId: string): void => {
     const inventoryItem = inventoryItems.find(item => item.id === inventoryItemId)
     if (!inventoryItem) return
 
@@ -246,7 +238,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
   }
 
   // Toggle line expansion
-  const toggleLineExpansion = (lineId: string) => {
+  const toggleLineExpansion = (lineId: string): void => {
     const newExpanded = new Set(expandedLines)
     if (newExpanded.has(lineId)) {
       newExpanded.delete(lineId)
@@ -275,7 +267,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
           {/* View Toggle */}
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('client')}
+              onClick={(): void => setViewMode('client')}
               className={`flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 viewMode === 'client'
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -286,7 +278,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
               Client View
             </button>
             <button
-              onClick={() => setViewMode('internal')}
+              onClick={(): void => setViewMode('internal')}
               className={`flex items-center px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 viewMode === 'internal'
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -332,7 +324,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                 <div className="flex items-start space-x-4">
                   {/* Expand/Collapse Button */}
                   <button
-                    onClick={() => toggleLineExpansion(line.id)}
+                    onClick={(): void => toggleLineExpansion(line.id)}
                     aria-label="Expand line items"
                     className="flex-shrink-0 mt-1 p-1 hover:bg-gray-100 rounded"
                   >
@@ -350,7 +342,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                       <input
                         type="text"
                         value={line.description}
-                        onChange={(e) => updateQuotationLine(line.id, { description: e.target.value })}
+                        onChange={(e): void => updateQuotationLine(line.id, { description: e.target.value })}
                         placeholder="Enter line description..."
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       />
@@ -388,7 +380,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
 
                   {/* Delete Button */}
                   <button
-                    onClick={() => deleteQuotationLine(line.id)}
+                    onClick={(): void => deleteQuotationLine(line.id)}
                     aria-label="Delete line"
                     className="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 rounded"
                   >
@@ -403,7 +395,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="text-sm font-medium text-gray-900">Line Items</h4>
                     <button
-                      onClick={() => addLineItem(line.id)}
+                      onClick={(): void => addLineItem(line.id)}
                       className="flex items-center px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                       <Plus className="h-3 w-3 mr-1" />
@@ -427,7 +419,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                               </label>
                               <select
                                 value={item.inventoryItemId || ''}
-                                onChange={(e) => handleInventoryItemSelection(line.id, item.id, e.target.value)}
+                                onChange={(e): void => handleInventoryItemSelection(line.id, item.id, e.target.value)}
                                 aria-label="Select inventory item"
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                               >
@@ -448,7 +440,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                               <input
                                 type="text"
                                 value={item.description}
-                                onChange={(e) => updateLineItem(line.id, item.id, { description: e.target.value })}
+                                onChange={(e): void => updateLineItem(line.id, item.id, { description: e.target.value })}
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                               />
                             </div>
@@ -461,7 +453,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                               <input
                                 type="number"
                                 value={item.quantity}
-                                onChange={(e) => updateLineItem(line.id, item.id, { quantity: Math.max(0, parseInt(e.target.value) || 0) })}
+                                onChange={(e): void => updateLineItem(line.id, item.id, { quantity: Math.max(0, parseInt(e.target.value) || 0) })}
                                 min="0"
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                               />
@@ -475,7 +467,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                               <input
                                 type="number"
                                 value={item.unitPrice}
-                                onChange={(e) => updateLineItem(line.id, item.id, { unitPrice: Math.max(0, parseFloat(e.target.value) || 0) })}
+                                onChange={(e): void => updateLineItem(line.id, item.id, { unitPrice: Math.max(0, parseFloat(e.target.value) || 0) })}
                                 min="0"
                                 step="0.01"
                                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -495,7 +487,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
                             {/* Delete Button */}
                             <div className="col-span-1">
                               <button
-                                onClick={() => deleteLineItem(line.id, item.id)}
+                                onClick={(): void => deleteLineItem(line.id, item.id)}
                                 aria-label="Delete line item"
                                 className="w-full p-1 text-red-600 hover:bg-red-50 rounded mt-5"
                               >

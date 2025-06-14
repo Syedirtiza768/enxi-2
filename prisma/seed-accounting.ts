@@ -1,10 +1,10 @@
-import { PrismaClient, AccountType, JournalStatus } from '../lib/generated/prisma'
+import { PrismaClient, AccountType, JournalStatus, Role } from '../lib/generated/prisma'
 import { ChartOfAccountsService } from '../lib/services/accounting/chart-of-accounts.service'
 import { JournalEntryService } from '../lib/services/accounting/journal-entry.service'
 
 const prisma = new PrismaClient()
 
-async function seedAccounting(): Promise<number> {
+async function seedAccounting(): Promise<void> {
   console.warn('🌱 Seeding accounting data...')
 
   try {
@@ -19,7 +19,7 @@ async function seedAccounting(): Promise<number> {
           username: 'admin',
           email: 'admin@example.com',
           password: '$2a$10$fUHoHJHMNJpNSz8lUcKlZ.HuEM8/DsAqGUxR1J.bN7tKpCqYNJAGa', // 'password123'
-          role: 'ADMIN',
+          role: Role.ADMIN,
           isActive: true
         }
       })

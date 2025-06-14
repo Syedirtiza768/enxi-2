@@ -16,7 +16,7 @@ import {
 } from '@/components/design-system'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 
-export function LoginForm() {
+export function LoginForm(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +25,7 @@ export function LoginForm() {
     password: ''
   })
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
     setError(null)
 
@@ -94,7 +94,7 @@ export function LoginForm() {
                 label="Username or Email"
                 type="text"
                 value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                onChange={(e): void => setFormData({ ...formData, username: e.target.value })}
                 placeholder="Enter your username or email"
                 leftIcon={<Mail className="h-4 w-4" />}
                 disabled={isLoading}
@@ -108,7 +108,7 @@ export function LoginForm() {
                 label="Password"
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e): void => setFormData({ ...formData, password: e.target.value })}
                 placeholder="Enter your password"
                 leftIcon={<Lock className="h-4 w-4" />}
                 disabled={isLoading}

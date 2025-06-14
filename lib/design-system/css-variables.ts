@@ -1,10 +1,10 @@
 import { designTokens } from './tokens'
 
 // Helper function to create CSS variable name
-const cssVar = (name: string) => `--${name}`
+const cssVar = (name: string): void => `--${name}`
 
 // Generate CSS variables from design tokens
-export const generateCSSVariables = (theme: 'light' | 'dark') => {
+export const generateCSSVariables = (theme: 'light' | 'dark'): void => {
   const isDark = theme === 'dark'
   
   const cssVariables: Record<string, string> = {}
@@ -113,7 +113,7 @@ export const generateCSSVariables = (theme: 'light' | 'dark') => {
 }
 
 // Generate CSS string
-export const generateCSSString = (theme: 'light' | 'dark') => {
+export const generateCSSString = (theme: 'light' | 'dark'): void => {
   const variables = generateCSSVariables(theme)
   const cssString = Object.entries(variables)
     .map(([key, value]) => `  ${key}: ${value};`)
@@ -123,7 +123,7 @@ export const generateCSSString = (theme: 'light' | 'dark') => {
 }
 
 // Generate complete CSS with both themes
-export const generateThemeCSS = () => {
+export const generateThemeCSS = (): void => {
   const lightCSS = generateCSSString('light')
   const darkCSS = generateCSSString('dark')
   

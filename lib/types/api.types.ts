@@ -7,12 +7,8 @@
 /**
  * Standard API Response wrapper
  */
-export interface ApiResponse<T = unknown> {
-  data?: T
-  error?: string
-  status: number
-  ok: boolean
-}
+// ApiResponse moved to common.types.ts to avoid duplication
+export type { ApiResponse } from './common.types'
 
 /**
  * Paginated API response

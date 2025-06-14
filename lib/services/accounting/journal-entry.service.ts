@@ -1,3 +1,4 @@
+import { BaseService } from '../base.service'
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
@@ -14,12 +15,13 @@ import {
   _CreateJournalLineInput
 } from '@/lib/types/accounting.types'
 
-export class JournalEntryService {
+export class JournalEntryService extends BaseService {
   private auditService: AuditService
   private chartOfAccountsService: ChartOfAccountsService
   private currencyService: CurrencyService
 
   constructor() {
+    super('JournalEntryService')
     this.auditService = new AuditService()
     this.chartOfAccountsService = new ChartOfAccountsService()
     this.currencyService = new CurrencyService()
@@ -29,23 +31,25 @@ export class JournalEntryService {
     data: CreateJournalEntryInput & { createdBy: string },
     transactionClient?: Prisma.TransactionClient
   ): Promise<JournalEntry & { lines: JournalLine[] }> {
-    if (transactionClient) {
-      // When called within an existing transaction, use that transaction
-      return this.createJournalEntryInTransaction(data, transactionClient)
-    }
+    return this.withLogging('createJournalEntry', async () => {
+      if (transactionClient) {
+        // When called within an existing transaction, use that transaction
+        return this.createJournalEntryInTransaction(data, transactionClient)
+      }
 
-    // Validate double-entry bookkeeping rules
-    await this.validateJournalEntry(data)
+      // Validate double-entry bookkeeping rules
+      await this.validateJournalEntry(data)
 
-    // Generate unique entry number
-    const entryNumber = await this.generateEntryNumber()
+      // Generate unique entry number
+      const entryNumber = await this.generateEntryNumber()
 
-    // Create journal entry with lines in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      return this.createJournalEntryInTransaction({ ...data, entryNumber }, tx)
+      // Create journal entry with lines in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        return this.createJournalEntryInTransaction({ ...data, entryNumber }, tx)
+      })
+
+      return result
     })
-
-    return result
   }
 
   private async createJournalEntryInTransaction(
@@ -63,9 +67,9 @@ export class JournalEntryService {
     if (!exchangeRate && data.currency !== 'USD') {
       try {
         exchangeRate = await this.currencyService.getExchangeRate(data.currency, 'USD')
-} catch {
-      exchangeRate = 1.0
-    }
+      } catch {
+        exchangeRate = 1.0
+      }
     } else if (!exchangeRate) {
       exchangeRate = 1.0
     }
@@ -111,25 +115,77 @@ export class JournalEntryService {
     entryId: string,
     userId: string
   ): Promise<JournalEntry & { lines: JournalLine[] }> {
-    const entry = await this.getJournalEntry(entryId)
-    if (!entry) {
-      throw new Error('Journal entry not found')
-    }
+    return this.withLogging('postJournalEntry', async () => {
+      const entry = await this.getJournalEntry(entryId)
+      if (!entry) {
+        throw new Error('Journal entry not found')
+      }
 
-    if (entry.status !== JournalStatus.DRAFT) {
-      throw new Error('Only draft journal entries can be posted')
-    }
+      if (entry.status !== JournalStatus.DRAFT) {
+        throw new Error('Only draft journal entries can be posted')
+      }
 
-    // Post the entry and update account balances in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Update journal entry status
-      const postedEntry = await tx.journalEntry.update({
-        where: { id: entryId },
-        data: {
-          status: JournalStatus.POSTED,
-          postedBy: userId,
-          postedAt: new Date(),
-        },
+      // Post the entry and update account balances in a transaction
+      const result = await prisma.$transaction(async (tx) => {
+        // Update journal entry status
+        const postedEntry = await tx.journalEntry.update({
+          where: { id: entryId },
+          data: {
+            status: JournalStatus.POSTED,
+            postedBy: userId,
+            postedAt: new Date(),
+          },
+          include: {
+            lines: {
+              include: {
+                account: true
+              }
+            }
+          }
+        })
+
+        // Update account balances
+        for (const line of postedEntry.lines) {
+          if (line.debitAmount > 0) {
+            await this.chartOfAccountsService.updateBalance(
+              line.accountId,
+              line.baseDebitAmount,
+              'debit'
+            )
+          }
+          if (line.creditAmount > 0) {
+            await this.chartOfAccountsService.updateBalance(
+              line.accountId,
+              line.baseCreditAmount,
+              'credit'
+            )
+          }
+        }
+
+        return postedEntry
+      }, {
+        maxWait: 10000, // 10 seconds
+        timeout: 30000, // 30 seconds
+      })
+
+      // Audit log
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.UPDATE,
+        entityType: 'JournalEntry',
+        entityId: entryId,
+        beforeData: { status: JournalStatus.DRAFT },
+        afterData: { status: JournalStatus.POSTED, postedBy: userId, postedAt: result.postedAt },
+      })
+
+      return result
+    })
+  }
+
+  async getJournalEntry(id: string): Promise<(JournalEntry & { lines: JournalLine[] }) | null> {
+    return this.withLogging('getJournalEntry', async () => {
+      return prisma.journalEntry.findUnique({
+        where: { id },
         include: {
           lines: {
             include: {
@@ -138,54 +194,6 @@ export class JournalEntryService {
           }
         }
       })
-
-      // Update account balances
-      for (const line of postedEntry.lines) {
-        if (line.debitAmount > 0) {
-          await this.chartOfAccountsService.updateBalance(
-            line.accountId,
-            line.baseDebitAmount,
-            'debit'
-          )
-        }
-        if (line.creditAmount > 0) {
-          await this.chartOfAccountsService.updateBalance(
-            line.accountId,
-            line.baseCreditAmount,
-            'credit'
-          )
-        }
-      }
-
-      return postedEntry
-    }, {
-      maxWait: 10000, // 10 seconds
-      timeout: 30000, // 30 seconds
-    })
-
-    // Audit log
-    await this.auditService.logAction({
-      userId,
-      action: AuditAction.UPDATE,
-      entityType: 'JournalEntry',
-      entityId: entryId,
-      beforeData: { status: JournalStatus.DRAFT },
-      afterData: { status: JournalStatus.POSTED, postedBy: userId, postedAt: result.postedAt },
-    })
-
-    return result
-  }
-
-  async getJournalEntry(id: string): Promise<(JournalEntry & { lines: JournalLine[] }) | null> {
-    return prisma.journalEntry.findUnique({
-      where: { id },
-      include: {
-        lines: {
-          include: {
-            account: true
-          }
-        }
-      }
     })
   }
 
@@ -198,50 +206,52 @@ export class JournalEntryService {
     limit?: number
     offset?: number
   }): Promise<(JournalEntry & { lines: JournalLine[] })[]> {
-    const where: Prisma.JournalEntryWhereInput = {}
+    return this.withLogging('getAllJournalEntries', async () => {
+      const where: Prisma.JournalEntryWhereInput = {}
 
-    if (options?.status) {
-      where.status = options.status
-    }
-
-    if (options?.dateFrom || options?.dateTo) {
-      where.date = {}
-      if (options.dateFrom) {
-        where.date.gte = options.dateFrom
+      if (options?.status) {
+        where.status = options.status
       }
-      if (options.dateTo) {
-        where.date.lte = options.dateTo
-      }
-    }
 
-    if (options?.reference) {
-      where.reference = {
-        contains: options.reference
-      }
-    }
-
-    if (options?.accountId) {
-      where.lines = {
-        some: {
-          accountId: options.accountId
+      if (options?.dateFrom || options?.dateTo) {
+        where.date = {}
+        if (options.dateFrom) {
+          where.date.gte = options.dateFrom
+        }
+        if (options.dateTo) {
+          where.date.lte = options.dateTo
         }
       }
-    }
 
-    return prisma.journalEntry.findMany({
-      where,
-      include: {
-        lines: {
-          include: {
-            account: true
+      if (options?.reference) {
+        where.reference = {
+          contains: options.reference
+        }
+      }
+
+      if (options?.accountId) {
+        where.lines = {
+          some: {
+            accountId: options.accountId
           }
         }
-      },
-      orderBy: {
-        date: 'desc'
-      },
-      take: options?.limit,
-      skip: options?.offset,
+      }
+
+      return prisma.journalEntry.findMany({
+        where,
+        include: {
+          lines: {
+            include: {
+              account: true
+            }
+          }
+        },
+        orderBy: {
+          date: 'desc'
+        },
+        take: options?.limit,
+        skip: options?.offset,
+      })
     })
   }
 
@@ -249,57 +259,59 @@ export class JournalEntryService {
     entryId: string,
     userId: string
   ): Promise<JournalEntry> {
-    const entry = await this.getJournalEntry(entryId)
-    if (!entry) {
-      throw new Error('Journal entry not found')
-    }
+    return this.withLogging('cancelJournalEntry', async () => {
+      const entry = await this.getJournalEntry(entryId)
+      if (!entry) {
+        throw new Error('Journal entry not found')
+      }
 
-    if (entry.status === JournalStatus.CANCELLED) {
-      throw new Error('Journal entry is already cancelled')
-    }
+      if (entry.status === JournalStatus.CANCELLED) {
+        throw new Error('Journal entry is already cancelled')
+      }
 
-    // For POSTED entries, reverse the account balance changes
-    if (entry.status === JournalStatus.POSTED) {
-      await prisma.$transaction(async (_tx) => {
-        // Reverse account balances
-        for (const line of entry.lines) {
-          if (line.debitAmount > 0) {
-            await this.chartOfAccountsService.updateBalance(
-              line.accountId,
-              line.baseDebitAmount,
-              'credit' // Reverse the debit
-            )
+      // For POSTED entries, reverse the account balance changes
+      if (entry.status === JournalStatus.POSTED) {
+        await prisma.$transaction(async (_tx) => {
+          // Reverse account balances
+          for (const line of entry.lines) {
+            if (line.debitAmount > 0) {
+              await this.chartOfAccountsService.updateBalance(
+                line.accountId,
+                line.baseDebitAmount,
+                'credit' // Reverse the debit
+              )
+            }
+            if (line.creditAmount > 0) {
+              await this.chartOfAccountsService.updateBalance(
+                line.accountId,
+                line.baseCreditAmount,
+                'debit' // Reverse the credit
+              )
+            }
           }
-          if (line.creditAmount > 0) {
-            await this.chartOfAccountsService.updateBalance(
-              line.accountId,
-              line.baseCreditAmount,
-              'debit' // Reverse the credit
-            )
-          }
+        })
+      }
+
+      // For DRAFT entries, just mark as cancelled without balance changes
+      const cancelledEntry = await prisma.journalEntry.update({
+        where: { id: entryId },
+        data: {
+          status: JournalStatus.CANCELLED,
         }
       })
-    }
 
-    // For DRAFT entries, just mark as cancelled without balance changes
-    const cancelledEntry = await prisma.journalEntry.update({
-      where: { id: entryId },
-      data: {
-        status: JournalStatus.CANCELLED,
-      }
+      // Audit log
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.UPDATE,
+        entityType: 'JournalEntry',
+        entityId: entryId,
+        beforeData: { status: entry.status },
+        afterData: { status: JournalStatus.CANCELLED },
+      })
+
+      return cancelledEntry
     })
-
-    // Audit log
-    await this.auditService.logAction({
-      userId,
-      action: AuditAction.UPDATE,
-      entityType: 'JournalEntry',
-      entityId: entryId,
-      beforeData: { status: entry.status },
-      afterData: { status: JournalStatus.CANCELLED },
-    })
-
-    return cancelledEntry
   }
 
   private async validateJournalEntry(
@@ -390,35 +402,37 @@ export class JournalEntryService {
     entryId: string,
     targetCurrency: string
   ): Promise<JournalEntry & { lines: JournalLine[] }> {
-    const entry = await this.getJournalEntry(entryId)
-    if (!entry) {
-      throw new Error('Journal entry not found')
-    }
+    return this.withLogging('convertJournalEntryToCurrency', async () => {
+      const entry = await this.getJournalEntry(entryId)
+      if (!entry) {
+        throw new Error('Journal entry not found')
+      }
 
-    if (entry.currency === targetCurrency) {
-      return entry // No conversion needed
-    }
+      if (entry.currency === targetCurrency) {
+        return entry // No conversion needed
+      }
 
-    const exchangeRate = await this.currencyService.getExchangeRate(entry.currency, targetCurrency)
+      const exchangeRate = await this.currencyService.getExchangeRate(entry.currency, targetCurrency)
 
-    // Convert entry header
-    const convertedEntry = {
-      ...entry,
-      currency: targetCurrency,
-      exchangeRate,
-      lines: entry.lines.map(line => ({
-        ...line,
+      // Convert entry header
+      const convertedEntry = {
+        ...entry,
         currency: targetCurrency,
         exchangeRate,
-        debitAmount: line.debitAmount * exchangeRate,
-        creditAmount: line.creditAmount * exchangeRate,
-        // Keep original base amounts for audit trail
-        baseDebitAmount: line.baseDebitAmount,
-        baseCreditAmount: line.baseCreditAmount
-      }))
-    }
+        lines: entry.lines.map(line => ({
+          ...line,
+          currency: targetCurrency,
+          exchangeRate,
+          debitAmount: line.debitAmount * exchangeRate,
+          creditAmount: line.creditAmount * exchangeRate,
+          // Keep original base amounts for audit trail
+          baseDebitAmount: line.baseDebitAmount,
+          baseCreditAmount: line.baseCreditAmount
+        }))
+      }
 
-    return convertedEntry
+      return convertedEntry
+    })
   }
 
   /**
@@ -434,38 +448,40 @@ export class JournalEntryService {
     currentValue: number
     currency: string
   }> {
-    const entry = await this.getJournalEntry(entryId)
-    if (!entry) {
-      throw new Error('Journal entry not found')
-    }
-
-    if (entry.currency === 'USD') {
-      return {
-        fxGainLoss: 0,
-        isGain: false,
-        originalValue: entry.lines.reduce((sum, line) => sum + line.debitAmount, 0),
-        currentValue: entry.lines.reduce((sum, line) => sum + line.debitAmount, 0),
-        currency: 'USD'
+    return this.withLogging('calculateFXGainLoss', async () => {
+      const entry = await this.getJournalEntry(entryId)
+      if (!entry) {
+        throw new Error('Journal entry not found')
       }
-    }
 
-    // Get current exchange rate
-    const currentRate = await this.currencyService.getExchangeRate(entry.currency, 'USD')
-    const originalRate = entry.exchangeRate
+      if (entry.currency === 'USD') {
+        return {
+          fxGainLoss: 0,
+          isGain: false,
+          originalValue: entry.lines.reduce((sum, line) => sum + line.debitAmount, 0),
+          currentValue: entry.lines.reduce((sum, line) => sum + line.debitAmount, 0),
+          currency: 'USD'
+        }
+      }
 
-    const originalValue = entry.lines.reduce((sum, line) => sum + line.debitAmount, 0)
-    const currentValue = originalValue * currentRate / originalRate
+      // Get current exchange rate
+      const currentRate = await this.currencyService.getExchangeRate(entry.currency, 'USD')
+      const originalRate = entry.exchangeRate
 
-    const fxGainLoss = Math.abs(currentValue - originalValue)
-    const isGain = currentValue > originalValue
+      const originalValue = entry.lines.reduce((sum, line) => sum + line.debitAmount, 0)
+      const currentValue = originalValue * currentRate / originalRate
 
-    return {
-      fxGainLoss,
-      isGain,
-      originalValue,
-      currentValue,
-      currency: entry.currency
-    }
+      const fxGainLoss = Math.abs(currentValue - originalValue)
+      const isGain = currentValue > originalValue
+
+      return {
+        fxGainLoss,
+        isGain,
+        originalValue,
+        currentValue,
+        currency: entry.currency
+      }
+    })
   }
 
   /**
@@ -476,57 +492,59 @@ export class JournalEntryService {
     userId: string,
     revaluationDate: Date = new Date()
   ): Promise<JournalEntry & { lines: JournalLine[] }> {
-    const fxResult = await this.calculateFXGainLoss(originalEntryId, revaluationDate)
-    
-    if (fxResult.fxGainLoss === 0) {
-      throw new Error('No FX gain/loss to revalue')
-    }
+    return this.withLogging('createFXRevaluationEntry', async () => {
+      const fxResult = await this.calculateFXGainLoss(originalEntryId, revaluationDate)
+      
+      if (fxResult.fxGainLoss === 0) {
+        throw new Error('No FX gain/loss to revalue')
+      }
 
-    // Get FX gain/loss accounts (would need to be configured)
-    const fxGainAccountId = await this.getFXAccount(true) // FX Gain account
-    const fxLossAccountId = await this.getFXAccount(false) // FX Loss account
-    const retainedEarningsAccountId = await this.getRetainedEarningsAccount()
+      // Get FX gain/loss accounts (would need to be configured)
+      const fxGainAccountId = await this.getFXAccount(true) // FX Gain account
+      const fxLossAccountId = await this.getFXAccount(false) // FX Loss account
+      const retainedEarningsAccountId = await this.getRetainedEarningsAccount()
 
-    const lines = []
-    
-    if (fxResult.isGain) {
-      // Debit Retained Earnings, Credit FX Gain
-      lines.push({
-        accountId: retainedEarningsAccountId,
-        description: 'FX revaluation adjustment',
-        debitAmount: fxResult.fxGainLoss,
-        creditAmount: 0
-      })
-      lines.push({
-        accountId: fxGainAccountId,
-        description: 'FX gain recognized',
-        debitAmount: 0,
-        creditAmount: fxResult.fxGainLoss
-      })
-    } else {
-      // Debit FX Loss, Credit Retained Earnings
-      lines.push({
-        accountId: fxLossAccountId,
-        description: 'FX loss recognized',
-        debitAmount: fxResult.fxGainLoss,
-        creditAmount: 0
-      })
-      lines.push({
-        accountId: retainedEarningsAccountId,
-        description: 'FX revaluation adjustment',
-        debitAmount: 0,
-        creditAmount: fxResult.fxGainLoss
-      })
-    }
+      const lines = []
+      
+      if (fxResult.isGain) {
+        // Debit Retained Earnings, Credit FX Gain
+        lines.push({
+          accountId: retainedEarningsAccountId,
+          description: 'FX revaluation adjustment',
+          debitAmount: fxResult.fxGainLoss,
+          creditAmount: 0
+        })
+        lines.push({
+          accountId: fxGainAccountId,
+          description: 'FX gain recognized',
+          debitAmount: 0,
+          creditAmount: fxResult.fxGainLoss
+        })
+      } else {
+        // Debit FX Loss, Credit Retained Earnings
+        lines.push({
+          accountId: fxLossAccountId,
+          description: 'FX loss recognized',
+          debitAmount: fxResult.fxGainLoss,
+          creditAmount: 0
+        })
+        lines.push({
+          accountId: retainedEarningsAccountId,
+          description: 'FX revaluation adjustment',
+          debitAmount: 0,
+          creditAmount: fxResult.fxGainLoss
+        })
+      }
 
-    return this.createJournalEntry({
-      date: revaluationDate,
-      description: `FX revaluation for ${fxResult.currency} - ${fxResult.isGain ? 'Gain' : 'Loss'}`,
-      reference: `FX-${originalEntryId}`,
-      currency: 'USD',
-      exchangeRate: 1.0,
-      lines,
-      createdBy: userId
+      return this.createJournalEntry({
+        date: revaluationDate,
+        description: `FX revaluation for ${fxResult.currency} - ${fxResult.isGain ? 'Gain' : 'Loss'}`,
+        reference: `FX-${originalEntryId}`,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        lines,
+        createdBy: userId
+      })
     })
   }
 

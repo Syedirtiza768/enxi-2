@@ -4,11 +4,8 @@ import React, { forwardRef, SelectHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 import { ChevronDown, AlertCircle } from 'lucide-react'
 
-export interface SelectOption {
-  value: string
-  label: string
-  disabled?: boolean
-}
+// Use the consolidated SelectOption from the central types
+import type { SelectOption } from '@/lib/types/ui.types'
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   label?: string

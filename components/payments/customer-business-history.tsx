@@ -66,7 +66,7 @@ export function CustomerBusinessHistory({
   onViewLedger,
   onRecordPayment,
   onCreateInvoice,
-}: CustomerBusinessHistoryProps) {
+}: CustomerBusinessHistoryProps): React.JSX.Element {
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null)
   const [activityTimeline, setActivityTimeline] = useState<ActivityEvent[]>([])
@@ -107,14 +107,14 @@ export function CustomerBusinessHistory({
     }
   }, [customerId])
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -122,11 +122,11 @@ export function CustomerBusinessHistory({
     })
   }
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number): void => {
     return `${Math.round(value * 100)}%`
   }
 
-  const getActivityIcon = (type: string) => {
+  const getActivityIcon = (type: string): void => {
     switch (type) {
       case 'invoice_created':
         return '📄'
@@ -141,7 +141,7 @@ export function CustomerBusinessHistory({
     }
   }
 
-  const getActivityTypeLabel = (type: string) => {
+  const getActivityTypeLabel = (type: string): void => {
     switch (type) {
       case 'invoice_created':
         return 'Invoice Created'
@@ -156,7 +156,7 @@ export function CustomerBusinessHistory({
     }
   }
 
-  const getRiskLevel = () => {
+  const getRiskLevel = (): void => {
     if (!businessMetrics) return 'Unknown'
     
     const { paymentReliability, creditUtilization } = businessMetrics
@@ -170,7 +170,7 @@ export function CustomerBusinessHistory({
     }
   }
 
-  const getPaymentPattern = () => {
+  const getPaymentPattern = (): void => {
     if (!businessMetrics) return 'Unknown'
     
     const { averagePaymentDays } = businessMetrics
@@ -322,21 +322,21 @@ export function CustomerBusinessHistory({
           <CardContent>
             <div className="space-y-3">
               <Button 
-                onClick={() => onViewLedger?.(customerId)}
+                onClick={(): void => onViewLedger?.(customerId)}
                 className="w-full"
                 variant="outline"
               >
                 View Ledger
               </Button>
               <Button 
-                onClick={() => onRecordPayment?.(customerId)}
+                onClick={(): void => onRecordPayment?.(customerId)}
                 className="w-full"
                 variant="outline"
               >
                 Record Payment
               </Button>
               <Button 
-                onClick={() => onCreateInvoice?.(customerId)}
+                onClick={(): void => onCreateInvoice?.(customerId)}
                 className="w-full"
               >
                 Create Invoice

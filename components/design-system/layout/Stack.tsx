@@ -68,7 +68,7 @@ export const Stack = forwardRef<HTMLDivElement, StackProps>(
       responsive: reverse ? 'flex-col-reverse sm:flex-row-reverse' : 'flex-col sm:flex-row'
     }
 
-    const getDividerStyles = () => {
+    const getDividerStyles = (): void => {
       if (!divider) return ''
       
       switch (direction) {

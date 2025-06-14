@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import type { FormErrors } from '@/lib/types'
 import { 
   VStack, 
   HStack, 
@@ -38,13 +39,10 @@ interface LeadFormProps {
   isEdit?: boolean
 }
 
-interface ValidationErrors {
-  [key: string]: string
-}
+type ValidationErrors = FormErrors
 
-interface FieldStatus {
-  [key: string]: 'checking' | 'valid' | 'error'
-}
+// FieldStatus defined locally for form validation
+type FieldStatus = 'idle' | 'checking' | 'valid' | 'error'
 
 export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProps) {
   const [isLoading, setIsLoading] = useState(false)
@@ -72,20 +70,20 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     if (!email || validateEmail(email)) return
     
     setCheckingEmail(true)
-    setFieldStatus(prev => ({ ...prev, email: 'checking' }))
+    setFieldStatus(prev => ({ ...prev, email: 'checking' as const }))
     
     try {
-      const response = await apiClient<{ data: any }>(`/api/leads?email=${encodeURIComponent(email)}`)
+      const response = await apiClient<{ data: LeadResponse[] }>(`/api/leads?email=${encodeURIComponent(email)}`)
       if (response.data && response.data.length > 0 && !isEdit) {
         // Only check for duplicates if not editing or if email changed
-        const existingLead = response.data.find((lead: any) => 
+        const existingLead = response.data.find((lead) => 
           lead.email === email && lead.id !== initialData?.id
         )
         if (existingLead) {
           setErrors(prev => ({ ...prev, email: 'A lead with this email already exists' }))
-          setFieldStatus(prev => ({ ...prev, email: 'error' }))
+          setFieldStatus(prev => ({ ...prev, email: 'error' as const }))
         } else {
-          setFieldStatus(prev => ({ ...prev, email: 'valid' }))
+          setFieldStatus(prev => ({ ...prev, email: 'valid' as const }))
           if (errors.email === 'A lead with this email already exists') {
             setErrors(prev => {
               const newErrors = { ...prev }
@@ -165,53 +163,61 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     }
   }
 
-  const validateField = useCallback((field: string, value: any): string | null => {
+  const validateField = useCallback((field: string, value: unknown): string | null => {
     switch (field) {
       case 'firstName':
       case 'lastName':
-        if (!value?.trim()) return `${field === 'firstName' ? 'First' : 'Last'} name is required`
-        return checkMaxLength(value, MAX_NAME_LENGTH, field === 'firstName' ? 'First name' : 'Last name')
+        const strValue = value as string
+        if (!strValue?.trim()) return `${field === 'firstName' ? 'First' : 'Last'} name is required`
+        return checkMaxLength(strValue, MAX_NAME_LENGTH, field === 'firstName' ? 'First name' : 'Last name')
       
       case 'email':
-        const emailError = validateEmail(value)
+        const emailValue = value as string
+        const emailError = validateEmail(emailValue)
         if (emailError) return emailError
-        return checkMaxLength(value, MAX_EMAIL_LENGTH, 'Email')
+        return checkMaxLength(emailValue, MAX_EMAIL_LENGTH, 'Email')
       
       case 'phone':
-        if (value) {
-          const phoneError = validatePhone(value)
+        const phoneValue = value as string
+        if (phoneValue) {
+          const phoneError = validatePhone(phoneValue)
           if (phoneError) return phoneError
         }
         return null
       
       case 'company':
-        if (value) {
-          return checkMaxLength(value, MAX_COMPANY_LENGTH, 'Company')
+        const companyValue = value as string
+        if (companyValue) {
+          return checkMaxLength(companyValue, MAX_COMPANY_LENGTH, 'Company')
         }
         return null
       
       case 'jobTitle':
-        if (value) {
-          return checkMaxLength(value, MAX_JOBTITLE_LENGTH, 'Job title')
+        const jobTitleValue = value as string
+        if (jobTitleValue) {
+          return checkMaxLength(jobTitleValue, MAX_JOBTITLE_LENGTH, 'Job title')
         }
         return null
       
       case 'notes':
-        if (value) {
-          return checkMaxLength(value, MAX_NOTES_LENGTH, 'Notes')
+        const notesValue = value as string
+        if (notesValue) {
+          return checkMaxLength(notesValue, MAX_NOTES_LENGTH, 'Notes')
         }
         return null
       
       case 'source':
-        if (!value) return 'Lead source is required'
-        if (!Object.values(LeadSource).includes(value as LeadSource)) {
+        const sourceValue = value as string
+        if (!sourceValue) return 'Lead source is required'
+        if (!Object.values(LeadSource).includes(sourceValue as LeadSource)) {
           return 'Invalid lead source'
         }
         return null
       
       case 'status':
-        if (isEdit && !value) return 'Lead status is required'
-        if (value && !Object.values(LeadStatus).includes(value as LeadStatus)) {
+        const statusValue = value as string
+        if (isEdit && !statusValue) return 'Lead status is required'
+        if (statusValue && !Object.values(LeadStatus).includes(statusValue as LeadStatus)) {
           return 'Invalid lead status'
         }
         return null
@@ -229,7 +235,7 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     
     if (error) {
       setErrors(prev => ({ ...prev, [field]: error }))
-      setFieldStatus(prev => ({ ...prev, [field]: 'error' }))
+      setFieldStatus(prev => ({ ...prev, [field]: 'error' as const }))
     } else {
       setErrors(prev => {
         const newErrors = { ...prev }
@@ -238,7 +244,7 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
       })
       // Don't set email to valid immediately if it needs async validation
       if (field !== 'email' || (isEdit && value === initialData?.email)) {
-        setFieldStatus(prev => ({ ...prev, [field]: 'valid' }))
+        setFieldStatus(prev => ({ ...prev, [field]: 'valid' as const }))
       }
     }
   }

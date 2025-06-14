@@ -40,7 +40,7 @@ interface CustomerPO {
   createdAt: string
 }
 
-export default function CustomerPOsPage() {
+export default function CustomerPOsPage(): React.JSX.Element {
   
   const { formatCurrency } = useCurrency()
 const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -112,7 +112,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     acceptedValue: pos.filter(po => po.isAccepted).reduce((sum, po) => sum + po.poAmount, 0)
   }
 
-  const getStatusBadge = (po: CustomerPO) => {
+  const getStatusBadge = (po: CustomerPO): void => {
     if (po.isAccepted) {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
@@ -132,7 +132,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string): void => {
     return new Date(date).toLocaleDateString()
   }
 
@@ -170,7 +170,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           <p className="mt-1 text-sm text-gray-600">Manage customer POs and track order confirmations</p>
         </div>
         <button
-          onClick={() => router.push('/customer-pos/new')}
+          onClick={(): void => router.push('/customer-pos/new')}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -273,7 +273,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                   type="text"
                   placeholder="Search POs..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e): void => setSearch(e.target.value)}
                   className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -283,7 +283,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             <div className="sm:w-48">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e): void => setStatusFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label="Status filter"
               >
@@ -297,7 +297,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             <div className="sm:w-48">
               <select
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e): void => setDateFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="7">Last 7 days</option>
@@ -324,7 +324,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             {!search && statusFilter === 'all' && (
               <div className="mt-6">
                 <button
-                  onClick={() => router.push('/customer-pos/new')}
+                  onClick={(): void => router.push('/customer-pos/new')}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -368,7 +368,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                 <tr 
                   key={po.id} 
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => router.push(`/customer-pos/${po.id}`)}
+                  onClick={(): void => router.push(`/customer-pos/${po.id}`)}
                   role="row"
                   aria-label={`PO ${po.poNumber}`}
                 >

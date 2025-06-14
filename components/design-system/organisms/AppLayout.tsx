@@ -175,7 +175,7 @@ interface NotificationItem {
   read: boolean
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
   const pathname = usePathname()
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [sidebarOpen, setSidebarOpen] = useState(true) // Default open on desktop
@@ -189,7 +189,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const toggleExpanded = (title: string) => {
+  const toggleExpanded = (title: string): void => {
     setExpandedItems(prev => 
       prev.includes(title) 
         ? prev.filter(item => item !== title)
@@ -265,7 +265,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       ])
     }
 
-    const handleCompanySettingsChange = (event: CustomEvent) => {
+    const handleCompanySettingsChange = (event: CustomEvent): void => {
       setCompanySettings({ name: event.detail.name })
     }
 
@@ -274,7 +274,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     // Listen for company settings changes
     window.addEventListener('companySettingsChanged', handleCompanySettingsChange as EventListener)
 
-    return () => {
+    return (): void => {
       window.removeEventListener('companySettingsChanged', handleCompanySettingsChange as EventListener)
     }
   }, [])
@@ -292,7 +292,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }
 
-  const formatTimeAgo = (timestamp: string) => {
+  const formatTimeAgo = (timestamp: string): void => {
     const now = new Date()
     const time = new Date(timestamp)
     const diff = now.getTime() - time.getTime()
@@ -307,13 +307,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const unreadNotifications = notifications.filter(n => !n.read).length
 
-  const handleNotificationClick = (id: string) => {
+  const handleNotificationClick = (id: string): void => {
     setNotifications(prev => 
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     )
   }
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: string): void => {
     switch (type) {
       case 'warning': return <AlertCircle className="h-4 w-4 text-orange-500" />
       case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -322,13 +322,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }
 
-  const isActive = (href: string) => {
+  const isActive = (href: string): void => {
     if (href === '/dashboard' && pathname === '/dashboard') return true
     if (href !== '/dashboard' && pathname.startsWith(href)) return true
     return false
   }
 
-  const renderNavItem = (item: NavItem, level = 0) => {
+  const renderNavItem = (item: NavItem, level = 0): void => {
     const hasChildren = item.children && item.children.length > 0
     const isExpanded = expandedItems.includes(item.title)
     const active = isActive(item.href)
@@ -338,7 +338,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       return (
         <div key={item.title} className="relative group">
           <button
-            onClick={() => {
+            onClick={(): void => {
               if (hasChildren) {
                 // Expand sidebar when clicking on parent items while collapsed
                 setSidebarCollapsed(false)
@@ -367,7 +367,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <div key={item.title}>
         <button
-          onClick={() => {
+          onClick={(): void => {
             if (hasChildren) {
               toggleExpanded(item.title)
             } else if (item.href !== '#') {
@@ -453,7 +453,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-[var(--z-overlay)] bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={(): void => setSidebarOpen(false)}
         />
       )}
 
@@ -467,7 +467,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSidebarOpen(true)}
+                onClick={(): void => setSidebarOpen(true)}
                 className="lg:hidden hover:bg-[var(--bg-secondary)]"
               >
                 <Menu className="h-5 w-5" />
@@ -477,7 +477,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSidebarOpen(false)}
+                onClick={(): void => setSidebarOpen(false)}
                 className={cn(
                   "lg:hidden hover:bg-[var(--bg-secondary)]",
                   sidebarOpen ? "block" : "hidden"
@@ -490,7 +490,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                onClick={(): void => setSidebarCollapsed(!sidebarCollapsed)}
                 className="hidden lg:flex hover:bg-[var(--bg-secondary)]"
               >
                 <Menu className="h-5 w-5" />
@@ -675,7 +675,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                     type="text"
                     placeholder="Search modules, customers, items..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e): void => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary-500)]/20 focus:border-[var(--color-brand-primary-500)] transition-all duration-200"
                   />
                 </div>
@@ -688,7 +688,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowSearch(!showSearch)}
+                onClick={(): void => setShowSearch(!showSearch)}
                 className="md:hidden hover:bg-[var(--bg-secondary)]"
               >
                 <Search className="h-4 w-4" />
@@ -698,7 +698,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push('/help')}
+                onClick={(): void => router.push('/help')}
                 className="hidden lg:flex hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
                 title="Help & Documentation"
               >
@@ -710,7 +710,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={(): void => setShowNotifications(!showNotifications)}
                   className="relative hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
                 >
                   <Bell className="h-4 w-4" />
@@ -730,7 +730,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <>
                     <div 
                       className="fixed inset-0 z-10" 
-                      onClick={() => setShowNotifications(false)}
+                      onClick={(): void => setShowNotifications(false)}
                     />
                     <div className="absolute right-0 top-12 w-80 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20 max-h-96 overflow-hidden">
                       <div className="p-4 border-b border-[var(--border-primary)]">
@@ -746,7 +746,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           notifications.map((notification) => (
                             <div
                               key={notification.id}
-                              onClick={() => handleNotificationClick(notification.id)}
+                              onClick={(): void => handleNotificationClick(notification.id)}
                               className={cn(
                                 "p-4 border-b border-[var(--border-secondary)] cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors",
                                 !notification.read && "bg-[var(--color-brand-primary-50)] dark:bg-[var(--color-brand-primary-950)]"
@@ -790,7 +790,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  onClick={(): void => setShowUserMenu(!showUserMenu)}
                   className="hover:bg-[var(--bg-secondary)]"
                 >
                   <HStack gap="sm" align="center">
@@ -814,7 +814,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <>
                     <div 
                       className="fixed inset-0 z-10" 
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={(): void => setShowUserMenu(false)}
                     />
                     <div className="absolute right-0 top-12 w-64 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20">
                       <div className="p-4 border-b border-[var(--border-primary)]">
@@ -840,7 +840,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           variant="ghost"
                           size="sm"
                           fullWidth
-                          onClick={() => router.push('/profile')}
+                          onClick={(): void => router.push('/profile')}
                           className="justify-start mb-1"
                         >
                           <UserCircle className="h-4 w-4 mr-3" />
@@ -850,7 +850,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           variant="ghost"
                           size="sm"
                           fullWidth
-                          onClick={() => router.push('/settings')}
+                          onClick={(): void => router.push('/settings')}
                           className="justify-start mb-1"
                         >
                           <Settings className="h-4 w-4 mr-3" />
@@ -885,7 +885,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 type="text"
                 placeholder="Search modules, customers, items..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e): void => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-primary-500)]/20 focus:border-[var(--color-brand-primary-500)] transition-all duration-200"
                 autoFocus
               />

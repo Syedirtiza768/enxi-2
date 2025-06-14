@@ -6,7 +6,7 @@ interface UseDefaultTaxRateOptions {
   enabled?: boolean
 }
 
-export function useDefaultTaxRate(options: UseDefaultTaxRateOptions = {}) {
+export function useDefaultTaxRate(options: UseDefaultTaxRateOptions = {}): unknown {
   const { taxType = TaxType.SALES, enabled = true } = options
   const [defaultRate, setDefaultRate] = useState<TaxRate | null>(null)
   const [loading, setLoading] = useState(true)

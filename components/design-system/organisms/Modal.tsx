@@ -33,14 +33,14 @@ export interface ModalFooterProps {
   align?: 'left' | 'center' | 'right' | 'between'
 }
 
-const Modal = ({ open, onOpenChange, children, className }: ModalProps) => {
+const Modal = ({ open, onOpenChange, children, className }: ModalProps): void => {
   React.useEffect(() => {
     if (open) {
       // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden'
       
       // Handle escape key
-      const handleEscape = (e: KeyboardEvent) => {
+      const handleEscape = (e: KeyboardEvent): void => {
         if (e.key === 'Escape') {
           onOpenChange(false)
         }
@@ -48,7 +48,7 @@ const Modal = ({ open, onOpenChange, children, className }: ModalProps) => {
       
       document.addEventListener('keydown', handleEscape)
       
-      return () => {
+      return (): void => {
         document.body.style.overflow = ''
         document.removeEventListener('keydown', handleEscape)
       }
@@ -68,7 +68,7 @@ const Modal = ({ open, onOpenChange, children, className }: ModalProps) => {
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-[var(--blur-sm)] animate-fade-in"
-        onClick={() => onOpenChange(false)}
+        onClick={(): void => onOpenChange(false)}
         aria-hidden="true"
       />
       
@@ -86,7 +86,7 @@ const ModalContent = ({
   className,
   onClose,
   showCloseButton = true
-}: ModalContentProps) => {
+}: ModalContentProps): void => {
   const sizeClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -133,7 +133,7 @@ const ModalHeader = ({
   className,
   onClose,
   showCloseButton = true
-}: ModalHeaderProps) => {
+}: ModalHeaderProps): void => {
   return (
     <div
       className={cn(
@@ -193,7 +193,7 @@ const ModalFooter = ({
   children,
   className,
   align = 'right'
-}: ModalFooterProps) => {
+}: ModalFooterProps): void => {
   const alignmentClasses = {
     left: 'justify-start',
     center: 'justify-center',
@@ -234,10 +234,10 @@ export function SimpleModal({
   children,
   footer,
   size = 'md'
-}: SimpleModalProps) {
+}: SimpleModalProps): React.JSX.Element {
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent size={size} onClose={() => onOpenChange(false)}>
+      <ModalContent size={size} onClose={(): void => onOpenChange(false)}>
         <ModalHeader>
           <div>
             <Heading as="h2" className="text-xl font-semibold">

@@ -31,18 +31,18 @@ export function SimplifiedItemEditor({
   items, 
   onItemsChange,
   viewMode = 'client' 
-}: SimplifiedItemEditorProps) {
+}: SimplifiedItemEditorProps): React.JSX.Element {
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
 
-  const addItem = () => {
+  const addItem = (): void => {
     setShowItemSearch(true);
   };
 
-  const selectInventoryItem = (inventoryItem: InventoryItem) => {
+  const selectInventoryItem = (inventoryItem: InventoryItem): void => {
     const newItem: QuotationItem = {
       inventory_item_id: inventoryItem.id,
       inventory_item: inventoryItem,
@@ -63,7 +63,7 @@ export function SimplifiedItemEditor({
     setSearchQuery('');
   };
 
-  const updateItem = (index: number, updates: Partial<QuotationItem>) => {
+  const updateItem = (index: number, updates: Partial<QuotationItem>): void => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], ...updates };
     
@@ -80,11 +80,11 @@ export function SimplifiedItemEditor({
     onItemsChange(newItems);
   };
 
-  const removeItem = (index: number) => {
+  const removeItem = (index: number): void => {
     onItemsChange(items.filter((_, i) => i !== index));
   };
 
-  const toggleExpanded = (index: number) => {
+  const toggleExpanded = (index: number): void => {
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(index)) {
       newExpanded.delete(index);
@@ -94,7 +94,7 @@ export function SimplifiedItemEditor({
     setExpandedItems(newExpanded);
   };
 
-  const searchInventory = async (query: string) => {
+  const searchInventory = async (query: string): void => {
     // This would be replaced with actual API call
     try {
       const response = await fetch(`/api/inventory?search=${query}&available=true`);
@@ -108,7 +108,7 @@ export function SimplifiedItemEditor({
   React.useEffect(() => {
     if (searchQuery.length > 2) {
       const timer = setTimeout(() => searchInventory(searchQuery), 300);
-      return () => clearTimeout(timer);
+      return (): void => clearTimeout(timer);
     }
   }, [searchQuery]);
 
@@ -147,7 +147,7 @@ export function SimplifiedItemEditor({
                   <Input
                     type="number"
                     value={item.quantity}
-                    onChange={(e) => updateItem(index, { quantity: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateItem(index, { quantity: parseFloat(e.target.value) || 0 })}
                     className="w-20 text-center"
                     min="0"
                     step="1"
@@ -156,7 +156,7 @@ export function SimplifiedItemEditor({
                   <Input
                     type="number"
                     value={item.unit_price}
-                    onChange={(e) => updateItem(index, { unit_price: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => updateItem(index, { unit_price: parseFloat(e.target.value) || 0 })}
                     className="w-28"
                     min="0"
                     step="0.01"
@@ -169,7 +169,7 @@ export function SimplifiedItemEditor({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleExpanded(index)}
+                    onClick={(): void => toggleExpanded(index)}
                   >
                     {expandedItems.has(index) ? (
                       <ChevronUp className="h-4 w-4" />
@@ -181,7 +181,7 @@ export function SimplifiedItemEditor({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeItem(index)}
+                    onClick={(): void => removeItem(index)}
                   >
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
@@ -197,7 +197,7 @@ export function SimplifiedItemEditor({
                       <Input
                         type="number"
                         value={item.discount_percentage}
-                        onChange={(e) => updateItem(index, { discount_percentage: parseFloat(e.target.value) || 0 })}
+                        onChange={(e): void => updateItem(index, { discount_percentage: parseFloat(e.target.value) || 0 })}
                         min="0"
                         max="100"
                         step="0.01"
@@ -208,7 +208,7 @@ export function SimplifiedItemEditor({
                       <Input
                         type="number"
                         value={item.tax_rate}
-                        onChange={(e) => updateItem(index, { tax_rate: parseFloat(e.target.value) || 0 })}
+                        onChange={(e): void => updateItem(index, { tax_rate: parseFloat(e.target.value) || 0 })}
                         min="0"
                         step="0.01"
                       />
@@ -243,7 +243,7 @@ export function SimplifiedItemEditor({
                     <label className="text-sm text-gray-600">Internal Notes</label>
                     <Input
                       value={item.internal_notes || ''}
-                      onChange={(e) => updateItem(index, { internal_notes: e.target.value })}
+                      onChange={(e): void => updateItem(index, { internal_notes: e.target.value })}
                       placeholder="Add notes for internal use..."
                     />
                   </div>
@@ -266,7 +266,7 @@ export function SimplifiedItemEditor({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e): void => setSearchQuery(e.target.value)}
                 placeholder="Search inventory items..."
                 className="pl-10"
                 autoFocus
@@ -283,7 +283,7 @@ export function SimplifiedItemEditor({
                   <Card
                     key={item.id}
                     className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => selectInventoryItem(item)}
+                    onClick={(): void => selectInventoryItem(item)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -314,7 +314,7 @@ export function SimplifiedItemEditor({
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowItemSearch(false)}>
+              <Button variant="outline" onClick={(): void => setShowItemSearch(false)}>
                 Cancel
               </Button>
               <Button variant="link" className="text-sm">

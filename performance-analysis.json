@@ -1,0 +1,4611 @@
+{
+  "timestamp": "2025-06-14T20:41:58.100Z",
+  "summary": {
+    "total": 656,
+    "high": 161,
+    "medium": 222,
+    "low": 273
+  },
+  "byType": {
+    "Missing Index": 71,
+    "Overfetching": 257,
+    "Missing Pagination": 158,
+    "N+1 Query": 3,
+    "Missing Memoization": 91,
+    "Sequential Async": 76
+  },
+  "issues": [
+    {
+      "file": "prisma/seed-accounting.ts",
+      "line": 236,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: balance:, not: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-accounting.ts",
+      "line": 12,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-accounting.ts",
+      "line": 236,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-accounting.ts",
+      "line": 236,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1484,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1496,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1511,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1523,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1543,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1554,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1568,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1729,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1743,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1753,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1767,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1779,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1787,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1800,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1815,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1861,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1874,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1884,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1897,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1911,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1920,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1934,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1946,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1964,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1980,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1983,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 1993,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2007,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2010,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2013,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2166,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2175,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2184,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-diesel.ts",
+      "line": 2193,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 575,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 638,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: role:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 681,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, notIn: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 882,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: role:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 1096,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 217,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 302,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 386,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 388,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 389,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 391,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 442,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 443,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 487,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 488,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 575,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 582,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 638,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 880,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 881,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 882,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 386,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 388,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 389,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 442,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 443,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 487,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 488,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 575,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 582,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 638,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 681,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 687,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 795,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 880,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 881,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 882,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 987,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 1052,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive-fixed.ts",
+      "line": 1096,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1571,
+      "type": "N+1 Query",
+      "description": "Database query inside loop - consider using include or batch operation",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1701,
+      "type": "N+1 Query",
+      "description": "Database query inside loop - consider using include or batch operation",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1747,
+      "type": "N+1 Query",
+      "description": "Database query inside loop - consider using include or batch operation",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1037,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1121,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1249,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1428,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1862,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1946,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1976,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1037,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1249,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1428,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1862,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1946,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "prisma/seed-uae-marine-comprehensive.ts",
+      "line": 1976,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "components/accessibility/AccessibleForm.tsx",
+      "line": 233,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/accessibility/AccessibleTable.tsx",
+      "line": 457,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/accessibility/AccessibleTable.tsx",
+      "line": 457,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/accessibility/LiveRegion.tsx",
+      "line": 142,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/audit/audit-log-viewer.tsx",
+      "line": 80,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/customers/customer-detail-tabs.tsx",
+      "line": 50,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/customers/customer-form.tsx",
+      "line": 79,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/customers/customer-list.tsx",
+      "line": 174,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/customers/customer-search.tsx",
+      "line": 26,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/design-system/ThemeScript.tsx",
+      "line": 3,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/error/error-modal.tsx",
+      "line": 16,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/error/error-toast.tsx",
+      "line": 20,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/error/error-toast.tsx",
+      "line": 215,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/error/inline-error.tsx",
+      "line": 95,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/error/inline-error.tsx",
+      "line": 144,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/export/excel-export-examples.tsx",
+      "line": 101,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/export/excel-exporter.tsx",
+      "line": 397,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/export/export-dialog.tsx",
+      "line": 47,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/export/export-dialog.tsx",
+      "line": 47,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/goods-receipts/goods-receipt-form.tsx",
+      "line": 141,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/goods-receipts/goods-receipt-form.tsx",
+      "line": 81,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/bulk-item-import.tsx",
+      "line": 35,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/category-form.tsx",
+      "line": 33,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/category-tree.tsx",
+      "line": 35,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/charts.tsx",
+      "line": 160,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/charts.tsx",
+      "line": 199,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/charts.tsx",
+      "line": 228,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/charts.tsx",
+      "line": 259,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/inventory-nav.tsx",
+      "line": 8,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/inventory-valuation-report.tsx",
+      "line": 43,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/inventory-valuation-report.tsx",
+      "line": 43,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/inventory/item-form.tsx",
+      "line": 62,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/item-list.tsx",
+      "line": 53,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/item-selector-modal.tsx",
+      "line": 92,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/item-selector-modal.tsx",
+      "line": 92,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/inventory/location-form.tsx",
+      "line": 36,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/physical-count-form.tsx",
+      "line": 59,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/physical-count-form.tsx",
+      "line": 59,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/inventory/stock-alerts.tsx",
+      "line": 33,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/stock-movement-form.tsx",
+      "line": 53,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/stock-transfer-form.tsx",
+      "line": 63,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/inventory/stock-transfer-form.tsx",
+      "line": 63,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/inventory/unit-of-measure-form.tsx",
+      "line": 25,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/invoices/invoice-form.tsx",
+      "line": 137,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/invoices/invoice-form.tsx",
+      "line": 93,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/leads/lead-stats.tsx",
+      "line": 20,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/media/image-uploader.tsx",
+      "line": 66,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/bank-reconciliation.tsx",
+      "line": 53,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/bank-reconciliation.tsx",
+      "line": 53,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/payments/customer-business-history.tsx",
+      "line": 64,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/customer-ledger.tsx",
+      "line": 37,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/multi-invoice-payment.tsx",
+      "line": 38,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/payment-form-enhanced.tsx",
+      "line": 78,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/payment-form-enhanced.tsx",
+      "line": 78,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/payments/payment-form.tsx",
+      "line": 94,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/payment-history.tsx",
+      "line": 52,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/payments/payment-history.tsx",
+      "line": 52,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/purchase-orders/po-approval-interface.tsx",
+      "line": 69,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/purchase-orders/po-approval-interface.tsx",
+      "line": 69,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/purchase-orders/purchase-order-form.tsx",
+      "line": 80,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/clean-item-editor.tsx",
+      "line": 33,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/clean-item-editor.tsx",
+      "line": 33,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/quotations/line-item-editor-enhanced.tsx",
+      "line": 63,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/line-item-editor-optimized.tsx",
+      "line": 393,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/line-item-editor-v2.tsx",
+      "line": 100,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/line-item-editor.tsx",
+      "line": 52,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/quotation-form-clean.tsx",
+      "line": 28,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/quotation-form-clean.tsx",
+      "line": 28,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/quotations/quotation-form-enhanced.tsx",
+      "line": 78,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/quotation-form-enhanced.tsx",
+      "line": 78,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/quotations/quotation-form-v2.tsx",
+      "line": 36,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/quotation-form.tsx",
+      "line": 102,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/simple-item-editor.tsx",
+      "line": 34,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/quotations/simplified-item-editor.tsx",
+      "line": 30,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/reporting/advanced-reporting.tsx",
+      "line": 99,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/reporting/advanced-reporting.tsx",
+      "line": 99,
+      "type": "Missing Memoization",
+      "description": "Inline function props without useCallback",
+      "severity": "low"
+    },
+    {
+      "file": "components/sales/charts.tsx",
+      "line": 109,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales/demo.tsx",
+      "line": 50,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-cases/expense-manager.tsx",
+      "line": 55,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-cases/sales-case-detail-tabs.tsx",
+      "line": 64,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-cases/sales-case-form.tsx",
+      "line": 22,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-orders/create-shipment-modal.tsx",
+      "line": 27,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-orders/order-timeline.tsx",
+      "line": 26,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-orders/sales-order-form.tsx",
+      "line": 123,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/sales-orders/workflow-status.tsx",
+      "line": 47,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/shipments/shipment-detail.tsx",
+      "line": 82,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/shipments/shipment-form.tsx",
+      "line": 64,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/shipments/shipment-list.tsx",
+      "line": 63,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/supplier-invoices/supplier-invoice-form.tsx",
+      "line": 101,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/supplier-payments/supplier-payment-form.tsx",
+      "line": 75,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/suppliers/supplier-list.tsx",
+      "line": 62,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/tax/tax-rate-selector.tsx",
+      "line": 16,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/three-way-matching/three-way-matching-dashboard.tsx",
+      "line": 75,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/three-way-matching/three-way-matching-detail.tsx",
+      "line": 244,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/ui/use-toast.tsx",
+      "line": 184,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/users/user-edit-form.tsx",
+      "line": 42,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/users/user-list.tsx",
+      "line": 63,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 335,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: name:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 336,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: name:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 337,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: companyName:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 338,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: sku:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 339,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: code:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 340,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: quotationNumber:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 341,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: orderNumber:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 342,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: orderNumber:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 343,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceNumber:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 335,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 336,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 337,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 338,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 339,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 340,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 341,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 342,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 343,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 335,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 336,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 337,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 338,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 339,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 340,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 341,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 342,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "e2e/utils/database-helpers.ts",
+      "line": 343,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/cron/quotation-expiry.ts",
+      "line": 23,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/db/prisma-with-audit.ts",
+      "line": 12,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/db/query-optimizer.ts",
+      "line": 211,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/db/query-optimizer.ts",
+      "line": 69,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/db/query-optimizer.ts",
+      "line": 70,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/db/query-optimizer.ts",
+      "line": 71,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/middleware/route-health-monitor.ts",
+      "line": 213,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 70,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 228,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 235,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 388,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, lt:, gte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 394,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, lt:, gte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 204,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 207,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 208,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 388,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 394,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 182,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 183,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 228,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 235,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 275,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 287,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 306,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/audit.service.ts",
+      "line": 328,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/auth.service.ts",
+      "line": 19,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/auth.service.ts",
+      "line": 25,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/auth.service.ts",
+      "line": 88,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/company-settings.service.ts",
+      "line": 42,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/company-settings.service.ts",
+      "line": 48,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "line": 350,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: isAccepted:, acceptedAt:, not: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "line": 79,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "line": 272,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "line": 339,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "line": 350,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 67,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 179,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 421,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 423,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 560,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 576,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 600,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 603,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "line": 625,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/enhanced-service.example.ts",
+      "line": 79,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/enhanced-service.example.ts",
+      "line": 81,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/enhanced-service.example.ts",
+      "line": 102,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "line": 97,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "line": 107,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "line": 174,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "line": 555,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "line": 398,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/export.service.ts",
+      "line": 349,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: createdAt:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 88,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 90,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 133,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 134,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 308,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 318,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 346,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 347,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 536,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 644,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 671,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 771,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 772,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 244,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "line": 273,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 522,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 477,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, customer:, isNot: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 583,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: id:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 585,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: id:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 85,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 93,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 95,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 233,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 248,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 522,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 534,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 583,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 585,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 211,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 212,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 444,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 465,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 477,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 522,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 534,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 583,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "line": 585,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 81,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 108,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 190,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 269,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 309,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 384,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 427,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 731,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, validUntil:, lt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 732,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, validUntil:, lt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 731,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 732,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 1025,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 1103,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 1116,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 620,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 621,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 731,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "line": 732,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 579,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: salesOrderId:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 371,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 452,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 535,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 579,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 622,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 668,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 698,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 371,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 579,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "line": 622,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 89,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 91,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 149,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 150,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 313,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 324,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 362,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 363,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 504,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 624,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 258,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "line": 276,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 128,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 192,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 265,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 312,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 335,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 336,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 447,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "line": 460,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 61,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 167,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 183,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 246,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 247,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 280,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 281,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 375,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "line": 376,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 450,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 167,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 260,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 110,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 111,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 205,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 230,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 316,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "line": 341,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 680,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 704,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 752,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 405,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: OR:, expiresAt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 505,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: expiresAt:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 506,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: expiresAt:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 613,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, gte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 617,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: timestamp:, gte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 333,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 334,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 441,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 442,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 473,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 474,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 505,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 506,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 579,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 580,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 613,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 617,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 719,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 721,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 763,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 764,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 773,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 807,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 808,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 388,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 399,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 405,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 505,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 506,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 680,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 690,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 704,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 705,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 752,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "line": 753,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "app/api/permissions/route.ts",
+      "line": 8,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "app/api/permissions/route.ts",
+      "line": 16,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "app/api/permissions/route.ts",
+      "line": 8,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "app/api/permissions/route.ts",
+      "line": 16,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "app/api/sales-cases/route.ts",
+      "line": 72,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "components/design-system/atoms/Radio.tsx",
+      "line": 149,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/design-system/organisms/AppLayout.tsx",
+      "line": 178,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "components/design-system/organisms/ThemeToggle.tsx",
+      "line": 13,
+      "type": "Missing Memoization",
+      "description": "Expensive computation without useMemo",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 27,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 37,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 74,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 173,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 131,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "line": 141,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/currency.service.ts",
+      "line": 197,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/currency.service.ts",
+      "line": 219,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/currency.service.ts",
+      "line": 316,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/currency.service.ts",
+      "line": 197,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "line": 109,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, OR:, type: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "line": 219,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, OR:, name:, contains: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "line": 219,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "line": 109,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "line": 219,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 92,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 93,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 405,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 331,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 378,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 554,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "line": 566,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 106,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: journalEntry:, date:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 129,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: journalEntry:, date:, lt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 129,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 14,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 106,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "line": 129,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 285,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: parentId:, isActive: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 41,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 51,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 108,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 130,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 422,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 431,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "line": 285,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 101,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 115,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 116,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 428,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 441,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 442,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 614,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 101,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: trackInventory:, isActive: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 102,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: trackInventory:, isActive: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 572,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: availableQty:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 575,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: availableQty:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 672,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: reservedQty:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 679,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: reservedQty:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 144,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 346,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 347,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 372,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 373,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 374,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 530,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 555,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 572,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 575,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 672,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 679,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 746,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 769,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 861,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 101,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 102,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 303,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 316,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 572,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 575,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 672,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "line": 679,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 719,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 720,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 868,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 869,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 776,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: itemId:, isActive: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 1002,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: isActive:, trackInventory:, reorderPoint:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 1056,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: isActive:, trackInventory: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 135,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 144,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 160,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 181,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 195,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 204,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 213,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 324,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 335,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 350,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 370,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 379,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 388,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 967,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 978,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 776,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 850,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 1002,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "line": 1056,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 266,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: isActive:, availableQty:, gt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 116,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 266,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 343,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 383,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 635,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 664,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 266,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 447,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "line": 461,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/inventory/unit-of-measure.service.ts",
+      "line": 55,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/unit-of-measure.service.ts",
+      "line": 65,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/unit-of-measure.service.ts",
+      "line": 141,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/inventory/unit-of-measure.service.ts",
+      "line": 158,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/goods-receipt.service.ts",
+      "line": 560,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 90,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 115,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 116,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 92,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 270,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "line": 621,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-invoice.service.ts",
+      "line": 83,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 353,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 73,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 202,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 344,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 364,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 328,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 329,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 343,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 353,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "line": 364,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "line": 78,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "line": 88,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "line": 174,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "line": 184,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "line": 330,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 124,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 353,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 466,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 157,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: supplierId:, items:, some:, goodsReceiptItemId:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 388,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: matchingStatus:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 403,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: matchingStatus:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 124,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 143,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 157,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 388,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 403,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 466,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "line": 480,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/financial-dashboard.service.ts",
+      "line": 454,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/financial-dashboard.service.ts",
+      "line": 454,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 196,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 307,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 307,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: movementDate:, gte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 325,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: id:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 552,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: id:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 579,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: id:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 693,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: totalQuantity:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 693,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: totalQuantity:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 715,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: totalQuantity:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 715,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: totalQuantity:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 736,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: expiryDate:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 736,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: expiryDate:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 196,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 198,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 307,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 325,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 552,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 579,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 693,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 693,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 715,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 715,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 736,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "line": 736,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 439,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 487,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 551,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 618,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoices:, some:, invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 619,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoices:, some:, invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 629,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoices:, some:, invoiceDate:, gte:, lt: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 706,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: status:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 867,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: invoiceDate:, gte:, lte: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 439,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 487,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 551,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 618,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 619,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 629,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 706,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "line": 867,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 307,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 375,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 476,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 558,
+      "type": "Sequential Async",
+      "description": "Sequential async operations in map - use Promise.all() for parallel execution",
+      "severity": "medium"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 70,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 71,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 73,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 119,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 185,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 186,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 187,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 227,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 228,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 229,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 629,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 631,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 307,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 308,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 375,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 381,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 476,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 503,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 558,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "line": 567,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 86,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 96,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 157,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 167,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 545,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 473,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "line": 479,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 78,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 79,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 80,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 109,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 155,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 668,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 679,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "line": 752,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "app/api/goods-receipts/[id]/route.ts",
+      "line": 72,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "app/api/goods-receipts/[id]/route.ts",
+      "line": 108,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    },
+    {
+      "file": "app/api/goods-receipts/[id]/route.ts",
+      "line": 108,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "app/api/inventory/check-availability/route.ts",
+      "line": 16,
+      "type": "Missing Index",
+      "description": "Complex where clause on fields: itemId:, in: - consider adding database index",
+      "severity": "medium"
+    },
+    {
+      "file": "app/api/inventory/check-availability/route.ts",
+      "line": 16,
+      "type": "Missing Pagination",
+      "description": "findMany without pagination - could return unbounded results",
+      "severity": "high"
+    },
+    {
+      "file": "app/api/payments/[id]/route.ts",
+      "line": 74,
+      "type": "Overfetching",
+      "description": "Query without select/include - fetching all fields when you might need only some",
+      "severity": "low"
+    }
+  ]
+}

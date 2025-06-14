@@ -60,7 +60,7 @@ interface SupplierStats {
   averagePaymentTerm: number
 }
 
-export default function SuppliersPage() {
+export default function SuppliersPage(): React.JSX.Element {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [stats, setStats] = useState<SupplierStats>({
     totalSuppliers: 0,
@@ -109,7 +109,7 @@ export default function SuppliersPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string): void => {
     if (!confirm('Are you sure you want to delete this supplier?')) {
       return
     }
@@ -127,7 +127,7 @@ export default function SuppliersPage() {
     }
   }
 
-  const getStatusBadge = (status: Supplier['status']) => {
+  const getStatusBadge = (status: Supplier['status']): void => {
     const config = {
       ACTIVE: { label: 'Active', className: 'bg-green-100 text-green-800' },
       INACTIVE: { label: 'Inactive', className: 'bg-gray-100 text-gray-800' },
@@ -191,7 +191,7 @@ export default function SuppliersPage() {
             <Button
               variant="primary"
               leftIcon={<Plus />}
-              onClick={() => window.location.href = '/suppliers/new'}
+              onClick={(): void => window.location.href = '/suppliers/new'}
             >
               Add Supplier
             </Button>
@@ -270,7 +270,7 @@ export default function SuppliersPage() {
                   <Input
                     placeholder="Search by name, code, email, or contact..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e): void => setSearch(e.target.value)}
                     leftIcon={<Search />}
                     fullWidth
                   />
@@ -278,7 +278,7 @@ export default function SuppliersPage() {
 
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e): void => setStatusFilter(e.target.value)}
                   className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[150px]"
                 >
                   <option value="all">All Status</option>
@@ -313,7 +313,7 @@ export default function SuppliersPage() {
                     <Button
                       variant="primary"
                       leftIcon={<Plus />}
-                      onClick={() => window.location.href = '/suppliers/new'}
+                      onClick={(): void => window.location.href = '/suppliers/new'}
                     >
                       Add Supplier
                     </Button>
@@ -386,14 +386,14 @@ export default function SuppliersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => window.location.href = `/suppliers/${supplier.id}`}
+                            onClick={(): void => window.location.href = `/suppliers/${supplier.id}`}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(supplier.id)}
+                            onClick={(): void => handleDelete(supplier.id)}
                             className="text-[var(--color-semantic-error-600)]"
                           >
                             <Trash2 className="h-4 w-4" />

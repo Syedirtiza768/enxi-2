@@ -47,7 +47,7 @@ interface UnassignedCustomer {
   createdAt: string
 }
 
-export default function SalesTeamPage() {
+export default function SalesTeamPage(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const [hierarchy, setHierarchy] = useState<TeamHierarchy>({ manager: null, teamMembers: [] })
   const [unassignedCustomers, setUnassignedCustomers] = useState<UnassignedCustomer[]>([])
@@ -98,7 +98,7 @@ export default function SalesTeamPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -106,7 +106,7 @@ export default function SalesTeamPage() {
     }).format(amount)
   }
 
-  const calculateAchievement = (current: number, target: number) => {
+  const calculateAchievement = (current: number, target: number): void => {
     if (target === 0) return 0
     return Math.round((current / target) * 100)
   }
@@ -133,7 +133,7 @@ export default function SalesTeamPage() {
           </p>
         </div>
         <Button
-          onClick={() => router.push('/sales-team/assign')}
+          onClick={(): void => router.push('/sales-team/assign')}
           className="flex items-center space-x-2"
         >
           <UserPlus className="w-4 h-4" />
@@ -144,7 +144,7 @@ export default function SalesTeamPage() {
       {/* Tab Selection */}
       <div className="flex space-x-4 border-b">
         <button
-          onClick={() => setSelectedTab('team')}
+          onClick={(): void => setSelectedTab('team')}
           className={`pb-2 px-1 font-medium text-sm border-b-2 transition-colors ${
             selectedTab === 'team'
               ? 'border-blue-600 text-blue-600'
@@ -154,7 +154,7 @@ export default function SalesTeamPage() {
           My Team
         </button>
         <button
-          onClick={() => setSelectedTab('unassigned')}
+          onClick={(): void => setSelectedTab('unassigned')}
           className={`pb-2 px-1 font-medium text-sm border-b-2 transition-colors ${
             selectedTab === 'unassigned'
               ? 'border-blue-600 text-blue-600'
@@ -207,7 +207,7 @@ export default function SalesTeamPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => router.push(`/users/${member.id}`)}
+                          onClick={(): void => router.push(`/users/${member.id}`)}
                         >
                           <ChevronRight className="w-4 h-4" />
                         </Button>
@@ -296,7 +296,7 @@ export default function SalesTeamPage() {
             <Input
               placeholder="Search unassigned customers..."
               value={searchUnassigned}
-              onChange={(e) => setSearchUnassigned(e.target.value)}
+              onChange={(e): void => setSearchUnassigned(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -315,7 +315,7 @@ export default function SalesTeamPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(`/sales-team/assign?customerId=${customer.id}`)}
+                        onClick={(): void => router.push(`/sales-team/assign?customerId=${customer.id}`)}
                       >
                         <UserCheck className="w-4 h-4" />
                       </Button>

@@ -5,7 +5,7 @@ import { withCrudAudit } from '@/lib/middleware/audit.middleware'
 import { EntityType } from '@/lib/validators/audit.validator'
 
 // GET /api/customers - List all customers with search
-const getHandler = async (request: NextRequest) => {
+const getHandler = async (request: NextRequest): Promise<NextResponse> => {
   try {
     // Try to get user first and handle auth errors separately
     let user;
@@ -47,7 +47,7 @@ const getHandler = async (request: NextRequest) => {
       stats: result.stats,
       pagination: result.pagination
     })
-} catch (error) {
+  } catch (error) {
     console.error('Customers API Error:', error);
     
     // Enhanced error response
@@ -64,7 +64,7 @@ const getHandler = async (request: NextRequest) => {
 }
 
 // POST /api/customers - Create new customer
-const postHandler = async (request: NextRequest) => {
+const postHandler = async (request: NextRequest): Promise<NextResponse> => {
   try {
     // Try to get user first and handle auth errors separately
     let user;

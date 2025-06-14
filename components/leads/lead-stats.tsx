@@ -17,7 +17,7 @@ interface LeadStatsProps {
   stats: LeadStatsType | null
 }
 
-export function LeadStats({ stats }: LeadStatsProps) {
+export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
   if (!stats) {
     return (
       <Grid cols={4} gap="md">

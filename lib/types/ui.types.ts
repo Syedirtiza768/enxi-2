@@ -2,10 +2,12 @@
  * UI Component Types
  * 
  * Defines strict types for UI components to prevent common errors
+ * This is the SINGLE SOURCE OF TRUTH for UI-related interfaces
  */
 
 /**
- * Select Option Interface
+ * CONSOLIDATED Select Option Interface
+ * This replaces all other SelectOption definitions in the codebase
  * Enforces non-empty string values for all select options
  */
 export interface SelectOption {
@@ -15,6 +17,10 @@ export interface SelectOption {
   label: string
   /** Optional disabled state */
   disabled?: boolean
+  /** Optional icon or additional data */
+  icon?: React.ReactNode
+  /** Optional grouping */
+  group?: string
 }
 
 /**

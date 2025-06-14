@@ -106,7 +106,7 @@ export default function SystemHealthPage() {
     }
   };
 
-  const performHealthChecks = async (): Promise<boolean> => {
+  const performHealthChecks = async (): Promise<void> => {
     setLoading(true);
     try {
       const response = await fetch('/api/system/health?checks=true');

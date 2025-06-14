@@ -18,46 +18,47 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Search, AlertTriangle, Package } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
+import { formatCurrency } from '@/lib/utils/currency'
+import type { Supplier, Account, GoodsReceipt } from '@/lib/generated/prisma'
 
-interface Supplier {
-  id: string
-  name: string
-  code: string
-  supplierNumber: string
-  paymentTerms?: string
-  currency?: string
+interface SupplierWithRelations extends Supplier {
+  account?: Account | null
 }
 
-interface GoodsReceipt {
-  id: string
-  receiptNumber: string
-  supplier: {
-    name: string
-    code: string
+interface GoodsReceiptWithRelations extends GoodsReceipt {
+  purchaseOrder: {
+    supplier: {
+      name: string
+      supplierNumber: string
+    }
   }
-  receivedDate: string
-  status: string
-  items: Array<{
-    id: string
-    item: {
+  items: GoodsReceiptItemWithRelations[]
+}
+
+interface GoodsReceiptItemWithRelations {
+  id: string
+  purchaseOrderItem: {
+    item?: {
       name: string
       code: string
-      unitOfMeasure: {
+      unitOfMeasure?: {
         symbol: string
-      }
-    }
-    quantityReceived: number
-    quantityInvoiced: number
-    unitCost: number
-    totalCost: number
-  }>
+      } | null
+    } | null
+    itemCode: string
+    description: string
+    unitPrice: number
+  } | null
+  quantityReceived: number
+  quantityInvoiced: number
+  unitCost: number
+  totalCost: number
 }
 
-interface Account {
-  id: string
-  accountNumber: string
-  accountName: string
-  accountType: string
+interface AccountWithDetails extends Omit<Account, 'type'> {
+  code: string
+  name: string
+  type: string
 }
 
 interface SupplierInvoiceItem {
@@ -98,14 +99,14 @@ interface SupplierInvoiceFormProps {
 }
 
 export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvoiceFormProps) {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
-  const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [taxAccounts, setTaxAccounts] = useState<Account[]>([])
+  const [suppliers, setSuppliers] = useState<SupplierWithRelations[]>([])
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierWithRelations | null>(null)
+  const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceiptWithRelations[]>([])
+  const [accounts, setAccounts] = useState<AccountWithDetails[]>([])
+  const [taxAccounts, setTaxAccounts] = useState<AccountWithDetails[]>([])
   const [supplierSearch, setSupplierSearch] = useState('')
   
   const [formData, setFormData] = useState<SupplierInvoiceFormData>({
@@ -121,6 +122,86 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     taxAccountId: supplierInvoice?.taxAccountId || '',
     notes: supplierInvoice?.notes || ''
   })
+
+  // Define all functions before useEffect hooks
+  const fetchSuppliers = async (): Promise<void> => {
+    try {
+      const response = await apiClient<{ data: SupplierWithRelations[] }>('/api/suppliers', { method: 'GET' })
+      if (response.ok) {
+        setSuppliers(response.data?.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching suppliers:', error)
+    }
+  }
+
+  const fetchGoodsReceipts = async (supplierId: string) => {
+    try {
+      const response = await apiClient<{ data: GoodsReceiptWithRelations[] }>(`/api/goods-receipts?supplierId=${supplierId}&status=COMPLETED`, { method: 'GET' })
+      if (response.ok) {
+        setGoodsReceipts(response.data?.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching goods receipts:', error)
+    }
+  }
+
+  const fetchAccounts = async (): Promise<void> => {
+    try {
+      const [expenseResponse, taxResponse] = await Promise.all([
+        apiClient<{ data: AccountWithDetails[] }>('/api/accounting/accounts?type=EXPENSE', { method: 'GET' }),
+        apiClient<{ data: AccountWithDetails[] }>('/api/accounting/accounts?type=LIABILITY', { method: 'GET' })
+      ])
+      
+      if (expenseResponse.ok) {
+        setAccounts(expenseResponse.data?.data || [])
+      }
+      if (taxResponse.ok) {
+        // Filter for tax payable accounts
+        const allLiabilityAccounts = taxResponse.data?.data || []
+        const taxPayableAccounts = allLiabilityAccounts.filter((acc: AccountWithDetails) => 
+          acc.name.toLowerCase().includes('tax') || 
+          acc.code.toLowerCase().includes('tax')
+        )
+        setTaxAccounts(taxPayableAccounts)
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error)
+    }
+  }
+
+  const calculateTotals = useCallback(() => {
+    const subtotal = formData.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
+    const taxAmount = formData.items.reduce((sum, item) => sum + (item.taxAmount || 0), 0)
+    const totalAmount = subtotal + taxAmount
+    
+    setFormData(prev => ({
+      ...prev,
+      subtotal: Math.round(subtotal * 100) / 100,
+      taxAmount: Math.round(taxAmount * 100) / 100,
+      totalAmount: Math.round(totalAmount * 100) / 100
+    }))
+  }, [formData.items])
+
+  const fetchSupplier = useCallback(async (supplierId: string) => {
+    try {
+      const response = await apiClient<{ data: SupplierWithRelations }>(`/api/suppliers/${supplierId}`, { method: 'GET' })
+      if (response.ok && response.data) {
+        const supplier = response.data.data
+        setSelectedSupplier(supplier)
+        
+        // Update currency if not set
+        if (!formData.currency && supplier.currency) {
+          setFormData(prev => ({
+            ...prev,
+            currency: supplier.currency
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching supplier:', error)
+    }
+  }, [formData.currency])
 
   useEffect(() => {
     Promise.all([
@@ -152,10 +233,17 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       const paymentTerms = selectedSupplier.paymentTerms
       
       let daysToAdd = 30 // Default
-      if (paymentTerms.includes('Net 15')) daysToAdd = 15
-      else if (paymentTerms.includes('Net 30')) daysToAdd = 30
-      else if (paymentTerms.includes('Net 45')) daysToAdd = 45
-      else if (paymentTerms.includes('Net 60')) daysToAdd = 60
+      // paymentTerms is now a number (days) in the Prisma schema
+      if (typeof paymentTerms === 'number') {
+        daysToAdd = paymentTerms
+      } else if (typeof paymentTerms === 'string') {
+        // Fallback for string format
+        const termStr = String(paymentTerms)
+        if (termStr.includes('15')) daysToAdd = 15
+        else if (termStr.includes('30')) daysToAdd = 30
+        else if (termStr.includes('45')) daysToAdd = 45
+        else if (termStr.includes('60')) daysToAdd = 60
+      }
       
       const dueDate = new Date(invoiceDate)
       dueDate.setDate(dueDate.getDate() + daysToAdd)
@@ -167,89 +255,26 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     }
   }, [formData.invoiceDate, selectedSupplier?.paymentTerms])
 
-  const fetchSuppliers = async (): Promise<void> => {
-    try {
-      const response = await apiClient<{ data: any[] }>('/api/suppliers', { method: 'GET' })
-      if (response.ok) {
-        setSuppliers(response.data?.data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching suppliers:', error)
-    }
-  }
-
-  const fetchSupplier = useCallback(async (supplierId: string) => {
-    try {
-      const response = await apiClient<{ data: any[] }>(`/api/suppliers/${supplierId}`, { method: 'GET' })
-      if (response.ok) {
-        const supplier = response.data
-        setSelectedSupplier(supplier)
-        
-        // Update currency if not set
-        if (!formData.currency && supplier.currency) {
-          setFormData(prev => ({
-            ...prev,
-            currency: supplier.currency
-          }))
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching supplier:', error)
-    }
-  }, [formData.currency])
-
-  const fetchGoodsReceipts = async (supplierId: string) => {
-    try {
-      const response = await apiClient<{ data: any }>(`/api/goods-receipts?supplierId=${supplierId}&status=RECEIVED`, { method: 'GET' })
-      if (response.ok) {
-        setGoodsReceipts(response.data?.data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching goods receipts:', error)
-    }
-  }
-
-  const fetchAccounts = async (): Promise<number> => {
-    try {
-      const [expenseResponse, taxResponse] = await Promise.all([
-        apiClient('/api/accounting/accounts?type=EXPENSE', { method: 'GET' }),
-        apiClient('/api/accounting/accounts?type=LIABILITY&subType=TAX_PAYABLE', { method: 'GET' })
-      ])
-      
-      if (expenseResponse.ok) {
-        setAccounts(expenseResponse.data?.data || [])
-      }
-      if (taxResponse.ok) {
-        setTaxAccounts(taxResponse.data?.data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching accounts:', error)
-    }
-  }
-
-  const calculateTotals = useCallback(() => {
-    const subtotal = formData.items.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
-    const taxAmount = formData.items.reduce((sum, item) => sum + (item.taxAmount || 0), 0)
-    const totalAmount = subtotal + taxAmount
+  const addGoodsReceiptItem = (goodsReceiptItem: GoodsReceiptItemWithRelations) => {
+    const itemName = goodsReceiptItem.purchaseOrderItem?.item?.name || goodsReceiptItem.purchaseOrderItem?.description || 'Unknown Item'
+    const itemCode = goodsReceiptItem.purchaseOrderItem?.item?.code || goodsReceiptItem.purchaseOrderItem?.itemCode || ''
+    const unitSymbol = goodsReceiptItem.purchaseOrderItem?.item?.unitOfMeasure?.symbol || 'EA'
     
-    setFormData(prev => ({
-      ...prev,
-      subtotal: Math.round(subtotal * 100) / 100,
-      taxAmount: Math.round(taxAmount * 100) / 100,
-      totalAmount: Math.round(totalAmount * 100) / 100
-    }))
-  }, [formData.items])
-
-  const addGoodsReceiptItem = (goodsReceiptItem: GoodsReceipt['items'][0]) => {
     const newItem: SupplierInvoiceItem = {
       goodsReceiptItemId: goodsReceiptItem.id,
-      description: goodsReceiptItem.item.name,
+      description: itemName,
       quantity: goodsReceiptItem.quantityReceived - (goodsReceiptItem.quantityInvoiced || 0),
       unitPrice: goodsReceiptItem.unitCost,
       totalAmount: (goodsReceiptItem.quantityReceived - (goodsReceiptItem.quantityInvoiced || 0)) * goodsReceiptItem.unitCost,
-      accountId: accounts.find(acc => acc.accountType === 'EXPENSE')?.id || '',
+      accountId: accounts.find(acc => acc.type === 'EXPENSE')?.id || '',
       taxAmount: 0,
-      item: goodsReceiptItem.item,
+      item: {
+        name: itemName,
+        code: itemCode,
+        unitOfMeasure: {
+          symbol: unitSymbol
+        }
+      },
       availableQuantity: goodsReceiptItem.quantityReceived - (goodsReceiptItem.quantityInvoiced || 0)
     }
 
@@ -271,7 +296,14 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
       const updatedItems = [...prev.items]
       const item = { ...updatedItems[index] }
       
-      item[field] = value
+      // Type-safe assignment
+      if (field === 'description' || field === 'accountId') {
+        item[field] = value as string
+      } else if (field === 'quantity' || field === 'unitPrice' || field === 'totalAmount' || field === 'taxAmount' || field === 'availableQuantity') {
+        item[field] = value as number
+      } else if (field === 'goodsReceiptItemId') {
+        item[field] = value as string
+      }
       
       // Recalculate total amount when quantity or unit price changes
       if (field === 'quantity' || field === 'unitPrice') {
@@ -283,7 +315,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     })
   }
 
-  const getAvailableGoodsReceiptItems = () => {
+  const getAvailableGoodsReceiptItems = (): GoodsReceiptItemWithRelations[] => {
     return (goodsReceipts || []).flatMap(gr => 
       (gr.items || []).filter(item => 
         (item.quantityReceived - (item.quantityInvoiced || 0)) > 0 &&
@@ -355,7 +387,6 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
 
   const filteredSuppliers = (suppliers || []).filter(supplier =>
     supplier.name.toLowerCase().includes(supplierSearch.toLowerCase()) ||
-    supplier.code.toLowerCase().includes(supplierSearch.toLowerCase()) ||
     supplier.supplierNumber.toLowerCase().includes(supplierSearch.toLowerCase())
   )
 
@@ -395,14 +426,14 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       value={formData.supplierId}
                       onChange={(e) => setFormData(prev => ({ ...prev, supplierId: e.target.value }))}
                       required
-                    >
-                      <option value="">Select supplier...</option>
-                      {(filteredSuppliers || []).map(supplier => (
-                        <option key={supplier.id} value={supplier.id}>
-                          {supplier.name} ({supplier.code})
-                        </option>
-                      ))}
-                    </Select>
+                      options={[
+                        { value: '', label: 'Select supplier...' },
+                        ...(filteredSuppliers || []).map(supplier => ({
+                          value: supplier.id,
+                          label: `${supplier.name} (${supplier.supplierNumber})`
+                        }))
+                      ]}
+                    />
                   </VStack>
                 </VStack>
 
@@ -412,11 +443,13 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                     value={formData.currency}
                     onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                     required
-                  >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                  </Select>
+                    options={[
+                      { value: 'USD', label: 'USD' },
+                      { value: 'EUR', label: 'EUR' },
+                      { value: 'GBP', label: 'GBP' },
+                      { value: 'AED', label: 'AED' }
+                    ]}
+                  />
                 </VStack>
               </Grid>
 
@@ -427,7 +460,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" weight="medium">Supplier Details</Text>
                         <Text size="sm" color="secondary">
-                          {selectedSupplier.supplierNumber} | Payment Terms: {selectedSupplier.paymentTerms || 'Net 30'}
+                          {selectedSupplier.supplierNumber} | Payment Terms: {selectedSupplier.paymentTerms ? `Net ${selectedSupplier.paymentTerms}` : 'Net 30'}
                         </Text>
                       </VStack>
                       <Badge className="bg-blue-100 text-blue-800">Active</Badge>
@@ -461,14 +494,14 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                   <Select
                     value={formData.taxAccountId || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, taxAccountId: e.target.value || undefined }))}
-                  >
-                    <option value="">No tax account</option>
-                    {(taxAccounts || []).map(account => (
-                      <option key={account.id} value={account.id}>
-                        {account.accountNumber} - {account.accountName}
-                      </option>
-                    ))}
-                  </Select>
+                    options={[
+                      { value: '', label: 'No tax account' },
+                      ...(taxAccounts || []).map(account => ({
+                        value: account.id,
+                        label: `${account.code} - ${account.name}`
+                      }))
+                    ]}
+                  />
                 </VStack>
 
                 <VStack gap="sm">
@@ -528,22 +561,26 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                   <TableBody>
                     {(availableGRItems || []).map(item => {
                       const availableQty = item.quantityReceived - (item.quantityInvoiced || 0)
+                      const itemName = item.purchaseOrderItem?.item?.name || item.purchaseOrderItem?.description || 'Unknown Item'
+                      const itemCode = item.purchaseOrderItem?.item?.code || item.purchaseOrderItem?.itemCode || ''
+                      const unitSymbol = item.purchaseOrderItem?.item?.unitOfMeasure?.symbol || 'EA'
+                      
                       return (
                         <TableRow key={item.id}>
                           <TableCell>
                             <VStack gap="xs">
-                              <Text weight="medium">{item.item.name}</Text>
-                              <Text size="sm" color="secondary">{item.item.code}</Text>
+                              <Text weight="medium">{itemName}</Text>
+                              <Text size="sm" color="secondary">{itemCode}</Text>
                             </VStack>
                           </TableCell>
                           <TableCell>
-                            {availableQty} {item.item.unitOfMeasure.symbol}
+                            {availableQty} {unitSymbol}
                           </TableCell>
                           <TableCell>
-                            ${formatCurrency(item.unitCost)}
+                            {formatCurrency(item.unitCost)}
                           </TableCell>
                           <TableCell>
-                            ${formatCurrency((availableQty * item.unitCost))}
+                            {formatCurrency(availableQty * item.unitCost)}
                           </TableCell>
                           <TableCell>
                             <Button
@@ -643,7 +680,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                         </TableCell>
                         <TableCell>
                           <Text weight="medium">
-                            ${formatCurrency(item.totalAmount)}
+                            {formatCurrency(item.totalAmount)}
                           </Text>
                         </TableCell>
                         <TableCell>
@@ -651,14 +688,14 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                             value={item.accountId}
                             onChange={(e) => updateItem(index, 'accountId', e.target.value)}
                             required
-                          >
-                            <option value="">Select account...</option>
-                            {(accounts || []).map(account => (
-                              <option key={account.id} value={account.id}>
-                                {account.accountNumber} - {account.accountName}
-                              </option>
-                            ))}
-                          </Select>
+                            options={[
+                              { value: '', label: 'Select account...' },
+                              ...(accounts || []).map(account => ({
+                                value: account.id,
+                                label: `${account.code} - ${account.name}`
+                              }))
+                            ]}
+                          />
                         </TableCell>
                         <TableCell>
                           <Button
@@ -692,7 +729,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Subtotal</Text>
                         <Text size="xl" weight="bold">
-                          ${formatCurrency(formData.subtotal)}
+                          {formatCurrency(formData.subtotal)}
                         </Text>
                       </VStack>
                     </CardContent>
@@ -703,7 +740,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Tax Amount</Text>
                         <Text size="xl" weight="bold">
-                          ${formatCurrency(formData.taxAmount)}
+                          {formatCurrency(formData.taxAmount)}
                         </Text>
                       </VStack>
                     </CardContent>
@@ -714,7 +751,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
                       <VStack gap="xs">
                         <Text size="sm" color="secondary">Total Amount</Text>
                         <Text size="xl" weight="bold" className="text-blue-900">
-                          ${formatCurrency(formData.totalAmount)} {formData.currency}
+                          {formatCurrency(formData.totalAmount, { currency: formData.currency })}
                         </Text>
                       </VStack>
                     </CardContent>

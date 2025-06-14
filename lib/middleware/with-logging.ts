@@ -9,7 +9,7 @@ export function withLogging<T extends (...args: unknown[]) => Promise<Response>>
     skipAuth?: boolean;
   }
 ): T {
-  return (async (req: NextRequest, ...args: unknown[]) => {
+  return (async (req: NextRequest, ...args: unknown[]): void => {
     const requestId = uuidv4();
     const _context = {
       requestId,

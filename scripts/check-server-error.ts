@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-async function checkServerError(): Promise<boolean> {
+async function checkServerError(): Promise<void> {
   console.warn('🔍 Checking Server Status\n');
 
   const BASE_URL = 'http://localhost:3000';

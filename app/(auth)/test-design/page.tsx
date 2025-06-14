@@ -2,7 +2,7 @@
 
 import { Button, Card, CardContent, Container, Heading, Text, ThemeToggle, VStack } from '@/components/design-system'
 
-export default function TestDesignPage() {
+export default function TestDesignPage(): React.JSX.Element {
   return (
     <Container size="lg" padding="lg">
       <VStack gap="xl" className="py-8">

@@ -30,7 +30,7 @@ export async function requireAuth(): Promise<unknown> {
   return await getServerUser()
 }
 
-export async function verifyJWTFromRequest(request: NextRequest) {
+export async function verifyJWTFromRequest(request: NextRequest): Promise<unknown> {
   try {
     // Try to get token from Authorization header first
     const authHeader = request.headers.get('authorization')

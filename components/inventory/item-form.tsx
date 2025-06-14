@@ -64,7 +64,7 @@ export function ItemForm({
   item,
   onSubmit,
   onCancel
-}: ItemFormProps) {
+}: ItemFormProps): React.JSX.Element {
   const [formData, setFormData] = useState<ItemFormData>({
     code: item?.code || '',
     name: item?.name || '',
@@ -155,7 +155,7 @@ export function ItemForm({
       }
   }
 
-  const checkCodeUniqueness = async (code: string) => {
+  const checkCodeUniqueness = async (code: string): void => {
     if (!code || mode !== 'create') return
 
     setCheckingCodeUniqueness(true)
@@ -174,7 +174,7 @@ export function ItemForm({
     }
   }
 
-  const validateForm = () => {
+  const validateForm = (): void => {
     const newErrors: Record<string, string> = {}
 
     // Item code validation using common validator
@@ -287,7 +287,7 @@ export function ItemForm({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
     
     if (!validateForm()) {
@@ -304,7 +304,7 @@ export function ItemForm({
     }
   }
 
-  const handleInputChange = (field: keyof ItemFormData, value: string | number | boolean) => {
+  const handleInputChange = (field: keyof ItemFormData, value: string | number | boolean): void => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // Clear error for this field
@@ -342,8 +342,8 @@ export function ItemForm({
                   required
                   disabled={mode === 'edit'}
                   value={formData.code}
-                  onChange={(e) => handleInputChange('code', e.target.value.toUpperCase())}
-                  onBlur={() => mode === 'create' && formData.code && checkCodeUniqueness(formData.code)}
+                  onChange={(e): void => handleInputChange('code', e.target.value.toUpperCase())}
+                  onBlur={(): void => mode === 'create' && formData.code && checkCodeUniqueness(formData.code)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                   placeholder="Enter or generate code"
                   maxLength={20}
@@ -375,7 +375,7 @@ export function ItemForm({
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e): void => handleInputChange('name', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter item name"
                 maxLength={100}
@@ -395,7 +395,7 @@ export function ItemForm({
                 id="description"
                 rows={3}
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e): void => handleInputChange('description', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Optional description"
                 maxLength={500}
@@ -417,7 +417,7 @@ export function ItemForm({
               <select
                 id="category"
                 value={formData.categoryId}
-                onChange={(e) => handleInputChange('categoryId', e.target.value)}
+                onChange={(e): void => handleInputChange('categoryId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select category...</option>
@@ -441,7 +441,7 @@ export function ItemForm({
               <select
                 id="type"
                 value={formData.type}
-                onChange={(e) => handleInputChange('type', e.target.value)}
+                onChange={(e): void => handleInputChange('type', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="PRODUCT">Product</option>
@@ -457,7 +457,7 @@ export function ItemForm({
               <select
                 id="unitOfMeasure"
                 value={formData.unitOfMeasureId}
-                onChange={(e) => handleInputChange('unitOfMeasureId', e.target.value)}
+                onChange={(e): void => handleInputChange('unitOfMeasureId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select unit...</option>
@@ -485,7 +485,7 @@ export function ItemForm({
                 id="trackInventory"
                 type="checkbox"
                 checked={formData.trackInventory}
-                onChange={(e) => handleInputChange('trackInventory', e.target.checked)}
+                onChange={(e): void => handleInputChange('trackInventory', e.target.checked)}
                 disabled={formData.type === 'SERVICE'}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
@@ -509,7 +509,7 @@ export function ItemForm({
                   step="0.01"
                   disabled={isInventoryDisabled}
                   value={formData.minStockLevel}
-                  onChange={(e) => handleInputChange('minStockLevel', parseFloat(e.target.value) || 0)}
+                  onChange={(e): void => handleInputChange('minStockLevel', parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                 />
                 {errors.minStockLevel && (
@@ -530,7 +530,7 @@ export function ItemForm({
                   step="0.01"
                   disabled={isInventoryDisabled}
                   value={formData.maxStockLevel}
-                  onChange={(e) => handleInputChange('maxStockLevel', parseFloat(e.target.value) || 0)}
+                  onChange={(e): void => handleInputChange('maxStockLevel', parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                 />
                 {errors.maxStockLevel && (
@@ -551,7 +551,7 @@ export function ItemForm({
                   step="0.01"
                   disabled={isInventoryDisabled}
                   value={formData.reorderPoint}
-                  onChange={(e) => handleInputChange('reorderPoint', parseFloat(e.target.value) || 0)}
+                  onChange={(e): void => handleInputChange('reorderPoint', parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                 />
                 {errors.reorderPoint && (
@@ -578,7 +578,7 @@ export function ItemForm({
                 min="0"
                 step="0.01"
                 value={formData.standardCost}
-                onChange={(e) => handleInputChange('standardCost', parseFloat(e.target.value) || 0)}
+                onChange={(e): void => handleInputChange('standardCost', parseFloat(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
               {errors.standardCost && (
@@ -598,7 +598,7 @@ export function ItemForm({
                 min="0"
                 step="0.01"
                 value={formData.listPrice}
-                onChange={(e) => handleInputChange('listPrice', parseFloat(e.target.value) || 0)}
+                onChange={(e): void => handleInputChange('listPrice', parseFloat(e.target.value) || 0)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
               {errors.listPrice && (
@@ -621,7 +621,7 @@ export function ItemForm({
               <select
                 id="inventoryAccount"
                 value={formData.inventoryAccountId}
-                onChange={(e) => handleInputChange('inventoryAccountId', e.target.value)}
+                onChange={(e): void => handleInputChange('inventoryAccountId', e.target.value)}
                 disabled={!formData.trackInventory}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
               >
@@ -641,7 +641,7 @@ export function ItemForm({
               <select
                 id="cogsAccount"
                 value={formData.cogsAccountId}
-                onChange={(e) => handleInputChange('cogsAccountId', e.target.value)}
+                onChange={(e): void => handleInputChange('cogsAccountId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select account...</option>
@@ -660,7 +660,7 @@ export function ItemForm({
               <select
                 id="salesAccount"
                 value={formData.salesAccountId}
-                onChange={(e) => handleInputChange('salesAccountId', e.target.value)}
+                onChange={(e): void => handleInputChange('salesAccountId', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select account...</option>
@@ -683,7 +683,7 @@ export function ItemForm({
                 id="isSaleable"
                 type="checkbox"
                 checked={formData.isSaleable}
-                onChange={(e) => handleInputChange('isSaleable', e.target.checked)}
+                onChange={(e): void => handleInputChange('isSaleable', e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="isSaleable" className="ml-2 text-sm text-gray-700">
@@ -696,7 +696,7 @@ export function ItemForm({
                 id="isPurchaseable"
                 type="checkbox"
                 checked={formData.isPurchaseable}
-                onChange={(e) => handleInputChange('isPurchaseable', e.target.checked)}
+                onChange={(e): void => handleInputChange('isPurchaseable', e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="isPurchaseable" className="ml-2 text-sm text-gray-700">

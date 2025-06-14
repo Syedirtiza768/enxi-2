@@ -54,7 +54,7 @@ interface SalesCase {
 }
 
 
-export default function QuotationsPage() {
+export default function QuotationsPage(): React.JSX.Element {
   // Hooks
   const { formatCurrency } = useCurrency()
   
@@ -147,7 +147,7 @@ export default function QuotationsPage() {
 
   // Helper functions
 
-  const getStatusBadge = (status: Quotation['status'], validUntil: string) => {
+  const getStatusBadge = (status: Quotation['status'], validUntil: string): void => {
     const isExpired = new Date(validUntil) < new Date() && status === 'SENT'
     
     if (isExpired) {
@@ -171,20 +171,20 @@ export default function QuotationsPage() {
   }
 
   // Event handlers
-  const handleQuotationSelect = (quotation: Quotation) => {
+  const handleQuotationSelect = (quotation: Quotation): void => {
     window.location.href = `/quotations/${quotation.id}`
   }
 
-  const handleCreateNew = () => {
+  const handleCreateNew = (): void => {
     window.location.href = '/quotations/new'
   }
 
-  const handleEdit = (quotationId: string, e: React.MouseEvent) => {
+  const handleEdit = (quotationId: string, e: React.MouseEvent): void => {
     e.stopPropagation()
     window.location.href = `/quotations/${quotationId}/edit`
   }
 
-  const handleSend = async (quotationId: string, e: React.MouseEvent) => {
+  const handleSend = async (quotationId: string, e: React.MouseEvent): void => {
     e.stopPropagation()
     try {
       const response = await apiClient(`/api/quotations/${quotationId}/send`, {
@@ -198,7 +198,7 @@ export default function QuotationsPage() {
     }
   }
 
-  const handleExport = () => {
+  const handleExport = (): void => {
     const csvContent = quotations.map(quote => 
       [
         quote.quotationNumber,
@@ -309,7 +309,7 @@ export default function QuotationsPage() {
                     type="text"
                     placeholder="Search quotations..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e): void => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -320,7 +320,7 @@ export default function QuotationsPage() {
                 <select
                   aria-label="Status"
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e): void => setStatusFilter(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Status</option>
@@ -337,7 +337,7 @@ export default function QuotationsPage() {
                 <select
                   aria-label="Sales Case"
                   value={salesCaseFilter}
-                  onChange={(e) => setSalesCaseFilter(e.target.value)}
+                  onChange={(e): void => setSalesCaseFilter(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Sales Cases</option>
@@ -354,7 +354,7 @@ export default function QuotationsPage() {
                 <select
                   aria-label="Date Range"
                   value={dateRangeFilter}
-                  onChange={(e) => setDateRangeFilter(e.target.value)}
+                  onChange={(e): void => setDateRangeFilter(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Dates</option>
@@ -462,11 +462,11 @@ export default function QuotationsPage() {
                       <tr
                         key={quotation.id}
                         className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleQuotationSelect(quotation)}
-                        onMouseEnter={() => setHoveredQuotation(quotation.id)}
-                        onMouseLeave={() => setHoveredQuotation(null)}
+                        onClick={(): void => handleQuotationSelect(quotation)}
+                        onMouseEnter={(): void => setHoveredQuotation(quotation.id)}
+                        onMouseLeave={(): void => setHoveredQuotation(null)}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-6 py-4 whitespace-nowrap" onClick={(e): void => e.stopPropagation()}>
                           <input 
                             type="checkbox" 
                             aria-label="Select quotation"
@@ -493,7 +493,7 @@ export default function QuotationsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           {hoveredQuotation === quotation.id && (
-                            <div className="flex justify-end space-x-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-end space-x-2" onClick={(e): void => e.stopPropagation()}>
                               <button
                                 aria-label="View quotation"
                                 className="text-indigo-600 hover:text-indigo-900"
@@ -501,14 +501,14 @@ export default function QuotationsPage() {
                                 <Eye className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={(e) => handleEdit(quotation.id, e)}
+                                onClick={(e): void => handleEdit(quotation.id, e)}
                                 aria-label="Edit quotation"
                                 className="text-indigo-600 hover:text-indigo-900"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={(e) => handleSend(quotation.id, e)}
+                                onClick={(e): void => handleSend(quotation.id, e)}
                                 aria-label="Send quotation"
                                 className="text-green-600 hover:text-green-900"
                               >
@@ -538,14 +538,14 @@ export default function QuotationsPage() {
                   Page {currentPage} of {totalPages}
                 </span>
                 <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  onClick={(): void => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                   className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  onClick={(): void => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                   className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
                 >

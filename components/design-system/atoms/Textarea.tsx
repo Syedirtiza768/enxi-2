@@ -43,7 +43,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       setCharCount(String(initialValue).length)
     }, [value, defaultValue])
 
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
       setCharCount(e.target.value.length)
       onChange?.(e)
     }

@@ -6,7 +6,11 @@ import {
   Prisma,
   ShipmentStatus,
   OrderStatus,
-  MovementType
+  MovementType,
+  Shipment,
+  ShipmentItem,
+  SalesOrder,
+  Customer
 } from '@/lib/generated/prisma'
 import { AuditAction } from '@/lib/validators/audit.validator'
 
@@ -50,7 +54,10 @@ export class ShipmentService extends BaseService {
     this.inventoryService = new InventoryService()
   }
 
-  async createShipmentFromOrder(salesOrderId: string, data: CreateShipmentDto) {
+  async createShipmentFromOrder(salesOrderId: string, data: CreateShipmentDto): Promise<Shipment & {
+    items: ShipmentItem[]
+    salesOrder: SalesOrder & { customer: Customer | null }
+  }> {
     return this.withLogging('createShipmentFromOrder', async () => {
       // Validate order exists and is approved
       const order = await prisma.salesOrder.findUnique({
@@ -134,7 +141,7 @@ export class ShipmentService extends BaseService {
     })
   }
 
-  async confirmShipment(shipmentId: string, data: ConfirmShipmentDto) {
+  async confirmShipment(shipmentId: string, data: ConfirmShipmentDto): Promise<Shipment> {
     return this.withLogging('confirmShipment', async () => {
       const shipment = await prisma.shipment.findUnique({
         where: { id: shipmentId },
@@ -235,7 +242,7 @@ export class ShipmentService extends BaseService {
     })
   }
 
-  async deliverShipment(shipmentId: string, data: DeliverShipmentDto) {
+  async deliverShipment(shipmentId: string, data: DeliverShipmentDto): Promise<Shipment> {
     return this.withLogging('deliverShipment', async () => {
       const shipment = await prisma.shipment.findUnique({
         where: { id: shipmentId },
@@ -269,7 +276,7 @@ export class ShipmentService extends BaseService {
     })
   }
 
-  async cancelShipment(shipmentId: string, _data: CancelShipmentDto) {
+  async cancelShipment(shipmentId: string, _data: CancelShipmentDto): Promise<Shipment> {
     return this.withLogging('cancelShipment', async () => {
       const shipment = await prisma.shipment.findUnique({
         where: { id: shipmentId },
@@ -302,7 +309,12 @@ export class ShipmentService extends BaseService {
       startDate?: Date
       endDate?: Date
     }
-  }) {
+  }): Promise<{
+    data: any[]
+    total: number
+    page: number
+    limit: number
+  }> {
     return this.withLogging('getShipments', async () => {
       const page = options?.page || 1
       const limit = options?.limit || 10
@@ -359,7 +371,7 @@ export class ShipmentService extends BaseService {
     })
   }
 
-  async getShipmentsByOrder(salesOrderId: string) {
+  async getShipmentsByOrder(salesOrderId: string): Promise<(Shipment & { items: ShipmentItem[] })[]> {
     return this.withLogging('getShipmentsByOrder', async () => {
       return await prisma.shipment.findMany({
         where: { salesOrderId },
@@ -377,7 +389,12 @@ export class ShipmentService extends BaseService {
     endDate?: Date
     page?: number
     limit?: number
-  }) {
+  }): Promise<{
+    data: any[]
+    total: number
+    page: number
+    limit: number
+  }> {
     return this.withLogging('getShipmentsByCustomer', async () => {
       const page = options?.page || 1
       const limit = options?.limit || 10
@@ -440,7 +457,7 @@ export class ShipmentService extends BaseService {
     carrier?: string
     trackingNumber?: string
     estimatedDeliveryDate?: Date
-  }) {
+  }): Promise<Shipment> {
     return this.withLogging('updateTrackingInfo', async () => {
       return await prisma.shipment.update({
         where: { id: shipmentId },
@@ -517,7 +534,10 @@ export class ShipmentService extends BaseService {
     }
   }
 
-  async createPartialShipment(salesOrderId: string, data: CreateShipmentDto) {
+  async createPartialShipment(salesOrderId: string, data: CreateShipmentDto): Promise<Shipment & {
+    items: ShipmentItem[]
+    salesOrder: SalesOrder & { customer: Customer | null }
+  }> {
     // This method is essentially the same as createShipmentFromOrder
     // but emphasizes that partial shipments are supported
     return this.createShipmentFromOrder(salesOrderId, data)
@@ -537,7 +557,7 @@ export class ShipmentService extends BaseService {
     return `SHP-${year}-${nextNumber.toString().padStart(5, '0')}`
   }
 
-  private async updateOrderStatusAfterShipment(_tx: unknown, salesOrderId: string) {
+  private async updateOrderStatusAfterShipment(_tx: unknown, salesOrderId: string): Promise<void> {
     const order = await (_tx as Record<string, unknown>).salesOrder.findUnique({
       where: { id: salesOrderId },
       include: { items: true },
@@ -556,7 +576,7 @@ export class ShipmentService extends BaseService {
     }
   }
 
-  private async updateOrderStatusAfterDelivery(_tx: unknown, salesOrderId: string) {
+  private async updateOrderStatusAfterDelivery(_tx: unknown, salesOrderId: string): Promise<void> {
     const order = await (_tx as Record<string, unknown>).salesOrder.findUnique({
       where: { id: salesOrderId },
       include: { items: true },

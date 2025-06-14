@@ -25,7 +25,7 @@ interface Account {
   children?: Account[]
 }
 
-export default function AccountsPage() {
+export default function AccountsPage(): React.JSX.Element {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,7 +36,7 @@ export default function AccountsPage() {
     loadAccounts()
   }, [])
 
-  const loadAccounts = async (): Promise<number> => {
+  const loadAccounts = async (): Promise<void> => {
     try {
       setLoading(true)
       const response = await apiClient<Account[]>('/api/accounting/accounts', { method: 'GET' })
@@ -54,14 +54,14 @@ export default function AccountsPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const getAccountTypeColor = (type: string) => {
+  const getAccountTypeColor = (type: string): void => {
     const colors: { [key: string]: string } = {
       'ASSET': 'bg-green-100 text-green-800',
       'LIABILITY': 'bg-red-100 text-red-800',
@@ -152,7 +152,7 @@ export default function AccountsPage() {
                 <Input
                   placeholder="Search accounts by name or code..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e): void => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -177,7 +177,7 @@ export default function AccountsPage() {
                 <input
                   type="checkbox"
                   checked={showInactive}
-                  onChange={(e) => setShowInactive(e.target.checked)}
+                  onChange={(e): void => setShowInactive(e.target.checked)}
                   className="mr-2"
                 />
                 Show Inactive
@@ -280,7 +280,7 @@ export default function AccountsPage() {
               Load Standard Chart
             </Link>
           </Button>
-          <Button variant="outline" onClick={() => window.print()}>
+          <Button variant="outline" onClick={(): void => window.print()}>
             Print Chart
           </Button>
         </div>

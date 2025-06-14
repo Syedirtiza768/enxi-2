@@ -1,3 +1,4 @@
+import type { Category } from '@/components/inventory/category-tree'
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
@@ -82,12 +83,7 @@ interface NewItemData {
   description?: string
 }
 
-interface Category {
-  id: string
-  code: string
-  name: string
-  type: 'PRODUCT' | 'SERVICE'
-}
+// Category moved to inventory types
 
 interface LineItemEditorV2Props {
   quotationItems: QuotationItem[]
@@ -101,7 +97,7 @@ interface ItemValidationErrors {
   }
 }
 
-export function LineItemEditorV2({ quotationItems, onChange, disabled = false }: LineItemEditorV2Props) {
+export function LineItemEditorV2({ quotationItems, onChange, disabled = false }: LineItemEditorV2Props): React.JSX.Element {
   const { formatCurrency } = useCurrency()
   const { defaultRate } = useDefaultTaxRate()
   const [viewMode, setViewMode] = useState<'client' | 'internal'>('internal')
@@ -196,7 +192,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   }, [])
 
   // Helper functions
-  const generateId = () => Math.random().toString(36).substr(2, 9)
+  const generateId = (): void => Math.random().toString(36).substr(2, 9)
   
   // Item validation
   const validateItem = useCallback((item: QuotationItem): Record<string, string> => {
@@ -360,7 +356,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   })
 
   // Line management
-  const addLine = () => {
+  const addLine = (): void => {
     const newLineNumber = Math.max(...lines.map(l => l.lineNumber), 0) + 1
     const newItem: QuotationItem = {
       id: generateId(),
@@ -380,11 +376,11 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
     setExpandedLines(new Set([...expandedLines, newLineNumber]))
   }
 
-  const removeLine = (lineNumber: number) => {
+  const removeLine = (lineNumber: number): void => {
     onChange(quotationItems.filter(item => item.lineNumber !== lineNumber))
   }
 
-  const updateLineDescription = (lineNumber: number, description: string) => {
+  const updateLineDescription = (lineNumber: number, description: string): void => {
     onChange(quotationItems.map(item => 
       item.lineNumber === lineNumber 
         ? { ...item, lineDescription: description }
@@ -393,7 +389,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   }
 
   // Item management
-  const addItemToLine = (lineNumber: number) => {
+  const addItemToLine = (lineNumber: number): void => {
     const lineItems = quotationItems.filter(item => item.lineNumber === lineNumber)
     const maxSortOrder = Math.max(...lineItems.map(item => item.sortOrder), -1)
     
@@ -419,11 +415,11 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
     onChange([...quotationItems, newItem])
   }
 
-  const removeItem = (itemId: string) => {
+  const removeItem = (itemId: string): void => {
     onChange(quotationItems.filter(item => item.id !== itemId))
   }
 
-  const updateItem = (itemId: string, updates: Partial<QuotationItem>) => {
+  const updateItem = (itemId: string, updates: Partial<QuotationItem>): void => {
     const updatedItems = quotationItems.map(item => 
       item.id === itemId 
         ? { ...item, ...updates, ...calculateItemAmounts({ ...item, ...updates }) }
@@ -442,7 +438,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
     }
   }
 
-  const selectInventoryItem = (itemId: string, inventoryItem: InventoryItem) => {
+  const selectInventoryItem = (itemId: string, inventoryItem: InventoryItem): void => {
     updateItem(itemId, {
       itemId: inventoryItem.id,
       itemCode: inventoryItem.code,
@@ -454,7 +450,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   }
 
   // Create new inventory item
-  const handleCreateNewItem: () => Promise<void>= async() => {
+  const handleCreateNewItem: () => Promise<void>= async(): void => {
     try {
       // Create the item
       // First, get the default unit of measure
@@ -530,7 +526,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
   const totalTax = quotationItems.reduce((sum, item) => sum + item.taxAmount, 0)
   const grandTotal = quotationItems.reduce((sum, item) => sum + item.totalAmount, 0)
 
-  const toggleLine = (lineNumber: number) => {
+  const toggleLine = (lineNumber: number): void => {
     const newExpanded = new Set(expandedLines)
     if (newExpanded.has(lineNumber)) {
       newExpanded.delete(lineNumber)
@@ -597,7 +593,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
           <Button
             variant={viewMode === 'client' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode('client')}
+            onClick={(): void => setViewMode('client')}
             disabled={disabled}
           >
             <Eye className="h-4 w-4 mr-1" />
@@ -606,7 +602,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
           <Button
             variant={viewMode === 'internal' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode('internal')}
+            onClick={(): void => setViewMode('internal')}
             disabled={disabled}
           >
             <Settings className="h-4 w-4 mr-1" />
@@ -624,7 +620,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
               <div className="flex items-center gap-2 flex-1">
                 {viewMode === 'internal' && (
                   <button
-                    onClick={() => toggleLine(line.lineNumber)}
+                    onClick={(): void => toggleLine(line.lineNumber)}
                     className="p-1 hover:bg-gray-100 rounded"
                     disabled={disabled}
                   >
@@ -637,7 +633,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                 )}
                 <Input
                   value={line.lineDescription}
-                  onChange={(e) => updateLineDescription(line.lineNumber, e.target.value)}
+                  onChange={(e): void => updateLineDescription(line.lineNumber, e.target.value)}
                   placeholder="Line description (visible to client)"
                   className="flex-1 font-medium"
                   disabled={disabled || viewMode === 'client'}
@@ -650,7 +646,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeLine(line.lineNumber)}
+                    onClick={(): void => removeLine(line.lineNumber)}
                     disabled={disabled}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -668,7 +664,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                       <div className="col-span-1">
                         <Select
                           value={item.itemType}
-                          onValueChange={(value) => updateItem(item.id, { itemType: value as 'PRODUCT' | 'SERVICE' })}
+                          onValueChange={(value): void => updateItem(item.id, { itemType: value as 'PRODUCT' | 'SERVICE' })}
                           disabled={disabled}
                         >
                           <SelectTrigger>
@@ -691,7 +687,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                         <div className="relative">
                           <Input
                             value={item.itemCode}
-                            onChange={(e) => updateItem(item.id, { itemCode: e.target.value.toUpperCase() })}
+                            onChange={(e): void => updateItem(item.id, { itemCode: e.target.value.toUpperCase() })}
                             placeholder="Item code"
                             disabled={disabled}
                             maxLength={MAX_ITEM_CODE_LENGTH}
@@ -713,7 +709,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                         <div className="relative">
                           <Select
                             value={item.itemId || 'custom'}
-                            onValueChange={(value) => {
+                            onValueChange={(value): void => {
                               if (value === 'new') {
                                 setTargetItemId(item.id)
                                 setShowNewItemDialog(true)
@@ -734,9 +730,9 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                                   <Input
                                     placeholder="Search items..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e): void => setSearchTerm(e.target.value)}
                                     className="pl-8 mb-2"
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={(e): void => e.stopPropagation()}
                                   />
                                 </div>
                               </div>
@@ -775,7 +771,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                         <div className="relative">
                           <Input
                             value={item.description}
-                            onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                            onChange={(e): void => updateItem(item.id, { description: e.target.value })}
                             placeholder="Item description"
                             disabled={disabled}
                             maxLength={MAX_DESCRIPTION_LENGTH}
@@ -801,7 +797,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                           <Input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
+                            onChange={(e): void => updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })}
                             placeholder="Qty"
                             disabled={disabled}
                             min="0.01"
@@ -826,7 +822,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                           <Input
                             type="number"
                             value={item.unitPrice}
-                            onChange={(e) => updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
+                            onChange={(e): void => updateItem(item.id, { unitPrice: parseFloat(e.target.value) || 0 })}
                             placeholder="Unit price"
                             disabled={disabled}
                             min="0"
@@ -851,7 +847,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                           <Input
                             type="number"
                             value={item.discount || 0}
-                            onChange={(e) => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
+                            onChange={(e): void => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
                             placeholder="Disc %"
                             disabled={disabled}
                             min="0"
@@ -874,7 +870,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                       <div className="col-span-1">
                         <TaxRateSelector
                           value={item.taxRateId}
-                          onChange={(taxRateId, taxRate) => {
+                          onChange={(taxRateId, taxRate): void => {
                             updateItem(item.id, { 
                               taxRateId, 
                               taxRate 
@@ -890,7 +886,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeItem(item.id)}
+                          onClick={(): void => removeItem(item.id)}
                           disabled={disabled}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -903,7 +899,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                       <div className="relative">
                         <Textarea
                           value={item.internalDescription || ''}
-                          onChange={(e) => updateItem(item.id, { internalDescription: e.target.value })}
+                          onChange={(e): void => updateItem(item.id, { internalDescription: e.target.value })}
                           placeholder="Internal notes (not shown to client)"
                           className={`h-16 resize-none ${
                             itemValidationErrors[item.id]?.internalDescription ? 'border-red-300 focus:border-red-500' : ''
@@ -933,7 +929,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                         <Input
                           type="number"
                           value={item.cost || 0}
-                          onChange={(e) => updateItem(item.id, { cost: parseFloat(e.target.value) || 0 })}
+                          onChange={(e): void => updateItem(item.id, { cost: parseFloat(e.target.value) || 0 })}
                           disabled={disabled}
                           min="0"
                           step="0.01"
@@ -971,7 +967,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => addItemToLine(line.lineNumber)}
+                  onClick={(): void => addItemToLine(line.lineNumber)}
                   disabled={disabled}
                   className="w-full"
                 >
@@ -1051,7 +1047,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                 <Input
                   id="itemCode"
                   value={newItemData.code}
-                  onChange={(e) => setNewItemData({ ...newItemData, code: e.target.value })}
+                  onChange={(e): void => setNewItemData({ ...newItemData, code: e.target.value })}
                   placeholder="e.g. PROD-001"
                 />
               </div>
@@ -1060,7 +1056,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                 <Label htmlFor="itemType">Type</Label>
                 <Select
                   value={newItemData.type}
-                  onValueChange={(value) => setNewItemData({ ...newItemData, type: value as 'PRODUCT' | 'SERVICE' })}
+                  onValueChange={(value): void => setNewItemData({ ...newItemData, type: value as 'PRODUCT' | 'SERVICE' })}
                 >
                   <SelectTrigger id="itemType">
                     <SelectValue />
@@ -1078,7 +1074,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
               <Input
                 id="itemName"
                 value={newItemData.name}
-                onChange={(e) => setNewItemData({ ...newItemData, name: e.target.value })}
+                onChange={(e): void => setNewItemData({ ...newItemData, name: e.target.value })}
                 placeholder="Item name"
               />
             </div>
@@ -1088,7 +1084,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
               <Textarea
                 id="itemDescription"
                 value={newItemData.description}
-                onChange={(e) => setNewItemData({ ...newItemData, description: e.target.value })}
+                onChange={(e): void => setNewItemData({ ...newItemData, description: e.target.value })}
                 placeholder="Item description (optional)"
                 className="h-20"
               />
@@ -1098,7 +1094,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
               <Label htmlFor="itemCategory">Category</Label>
               <Select
                 value={newItemData.categoryId}
-                onValueChange={(value) => setNewItemData({ ...newItemData, categoryId: value })}
+                onValueChange={(value): void => setNewItemData({ ...newItemData, categoryId: value })}
               >
                 <SelectTrigger id="itemCategory">
                   <SelectValue placeholder="Select category" />
@@ -1122,7 +1118,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                   id="listPrice"
                   type="number"
                   value={newItemData.listPrice}
-                  onChange={(e) => setNewItemData({ ...newItemData, listPrice: parseFloat(e.target.value) || 0 })}
+                  onChange={(e): void => setNewItemData({ ...newItemData, listPrice: parseFloat(e.target.value) || 0 })}
                   placeholder="0.00"
                 />
               </div>
@@ -1133,7 +1129,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                   id="standardCost"
                   type="number"
                   value={newItemData.standardCost}
-                  onChange={(e) => setNewItemData({ ...newItemData, standardCost: parseFloat(e.target.value) || 0 })}
+                  onChange={(e): void => setNewItemData({ ...newItemData, standardCost: parseFloat(e.target.value) || 0 })}
                   placeholder="0.00"
                 />
               </div>
@@ -1145,7 +1141,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                     id="initialStock"
                     type="number"
                     value={newItemData.initialStock}
-                    onChange={(e) => setNewItemData({ ...newItemData, initialStock: parseFloat(e.target.value) || 0 })}
+                    onChange={(e): void => setNewItemData({ ...newItemData, initialStock: parseFloat(e.target.value) || 0 })}
                     placeholder="0"
                   />
                 </div>
@@ -1154,7 +1150,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewItemDialog(false)}>
+            <Button variant="outline" onClick={(): void => setShowNewItemDialog(false)}>
               Cancel
             </Button>
             <Button 

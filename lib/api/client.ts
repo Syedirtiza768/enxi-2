@@ -19,18 +19,11 @@ interface ApiOptions extends RequestInit {
 /**
  * Enhanced API response type
  */
-export interface ApiResponse<T = unknown> {
-  data?: T
-  error?: string
-  status: number
-  ok: boolean
-  errorDetails?: {
-    code?: string
-    message?: string
-    field?: string
-    context?: Record<string, any>
-  }
-}
+// Import ApiClientResponse for return type
+import type { ApiClientResponse } from '@/lib/types/common.types'
+
+// Export for backwards compatibility
+export type ApiResponse<T> = ApiClientResponse<T>
 
 /**
  * Get auth token from localStorage or cookies
@@ -62,7 +55,7 @@ function getAuthToken(): string | null {
 export async function apiClient<T = unknown>(
   url: string, 
   options: ApiOptions = {}
-): Promise<ApiResponse<T>> {
+): Promise<ApiClientResponse<T>> {
   const { 
     baseUrl = '', 
     skipAuth = false, 
@@ -203,24 +196,24 @@ export async function apiClient<T = unknown>(
  * Convenience methods for common HTTP verbs
  */
 export const api = {
-  get: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>) =>
+  get: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>): Promise<ApiClientResponse<T>> =>
     apiClient<T>(url, { ...options, method: 'GET' }),
 
-  post: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>) =>
+  post: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>): Promise<ApiClientResponse<T>> =>
     apiClient<T>(url, { 
       ...options, 
       method: 'POST', 
       body: data ? JSON.stringify(data) : undefined 
     }),
 
-  put: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>) =>
+  put: <T = unknown>(url: string, data?: unknown, options?: Omit<ApiOptions, 'method' | 'body'>): Promise<ApiClientResponse<T>> =>
     apiClient<T>(url, { 
       ...options, 
       method: 'PUT', 
       body: data ? JSON.stringify(data) : undefined 
     }),
 
-  delete: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>) =>
+  delete: <T = unknown>(url: string, options?: Omit<ApiOptions, 'method'>): Promise<ApiClientResponse<T>> =>
     apiClient<T>(url, { ...options, method: 'DELETE' }),
 }
 

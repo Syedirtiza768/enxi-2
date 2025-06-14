@@ -1,6 +1,6 @@
 import { generateCSSVariables } from '@/lib/design-system/css-variables'
 
-export function ThemeScript() {
+export function ThemeScript(): React.JSX.Element {
   const script = `
     (function() {
       function getTheme() {

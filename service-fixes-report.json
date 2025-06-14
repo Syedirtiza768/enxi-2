@@ -1,0 +1,358 @@
+{
+  "timestamp": "2025-06-14T18:15:50.115Z",
+  "summary": {
+    "total": 44,
+    "fixed": 0,
+    "errors": 43
+  },
+  "details": [
+    {
+      "file": "lib/services/audit.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/auth.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/company-settings.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/customer-po.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/customer.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/error-message.service.ts",
+      "fixed": false,
+      "changes": [
+        "Added BaseService import",
+        "Made ErrorMessageService extend BaseService",
+        "Added super call to constructor"
+      ],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/expense.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/export-scheduler.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/export.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/invoice.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/lead.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/pdf.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/quotation.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/sales-case.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/sales-order.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/sales-team.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/sales-workflow.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/shipment.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/system-health.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/tax.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/user.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/accounting/chart-of-accounts.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/accounting/currency.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/accounting/financial-statements.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/accounting/journal-entry.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/accounting/trial-balance.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/inventory/category.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/inventory/inventory.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/inventory/item.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/inventory/stock-movement.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/inventory/unit-of-measure.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/goods-receipt.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/purchase-order.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/supplier-invoice.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/supplier-payment.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/supplier.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/purchase/three-way-matching.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/reporting/financial-dashboard.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "firstImport.insertBefore is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/reporting/inventory-analytics.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/reporting/sales-analytics.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/warehouse/inventory-balance.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/warehouse/location.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    },
+    {
+      "file": "lib/services/warehouse/stock-transfer.service.ts",
+      "fixed": false,
+      "changes": [],
+      "errors": [
+        "method.isPrivate is not a function"
+      ]
+    }
+  ]
+}

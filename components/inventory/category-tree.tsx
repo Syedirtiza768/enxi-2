@@ -38,11 +38,11 @@ export function CategoryTree({
   onCategoryCreate,
   onCategoryDelete,
   showGLAccounts = false
-}: CategoryTreeProps) {
+}: CategoryTreeProps): React.JSX.Element {
   // Initialize with all categories expanded for testing
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
     const allCategoryIds = new Set<string>()
-    const collectIds = (cats: Category[]) => {
+    const collectIds = (cats: Category[]): void => {
       cats.forEach(cat => {
         allCategoryIds.add(cat.id)
         if (cat.children && cat.children.length > 0) collectIds(cat.children)
@@ -69,7 +69,7 @@ export function CategoryTree({
         <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
         <p className="text-gray-500 mb-4">Create your first category to organize inventory items</p>
         <button
-          onClick={() => onCategoryCreate()}
+          onClick={(): void => onCategoryCreate()}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           Create Category
@@ -78,7 +78,7 @@ export function CategoryTree({
     )
   }
 
-  const toggleExpanded = (categoryId: string) => {
+  const toggleExpanded = (categoryId: string): void => {
     const newExpanded = new Set(expandedCategories)
     if (newExpanded.has(categoryId)) {
       newExpanded.delete(categoryId)
@@ -88,12 +88,12 @@ export function CategoryTree({
     setExpandedCategories(newExpanded)
   }
 
-  const startEditing = (category: Category) => {
+  const startEditing = (category: Category): void => {
     setEditingCategory(category.id)
     setEditValue(category.name)
   }
 
-  const saveEdit = () => {
+  const saveEdit = (): void => {
     if (editingCategory && editValue.trim()) {
       onCategoryUpdate(editingCategory, { name: editValue.trim() })
     }
@@ -101,12 +101,12 @@ export function CategoryTree({
     setEditValue('')
   }
 
-  const cancelEdit = () => {
+  const cancelEdit = (): void => {
     setEditingCategory(null)
     setEditValue('')
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       saveEdit()
     } else if (e.key === 'Escape') {
@@ -114,7 +114,7 @@ export function CategoryTree({
     }
   }
 
-  const handleDelete = (category: Category) => {
+  const handleDelete = (category: Category): void => {
     if (category.children && category.children.length > 0) {
       // Show error for categories with children
       setErrorMessage('Cannot delete category with subcategories')
@@ -123,12 +123,12 @@ export function CategoryTree({
     setDeleteConfirm(category.id)
   }
 
-  const confirmDelete = (categoryId: string) => {
+  const confirmDelete = (categoryId: string): void => {
     onCategoryDelete(categoryId)
     setDeleteConfirm(null)
   }
 
-  const renderCategory = (category: Category, level = 0) => {
+  const renderCategory = (category: Category, level = 0): void => {
     const hasChildren = category.children && category.children.length > 0
     const isExpanded = expandedCategories.has(category.id)
     const isEditing = editingCategory === category.id
@@ -140,14 +140,14 @@ export function CategoryTree({
           data-testid="category-row"
           className="flex items-center py-2 px-3 hover:bg-gray-50 group"
           style={{ paddingLeft: `${level * 24 + 12}px` }}
-          onMouseEnter={() => setHoveredCategory(category.id)}
-          onMouseLeave={() => setHoveredCategory(null)}
+          onMouseEnter={(): void => setHoveredCategory(category.id)}
+          onMouseLeave={(): void => setHoveredCategory(null)}
         >
           {/* Expand/Collapse Button */}
           <div className="w-6 h-6 flex items-center justify-center">
             {hasChildren && (
               <button
-                onClick={() => toggleExpanded(category.id)}
+                onClick={(): void => toggleExpanded(category.id)}
                 aria-label={isExpanded ? `Collapse ${category.name}` : `Expand ${category.name}`}
                 className="p-1 hover:bg-gray-200 rounded"
               >
@@ -166,7 +166,7 @@ export function CategoryTree({
               <input
                 type="text"
                 value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
+                onChange={(e): void => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onBlur={saveEdit}
                 className="px-2 py-1 border rounded text-sm w-full"
@@ -175,7 +175,7 @@ export function CategoryTree({
             ) : (
               <span
                 className="text-sm font-medium text-gray-900 cursor-pointer"
-                onDoubleClick={() => startEditing(category)}
+                onDoubleClick={(): void => startEditing(category)}
               >
                 {category.name}
               </span>
@@ -197,21 +197,21 @@ export function CategoryTree({
           {isHovered && !isEditing && (
             <div className="flex space-x-1 ml-2">
               <button
-                onClick={() => startEditing(category)}
+                onClick={(): void => startEditing(category)}
                 aria-label="Edit category"
                 className="p-1 hover:bg-gray-200 rounded"
               >
                 <Edit2 className="h-4 w-4" />
               </button>
               <button
-                onClick={() => onCategoryCreate(category.id)}
+                onClick={(): void => onCategoryCreate(category.id)}
                 aria-label="Add subcategory"
                 className="p-1 hover:bg-gray-200 rounded"
               >
                 <Plus className="h-4 w-4" />
               </button>
               <button
-                onClick={() => handleDelete(category)}
+                onClick={(): void => handleDelete(category)}
                 aria-label="Delete category"
                 className="p-1 hover:bg-red-200 rounded text-red-600"
               >
@@ -238,7 +238,7 @@ export function CategoryTree({
         <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
           {errorMessage}
           <button
-            onClick={() => setErrorMessage(null)}
+            onClick={(): void => setErrorMessage(null)}
             className="ml-2 text-red-500 hover:text-red-700"
           >
             ×
@@ -258,13 +258,13 @@ export function CategoryTree({
             </p>
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setDeleteConfirm(null)}
+                onClick={(): void => setDeleteConfirm(null)}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() => confirmDelete(deleteConfirm)}
+                onClick={(): void => confirmDelete(deleteConfirm)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
                 Delete

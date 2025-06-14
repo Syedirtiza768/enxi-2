@@ -1,5 +1,7 @@
 'use client'
 
+import type { Item } from '@/components/inventory/item-list'
+
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { VStack, HStack, Input, Textarea, Button, Select, Text, Card, CardContent } from '@/components/design-system'
@@ -29,15 +31,7 @@ interface Supplier {
   paymentTerms: number
 }
 
-interface Item {
-  id: string
-  name: string
-  code: string
-  standardCost: number
-  unitOfMeasure: {
-    symbol: string
-  }
-}
+// Item moved to inventory types
 
 interface PurchaseOrderItem {
   id?: string

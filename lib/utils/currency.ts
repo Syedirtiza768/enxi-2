@@ -12,7 +12,7 @@ export interface CurrencyFormatOptions {
 let defaultCurrency = 'USD'
 
 // Set the default currency (called from server-side when settings are loaded)
-export function setDefaultCurrency(currency: string) {
+export function setDefaultCurrency(currency: string): void {
   defaultCurrency = currency
 }
 
@@ -90,6 +90,6 @@ export const SUPPORTED_CURRENCIES = [
 ]
 
 // Get currency info
-export function getCurrencyInfo(code: string) {
+export function getCurrencyInfo(code: string): unknown {
   return SUPPORTED_CURRENCIES.find(c => c.code === code)
 }

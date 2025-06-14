@@ -4,7 +4,7 @@ import { createLeadSchema, leadListQuerySchema } from '@/lib/validators/lead.val
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper'
 
-const postHandler = async (request: NextRequest) => {
+const postHandler = async (request: NextRequest): void => {
   console.warn('[API] Lead POST handler started')
   
   // Authenticate user
@@ -27,7 +27,7 @@ const postHandler = async (request: NextRequest) => {
 
 export const POST = withUniversalErrorHandling(postHandler, '/api/leads', { operation: 'POST createLead' })
 
-const getHandler = async (request: NextRequest) => {
+const getHandler = async (request: NextRequest): void => {
   // Try to authenticate user but don't fail hard
   let user
   try {

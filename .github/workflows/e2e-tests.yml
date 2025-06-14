@@ -1,0 +1,281 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Setup test environment
+      run: |
+        cp .env.example .env.test
+        echo "DATABASE_URL=file:./e2e-test.db" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+        echo "JWT_SECRET=test-jwt-secret-for-e2e-tests" >> .env.test
+    
+    - name: Generate Prisma Client
+      run: npx prisma generate
+    
+    - name: Setup test database
+      run: |
+        DATABASE_URL=file:./e2e-test.db npx prisma db push --force-reset
+        DATABASE_URL=file:./e2e-test.db npx tsx e2e/fixtures/seed-e2e-data.ts
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run E2E tests on ${{ matrix.browser }}
+      run: npx playwright test --project=${{ matrix.browser }}
+      env:
+        E2E_BASE_URL: http://localhost:3000
+        DATABASE_URL: file:./e2e-test.db
+    
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: e2e-test-results-${{ matrix.browser }}
+        path: e2e-test-results/
+        retention-days: 30
+    
+    - name: Upload test report to GitHub Pages
+      if: always() && matrix.browser == 'chromium'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./e2e-test-results/html-report
+        destination_dir: e2e-reports/${{ github.run_number }}
+
+  performance-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install chromium
+    
+    - name: Setup test environment
+      run: |
+        cp .env.example .env.test
+        echo "DATABASE_URL=file:./e2e-test.db" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+    
+    - name: Generate Prisma Client and setup database
+      run: |
+        npx prisma generate
+        DATABASE_URL=file:./e2e-test.db npx prisma db push --force-reset
+        DATABASE_URL=file:./e2e-test.db npx tsx e2e/fixtures/seed-e2e-data.ts
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run performance tests
+      run: npx playwright test --grep "performance|load time|measure" --project=chromium
+      env:
+        E2E_BASE_URL: http://localhost:3000
+        DATABASE_URL: file:./e2e-test.db
+    
+    - name: Upload performance results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-test-results
+        path: e2e-test-results/
+        retention-days: 7
+
+  mobile-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install chromium
+    
+    - name: Setup test environment
+      run: |
+        cp .env.example .env.test
+        echo "DATABASE_URL=file:./e2e-test.db" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+    
+    - name: Generate Prisma Client and setup database
+      run: |
+        npx prisma generate
+        DATABASE_URL=file:./e2e-test.db npx prisma db push --force-reset
+        DATABASE_URL=file:./e2e-test.db npx tsx e2e/fixtures/seed-e2e-data.ts
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run mobile tests
+      run: npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
+      env:
+        E2E_BASE_URL: http://localhost:3000
+        DATABASE_URL: file:./e2e-test.db
+    
+    - name: Upload mobile test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-test-results
+        path: e2e-test-results/
+        retention-days: 7
+
+  accessibility-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install chromium
+    
+    - name: Setup test environment
+      run: |
+        cp .env.example .env.test
+        echo "DATABASE_URL=file:./e2e-test.db" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+    
+    - name: Generate Prisma Client and setup database
+      run: |
+        npx prisma generate
+        DATABASE_URL=file:./e2e-test.db npx prisma db push --force-reset
+        DATABASE_URL=file:./e2e-test.db npx tsx e2e/fixtures/seed-e2e-data.ts
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Run accessibility tests
+      run: npx playwright test --grep "accessibility|responsive|keyboard" --project=chromium
+      env:
+        E2E_BASE_URL: http://localhost:3000
+        DATABASE_URL: file:./e2e-test.db
+    
+    - name: Upload accessibility results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: accessibility-test-results
+        path: e2e-test-results/
+        retention-days: 7
+
+  notify-on-failure:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, performance-tests, mobile-tests, accessibility-tests]
+    if: failure()
+    
+    steps:
+    - name: Notify on test failure
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        channel: '#dev-alerts'
+        text: |
+          🚨 E2E Tests Failed!
+          
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          
+          View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: env.SLACK_WEBHOOK_URL != ''
+
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, performance-tests, mobile-tests, accessibility-tests]
+    if: always()
+    
+    steps:
+    - name: Download all test results
+      uses: actions/download-artifact@v4
+      with:
+        path: all-test-results
+    
+    - name: Generate test summary
+      run: |
+        echo "# E2E Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -d "all-test-results" ]; then
+          for browser_dir in all-test-results/e2e-test-results-*/; do
+            if [ -d "$browser_dir" ]; then
+              browser=$(basename "$browser_dir" | sed 's/e2e-test-results-//')
+              echo "### $browser" >> $GITHUB_STEP_SUMMARY
+              
+              if [ -f "$browser_dir/summary.json" ]; then
+                summary=$(cat "$browser_dir/summary.json")
+                echo "- Total: $(echo $summary | jq -r '.total // "N/A"')" >> $GITHUB_STEP_SUMMARY
+                echo "- Passed: $(echo $summary | jq -r '.passed // "N/A"')" >> $GITHUB_STEP_SUMMARY
+                echo "- Failed: $(echo $summary | jq -r '.failed // "N/A"')" >> $GITHUB_STEP_SUMMARY
+                echo "- Duration: $(echo $summary | jq -r '.duration // "N/A"')ms" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "- Results file not found" >> $GITHUB_STEP_SUMMARY
+              fi
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        fi
+        
+        echo "## Test Reports" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- [HTML Report](https://your-org.github.io/enxi-erp/e2e-reports/${{ github.run_number }}/)" >> $GITHUB_STEP_SUMMARY
+        echo "- [Test Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

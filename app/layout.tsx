@@ -19,7 +19,7 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
-}) {
+}): React.JSX.Element {
   // Preload critical components
   if (typeof window !== 'undefined') {
     preloadCriticalComponents()

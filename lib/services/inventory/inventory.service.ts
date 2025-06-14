@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
+import { BaseService } from '../base.service'
 import { AuditService } from '../audit.service'
 import { JournalEntryService } from '../accounting/journal-entry.service'
 import { 
@@ -6,8 +7,12 @@ import {
   StockMovement,
   StockLot,
   MovementType,
-  Prisma
+  Prisma,
+  Location,
+  UnitOfMeasure
 } from '@/lib/generated/prisma'
+import { CreateJournalLineInput } from '@/lib/types/accounting.types'
+import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 
 export interface ItemWithStock extends Item {
   currentStock: number
@@ -26,6 +31,8 @@ export interface StockMovementWithDetails extends StockMovement {
     lotNumber: string
     receivedDate: Date
   } | null
+  location?: Location | null
+  unitOfMeasure: UnitOfMeasure
 }
 
 export interface CreateStockMovementInput {
@@ -55,157 +62,197 @@ export interface StockTransferInput {
   quantity: number
 }
 
-export class InventoryService {
+export class InventoryService extends BaseService {
   private auditService: AuditService
   private journalEntryService: JournalEntryService
 
   constructor() {
+    super('InventoryService')
     this.auditService = new AuditService()
     this.journalEntryService = new JournalEntryService()
   }
 
   async getCurrentStock(itemId: string): Promise<number> {
-    const result = await prisma.stockMovement.aggregate({
-      where: { itemId },
-      _sum: { quantity: true }
+    return this.withLogging('getCurrentStock', async () => {
+      const result = await prisma.stockMovement.aggregate({
+        where: { itemId },
+        _sum: { quantity: true }
+      })
+      
+      return result._sum.quantity || 0
     })
-    
-    return result._sum.quantity || 0
   }
 
   async getStockByLocation(itemId: string, location: string): Promise<number> {
-    const result = await prisma.stockMovement.aggregate({
-      where: { 
-        itemId,
-        location 
-      },
-      _sum: { quantity: true }
+    return this.withLogging('getStockByLocation', async () => {
+      const result = await prisma.stockMovement.aggregate({
+        where: { 
+          itemId,
+          locationName: location 
+        },
+        _sum: { quantity: true }
+      })
+      
+      return result._sum.quantity || 0
     })
-    
-    return result._sum.quantity || 0
   }
 
   async getItemsWithStock(): Promise<ItemWithStock[]> {
-    const items = await prisma.item.findMany({
-      where: { 
-        trackInventory: true,
-        isActive: true 
-      },
-      include: {
-        stockLots: {
-          where: { isActive: true },
-          orderBy: { receivedDate: 'asc' }
-        }
-      }
-    })
-
-    const itemsWithStock = await Promise.all(
-      items.map(async (item) => {
-        const currentStock = await this.getCurrentStock(item.id)
-        const reorderNeeded = currentStock <= item.reorderPoint
-        
-        return {
-          ...item,
-          currentStock,
-          reorderNeeded
+    return this.withLogging('getItemsWithStock', async () => {
+      const items = await prisma.item.findMany({
+        where: { 
+          trackInventory: true,
+          isActive: true 
+        },
+        include: {
+          stockLots: {
+            where: { isActive: true },
+            orderBy: { receivedDate: 'asc' }
+          }
         }
       })
-    )
 
-    return itemsWithStock
+      const itemsWithStock = await Promise.all(
+        items.map(async (item) => {
+          const currentStock = await this.getCurrentStock(item.id)
+          const reorderNeeded = currentStock <= item.reorderPoint
+          
+          return {
+            ...item,
+            currentStock,
+            reorderNeeded
+          }
+        })
+      )
+
+      return itemsWithStock
+    })
   }
 
   async getItemsNeedingReorder(): Promise<ItemWithStock[]> {
-    const itemsWithStock = await this.getItemsWithStock()
-    return itemsWithStock.filter(item => item.reorderNeeded)
+    return this.withLogging('getItemsNeedingReorder', async () => {
+      const itemsWithStock = await this.getItemsWithStock()
+      return itemsWithStock.filter(item => item.reorderNeeded)
+    })
   }
 
   async createStockMovement(
     data: CreateStockMovementInput & { createdBy: string }
   ): Promise<StockMovementWithDetails> {
-    return await prisma.$transaction(async (tx) => {
-      const item = await tx.item.findUnique({
-        where: { id: data.itemId }
-      })
+    return this.withLogging('createStockMovement', async () => {
+      return await prisma.$transaction(async (tx) => {
+        const item = await tx.item.findUnique({
+          where: { id: data.itemId }
+        })
 
-      if (!item) {
-        throw new Error('Item not found')
-      }
-
-      if (!item.trackInventory) {
-        throw new Error('Item does not track inventory')
-      }
-
-      // Generate movement number
-      const movementNumber = await this.generateMovementNumber(tx)
-
-      // Calculate total cost
-      const totalCost = Math.abs(data.quantity) * data.unitCost
-
-      // For stock out movements, ensure sufficient stock (except for adjustments)
-      if (data.quantity < 0 && data.movementType !== MovementType.ADJUSTMENT) {
-        const currentStock = await this.getCurrentStock(data.itemId)
-        if (currentStock + data.quantity < 0) {
-          throw new Error(`Insufficient stock. Current: ${currentStock}, Required: ${Math.abs(data.quantity)}`)
+        if (!item) {
+          throw new Error('Item not found')
         }
-      }
 
-      // Handle FIFO for stock out movements
-      let stockLotId = data.stockLotId
-      if (data.quantity < 0 && !stockLotId) {
-        stockLotId = await this.getFIFOStockLot(data.itemId, Math.abs(data.quantity), tx)
-      }
-
-      // Create stock movement
-      const movement = await tx.stockMovement.create({
-        data: {
-          movementNumber,
-          itemId: data.itemId,
-          stockLotId,
-          movementType: data.movementType,
-          movementDate: new Date(),
-          quantity: data.quantity,
-          unitCost: data.unitCost,
-          totalCost,
-          referenceType: data.referenceType,
-          referenceId: data.referenceId,
-          referenceNumber: data.referenceNumber,
-          location: data.location,
-          notes: data.notes,
-          createdBy: data.createdBy
+        if (!item.trackInventory) {
+          throw new Error('Item does not track inventory')
         }
-      })
 
-      // Update stock lot quantities for inbound movements
-      if (data.quantity > 0 && data.movementType === MovementType.STOCK_IN) {
-        await this.updateOrCreateStockLot(data.itemId, data.quantity, data.unitCost, tx)
-      }
+        // Generate movement number
+        const movementNumber = await this.generateMovementNumber(tx)
 
-      // Update stock lot quantities for outbound movements
-      if (data.quantity < 0 && stockLotId) {
-        await this.updateStockLotQuantity(stockLotId, data.quantity, tx)
-      }
+        // Calculate total cost
+        const totalCost = Math.abs(data.quantity) * data.unitCost
 
-      // Create journal entry for inventory transaction
-      if (item.inventoryAccountId && item.cogsAccountId) {
-        await this.createInventoryJournalEntry(movement, item, data.createdBy, tx)
-      }
-
-      // Audit log
-      await this.auditService.logAction({
-        userId: data.createdBy,
-        action: 'CREATE',
-        entityType: 'StockMovement',
-        entityId: movement.id,
-        metadata: {
-          itemCode: item.code,
-          movementType: data.movementType,
-          quantity: data.quantity,
-          totalCost
+        // For stock out movements, ensure sufficient stock (except for adjustments)
+        if (data.quantity < 0 && data.movementType !== MovementType.ADJUSTMENT) {
+          const currentStock = await this.getCurrentStock(data.itemId)
+          if (currentStock + data.quantity < 0) {
+            throw new Error(`Insufficient stock. Current: ${currentStock}, Required: ${Math.abs(data.quantity)}`)
+          }
         }
-      })
 
-      return this.getStockMovement(movement.id, tx)
+        // Handle FIFO for stock out movements
+        let stockLotId = data.stockLotId
+        if (data.quantity < 0 && !stockLotId) {
+          stockLotId = await this.getFIFOStockLot(data.itemId, Math.abs(data.quantity), tx)
+        }
+
+        // Create stock movement
+        const movement = await tx.stockMovement.create({
+          data: {
+            movementNumber,
+            itemId: data.itemId,
+            stockLotId,
+            movementType: data.movementType,
+            movementDate: new Date(),
+            quantity: data.quantity,
+            unitCost: data.unitCost,
+            totalCost,
+            unitOfMeasureId: item.unitOfMeasureId,
+            referenceType: data.referenceType,
+            referenceId: data.referenceId,
+            referenceNumber: data.referenceNumber,
+            locationName: data.location,
+            notes: data.notes,
+            createdBy: data.createdBy
+          }
+        })
+
+        // Update stock lot quantities for inbound movements
+        if (data.quantity > 0 && data.movementType === MovementType.STOCK_IN) {
+          await this.updateOrCreateStockLot(data.itemId, data.quantity, data.unitCost, tx)
+        }
+
+        // Update stock lot quantities for outbound movements
+        if (data.quantity < 0 && stockLotId) {
+          await this.updateStockLotQuantity(stockLotId, data.quantity, tx)
+        }
+
+        // Create journal entry for inventory transaction
+        if (item.inventoryAccountId && item.cogsAccountId) {
+          await this.createInventoryJournalEntry(movement, item, data.createdBy, tx)
+        }
+
+        // Audit log
+        await this.auditService.logAction({
+          userId: data.createdBy,
+          action: AuditAction.CREATE,
+          entityType: EntityType.STOCK_MOVEMENT,
+          entityId: movement.id,
+          severity: 'MEDIUM',
+          metadata: {
+            itemCode: item.code,
+            movementType: data.movementType,
+            quantity: data.quantity,
+            totalCost
+          }
+        })
+
+        // Need to get the complete movement with all relations
+        const completeMovement = await tx.stockMovement.findUnique({
+          where: { id: movement.id },
+          include: {
+            item: {
+              select: {
+                id: true,
+                code: true,
+                name: true
+              }
+            },
+            stockLot: {
+              select: {
+                id: true,
+                lotNumber: true,
+                receivedDate: true
+              }
+            },
+            location: true,
+            unitOfMeasure: true
+          }
+        })
+
+        if (!completeMovement) {
+          throw new Error('Failed to create stock movement')
+        }
+
+        return completeMovement
+      })
     })
   }
 
@@ -213,33 +260,37 @@ export class InventoryService {
     id: string,
     tx?: Prisma.TransactionClient
   ): Promise<StockMovementWithDetails> {
-    const client = tx || prisma
+    return this.withLogging('getStockMovement', async () => {
+      const client = tx || prisma
 
-    const movement = await client.stockMovement.findUnique({
-      where: { id },
-      include: {
-        item: {
-          select: {
-            id: true,
-            code: true,
-            name: true
-          }
-        },
-        stockLot: {
-          select: {
-            id: true,
-            lotNumber: true,
-            receivedDate: true
-          }
+      const movement = await client.stockMovement.findUnique({
+        where: { id },
+        include: {
+          item: {
+            select: {
+              id: true,
+              code: true,
+              name: true
+            }
+          },
+          stockLot: {
+            select: {
+              id: true,
+              lotNumber: true,
+              receivedDate: true
+            }
+          },
+          location: true,
+          unitOfMeasure: true
         }
+      })
+
+      if (!movement) {
+        throw new Error('Stock movement not found')
       }
+
+      return movement
     })
-
-    if (!movement) {
-      throw new Error('Stock movement not found')
-    }
-
-    return movement as StockMovementWithDetails
   }
 
   async getAllStockMovements(filters: {
@@ -249,71 +300,51 @@ export class InventoryService {
     dateTo?: Date
     location?: string
   } = {}): Promise<StockMovementWithDetails[]> {
-    const where: Record<string, unknown> = {}
+    return this.withLogging('getAllStockMovements', async () => {
+      const where: Prisma.StockMovementWhereInput = {}
 
-    if (filters.itemId) where.itemId = filters.itemId
-    if (filters.movementType) where.movementType = filters.movementType
-    if (filters.location) where.location = filters.location
+      if (filters.itemId) where.itemId = filters.itemId
+      if (filters.movementType) where.movementType = filters.movementType
+      if (filters.location) where.locationName = filters.location
 
-    if (filters.dateFrom || filters.dateTo) {
-      where.movementDate = {}
-      if (filters.dateFrom) where.movementDate.gte = filters.dateFrom
-      if (filters.dateTo) where.movementDate.lte = filters.dateTo
-    }
+      if (filters.dateFrom || filters.dateTo) {
+        where.movementDate = {}
+        if (filters.dateFrom) where.movementDate.gte = filters.dateFrom
+        if (filters.dateTo) where.movementDate.lte = filters.dateTo
+      }
 
-    const movements = await prisma.stockMovement.findMany({
-      where,
-      include: {
-        item: {
-          select: {
-            id: true,
-            code: true,
-            name: true
-          }
+      const movements = await prisma.stockMovement.findMany({
+        where,
+        include: {
+          item: {
+            select: {
+              id: true,
+              code: true,
+              name: true
+            }
+          },
+          stockLot: {
+            select: {
+              id: true,
+              lotNumber: true,
+              receivedDate: true
+            }
+          },
+          location: true,
+          unitOfMeasure: true
         },
-        stockLot: {
-          select: {
-            id: true,
-            lotNumber: true,
-            receivedDate: true
-          }
-        }
-      },
-      orderBy: { movementDate: 'desc' }
-    })
+        orderBy: { movementDate: 'desc' }
+      })
 
-    return movements as StockMovementWithDetails[]
+      return movements
+    })
   }
 
   async adjustInventory(
     data: InventoryAdjustmentInput & { createdBy: string }
   ): Promise<StockMovementWithDetails> {
-    const item = await prisma.item.findUnique({
-      where: { id: data.itemId }
-    })
-
-    if (!item) {
-      throw new Error('Item not found')
-    }
-
-    const unitCost = data.unitCost || item.standardCost
-
-    return this.createStockMovement({
-      itemId: data.itemId,
-      movementType: MovementType.ADJUSTMENT,
-      quantity: data.adjustmentQuantity,
-      unitCost,
-      referenceType: 'ADJUSTMENT',
-      notes: data.reason,
-      createdBy: data.createdBy
-    })
-  }
-
-  async transferStock(
-    data: StockTransferInput & { createdBy: string }
-  ): Promise<{ outMovement: StockMovementWithDetails, inMovement: StockMovementWithDetails }> {
-    return await prisma.$transaction(async (tx) => {
-      const item = await tx.item.findUnique({
+    return this.withLogging('adjustInventory', async () => {
+      const item = await prisma.item.findUnique({
         where: { id: data.itemId }
       })
 
@@ -321,37 +352,65 @@ export class InventoryService {
         throw new Error('Item not found')
       }
 
-      // Check if sufficient stock at source location
-      const sourceStock = await this.getStockByLocation(data.itemId, data.fromLocation)
-      if (sourceStock < data.quantity) {
-        throw new Error(`Insufficient stock at ${data.fromLocation}. Available: ${sourceStock}`)
-      }
+      const unitCost = data.unitCost || item.standardCost
 
-      // Create outbound movement from source
-      const outMovement = await this.createStockMovement({
+      return this.createStockMovement({
         itemId: data.itemId,
-        movementType: MovementType.TRANSFER,
-        quantity: -data.quantity,
-        unitCost: item.standardCost,
-        referenceType: 'TRANSFER_OUT',
-        location: data.fromLocation,
-        notes: `Transfer to ${data.toLocation}`,
+        movementType: MovementType.ADJUSTMENT,
+        quantity: data.adjustmentQuantity,
+        unitCost,
+        referenceType: 'ADJUSTMENT',
+        notes: data.reason,
         createdBy: data.createdBy
       })
+    })
+  }
 
-      // Create inbound movement to destination
-      const inMovement = await this.createStockMovement({
-        itemId: data.itemId,
-        movementType: MovementType.TRANSFER,
-        quantity: data.quantity,
-        unitCost: item.standardCost,
-        referenceType: 'TRANSFER_IN',
-        location: data.toLocation,
-        notes: `Transfer from ${data.fromLocation}`,
-        createdBy: data.createdBy
+  async transferStock(
+    data: StockTransferInput & { createdBy: string }
+  ): Promise<{ outMovement: StockMovementWithDetails, inMovement: StockMovementWithDetails }> {
+    return this.withLogging('transferStock', async () => {
+      return await prisma.$transaction(async (tx) => {
+        const item = await tx.item.findUnique({
+          where: { id: data.itemId }
+        })
+
+        if (!item) {
+          throw new Error('Item not found')
+        }
+
+        // Check if sufficient stock at source location
+        const sourceStock = await this.getStockByLocation(data.itemId, data.fromLocation)
+        if (sourceStock < data.quantity) {
+          throw new Error(`Insufficient stock at ${data.fromLocation}. Available: ${sourceStock}`)
+        }
+
+        // Create outbound movement from source
+        const outMovement = await this.createStockMovement({
+          itemId: data.itemId,
+          movementType: MovementType.TRANSFER,
+          quantity: -data.quantity,
+          unitCost: item.standardCost,
+          referenceType: 'TRANSFER_OUT',
+          location: data.fromLocation,
+          notes: `Transfer to ${data.toLocation}`,
+          createdBy: data.createdBy
+        })
+
+        // Create inbound movement to destination
+        const inMovement = await this.createStockMovement({
+          itemId: data.itemId,
+          movementType: MovementType.TRANSFER,
+          quantity: data.quantity,
+          unitCost: item.standardCost,
+          referenceType: 'TRANSFER_IN',
+          location: data.toLocation,
+          notes: `Transfer from ${data.fromLocation}`,
+          createdBy: data.createdBy
+        })
+
+        return { outMovement, inMovement }
       })
-
-      return { outMovement, inMovement }
     })
   }
 
@@ -366,47 +425,46 @@ export class InventoryService {
       totalValue: number
     }>
   }> {
-    const where = itemId ? { itemId } : {}
-    
-    // Get all stock movements grouped by item
-    const stockData = await prisma.stockMovement.groupBy({
-      by: ['itemId'],
-      where: {
-        ...where,
-        item: { trackInventory: true }
-      },
-      _sum: {
-        quantity: true,
-        totalCost: true
-      }
-    })
-
-    const items = await Promise.all(
-      stockData.map(async (stock) => {
-        const item = await prisma.item.findUnique({
-          where: { id: stock.itemId },
-          select: { code: true, name: true }
-        })
-
-        const quantity = stock._sum.quantity || 0
-        const totalCost = stock._sum.totalCost || 0
-        const averageCost = quantity > 0 ? totalCost / quantity : 0
-        const totalValue = quantity * averageCost
-
-        return {
-          itemId: stock.itemId,
-          itemCode: item?.code || '',
-          itemName: item?.name || '',
-          quantity,
-          averageCost,
-          totalValue
+    return this.withLogging('getStockValuation', async () => {
+      const where: Prisma.StockMovementWhereInput = itemId ? { itemId } : {}
+      
+      // Get all stock movements grouped by item
+      const stockData = await prisma.stockMovement.groupBy({
+        by: ['itemId'],
+        where,
+        _sum: {
+          quantity: true,
+          totalCost: true
         }
       })
-    )
 
-    const totalValue = items.reduce((sum, item) => sum + item.totalValue, 0)
+      const items = await Promise.all(
+        stockData.map(async (stock) => {
+          const item = await prisma.item.findUnique({
+            where: { id: stock.itemId },
+            select: { code: true, name: true }
+          })
 
-    return { totalValue, items }
+          const quantity = stock._sum.quantity || 0
+          const totalCost = stock._sum.totalCost || 0
+          const averageCost = quantity > 0 ? totalCost / quantity : 0
+          const totalValue = quantity * averageCost
+
+          return {
+            itemId: stock.itemId,
+            itemCode: item?.code || '',
+            itemName: item?.name || '',
+            quantity,
+            averageCost,
+            totalValue
+          }
+        })
+      )
+
+      const totalValue = items.reduce((sum, item) => sum + item.totalValue, 0)
+
+      return { totalValue, items }
+    })
   }
 
   async processStockReceiving(
@@ -420,15 +478,17 @@ export class InventoryService {
     },
     createdBy: string
   ): Promise<StockMovementWithDetails> {
-    return this.createStockMovement({
-      itemId,
-      movementType: MovementType.STOCK_IN,
-      quantity,
-      unitCost,
-      referenceType: referenceData.type,
-      referenceId: referenceData.id,
-      referenceNumber: referenceData.number,
-      createdBy
+    return this.withLogging('processStockReceiving', async () => {
+      return this.createStockMovement({
+        itemId,
+        movementType: MovementType.STOCK_IN,
+        quantity,
+        unitCost,
+        referenceType: referenceData.type,
+        referenceId: referenceData.id,
+        referenceNumber: referenceData.number,
+        createdBy
+      })
     })
   }
 
@@ -442,18 +502,20 @@ export class InventoryService {
     },
     createdBy: string
   ): Promise<StockMovementWithDetails> {
-    // Get current average cost for the item
-    const averageCost = await this.getAverageCost(itemId)
+    return this.withLogging('processStockIssue', async () => {
+      // Get current average cost for the item
+      const averageCost = await this.getAverageCost(itemId)
 
-    return this.createStockMovement({
-      itemId,
-      movementType: MovementType.STOCK_OUT,
-      quantity: -quantity,
-      unitCost: averageCost,
-      referenceType: referenceData.type,
-      referenceId: referenceData.id,
-      referenceNumber: referenceData.number,
-      createdBy
+      return this.createStockMovement({
+        itemId,
+        movementType: MovementType.STOCK_OUT,
+        quantity: -quantity,
+        unitCost: averageCost,
+        referenceType: referenceData.type,
+        referenceId: referenceData.id,
+        referenceNumber: referenceData.number,
+        createdBy
+      })
     })
   }
 
@@ -507,39 +569,41 @@ export class InventoryService {
     requiredQuantity: number,
     tx?: Prisma.TransactionClient
   ): Promise<Array<{ stockLotId: string; lotNumber: string; quantity: number; unitCost: number }>> {
-    const client = tx || prisma
-    
-    const availableLots = await client.stockLot.findMany({
-      where: {
-        itemId,
-        availableQty: { gt: 0 },
-        isActive: true
-      },
-      orderBy: { receivedDate: 'asc' }
-    })
-
-    const allocations: Array<{ stockLotId: string; lotNumber: string; quantity: number; unitCost: number }> = []
-    let remainingQty = requiredQuantity
-
-    for (const lot of availableLots) {
-      if (remainingQty <= 0) break
-
-      const allocatedQty = Math.min(lot.availableQty, remainingQty)
-      allocations.push({
-        stockLotId: lot.id,
-        lotNumber: lot.lotNumber,
-        quantity: allocatedQty,
-        unitCost: lot.unitCost
+    return this.withLogging('allocateFIFOStock', async () => {
+      const client = tx || prisma
+      
+      const availableLots = await client.stockLot.findMany({
+        where: {
+          itemId,
+          availableQty: { gt: 0 },
+          isActive: true
+        },
+        orderBy: { receivedDate: 'asc' }
       })
 
-      remainingQty -= allocatedQty
-    }
+      const allocations: Array<{ stockLotId: string; lotNumber: string; quantity: number; unitCost: number }> = []
+      let remainingQty = requiredQuantity
 
-    if (remainingQty > 0) {
-      throw new Error(`Insufficient stock. Required: ${requiredQuantity}, Available: ${requiredQuantity - remainingQty}`)
-    }
+      for (const lot of availableLots) {
+        if (remainingQty <= 0) break
 
-    return allocations
+        const allocatedQty = Math.min(lot.availableQty, remainingQty)
+        allocations.push({
+          stockLotId: lot.id,
+          lotNumber: lot.lotNumber,
+          quantity: allocatedQty,
+          unitCost: lot.unitCost
+        })
+
+        remainingQty -= allocatedQty
+      }
+
+      if (remainingQty > 0) {
+        throw new Error(`Insufficient stock. Required: ${requiredQuantity}, Available: ${requiredQuantity - remainingQty}`)
+      }
+
+      return allocations
+    })
   }
 
   async calculateFIFOCost(
@@ -547,27 +611,29 @@ export class InventoryService {
     quantity: number,
     tx?: Prisma.TransactionClient
   ): Promise<{ totalCost: number; averageCost: number; allocations: Array<{ stockLotId: string; quantity: number; unitCost: number; cost: number }> }> {
-    const allocations = await this.allocateFIFOStock(itemId, quantity, tx)
-    
-    let totalCost = 0
-    const detailedAllocations = allocations.map(allocation => {
-      const cost = allocation.quantity * allocation.unitCost
-      totalCost += cost
+    return this.withLogging('calculateFIFOCost', async () => {
+      const allocations = await this.allocateFIFOStock(itemId, quantity, tx)
+      
+      let totalCost = 0
+      const detailedAllocations = allocations.map(allocation => {
+        const cost = allocation.quantity * allocation.unitCost
+        totalCost += cost
+        return {
+          stockLotId: allocation.stockLotId,
+          quantity: allocation.quantity,
+          unitCost: allocation.unitCost,
+          cost
+        }
+      })
+
+      const averageCost = totalCost / quantity
+
       return {
-        stockLotId: allocation.stockLotId,
-        quantity: allocation.quantity,
-        unitCost: allocation.unitCost,
-        cost
+        totalCost,
+        averageCost,
+        allocations: detailedAllocations
       }
     })
-
-    const averageCost = totalCost / quantity
-
-    return {
-      totalCost,
-      averageCost,
-      allocations: detailedAllocations
-    }
   }
 
   async reserveFIFOStock(
@@ -577,21 +643,23 @@ export class InventoryService {
     referenceId: string,
     tx?: Prisma.TransactionClient
   ): Promise<void> {
-    const client = tx || prisma
-    const allocations = await this.allocateFIFOStock(itemId, quantity, client)
+    return this.withLogging('reserveFIFOStock', async () => {
+      const client = tx || prisma
+      const allocations = await this.allocateFIFOStock(itemId, quantity, client)
 
-    for (const allocation of allocations) {
-      await client.stockLot.update({
-        where: { id: allocation.stockLotId },
-        data: {
-          availableQty: { decrement: allocation.quantity },
-          reservedQty: { increment: allocation.quantity }
-        }
-      })
+      for (const allocation of allocations) {
+        await client.stockLot.update({
+          where: { id: allocation.stockLotId },
+          data: {
+            availableQty: { decrement: allocation.quantity },
+            reservedQty: { increment: allocation.quantity }
+          }
+        })
 
-      // Create reservation record if needed (would require StockReservation model)
-      // This is already in the schema, so we can implement it later
-    }
+        // Create reservation record if needed (would require StockReservation model)
+        // This is already in the schema, so we can implement it later
+      }
+    })
   }
 
   async releaseFIFOReservation(
@@ -601,38 +669,40 @@ export class InventoryService {
     referenceId: string,
     tx?: Prisma.TransactionClient
   ): Promise<void> {
-    const client = tx || prisma
-    
-    // Find lots with reservations for this reference
-    // This would be implemented when we have StockReservation tracking
-    // For now, we'll update based on the oldest reserved lots
-    
-    const reservedLots = await client.stockLot.findMany({
-      where: {
-        itemId,
-        reservedQty: { gt: 0 },
-        isActive: true
-      },
-      orderBy: { receivedDate: 'asc' }
-    })
-
-    let remainingQty = quantity
-
-    for (const lot of reservedLots) {
-      if (remainingQty <= 0) break
-
-      const releaseQty = Math.min(lot.reservedQty, remainingQty)
+    return this.withLogging('releaseFIFOReservation', async () => {
+      const client = tx || prisma
       
-      await client.stockLot.update({
-        where: { id: lot.id },
-        data: {
-          availableQty: { increment: releaseQty },
-          reservedQty: { decrement: releaseQty }
-        }
+      // Find lots with reservations for this reference
+      // This would be implemented when we have StockReservation tracking
+      // For now, we'll update based on the oldest reserved lots
+      
+      const reservedLots = await client.stockLot.findMany({
+        where: {
+          itemId,
+          reservedQty: { gt: 0 },
+          isActive: true
+        },
+        orderBy: { receivedDate: 'asc' }
       })
 
-      remainingQty -= releaseQty
-    }
+      let remainingQty = quantity
+
+      for (const lot of reservedLots) {
+        if (remainingQty <= 0) break
+
+        const releaseQty = Math.min(lot.reservedQty, remainingQty)
+        
+        await client.stockLot.update({
+          where: { id: lot.id },
+          data: {
+            availableQty: { increment: releaseQty },
+            reservedQty: { decrement: releaseQty }
+          }
+        })
+
+        remainingQty -= releaseQty
+      }
+    })
   }
 
   private async updateOrCreateStockLot(
@@ -651,7 +721,9 @@ export class InventoryService {
         receivedQty: quantity,
         availableQty: quantity,
         unitCost,
-        isActive: true
+        totalCost: quantity * unitCost,
+        isActive: true,
+        createdBy: 'system' // This should be passed from the parent method
       }
     })
   }
@@ -734,7 +806,7 @@ export class InventoryService {
       return // No GL accounts configured
     }
 
-    const lines = []
+    const lines: CreateJournalLineInput[] = []
 
     if (movement.quantity > 0) {
       // Stock in: Debit Inventory, Credit varies based on movement type
@@ -777,7 +849,7 @@ export class InventoryService {
       await this.journalEntryService.createJournalEntry({
         date: movement.movementDate,
         description: `Inventory ${movement.movementType} - ${movement.movementNumber}`,
-        reference: movement.movementNumber,
+        reference: movement.movementNumber,  
         currency: 'USD',
         lines,
         createdBy: userId

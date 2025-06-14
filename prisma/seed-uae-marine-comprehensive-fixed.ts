@@ -874,7 +874,7 @@ async function generateSalesOrders(): Promise<void> {
 }
 
 // Generate purchase orders
-async function generatePurchaseOrders(): Promise<boolean> {
+async function generatePurchaseOrders(): Promise<void> {
   console.log('\n📋 Generating Purchase Orders...');
   
   const suppliers = await prisma.supplier.findMany();

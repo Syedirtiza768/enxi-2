@@ -14,7 +14,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
-export function useTheme() {
+export function useTheme(): ThemeContextValue {
   const context = useContext(ThemeContext)
   if (!context) {
     throw new Error('useTheme must be used within a ThemeProvider')
@@ -32,7 +32,7 @@ export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'enxi-theme'
-}: ThemeProviderProps) {
+}: ThemeProviderProps): React.JSX.Element {
   const [theme, setThemeState] = useState<Theme>(defaultTheme)
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
 
@@ -51,7 +51,7 @@ export function ThemeProvider({
   }, [])
 
   // Apply theme to document
-  const applyTheme = (resolvedTheme: 'light' | 'dark') => {
+  const applyTheme = (resolvedTheme: 'light' | 'dark'): void => {
     const root = document.documentElement
     
     // Remove old theme
@@ -99,7 +99,7 @@ export function ThemeProvider({
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     
-    const handleChange = () => {
+    const handleChange = (): void => {
       const resolved = resolveTheme('system')
       setResolvedTheme(resolved)
       applyTheme(resolved)
@@ -108,18 +108,18 @@ export function ThemeProvider({
     // Safari < 14 compatibility
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange)
-      return () => mediaQuery.removeEventListener('change', handleChange)
+      return (): void => mediaQuery.removeEventListener('change', handleChange)
     } else {
       mediaQuery.addListener(handleChange)
-      return () => mediaQuery.removeListener(handleChange)
+      return (): void => mediaQuery.removeListener(handleChange)
     }
   }, [theme, resolveTheme])
 
-  const setTheme = (newTheme: Theme) => {
+  const setTheme = (newTheme: Theme): void => {
     setThemeState(newTheme)
   }
 
-  const toggleTheme = () => {
+  const toggleTheme = (): void => {
     setTheme(resolvedTheme === 'light' ? 'dark' : 'light')
   }
 

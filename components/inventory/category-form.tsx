@@ -37,7 +37,7 @@ export function CategoryForm({
   availableCategories,
   onSubmit,
   onCancel
-}: CategoryFormProps) {
+}: CategoryFormProps): React.JSX.Element {
   const [formData, setFormData] = useState<CategoryFormData>({
     name: category?.name || '',
     code: category?.code || '',
@@ -57,7 +57,7 @@ export function CategoryForm({
 
   // Load GL accounts on mount
   useEffect(() => {
-    const loadGLAccounts = async (): Promise<number> => {
+    const loadGLAccounts = async (): Promise<void> => {
       try {
         const response = await fetch('/api/accounting/accounts')
         if (response.ok) {
@@ -85,7 +85,7 @@ export function CategoryForm({
     }
   }, [formData.name, codeManuallyEdited, mode])
 
-  const validateForm = () => {
+  const validateForm = (): void => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
@@ -120,7 +120,7 @@ export function CategoryForm({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): void => {
     e.preventDefault()
     
     if (!validateForm()) {
@@ -137,7 +137,7 @@ export function CategoryForm({
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }))
     
     // Clear error for this field
@@ -146,7 +146,7 @@ export function CategoryForm({
     }
   }
 
-  const handleGLAccountChange = (accountType: keyof CategoryFormData['glAccounts'], value: string) => {
+  const handleGLAccountChange = (accountType: keyof CategoryFormData['glAccounts'], value: string): void => {
     setFormData(prev => ({
       ...prev,
       glAccounts: {
@@ -189,7 +189,7 @@ export function CategoryForm({
               type="text"
               required
               value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              onChange={(e): void => handleInputChange('name', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter category name"
             />
@@ -209,7 +209,7 @@ export function CategoryForm({
               type="text"
               required
               value={formData.code}
-              onChange={(e) => {
+              onChange={(e): void => {
                 setCodeManuallyEdited(true)
                 handleInputChange('code', e.target.value.toUpperCase())
               }}
@@ -232,7 +232,7 @@ export function CategoryForm({
             id="description"
             rows={3}
             value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
+            onChange={(e): void => handleInputChange('description', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             placeholder="Optional description"
           />
@@ -249,7 +249,7 @@ export function CategoryForm({
               <select
                 id="inventoryAccount"
                 value={formData.glAccounts.inventoryAccount}
-                onChange={(e) => handleGLAccountChange('inventoryAccount', e.target.value)}
+                onChange={(e): void => handleGLAccountChange('inventoryAccount', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select account...</option>
@@ -273,7 +273,7 @@ export function CategoryForm({
               <select
                 id="cogsAccount"
                 value={formData.glAccounts.cogsAccount}
-                onChange={(e) => handleGLAccountChange('cogsAccount', e.target.value)}
+                onChange={(e): void => handleGLAccountChange('cogsAccount', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select account...</option>
@@ -297,7 +297,7 @@ export function CategoryForm({
               <select
                 id="varianceAccount"
                 value={formData.glAccounts.varianceAccount}
-                onChange={(e) => handleGLAccountChange('varianceAccount', e.target.value)}
+                onChange={(e): void => handleGLAccountChange('varianceAccount', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select account...</option>

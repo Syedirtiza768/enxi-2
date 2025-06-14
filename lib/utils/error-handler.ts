@@ -327,18 +327,18 @@ export class ErrorHandler {
 export const errorHandler = ErrorHandler.getInstance()
 
 // Utility functions for common error scenarios
-export const handleApiError = (error: unknown, context?: unknown) => {
+export const handleApiError = (error: unknown, context?: unknown): void => {
   return errorHandler.createErrorResponse(error, context)
 }
 
-export const throwBusinessLogicError = (message: string, code?: string, details?: unknown, suggestions?: string[]) => {
+export const throwBusinessLogicError = (message: string, code?: string, details?: unknown, suggestions?: string[]): void => {
   throw new BusinessLogicError(message, code, details, suggestions)
 }
 
-export const throwAuthenticationError = (message?: string, code?: string) => {
+export const throwAuthenticationError = (message?: string, code?: string): void => {
   throw new AuthenticationError(message, code)
 }
 
-export const throwAuthorizationError = (message?: string, code?: string) => {
+export const throwAuthorizationError = (message?: string, code?: string): void => {
   throw new AuthorizationError(message, code)
 }

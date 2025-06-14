@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import { 
   AccountType, 
   Role, 
-  CustomerStatus, 
+  LeadSource,
   LeadStatus,
   SalesCaseStatus,
   QuotationStatus,
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   console.warn('✅ Created inventory foundation')
 
   // Create quotations
-  const quotations = await createQuotations(users.sales.id, customers, inventory.items)
+  const quotations = await createQuotations(users.sales.id, salesCases, inventory.items)
   console.warn('✅ Created quotations')
 
   // Create stock movements
@@ -63,9 +63,7 @@ async function cleanDatabase(): Promise<void> {
   await prisma.journalLine.deleteMany()
   await prisma.journalEntry.deleteMany()
   await prisma.quotationItem.deleteMany()
-  await prisma.quotationVersion.deleteMany()
   await prisma.quotation.deleteMany()
-  await prisma.salesCaseUpdate.deleteMany()
   await prisma.salesCase.deleteMany()
   await prisma.stockMovement.deleteMany()
   await prisma.stockLot.deleteMany()
@@ -78,7 +76,7 @@ async function cleanDatabase(): Promise<void> {
   await prisma.user.deleteMany()
 }
 
-async function createUsers(): Promise<T> {
+async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
   const admin = await prisma.user.create({
@@ -87,8 +85,6 @@ async function createUsers(): Promise<T> {
       email: 'admin@enxi-erp.com',
       password: hashedPassword,
       role: Role.ADMIN,
-      firstName: 'Admin',
-      lastName: 'User',
       isActive: true
     }
   })
@@ -99,8 +95,6 @@ async function createUsers(): Promise<T> {
       email: 'sales@enxi-erp.com',
       password: hashedPassword,
       role: Role.USER,
-      firstName: 'Sarah',
-      lastName: 'Johnson',
       isActive: true
     }
   })
@@ -111,8 +105,6 @@ async function createUsers(): Promise<T> {
       email: 'accountant@enxi-erp.com',
       password: hashedPassword,
       role: Role.USER,
-      firstName: 'Michael',
-      lastName: 'Chen',
       isActive: true
     }
   })
@@ -123,8 +115,6 @@ async function createUsers(): Promise<T> {
       email: 'warehouse@enxi-erp.com',
       password: hashedPassword,
       role: Role.USER,
-      firstName: 'David',
-      lastName: 'Smith',
       isActive: true
     }
   })
@@ -266,18 +256,14 @@ async function createCustomers(adminId: string, salesId: string) {
   const techCorp = await prisma.customer.create({
     data: {
       customerNumber: 'CUST-001',
-      companyName: 'TechCorp Solutions',
-      tradeName: 'TechCorp',
+      name: 'TechCorp Solutions',
       taxId: '12-3456789',
       email: 'info@techcorp.com',
       phone: '+1 (555) 123-4567',
       website: 'https://techcorp.com',
       industry: 'Technology',
-      numberOfEmployees: 250,
-      annualRevenue: 25000000,
       creditLimit: 100000,
       paymentTerms: 30,
-      status: CustomerStatus.ACTIVE,
       createdBy: adminId
     }
   })
@@ -285,18 +271,14 @@ async function createCustomers(adminId: string, salesId: string) {
   const globalRetail = await prisma.customer.create({
     data: {
       customerNumber: 'CUST-002',
-      companyName: 'Global Retail Inc',
-      tradeName: 'Global Retail',
+      name: 'Global Retail Inc',
       taxId: '98-7654321',
       email: 'purchasing@globalretail.com',
       phone: '+1 (555) 987-6543',
       website: 'https://globalretail.com',
       industry: 'Retail',
-      numberOfEmployees: 5000,
-      annualRevenue: 500000000,
       creditLimit: 250000,
       paymentTerms: 45,
-      status: CustomerStatus.ACTIVE,
       createdBy: salesId
     }
   })
@@ -304,17 +286,13 @@ async function createCustomers(adminId: string, salesId: string) {
   const manufacturingCo = await prisma.customer.create({
     data: {
       customerNumber: 'CUST-003',
-      companyName: 'Manufacturing Co Ltd',
-      tradeName: 'ManufacCo',
+      name: 'Manufacturing Co Ltd',
       taxId: '45-1234567',
       email: 'orders@manufacco.com',
       phone: '+1 (555) 456-7890',
       industry: 'Manufacturing',
-      numberOfEmployees: 1000,
-      annualRevenue: 100000000,
       creditLimit: 150000,
       paymentTerms: 60,
-      status: CustomerStatus.ACTIVE,
       createdBy: salesId
     }
   })
@@ -326,42 +304,42 @@ async function createLeads(salesId: string) {
   const leads = await Promise.all([
     prisma.lead.create({
       data: {
-        companyName: 'StartupTech Inc',
-        contactName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
+        company: 'StartupTech Inc',
         email: 'john@startuptech.com',
         phone: '+1 (555) 111-2222',
-        industry: 'Software',
-        estimatedValue: 50000,
+        jobTitle: 'CEO',
         status: LeadStatus.NEW,
-        source: 'Website',
+        source: LeadSource.WEBSITE,
         notes: 'Interested in our enterprise solution',
         createdBy: salesId
       }
     }),
     prisma.lead.create({
       data: {
-        companyName: 'Healthcare Plus',
-        contactName: 'Jane Smith',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        company: 'Healthcare Plus',
         email: 'jane@healthcareplus.com',
         phone: '+1 (555) 333-4444',
-        industry: 'Healthcare',
-        estimatedValue: 75000,
+        jobTitle: 'VP of Operations',
         status: LeadStatus.CONTACTED,
-        source: 'Trade Show',
+        source: LeadSource.TRADE_SHOW,
         notes: 'Met at Healthcare Expo 2024',
         createdBy: salesId
       }
     }),
     prisma.lead.create({
       data: {
-        companyName: 'Education First',
-        contactName: 'Robert Johnson',
+        firstName: 'Robert',
+        lastName: 'Johnson',
+        company: 'Education First',
         email: 'robert@edufirst.com',
         phone: '+1 (555) 555-6666',
-        industry: 'Education',
-        estimatedValue: 30000,
+        jobTitle: 'Director of IT',
         status: LeadStatus.QUALIFIED,
-        source: 'Referral',
+        source: LeadSource.REFERRAL,
         notes: 'Referred by existing customer',
         createdBy: salesId
       }
@@ -384,9 +362,6 @@ async function createSalesCases(
       description: 'Customer wants to upgrade their existing software to enterprise version',
       customerId: customers.techCorp.id,
       estimatedValue: 150000,
-      probability: 80,
-      expectedCloseDate: new Date('2024-03-31'),
-      stage: 'Proposal',
       status: SalesCaseStatus.IN_PROGRESS,
       assignedTo: salesId,
       createdBy: salesId
@@ -399,35 +374,15 @@ async function createSalesCases(
       caseNumber: 'SC-2024-002',
       title: 'New Healthcare System Implementation',
       description: 'Lead interested in complete healthcare management system',
-      leadId: leads[1].id, // Healthcare Plus
+      customerId: customers.globalRetail.id, // Using existing customer instead of lead
       estimatedValue: 75000,
-      probability: 60,
-      expectedCloseDate: new Date('2024-04-30'),
-      stage: 'Discovery',
       status: SalesCaseStatus.IN_PROGRESS,
       assignedTo: salesId,
       createdBy: salesId
     }
   })
 
-  // Add updates to sales cases
-  await prisma.salesCaseUpdate.create({
-    data: {
-      salesCaseId: customerCase.id,
-      updateType: 'PROGRESS',
-      description: 'Initial meeting completed. Customer very interested.',
-      createdBy: salesId
-    }
-  })
-
-  await prisma.salesCaseUpdate.create({
-    data: {
-      salesCaseId: customerCase.id,
-      updateType: 'PROGRESS',
-      description: 'Demo scheduled for next week.',
-      createdBy: salesId
-    }
-  })
+  // Sales cases created successfully
 
   return { customerCase, leadCase }
 }
@@ -638,60 +593,79 @@ async function createInventoryFoundation(userId: string, accounts: any) {
 
 async function createQuotations(
   salesId: string, 
-  customers: any, 
+  salesCases: any, 
   items: any
 ) {
   // Quotation 1 - Active
   const quotation1 = await prisma.quotation.create({
     data: {
       quotationNumber: 'Q-2024-001',
-      customerId: customers.techCorp.id,
-      createdBy: salesId
-    }
-  })
-
-  const version1 = await prisma.quotationVersion.create({
-    data: {
-      quotationId: quotation1.id,
-      versionNumber: 1,
-      date: new Date('2024-01-15'),
+      salesCaseId: salesCases.customerCase.id,
+      version: 1,
+      status: QuotationStatus.SENT,
       validUntil: new Date('2024-02-15'),
-      currency: 'USD',
-      exchangeRate: 1,
       paymentTerms: '30 days net',
       deliveryTerms: 'FOB Warehouse',
       notes: 'Special pricing for enterprise customer',
-      termsAndConditions: 'Standard terms apply',
-      status: QuotationStatus.SENT,
-      isCurrent: true,
+      subtotal: 42600,
+      taxAmount: 3860,
+      discountAmount: 3400,
+      totalAmount: 43060,
       createdBy: salesId,
       items: {
         create: [
           {
+            lineNumber: 1,
+            lineDescription: 'Laptop Package',
+            isLineHeader: true,
+            itemType: ItemType.PRODUCT,
             itemId: items.laptop.id,
+            itemCode: 'LAP-001',
             description: 'Business Laptop Pro - Enterprise configuration',
             quantity: 20,
             unitPrice: 1100,
-            discountPercent: 8.33,
+            discount: 8.33,
             taxRate: 10,
+            subtotal: 22000,
+            discountAmount: 1833,
+            taxAmount: 2017,
+            totalAmount: 22184,
             sortOrder: 1
           },
           {
+            lineNumber: 1,
+            lineDescription: 'Laptop Package',
+            isLineHeader: false,
+            itemType: ItemType.PRODUCT,
             itemId: items.mouse.id,
+            itemCode: 'ACC-001',
             description: 'Wireless Mouse - Included with laptop',
             quantity: 20,
             unitPrice: 30,
-            discountPercent: 14.29,
+            discount: 14.29,
             taxRate: 10,
+            subtotal: 600,
+            discountAmount: 86,
+            taxAmount: 51,
+            totalAmount: 565,
             sortOrder: 2
           },
           {
+            lineNumber: 2,
+            lineDescription: 'Support Services',
+            isLineHeader: true,
+            itemType: ItemType.SERVICE,
             itemId: items.support.id,
+            itemCode: 'SRV-001',
             description: 'Technical Support - 1 year package',
             quantity: 20,
             unitPrice: 1000,
-            discountPercent: 0,
+            discount: 0,
             taxRate: 0,
+            subtotal: 20000,
+            discountAmount: 0,
+            taxAmount: 0,
+            totalAmount: 20000,
             sortOrder: 3
           }
         ]
@@ -703,33 +677,35 @@ async function createQuotations(
   const quotation2 = await prisma.quotation.create({
     data: {
       quotationNumber: 'Q-2024-002',
-      customerId: customers.globalRetail.id,
-      createdBy: salesId
-    }
-  })
-
-  const version2 = await prisma.quotationVersion.create({
-    data: {
-      quotationId: quotation2.id,
-      versionNumber: 1,
-      date: new Date(),
+      salesCaseId: salesCases.leadCase.id,
+      version: 1,
+      status: QuotationStatus.DRAFT,
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      currency: 'USD',
-      exchangeRate: 1,
       paymentTerms: '45 days net',
       deliveryTerms: 'CIF',
-      status: QuotationStatus.DRAFT,
-      isCurrent: true,
+      subtotal: 85000,
+      taxAmount: 8500,
+      discountAmount: 4722,
+      totalAmount: 88778,
       createdBy: salesId,
       items: {
         create: [
           {
+            lineNumber: 1,
+            lineDescription: 'Smartphones Bulk Order',
+            isLineHeader: true,
+            itemType: ItemType.PRODUCT,
             itemId: items.smartphone.id,
+            itemCode: 'PHN-001',
             description: 'SmartPhone X Pro - Bulk order',
             quantity: 100,
             unitPrice: 850,
-            discountPercent: 5.56,
+            discount: 5.56,
             taxRate: 10,
+            subtotal: 85000,
+            discountAmount: 4722,
+            taxAmount: 8028,
+            totalAmount: 88306,
             sortOrder: 1
           }
         ]
@@ -810,7 +786,6 @@ async function createStockMovements(warehouseId: string, items: any) {
       unitOfMeasureId: items.mouse.unitOfMeasureId,
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-001',
-      supplier: 'Tech Supplies Inc',
       notes: 'Regular stock replenishment',
       createdBy: warehouseId,
       stockLot: {
@@ -822,7 +797,7 @@ async function createStockMovements(warehouseId: string, items: any) {
           availableQty: 200,
           unitCost: 20,
           totalCost: 4000,
-          supplier: 'Tech Supplies Inc',
+          supplierName: 'Tech Supplies Inc',
           purchaseRef: 'PO-2024-001',
           createdBy: warehouseId
         }
@@ -843,7 +818,6 @@ async function createStockMovements(warehouseId: string, items: any) {
       unitOfMeasureId: items.paperA4.unitOfMeasureId,
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-002',
-      supplier: 'Office Supplies Co',
       notes: 'Bulk paper purchase',
       createdBy: warehouseId,
       stockLot: {
@@ -855,7 +829,7 @@ async function createStockMovements(warehouseId: string, items: any) {
           availableQty: 500,
           unitCost: 5,
           totalCost: 2500,
-          supplier: 'Office Supplies Co',
+          supplierName: 'Office Supplies Co',
           purchaseRef: 'PO-2024-002',
           expiryDate: new Date('2025-01-05'), // 1 year shelf life
           createdBy: warehouseId

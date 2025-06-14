@@ -55,7 +55,7 @@ export default function CompanySettingsPage() {
     }
   }, [])
 
-  const loadSettings = async (): Promise<any[]> => {
+  const loadSettings = async (): Promise<void> => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')

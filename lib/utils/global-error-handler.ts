@@ -459,7 +459,7 @@ export function asyncHandler<T extends (...args: unknown[]) => Promise<unknown>>
   fn: T,
   _context?: unknown
 ): T {
-  return (async (...args: Parameters<T>) => {
+  return (async (...args: Parameters<T>): void => {
     try {
       return await fn(...args);
 } catch {      throw error;

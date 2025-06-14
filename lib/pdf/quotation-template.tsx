@@ -248,15 +248,15 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     email: 'info@enxi-erp.com',
     website: 'www.enxi-erp.com'
   }
-}) => {
-  const formatCurrency = (amount: number) => {
+}): void => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: quotation.currency || 'USD',
     }).format(amount)
   }
 
-  const formatDate = (date: Date | string) => {
+  const formatDate = (date: Date | string): void => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -264,11 +264,11 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     })
   }
 
-  const formatPercent = (percent: number) => {
+  const formatPercent = (percent: number): void => {
     return `${percent.toFixed(1)}%`
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): void => {
     switch (status) {
       case 'DRAFT': return { backgroundColor: '#F3F4F6', color: '#6B7280' }
       case 'SENT': return { backgroundColor: '#DBEAFE', color: '#1D4ED8' }
@@ -280,14 +280,14 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     }
   }
 
-  const isExpiringSoon = () => {
+  const isExpiringSoon = (): void => {
     const validUntil = new Date(quotation.validUntil)
     const now = new Date()
     const daysDiff = (validUntil.getTime() - now.getTime()) / (1000 * 3600 * 24)
     return daysDiff <= 7 && daysDiff > 0
   }
 
-  const isExpired = () => {
+  const isExpired = (): void => {
     return new Date(quotation.validUntil) < new Date()
   }
 

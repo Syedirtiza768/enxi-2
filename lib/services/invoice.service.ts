@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
+import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 import { JournalEntryService } from './accounting/journal-entry.service'
 import { SalesOrderService } from './sales-order.service'
 import { taxService } from './tax.service'
@@ -86,7 +87,7 @@ export class InvoiceService extends BaseService {
   ): Promise<InvoiceWithDetails> {
     return this.withLogging('createInvoice', async () => {
 
-      return await prisma.$transaction(async (tx) => {
+      const result = await prisma.$transaction(async (tx) => {
         // Generate unique invoice number
         const invoiceNumber = await this.generateInvoiceNumber(data.type || InvoiceType.SALES, tx)
 
@@ -97,7 +98,8 @@ export class InvoiceService extends BaseService {
           if (!salesOrder) {
             throw new Error('Sales order not found')
           }
-          if (![OrderStatus.APPROVED, OrderStatus.PROCESSING, OrderStatus.SHIPPED].includes(salesOrder.status)) {
+          const validStatuses: OrderStatus[] = [OrderStatus.APPROVED, OrderStatus.PROCESSING, OrderStatus.SHIPPED]
+          if (!validStatuses.includes(salesOrder.status)) {
             throw new Error('Sales order must be approved, processing, or shipped to create invoice')
           }
         }
@@ -167,8 +169,8 @@ export class InvoiceService extends BaseService {
         // Audit log
         await this.auditService.logAction({
           userId: data.createdBy,
-          action: 'CREATE',
-          entityType: 'Invoice',
+          action: AuditAction.CREATE,
+          entityType: EntityType.INVOICE,
           entityId: invoice.id,
           metadata: {
             invoiceNumber: invoice.invoiceNumber,
@@ -181,6 +183,12 @@ export class InvoiceService extends BaseService {
 
         return this.getInvoice(invoice.id, tx)
       })
+      
+      if (!result) {
+        throw new Error('Failed to create invoice')
+      }
+      
+      return result
     })
   }
 
@@ -235,7 +243,7 @@ export class InvoiceService extends BaseService {
   } = {}): Promise<InvoiceWithDetails[]> {
     return this.withLogging('getAllInvoices', async () => {
 
-      const where: Record<string, unknown> = {}
+      const where: Prisma.InvoiceWhereInput = {}
 
       if (filters.status) {
         where.status = filters.status
@@ -249,8 +257,12 @@ export class InvoiceService extends BaseService {
 
       if (filters.dateFrom || filters.dateTo) {
         where.invoiceDate = {}
-        if (filters.dateFrom) where.invoiceDate.gte = filters.dateFrom
-        if (filters.dateTo) where.invoiceDate.lte = filters.dateTo
+        if (filters.dateFrom) {
+          where.invoiceDate.gte = filters.dateFrom
+        }
+        if (filters.dateTo) {
+          where.invoiceDate.lte = filters.dateTo
+        }
       }
 
       if (filters.overdue) {
@@ -293,10 +305,11 @@ export class InvoiceService extends BaseService {
     id: string,
     data: UpdateInvoiceInput & { updatedBy: string }
   ): Promise<InvoiceWithDetails> {
-    const existingInvoice = await this.getInvoice(id)
-    if (!existingInvoice) {
-      throw new Error('Invoice not found')
-    }
+    return this.withLogging('updateInvoice', async () => {
+      const existingInvoice = await this.getInvoice(id)
+      if (!existingInvoice) {
+        throw new Error('Invoice not found')
+      }
 
     if (existingInvoice.status !== InvoiceStatus.DRAFT) {
       throw new Error('Only draft invoices can be updated')
@@ -364,8 +377,8 @@ export class InvoiceService extends BaseService {
       // Audit log
       await this.auditService.logAction({
         userId: data.updatedBy,
-        action: 'UPDATE',
-        entityType: 'Invoice',
+        action: AuditAction.UPDATE,
+        entityType: EntityType.INVOICE,
         entityId: id,
         metadata: {
           invoiceNumber: existingInvoice.invoiceNumber,
@@ -373,7 +386,8 @@ export class InvoiceService extends BaseService {
         }
       })
 
-      return this.getInvoice(id, tx)
+        return this.getInvoice(id, tx) as Promise<InvoiceWithDetails>
+      })
     })
   }
 
@@ -409,8 +423,8 @@ export class InvoiceService extends BaseService {
       // Audit log
       await this.auditService.logAction({
         userId,
-        action: 'SEND',
-        entityType: 'Invoice',
+        action: AuditAction.SUBMIT,
+        entityType: EntityType.INVOICE,
         entityId: id,
         metadata: {
           invoiceNumber: invoice.invoiceNumber,
@@ -420,7 +434,11 @@ export class InvoiceService extends BaseService {
       })
 
 
-      return this.getInvoice(id)
+      const result = await this.getInvoice(id)
+      if (!result) {
+        throw new Error('Failed to send invoice')
+      }
+      return result
     })
   }
 
@@ -494,8 +512,8 @@ export class InvoiceService extends BaseService {
         // Audit log
         await this.auditService.logAction({
           userId: paymentData.createdBy,
-          action: 'PAYMENT',
-          entityType: 'Invoice',
+          action: AuditAction.PAYMENT_RECEIVED,
+          entityType: EntityType.INVOICE,
           entityId: invoiceId,
           metadata: {
             invoiceNumber: invoice.invoiceNumber,
@@ -515,10 +533,11 @@ export class InvoiceService extends BaseService {
     salesOrderId: string,
     additionalData: Partial<CreateInvoiceInput> & { createdBy: string }
   ): Promise<InvoiceWithDetails> {
-    const salesOrder = await this.salesOrderService.getSalesOrder(salesOrderId)
-    if (!salesOrder) {
-      throw new Error('Sales order not found')
-    }
+    return this.withLogging('createInvoiceFromSalesOrder', async () => {
+      const salesOrder = await this.salesOrderService.getSalesOrder(salesOrderId)
+      if (!salesOrder) {
+        throw new Error('Sales order not found')
+      }
 
     if (![OrderStatus.APPROVED, OrderStatus.PROCESSING, OrderStatus.SHIPPED].includes(salesOrder.status)) {
       throw new Error('Sales order must be approved, processing, or shipped to create invoice')
@@ -550,12 +569,18 @@ export class InvoiceService extends BaseService {
       ...additionalData
     }
 
-    return this.createInvoice(invoiceData)
+      return this.createInvoice(invoiceData)
+    })
   }
 
   // Private helper methods
 
-  private async calculateTotals(items: CreateInvoiceItemInput[], customerId?: string) {
+  private async calculateTotals(items: CreateInvoiceItemInput[], customerId?: string): Promise<{
+    subtotal: number
+    taxAmount: number
+    discountAmount: number
+    totalAmount: number
+  }> {
     let subtotal = 0
     let taxAmount = 0
     let discountAmount = 0
@@ -572,7 +597,13 @@ export class InvoiceService extends BaseService {
     return { subtotal, taxAmount, discountAmount, totalAmount }
   }
 
-  private async calculateItemTotals(item: CreateInvoiceItemInput, customerId?: string) {
+  private async calculateItemTotals(item: CreateInvoiceItemInput, customerId?: string): Promise<{
+    subtotal: number
+    discountAmount: number
+    taxAmount: number
+    totalAmount: number
+    effectiveTaxRate: number
+  }> {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * ((item.discount || 0) / 100)
     const afterDiscount = subtotal - discountAmount
@@ -661,8 +692,9 @@ export class InvoiceService extends BaseService {
     invoice: InvoiceWithDetails,
     userId: string
   ): Promise<void> {
-    // Debit: Accounts Receivable, Credit: Sales Revenue & Sales Tax
-    const lines = [
+    return this.withLogging('createSalesInvoiceJournalEntry', async () => {
+      // Debit: Accounts Receivable, Credit: Sales Revenue & Sales Tax
+      const lines = [
       {
         accountId: await this.getAccountByCode('1200'), // Accounts Receivable
         description: `Sales invoice ${invoice.invoiceNumber}`,
@@ -686,13 +718,14 @@ export class InvoiceService extends BaseService {
       })
     }
 
-    await this.journalEntryService.createJournalEntry({
-      date: invoice.invoiceDate,
-      description: `Sales invoice ${invoice.invoiceNumber}`,
-      reference: invoice.invoiceNumber,
-      currency: 'USD',
-      lines,
-      createdBy: userId
+      await this.journalEntryService.createJournalEntry({
+        date: invoice.invoiceDate,
+        description: `Sales invoice ${invoice.invoiceNumber}`,
+        reference: invoice.invoiceNumber,
+        currency: 'USD',
+        lines,
+        createdBy: userId
+      })
     })
   }
 
@@ -702,10 +735,11 @@ export class InvoiceService extends BaseService {
     userId: string,
     tx: Prisma.TransactionClient
   ): Promise<void> {
-    // Debit: Cash/Bank, Credit: Accounts Receivable
-    const cashAccountId = payment.paymentMethod === PaymentMethod.CASH 
-      ? await this.getAccountByCode('1000') // Cash
-      : await this.getAccountByCode('1010') // Bank
+    return this.withLogging('createPaymentJournalEntry', async () => {
+      // Debit: Cash/Bank, Credit: Accounts Receivable
+      const cashAccountId = payment.paymentMethod === PaymentMethod.CASH 
+        ? await this.getAccountByCode('1000') // Cash
+        : await this.getAccountByCode('1010') // Bank
 
     const lines = [
       {
@@ -722,25 +756,28 @@ export class InvoiceService extends BaseService {
       }
     ]
 
-    await this.journalEntryService.createJournalEntry({
-      date: payment.paymentDate,
-      description: `Payment received for invoice ${invoice.invoiceNumber}`,
-      reference: payment.paymentNumber,
-      currency: 'USD',
-      lines,
-      createdBy: userId
-    }, tx)
+      await this.journalEntryService.createJournalEntry({
+        date: payment.paymentDate,
+        description: `Payment received for invoice ${invoice.invoiceNumber}`,
+        reference: payment.paymentNumber,
+        currency: 'USD',
+        lines,
+        createdBy: userId
+      }, tx)
+    })
   }
 
   private async getAccountByCode(code: string): Promise<string> {
-    const account = await prisma.account.findFirst({
-      where: { code }
+    return this.withLogging('getAccountByCode', async () => {
+      const account = await prisma.account.findFirst({
+        where: { code }
+      })
+      
+      if (!account) {
+        throw new Error(`Account with code ${code} not found`)
+      }
+      
+      return account.id
     })
-    
-    if (!account) {
-      throw new Error(`Account with code ${code} not found`)
-    }
-    
-    return account.id
   }
 }

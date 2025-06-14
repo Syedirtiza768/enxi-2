@@ -28,11 +28,12 @@ import {
   validatePhone,
   validateUrl,
   checkMaxLength,
-  validateCurrency as validateCurrencyAmount
+  validateCurrency
 } from '@/lib/validators/common.validator'
 import { apiClient } from '@/lib/api/client'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import type { FormErrors } from '@/lib/types/common.types'
 
 interface CustomerFormProps {
   leadData?: {
@@ -76,9 +77,9 @@ const industries = [
 ]
 
 export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProps) {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [fieldStatus, setFieldStatus] = useState<Record<string, 'checking' | 'valid' | 'error'>>({})
   const [checkingEmail, setCheckingEmail] = useState(false)
   
@@ -107,7 +108,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
     setFieldStatus(prev => ({ ...prev, email: 'checking' }))
     
     try {
-      const response = await apiClient<{ data: any }>(`/api/customers?email=${encodeURIComponent(email)}`)
+      const response = await apiClient<{ data: { id: string; email: string }[] }>(`/api/customers?email=${encodeURIComponent(email)}`)
       if (response.data && response.data.length > 0) {
         setErrors(prev => ({ ...prev, email: 'A customer with this email already exists' }))
         setFieldStatus(prev => ({ ...prev, email: 'error' }))
@@ -184,7 +185,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
         } else if (creditLimitValue > 999999999.99) {
           error = 'Credit limit too high'
         } else {
-          error = validateCurrencyAmount(creditLimitValue)
+          error = validateCurrency(creditLimitValue)
         }
         break
       case 'paymentTerms':
@@ -202,7 +203,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
     // Update errors
     if (error) {
       setErrors(prev => ({ ...prev, [field]: error }))
-      setFieldStatus(prev => ({ ...prev, [field]: 'error' }))
+      setFieldStatus(prev => ({ ...prev, [field]: 'error' as const }))
     } else {
       setErrors(prev => {
         const newErrors = { ...prev }
@@ -210,7 +211,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
         return newErrors
       })
       if (field !== 'email' || leadData?.email) {
-        setFieldStatus(prev => ({ ...prev, [field]: 'valid' }))
+        setFieldStatus(prev => ({ ...prev, [field]: 'valid' as const }))
       }
     }
   }
@@ -225,7 +226,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
       const validatedData = createCustomerSchema.parse(formData)
       
       // Submit to API
-      const response = await apiClient<{ data: any }>('/api/customers', {
+      const response = await apiClient<{ data: { id: string; name: string; email: string } }>('/api/customers', {
         method: 'POST',
         body: JSON.stringify(validatedData)
       })
@@ -238,12 +239,12 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
       if (onSuccess) {
         onSuccess(response.data)
       } else {
-        router.push(`/customers/${response.data?.data?.id || response.data?.id}`)
+        router.push(`/customers/${response.data?.id}`)
       }
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error) {
         // Zod validation errors
-        const fieldErrors: Record<string, string> = {}
+        const fieldErrors: FormErrors = {}
         const zodError = error as { errors: { path: (string | number)[]; message: string }[] }
         zodError.errors.forEach((err: { path: (string | number)[]; message: string }) => {
           if (err.path[0]) {

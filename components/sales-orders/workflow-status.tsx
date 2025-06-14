@@ -44,17 +44,17 @@ interface WorkflowStatusProps {
   }
 }
 
-export function WorkflowStatus({ salesOrder }: WorkflowStatusProps) {
+export function WorkflowStatus({ salesOrder }: WorkflowStatusProps): React.JSX.Element {
   const [_loading, _setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
 
-  const getStatusIcon = (completed: boolean, pending: boolean = false) => {
+  const getStatusIcon = (completed: boolean, pending: boolean = false): void => {
     if (completed) return <CheckCircle className="w-5 h-5 text-green-600" />
     if (pending) return <Clock className="w-5 h-5 text-yellow-600" />
     return <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
   }
 
-  const getStatusColor = (completed: boolean, pending: boolean = false) => {
+  const getStatusColor = (completed: boolean, pending: boolean = false): void => {
     if (completed) return 'text-green-600'
     if (pending) return 'text-yellow-600'
     return 'text-gray-400'

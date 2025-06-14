@@ -48,7 +48,7 @@ interface SalesCase {
   estimatedValue: number
 }
 
-export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }): React.JSX.Element {
   const { id } = use(params)
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [creditCheck, setCreditCheck] = useState<CreditCheck | null>(null)
@@ -78,7 +78,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const fetchCreditCheck = async (): Promise<boolean> => {
+  const fetchCreditCheck = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/customers/${id}/credit-check`)
       if (!response.ok) throw new Error('Failed to fetch credit check')
@@ -115,14 +115,14 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const formatCurrency = (amount: number, currency: string) => {
+  const formatCurrency = (amount: number, currency: string): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency
     }).format(amount)
   }
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string): void => {
     return new Date(date).toLocaleDateString()
   }
 
@@ -149,7 +149,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
             Back to Customers
           </Link>
           <button
-            onClick={() => setEditMode(!editMode)}
+            onClick={(): void => setEditMode(!editMode)}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             {editMode ? 'Cancel' : 'Edit'}
@@ -233,7 +233,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm text-gray-500">Credit Usage</span>
                       <button
-                        onClick={() => {
+                        onClick={(): void => {
                           setNewCreditLimit(customer.creditLimit)
                           setShowCreditModal(true)
                         }}
@@ -385,7 +385,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               <input
                 type="number"
                 value={newCreditLimit}
-                onChange={(e) => setNewCreditLimit(parseFloat(e.target.value) || 0)}
+                onChange={(e): void => setNewCreditLimit(parseFloat(e.target.value) || 0)}
                 min="0"
                 step="0.01"
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -400,7 +400,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setShowCreditModal(false)}
+                onClick={(): void => setShowCreditModal(false)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Cancel

@@ -21,7 +21,7 @@ interface Quotation {
   currency: string
 }
 
-function NewCustomerPOContent() {
+function NewCustomerPOContent(): React.JSX.Element {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
   const quotationId = searchParams.get('quotationId')
@@ -72,7 +72,7 @@ function NewCustomerPOContent() {
     currency: string
     attachmentUrl?: string
     notes?: string
-  }) => {
+  }): void => {
     try {
       const response = await fetch('/api/customer-pos', {
         method: 'POST',
@@ -98,7 +98,7 @@ function NewCustomerPOContent() {
     }
   }
 
-  const handleCancel = () => {
+  const handleCancel = (): void => {
     router.push('/customer-pos')
   }
 
@@ -122,7 +122,7 @@ function NewCustomerPOContent() {
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading quotation</h3>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
-          onClick={() => router.push('/customer-pos')}
+          onClick={(): void => router.push('/customer-pos')}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -139,7 +139,7 @@ function NewCustomerPOContent() {
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
           <button
-            onClick={() => router.push('/customer-pos')}
+            onClick={(): void => router.push('/customer-pos')}
             className="flex items-center hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -171,7 +171,7 @@ function NewCustomerPOContent() {
   )
 }
 
-export default function NewCustomerPOPage() {
+export default function NewCustomerPOPage(): React.JSX.Element {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <NewCustomerPOContent />

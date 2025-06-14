@@ -22,7 +22,7 @@ interface InventoryStats {
   recentMovements: number
 }
 
-export default function InventoryPage() {
+export default function InventoryPage(): React.JSX.Element {
   const [stats, setStats] = useState<InventoryStats>({
     totalItems: 0,
     totalValue: 0,

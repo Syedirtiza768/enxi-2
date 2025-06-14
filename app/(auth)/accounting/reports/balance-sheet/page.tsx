@@ -2,27 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import type { TrialBalance, TrialBalanceAccount, BalanceSheet, IncomeStatement, AccountBalance } from '@/lib/types/accounting.types'
 
-interface AccountBalance {
-  id: string
-  code: string
-  name: string
-  type: string
-  balance: number
-  currency: string
-}
+// Interface moved to central types file
 
-interface BalanceSheet {
-  asOfDate: string
-  currency: string
-  assets: AccountBalance[]
-  liabilities: AccountBalance[]
-  equity: AccountBalance[]
-  totalAssets: number
-  totalLiabilities: number
-  totalEquity: number
-  isBalanced: boolean
-}
+// Interface moved to central types file
 
 export default function BalanceSheetPage() {
   const [balanceSheet, setBalanceSheet] = useState<BalanceSheet | null>(null)
@@ -127,7 +111,7 @@ export default function BalanceSheetPage() {
             <h3 className="text-lg font-medium text-gray-900">
               Balance Sheet as of {new Date(balanceSheet.asOfDate).toLocaleDateString()}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">Currency: {balanceSheet.currency}</p>
+            <p className="mt-1 text-sm text-gray-500">Currency: {currency}</p>
           </div>
 
           <div className="px-6 py-4">

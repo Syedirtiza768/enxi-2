@@ -72,7 +72,7 @@ interface GoodsReceipt {
   createdBy: string
 }
 
-export default function GoodsReceiptDetailPage() {
+export default function GoodsReceiptDetailPage(): React.JSX.Element {
   
   const { formatCurrency } = useCurrency()
 const params = useParams()
@@ -87,7 +87,7 @@ const params = useParams()
     }
   }, [params.id])
 
-  const fetchGoodsReceipt = async (id: string) => {
+  const fetchGoodsReceipt = async (id: string): void => {
     setLoading(true)
     setError(null)
 
@@ -111,7 +111,7 @@ const params = useParams()
     }
   }
 
-  const getStatusBadge = (status: GoodsReceipt['status']) => {
+  const getStatusBadge = (status: GoodsReceipt['status']): void => {
     const config = {
       PENDING: { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' },
       RECEIVED: { label: 'Received', className: 'bg-green-100 text-green-800' },
@@ -123,7 +123,7 @@ const params = useParams()
     return <Badge className={className}>{label}</Badge>
   }
 
-  const getQualityBadge = (status: 'ACCEPTED' | 'REJECTED' | 'PARTIALLY_ACCEPTED' | string) => {
+  const getQualityBadge = (status: 'ACCEPTED' | 'REJECTED' | 'PARTIALLY_ACCEPTED' | string): void => {
     const config = {
       ACCEPTED: { label: 'Accepted', className: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-3 w-3" /> },
       REJECTED: { label: 'Rejected', className: 'bg-red-100 text-red-800', icon: <AlertTriangle className="h-3 w-3" /> },
@@ -160,7 +160,7 @@ const params = useParams()
             <Text size="lg" weight="semibold">Error loading goods receipt</Text>
             <Text color="secondary">{error || 'Goods receipt not found'}</Text>
           </VStack>
-          <Button variant="primary" onClick={() => router.push('/goods-receipts')}>
+          <Button variant="primary" onClick={(): void => router.push('/goods-receipts')}>
             Back to Goods Receipts
           </Button>
         </VStack>
@@ -183,7 +183,7 @@ const params = useParams()
               <Button
                 variant="outline"
                 leftIcon={<ArrowLeft />}
-                onClick={() => router.push('/goods-receipts')}
+                onClick={(): void => router.push('/goods-receipts')}
               >
                 Back
               </Button>
@@ -191,7 +191,7 @@ const params = useParams()
               <Button
                 variant="outline"
                 leftIcon={<Download />}
-                onClick={() => window.print()}
+                onClick={(): void => window.print()}
               >
                 Print
               </Button>

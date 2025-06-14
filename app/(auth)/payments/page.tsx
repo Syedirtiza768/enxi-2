@@ -36,7 +36,7 @@ interface Customer {
   creditLimit: number
 }
 
-export default function PaymentsPage() {
+export default function PaymentsPage(): React.JSX.Element {
   const [payments, setPayments] = useState<Payment[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,14 +80,14 @@ export default function PaymentsPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -95,7 +95,7 @@ export default function PaymentsPage() {
     })
   }
 
-  const getPaymentMethodColor = (method: string) => {
+  const getPaymentMethodColor = (method: string): void => {
     const colors: { [key: string]: string } = {
       'bank_transfer': 'bg-blue-100 text-blue-800',
       'credit_card': 'bg-green-100 text-green-800',
@@ -106,7 +106,7 @@ export default function PaymentsPage() {
     return colors[method] || 'bg-gray-100 text-gray-800'
   }
 
-  const getPaymentMethodLabel = (method: string) => {
+  const getPaymentMethodLabel = (method: string): void => {
     const labels: { [key: string]: string } = {
       'bank_transfer': 'Bank Transfer',
       'credit_card': 'Credit Card',
@@ -226,7 +226,7 @@ export default function PaymentsPage() {
                 <Input
                   placeholder="Search payments, invoices, or customers..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e): void => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>

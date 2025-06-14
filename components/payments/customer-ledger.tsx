@@ -34,7 +34,7 @@ interface Transaction {
   balance: number
 }
 
-export function CustomerLedger({ customerId }: CustomerLedgerProps) {
+export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.Element {
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,14 +72,14 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
     loadCustomerData()
   }, [customerId, loadCustomerData])
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number): void => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -87,12 +87,12 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
     })
   }
 
-  const getAvailableCredit = () => {
+  const getAvailableCredit = (): void => {
     if (!customer) return 0
     return customer.creditLimit - customer.currentBalance
   }
 
-  const getTransactionTypeLabel = (type: string) => {
+  const getTransactionTypeLabel = (type: string): void => {
     switch (type) {
       case 'invoice':
         return 'Invoice'
@@ -105,7 +105,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
     }
   }
 
-  const getTransactionTypeColor = (type: string) => {
+  const getTransactionTypeColor = (type: string): void => {
     switch (type) {
       case 'invoice':
         return 'destructive'
@@ -188,11 +188,11 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
               customerName={customer.name}
               totalAmount={customer.currentBalance}
               balanceAmount={customer.currentBalance}
-              onSuccess={() => {
+              onSuccess={(): void => {
                 setShowPaymentForm(false)
                 loadCustomerData() // Reload data after payment
               }}
-              onCancel={() => setShowPaymentForm(false)}
+              onCancel={(): void => setShowPaymentForm(false)}
             />
           </CardContent>
         </Card>
@@ -247,7 +247,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
                   id="fromDate"
                   type="date"
                   value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
+                  onChange={(e): void => setFromDate(e.target.value)}
                 />
               </div>
               <div>
@@ -256,7 +256,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
                   id="toDate"
                   type="date"
                   value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
+                  onChange={(e): void => setToDate(e.target.value)}
                 />
               </div>
               <div>
@@ -276,7 +276,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps) {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => setShowPaymentForm(true)}
+                onClick={(): void => setShowPaymentForm(true)}
                 className="whitespace-nowrap"
               >
                 Record Payment

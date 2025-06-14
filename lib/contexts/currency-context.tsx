@@ -13,7 +13,7 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
+export function CurrencyProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [defaultCurrency, setDefaultCurrency] = useState<string>('USD')
   const [supportedCurrencies, setSupportedCurrencies] = useState<Array<{ code: string; name: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -22,7 +22,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     loadCurrencySettings()
 
     // Listen for company settings changes
-    const handleSettingsChange = (event: Event) => {
+    const handleSettingsChange = (event: Event): void => {
       const customEvent = event as CustomEvent
       if (customEvent.detail?.defaultCurrency) {
         const currency = customEvent.detail.defaultCurrency
@@ -32,7 +32,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     }
 
     window.addEventListener('companySettingsChanged', handleSettingsChange)
-    return () => {
+    return (): void => {
       window.removeEventListener('companySettingsChanged', handleSettingsChange)
     }
   }, [])
@@ -74,7 +74,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const formatCurrency = (amount: number, currency?: string) => {
+  const formatCurrency = (amount: number, currency?: string): void => {
     return formatCurrencyUtil(amount, {
       currency: currency || defaultCurrency
     })
@@ -99,7 +99,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useCurrency() {
+export function useCurrency(): CurrencyContextType {
   const context = useContext(CurrencyContext)
   if (context === undefined) {
     throw new Error('useCurrency must be used within a CurrencyProvider')
@@ -108,11 +108,11 @@ export function useCurrency() {
 }
 
 // Utility hook for formatting currency with default currency
-export function useCurrencyFormatter() {
+export function useCurrencyFormatter(): unknown {
   const { formatCurrency, defaultCurrency } = useCurrency()
   
   return {
-    format: (amount: number, currency?: string) => formatCurrency(amount, currency),
+    format: (amount: number, currency?: string): void => formatCurrency(amount, currency),
     defaultCurrency
   }
 }

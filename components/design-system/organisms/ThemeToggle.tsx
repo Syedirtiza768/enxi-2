@@ -10,7 +10,7 @@ export interface ThemeToggleProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps) {
+export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps): React.JSX.Element {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [isOpen, setIsOpen] = React.useState(false)
 
@@ -19,7 +19,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
       <Button
         variant="ghost"
         size={size}
-        onClick={() => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
+        onClick={(): void => setTheme(resolvedTheme === 'light' ? 'dark' : 'light')}
         aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} theme`}
         className="rounded-full"
       >
@@ -36,7 +36,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
     return (
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as Theme)}
+        onChange={(e): void => setTheme(e.target.value as Theme)}
         className={`
           bg-[var(--bg-primary)] text-[var(--text-primary)]
           border border-[var(--border-primary)]
@@ -70,7 +70,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
       <Button
         variant="outline"
         size={size}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={(): void => setIsOpen(!isOpen)}
         className="min-w-[120px] justify-between"
         aria-label="Theme selector"
         aria-expanded={isOpen}
@@ -86,7 +86,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
         <>
           <div
             className="fixed inset-0 z-[var(--z-overlay)]"
-            onClick={() => setIsOpen(false)}
+            onClick={(): void => setIsOpen(false)}
             aria-hidden="true"
           />
           <div className={`
@@ -101,7 +101,7 @@ export function ThemeToggle({ variant = 'icon', size = 'md' }: ThemeToggleProps)
             {themes.map((themeOption) => (
               <button
                 key={themeOption.value}
-                onClick={() => {
+                onClick={(): void => {
                   setTheme(themeOption.value as Theme)
                   setIsOpen(false)
                 }}

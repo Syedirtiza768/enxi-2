@@ -1,3 +1,4 @@
+import type { Permission } from '@/lib/types'
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -19,14 +20,7 @@ import {
 } from 'lucide-react'
 import { Role } from '@/lib/types/shared-enums'
 
-interface Permission {
-  id: string
-  code: string
-  name: string
-  module: string
-  action: string
-  description: string
-}
+// Permission moved to common types
 
 const roleDescriptions: Record<Role, string> = {
   SUPER_ADMIN: 'Full system access with all permissions',
@@ -39,7 +33,7 @@ const roleDescriptions: Record<Role, string> = {
   USER: 'Basic user with limited permissions'
 }
 
-export default function RolesPage() {
+export default function RolesPage(): React.JSX.Element {
   const [selectedRole, setSelectedRole] = useState<Role>(Role.ADMIN)
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [rolePermissions, setRolePermissions] = useState<Record<Role, string[]>>({} as Record<Role, string[]>)
@@ -87,7 +81,7 @@ export default function RolesPage() {
     return rolePermissions[role]?.includes(permissionCode) || false
   }
 
-  const togglePermission = async (role: Role, permissionCode: string) => {
+  const togglePermission = async (role: Role, permissionCode: string): void => {
     try {
       setUpdating(true)
       const currentlyHas = hasPermission(role, permissionCode)
@@ -110,7 +104,7 @@ export default function RolesPage() {
     }
   }
 
-  const getPermissionIcon = (role: Role, permissionCode: string) => {
+  const getPermissionIcon = (role: Role, permissionCode: string): void => {
     const hasIt = hasPermission(role, permissionCode)
     return hasIt ? (
       <Check className="w-4 h-4 text-green-600" />
@@ -119,14 +113,14 @@ export default function RolesPage() {
     )
   }
 
-  const getToggleButton = (role: Role, permissionCode: string) => {
+  const getToggleButton = (role: Role, permissionCode: string): void => {
     const hasIt = hasPermission(role, permissionCode)
     
     return (
       <Button
         variant="outline"
         size="sm"
-        onClick={() => togglePermission(role, permissionCode)}
+        onClick={(): void => togglePermission(role, permissionCode)}
         disabled={updating || role === Role.SUPER_ADMIN} // SUPER_ADMIN always has all permissions
         className="flex items-center space-x-1"
       >
@@ -145,14 +139,14 @@ export default function RolesPage() {
     )
   }
 
-  const toggleModule = (module: string) => {
+  const toggleModule = (module: string): void => {
     setExpandedModules(prev => ({
       ...prev,
       [module]: !prev[module]
     }))
   }
 
-  const bulkToggleModule = async (role: Role, module: string, grant: boolean) => {
+  const bulkToggleModule = async (role: Role, module: string, grant: boolean): void => {
     try {
       setBulkUpdating(true)
       const modulePermissions = permissions.filter(p => p.module === module)
@@ -183,7 +177,7 @@ export default function RolesPage() {
     }
   }
 
-  const bulkToggleAll = async (role: Role, grant: boolean) => {
+  const bulkToggleAll = async (role: Role, grant: boolean): void => {
     try {
       setBulkUpdating(true)
       
@@ -213,7 +207,7 @@ export default function RolesPage() {
     }
   }
 
-  const getModulePermissionStatus = (role: Role, module: string) => {
+  const getModulePermissionStatus = (role: Role, module: string): void => {
     const modulePermissions = permissions.filter(p => p.module === module)
     const grantedCount = modulePermissions.filter(p => hasPermission(role, p.code)).length
     
@@ -245,7 +239,7 @@ export default function RolesPage() {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={() => fetchData()}>Retry</Button>
+        <Button onClick={(): void => fetchData()}>Retry</Button>
       </div>
     )
   }
@@ -260,7 +254,7 @@ export default function RolesPage() {
         </p>
       </div>
 
-      <Tabs value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>
+      <Tabs value={selectedRole} onValueChange={(value): void => setSelectedRole(value as Role)}>
         <TabsList className="grid grid-cols-4 w-full lg:w-auto lg:flex">
           {Object.values(Role).map((role) => (
             <TabsTrigger key={role} value={role} className="flex items-center space-x-2">
@@ -285,7 +279,7 @@ export default function RolesPage() {
                     {role !== Role.SUPER_ADMIN && (
                       <div className="flex items-center space-x-2">
                         <Button
-                          onClick={() => bulkToggleAll(role, true)}
+                          onClick={(): void => bulkToggleAll(role, true)}
                           disabled={bulkUpdating || updating}
                           size="sm"
                           variant="outline"
@@ -295,7 +289,7 @@ export default function RolesPage() {
                           <span>Grant All</span>
                         </Button>
                         <Button
-                          onClick={() => bulkToggleAll(role, false)}
+                          onClick={(): void => bulkToggleAll(role, false)}
                           disabled={bulkUpdating || updating}
                           size="sm"
                           variant="outline"
@@ -326,7 +320,7 @@ export default function RolesPage() {
                             <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <button
-                                  onClick={() => toggleModule(module)}
+                                  onClick={(): void => toggleModule(module)}
                                   className="flex items-center space-x-2 text-gray-700 hover:text-gray-900"
                                 >
                                   {isExpanded ? (
@@ -351,7 +345,7 @@ export default function RolesPage() {
                               </div>
                               <div className="flex items-center space-x-2">
                                 <Button
-                                  onClick={() => bulkToggleModule(role, module, true)}
+                                  onClick={(): void => bulkToggleModule(role, module, true)}
                                   disabled={bulkUpdating || updating}
                                   size="sm"
                                   variant="outline"
@@ -361,7 +355,7 @@ export default function RolesPage() {
                                   <span>Grant All</span>
                                 </Button>
                                 <Button
-                                  onClick={() => bulkToggleModule(role, module, false)}
+                                  onClick={(): void => bulkToggleModule(role, module, false)}
                                   disabled={bulkUpdating || updating}
                                   size="sm"
                                   variant="outline"
