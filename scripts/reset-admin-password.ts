@@ -1,30 +1,29 @@
-import { PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from '../lib/db/prisma'
 import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
-
-async function resetAdminPassword(): Promise<void> {
-  console.warn('🔐 Resetting admin password...\n')
-
+async function resetAdminPassword() {
+  console.log('Resetting admin password...')
+  
   try {
-    const newPassword = 'admin123'
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    const hashedPassword = await bcrypt.hash('Admin123\!', 10)
     
-    const updatedUser = await prisma.user.update({
+    const user = await prisma.user.update({
       where: { username: 'admin' },
-      data: { password: hashedPassword }
+      data: {
+        password: hashedPassword
+      }
     })
-
-    console.warn('✅ Password reset successful!')
-    console.warn('  Username:', updatedUser.username)
-    console.warn('  Email:', updatedUser.email)
-    console.warn('  New password:', newPassword)
-
-} catch (error) {
-      console.error('Error:', error);
-      await prisma.$disconnect()
-    }
+    
+    console.log('✅ Password reset for user:', user.username)
+    console.log('Email:', user.email)
+    console.log('New password: Admin123\!')
+    
+  } catch (error) {
+    console.error('Error resetting password:', error)
+  } finally {
+    await prisma.$disconnect()
+  }
 }
 
 resetAdminPassword()
-  .catch(console.error)
+EOF < /dev/null

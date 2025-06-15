@@ -76,8 +76,12 @@ export async function apiClient<T = unknown>(
 
   // Prepare headers
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     ...customHeaders,
+  }
+  
+  // Only set Content-Type if not FormData (browser will set correct boundary for FormData)
+  if (!(fetchOptions.body instanceof FormData)) {
+    (headers as Record<string, string>)['Content-Type'] = 'application/json'
   }
 
   // Add authentication if not skipped

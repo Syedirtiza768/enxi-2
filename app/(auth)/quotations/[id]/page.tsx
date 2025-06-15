@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Edit, Send, FileText, Trash2, Copy, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, Edit, Send, FileText, Trash2, Copy, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
 import { QuotationForm } from '@/components/quotations/quotation-form'
 import { apiClient } from '@/lib/api/client'
 
@@ -58,6 +58,7 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<'view' | 'edit'>('view')
+  const [viewMode, setViewMode] = useState<'internal' | 'client'>('internal')
 
   // Fetch quotation details
   useEffect(() => {
@@ -66,7 +67,7 @@ export default function QuotationDetailPage() {
         setLoading(true)
         setError(null)
 
-        const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}`, {
+        const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}?view=${viewMode}`, {
           method: 'GET'
         })
 
@@ -86,7 +87,7 @@ export default function QuotationDetailPage() {
     if (quotationId) {
       fetchQuotation()
     }
-  }, [quotationId])
+  }, [quotationId, viewMode])
 
   const handleUpdate = async (quotationData: Partial<Quotation>) => {
     try {
@@ -356,6 +357,25 @@ export default function QuotationDetailPage() {
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
+          {/* View Mode Toggle */}
+          <button
+            onClick={() => setViewMode(viewMode === 'internal' ? 'client' : 'internal')}
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            title={viewMode === 'internal' ? 'Switch to Client View' : 'Switch to Internal View'}
+          >
+            {viewMode === 'internal' ? (
+              <>
+                <Eye className="h-4 w-4 mr-2" />
+                Internal View
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-4 w-4 mr-2" />
+                Client View
+              </>
+            )}
+          </button>
+
           {quotation.status === 'DRAFT' && (
             <button
               onClick={handleSend}
@@ -452,11 +472,13 @@ export default function QuotationDetailPage() {
           discountAmount: quotation.discountAmount,
           taxAmount: quotation.taxAmount,
           totalAmount: quotation.totalAmount,
-          items: quotation.items
+          items: quotation.items,
+          lines: (quotation as any).lines // For client view
         }}
         onSubmit={handleUpdate}
         onCancel={() => {}}
         mode="preview"
+        viewMode={viewMode}
       />
     </div>
   )

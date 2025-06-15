@@ -15,9 +15,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const quotationId = resolvedParams.id
 
-    // Get quotation with full details
+    // Get quotation in client view (PDFs are always for clients)
     const quotationService = new QuotationService()
-    const quotation = await quotationService.getQuotation(quotationId)
+    const quotation = await quotationService.getQuotationClientView(quotationId)
 
     if (!quotation) {
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })

@@ -14,7 +14,9 @@ import {
   Input,
   Select
 } from '@/components/design-system'
-import { Save, Building, DollarSign } from 'lucide-react'
+import { Save, Building, DollarSign, Upload, X } from 'lucide-react'
+import Image from 'next/image'
+import { apiClient } from '@/lib/api/client'
 
 interface CompanySettings {
   companyName: string
@@ -22,6 +24,7 @@ interface CompanySettings {
   phone?: string | null
   email?: string | null
   website?: string | null
+  logoUrl?: string | null
   defaultCurrency: string
 }
 
@@ -46,6 +49,7 @@ export default function CompanySettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
 
   // Load existing settings
   useEffect(() => {
@@ -58,20 +62,8 @@ export default function CompanySettingsPage() {
   const loadSettings = async (): Promise<void> => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
       
-      if (!token) {
-        console.warn('No authentication token found')
-        setError('Please log in to access company settings')
-        setLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/settings/company', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const response = await apiClient('/api/settings/company')
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -80,10 +72,10 @@ export default function CompanySettingsPage() {
           window.location.href = '/login'
           return
         }
-        throw new Error('Failed to load settings')
+        throw new Error(response.error || 'Failed to load settings')
       }
 
-      const data = await response.json()
+      const data = response.data
       setSettings(data.settings || {
         companyName: 'EnXi ERP',
         defaultCurrency: 'USD'
@@ -102,28 +94,16 @@ export default function CompanySettingsPage() {
       setSaving(true)
       setError(null)
 
-      const token = localStorage.getItem('token')
-      if (!token) {
-        setError('Please log in to save settings')
-        setSaving(false)
-        return
-      }
-
-      const response = await fetch('/api/settings/company', {
+      const response = await apiClient('/api/settings/company', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify(settings)
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to save settings')
+        throw new Error(response.error || 'Failed to save settings')
       }
 
-      const updatedSettings = await response.json()
+      const updatedSettings = response.data
       setSettings(updatedSettings)
       setSaved(true)
       
@@ -140,6 +120,65 @@ export default function CompanySettingsPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploadingLogo(true)
+      setError(null)
+
+      // Log file info for debugging
+      console.log('Uploading file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      })
+
+      const formData = new FormData()
+      formData.append('file', file)
+
+      // Use fetch directly to bypass any apiClient issues
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth-token='))
+        ?.split('=')[1]
+
+      const response = await fetch('/api/company/logo', {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: formData,
+        credentials: 'include'
+      })
+
+      const responseData = await response.json()
+      
+      if (!response.ok) {
+        console.error('Upload failed:', responseData)
+        throw new Error(responseData.error || 'Failed to upload logo')
+      }
+
+      setSettings(prev => ({
+        ...prev,
+        logoUrl: responseData.url
+      }))
+    } catch (error: any) {
+      console.error('Logo upload error:', error)
+      setError(error.message || 'Failed to upload logo')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
+  const removeLogo = () => {
+    setSettings(prev => ({
+      ...prev,
+      logoUrl: null
+    }))
   }
 
   const handleInputChange = (field: keyof CompanySettings, value: string) => {
@@ -247,6 +286,61 @@ export default function CompanySettingsPage() {
                 placeholder="https://yourcompany.com"
                 fullWidth
               />
+
+              {/* Logo Upload Section */}
+              <div className="w-full">
+                <Text size="sm" weight="medium" className="mb-2">
+                  Company Logo
+                </Text>
+                <div className="flex items-center gap-4">
+                  {settings.logoUrl ? (
+                    <div className="relative">
+                      <div className="w-32 h-32 relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <Image
+                          src={settings.logoUrl}
+                          alt="Company Logo"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute -top-2 -right-2 p-1 bg-white dark:bg-gray-800 shadow-sm"
+                        onClick={removeLogo}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                      <Upload className="h-8 w-8 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                      disabled={uploadingLogo}
+                      id="logo-upload"
+                    />
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      leftIcon={<Upload />}
+                      loading={uploadingLogo}
+                      onClick={() => document.getElementById('logo-upload')?.click()}
+                    >
+                      {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                    </Button>
+                    <Text size="xs" color="secondary" className="mt-2">
+                      Recommended: 200x200px, Max 5MB, PNG or JPG
+                    </Text>
+                  </div>
+                </div>
+              </div>
             </VStack>
           </CardContent>
         </Card>

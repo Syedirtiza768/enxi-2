@@ -30,7 +30,19 @@ export function withAudit<T extends (...args: any[]) => Promise<NextResponse>>(
 ): T {
   return (async (request: NextRequest, ...args: any[]) => {
     const auditService = new AuditService()
-    const auditContext = extractAuditContext(request)
+    let auditContext = extractAuditContext(request)
+    
+    // Try to get authenticated user ID
+    try {
+      const { getUserFromRequest } = await import('@/lib/utils/auth')
+      const user = await getUserFromRequest(request)
+      if (user && user.id) {
+        auditContext = { ...auditContext, userId: user.id }
+      }
+    } catch (error) {
+      // Authentication failed, but we'll continue with the handler
+      // The handler itself will handle the authentication requirement
+    }
     
     // Check if audit should be skipped
     if (options.skipCondition && options.skipCondition(request)) {
@@ -93,6 +105,12 @@ export function withAudit<T extends (...args: any[]) => Promise<NextResponse>>(
       // Log the audit entry asynchronously (don't block response)
       setImmediate(async () => {
         try {
+          // Skip audit logging if no valid user ID (e.g., anonymous access)
+          if (!auditContext.userId || auditContext.userId === 'anonymous') {
+            console.log('[Audit] Skipping audit log - no authenticated user')
+            return
+          }
+          
           await auditService.logAction({
             userId: auditContext.userId,
             action: options.action,
@@ -123,6 +141,12 @@ export function withAudit<T extends (...args: any[]) => Promise<NextResponse>>(
       // Log failed operations
       setImmediate(async () => {
         try {
+          // Skip audit logging if no valid user ID (e.g., anonymous access)
+          if (!auditContext.userId || auditContext.userId === 'anonymous') {
+            console.log('[Audit] Skipping audit log for failed operation - no authenticated user')
+            return
+          }
+          
           await auditService.logAction({
             userId: auditContext.userId,
             action: options.action,

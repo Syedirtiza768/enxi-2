@@ -9,6 +9,7 @@ export interface CompanySettings {
   phone?: string | null
   email?: string | null
   website?: string | null
+  logoUrl?: string | null
   defaultCurrency: string
   isActive: boolean
   createdAt: Date
@@ -22,6 +23,7 @@ export interface UpdateCompanySettingsInput {
   phone?: string | null
   email?: string | null
   website?: string | null
+  logoUrl?: string | null
   defaultCurrency?: string
   updatedBy: string
 }
@@ -96,6 +98,7 @@ export class CompanySettingsService extends BaseService {
           phone: data.phone !== undefined ? data.phone : currentSettings.phone,
           email: data.email !== undefined ? data.email : currentSettings.email,
           website: data.website !== undefined ? data.website : currentSettings.website,
+          logoUrl: data.logoUrl !== undefined ? data.logoUrl : currentSettings.logoUrl,
           defaultCurrency: data.defaultCurrency ?? currentSettings.defaultCurrency,
           updatedBy: data.updatedBy
         }

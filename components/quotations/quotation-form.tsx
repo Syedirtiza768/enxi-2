@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Save, X, FileText, Clock, Edit3, CheckCircle, AlertCircle, AlertTriangle, Info, CheckCircle2 } from 'lucide-react'
 import { LineItemEditorV2 } from './line-item-editor-v2'
+import { ClientQuotationView } from './client-quotation-view'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient, type ApiResponse } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
@@ -92,11 +93,12 @@ interface SalesCase {
 }
 
 interface QuotationFormProps {
-  quotation?: Quotation
+  quotation?: Quotation & { lines?: any[] }
   onSubmit: (quotation: Quotation) => Promise<void>
   onCancel: () => void
   mode?: 'create' | 'edit' | 'preview'
   autoSave?: boolean
+  viewMode?: 'internal' | 'client'
 }
 
 export function QuotationForm({ 
@@ -104,7 +106,8 @@ export function QuotationForm({
   onSubmit, 
   onCancel, 
   mode: initialMode = 'create',
-  autoSave = false 
+  autoSave = false,
+  viewMode = 'internal'
 }: QuotationFormProps) {
   const { user: _user } = useAuth()
   const { defaultCurrency, formatCurrency } = useCurrency()
@@ -914,8 +917,9 @@ export function QuotationForm({
               </p>
             </div>
 
-            {/* Internal Notes */}
-            <div className="mt-4" data-has-error={validationErrors.internalNotes ? 'true' : 'false'}>
+            {/* Internal Notes - Only show in internal view */}
+            {viewMode === 'internal' && (
+              <div className="mt-4" data-has-error={validationErrors.internalNotes ? 'true' : 'false'}>
               <label htmlFor="internalNotes" className="block text-sm font-medium text-gray-700 mb-1">
                 Internal Notes
               </label>
@@ -966,6 +970,7 @@ export function QuotationForm({
                 {formData.internalNotes ? `${formData.internalNotes.length}/${MAX_NOTES_LENGTH} characters` : `Max ${MAX_NOTES_LENGTH} characters`} - Internal use only
               </p>
             </div>
+            )}
           </div>
 
           {/* Quotation Items */}
@@ -993,27 +998,31 @@ export function QuotationForm({
                 </p>
               )}
             </div>
-            <LineItemEditorV2
-              quotationItems={formData.items}
-              onChange={(items) => {
-                updateFormData({ items })
-                setTouchedFields(prev => new Set(prev).add('items'))
-                
-                // Validate items immediately
-                const error = validateField('items', items)
-                if (error) {
-                  setValidationErrors(prev => ({ ...prev, items: error }))
-                  setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
-                } else {
-                  setValidationErrors(prev => {
-                    const { items, ...rest } = prev
-                    return rest
-                  })
-                  setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
-                }
-              }}
-              disabled={isPreview}
-            />
+            {viewMode === 'internal' ? (
+              <LineItemEditorV2
+                quotationItems={formData.items}
+                onChange={(items) => {
+                  updateFormData({ items })
+                  setTouchedFields(prev => new Set(prev).add('items'))
+                  
+                  // Validate items immediately
+                  const error = validateField('items', items)
+                  if (error) {
+                    setValidationErrors(prev => ({ ...prev, items: error }))
+                    setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
+                  } else {
+                    setValidationErrors(prev => {
+                      const { items, ...rest } = prev
+                      return rest
+                    })
+                    setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
+                  }
+                }}
+                disabled={isPreview}
+              />
+            ) : (
+              <ClientQuotationView lines={quotation?.lines || []} items={formData.items} />
+            )}
             {validationErrors.items && (
               <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-800 flex items-center">

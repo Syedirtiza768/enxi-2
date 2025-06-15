@@ -72,18 +72,31 @@ export async function withAudit<T>(
 
 export function extractAuditContext(request: NextRequest): AuditContext {
   // Try to extract user ID from various sources
-  let userId = request.headers.get('x-user-id') || 'anonymous'
+  let userId = 'anonymous'
   
   // Try to get user from auth token if available
-  const authHeader = request.headers.get('authorization')
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    try {
-      // This is a simplified approach - in production you might want to decode the JWT
-      // For now, we'll use the header approach or fallback to anonymous
-      userId = request.headers.get('x-user-id') || 'anonymous'
-    } catch (error) {
-      // If token parsing fails, keep as anonymous
+  try {
+    const { getUserFromRequest } = require('@/lib/utils/auth')
+    // This is async, but we need sync for middleware
+    // For now, we'll check if there's an auth token and assume it's valid
+    const cookieToken = request.cookies.get('auth-token')?.value
+    const authHeader = request.headers.get('authorization')
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : null
+    
+    if (cookieToken || bearerToken) {
+      // If there's a token, we'll extract user ID from it later in the middleware
+      // For now, mark as pending authentication
+      userId = 'pending-auth'
     }
+  } catch (error) {
+    // If auth module fails, keep as anonymous
+    console.error('[Audit] Error extracting user context:', error)
+  }
+  
+  // Try custom header approach
+  const customUserId = request.headers.get('x-user-id')
+  if (customUserId) {
+    userId = customUserId
   }
   
   const ipAddress = request.headers.get('x-forwarded-for') || 

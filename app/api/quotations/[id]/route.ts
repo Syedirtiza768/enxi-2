@@ -3,6 +3,7 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { QuotationService } from '@/lib/services/quotation.service'
 
 // GET /api/quotations/[id] - Get quotation by ID
+// Supports view query parameter: ?view=client or ?view=internal (default)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,7 +13,15 @@ export async function GET(
     const quotationService = new QuotationService()
     
     const resolvedParams = await params
-    const quotation = await quotationService.getQuotation(resolvedParams.id)
+    const { searchParams } = new URL(request.url)
+    const view = searchParams.get('view') || 'internal'
+    
+    let quotation
+    if (view === 'client') {
+      quotation = await quotationService.getQuotationClientView(resolvedParams.id)
+    } else {
+      quotation = await quotationService.getQuotationInternalView(resolvedParams.id)
+    }
     
     if (!quotation) {
       return NextResponse.json(
@@ -23,7 +32,8 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: quotation
+      data: quotation,
+      view
     })
 } catch (error) {
     console.error('Error:', error);

@@ -1,6 +1,49 @@
 import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
-import { QuotationWithDetails } from '@/lib/services/quotation.service'
+
+interface QuotationPDFData {
+  id: string
+  quotationNumber: string
+  status: string
+  version: number
+  validUntil: Date | string
+  createdAt: Date | string
+  salesCase: {
+    caseNumber: string
+    title: string
+    description?: string
+    customer: {
+      name: string
+      email: string
+      phone?: string
+      address?: string
+    }
+  }
+  currency?: string
+  subtotal: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+  paymentTerms?: string
+  deliveryTerms?: string
+  notes?: string
+  lines?: Array<{
+    lineNumber: number
+    lineDescription: string
+    quantity: number
+    totalAmount: number
+  }>
+  items?: Array<{
+    id: string
+    itemCode: string
+    description: string
+    quantity: number
+    unitPrice: number
+    discount: number
+    taxRate: number
+    totalAmount: number
+  }>
+}
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
@@ -229,7 +272,7 @@ const styles = StyleSheet.create({
 })
 
 interface QuotationPDFProps {
-  quotation: QuotationWithDetails
+  quotation: QuotationPDFData
   companyInfo?: {
     name: string
     address: string
@@ -248,15 +291,15 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     email: 'info@enxi-erp.com',
     website: 'www.enxi-erp.com'
   }
-}): void => {
-  const formatCurrency = (amount: number): void => {
+}) => {
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: quotation.currency || 'USD',
     }).format(amount)
   }
 
-  const formatDate = (date: Date | string): void => {
+  const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -264,11 +307,11 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     })
   }
 
-  const formatPercent = (percent: number): void => {
+  const formatPercent = (percent: number) => {
     return `${percent.toFixed(1)}%`
   }
 
-  const getStatusColor = (status: string): void => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'DRAFT': return { backgroundColor: '#F3F4F6', color: '#6B7280' }
       case 'SENT': return { backgroundColor: '#DBEAFE', color: '#1D4ED8' }
@@ -280,14 +323,14 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     }
   }
 
-  const isExpiringSoon = (): void => {
+  const isExpiringSoon = () => {
     const validUntil = new Date(quotation.validUntil)
     const now = new Date()
     const daysDiff = (validUntil.getTime() - now.getTime()) / (1000 * 3600 * 24)
     return daysDiff <= 7 && daysDiff > 0
   }
 
-  const isExpired = (): void => {
+  const isExpired = () => {
     return new Date(quotation.validUntil) < new Date()
   }
 
@@ -358,29 +401,54 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
         <View style={styles.itemsTable}>
           <Text style={styles.sectionTitle}>Items & Services:</Text>
           
-          {/* Table Header */}
-          <View style={styles.tableHeader}>
-            <Text style={styles.itemCode}>Item Code</Text>
-            <Text style={styles.itemDescription}>Description</Text>
-            <Text style={styles.itemQuantity}>Qty</Text>
-            <Text style={styles.itemPrice}>Unit Price</Text>
-            <Text style={styles.itemDiscount}>Disc %</Text>
-            <Text style={styles.itemTax}>Tax %</Text>
-            <Text style={styles.itemTotal}>Total</Text>
-          </View>
+          {/* Check if we have lines (client view) or items (internal view) */}
+          {quotation.lines ? (
+            <>
+              {/* Client View - Show Lines */}
+              <View style={styles.tableHeader}>
+                <Text style={{ ...styles.itemCode, width: '10%' }}>Line</Text>
+                <Text style={{ ...styles.itemDescription, width: '60%' }}>Description</Text>
+                <Text style={{ ...styles.itemQuantity, width: '10%' }}>Qty</Text>
+                <Text style={{ ...styles.itemTotal, width: '20%' }}>Total</Text>
+              </View>
+              
+              {/* Line Rows */}
+              {quotation.lines.map((line, index) => (
+                <View key={line.lineNumber} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
+                  <Text style={{ ...styles.itemCode, width: '10%' }}>{line.lineNumber}</Text>
+                  <Text style={{ ...styles.itemDescription, width: '60%' }}>{line.lineDescription || 'No description'}</Text>
+                  <Text style={{ ...styles.itemQuantity, width: '10%' }}>{line.quantity}</Text>
+                  <Text style={{ ...styles.itemTotal, width: '20%' }}>{formatCurrency(line.totalAmount)}</Text>
+                </View>
+              ))}
+            </>
+          ) : quotation.items ? (
+            <>
+              {/* Internal View - Show Items */}
+              <View style={styles.tableHeader}>
+                <Text style={styles.itemCode}>Item Code</Text>
+                <Text style={styles.itemDescription}>Description</Text>
+                <Text style={styles.itemQuantity}>Qty</Text>
+                <Text style={styles.itemPrice}>Unit Price</Text>
+                <Text style={styles.itemDiscount}>Disc %</Text>
+                <Text style={styles.itemTax}>Tax %</Text>
+                <Text style={styles.itemTotal}>Total</Text>
+              </View>
 
-          {/* Table Rows */}
-          {quotation.items.map((item, index) => (
-            <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-              <Text style={styles.itemCode}>{item.itemCode}</Text>
-              <Text style={styles.itemDescription}>{item.description}</Text>
-              <Text style={styles.itemQuantity}>{item.quantity}</Text>
-              <Text style={styles.itemPrice}>{formatCurrency(item.unitPrice)}</Text>
-              <Text style={styles.itemDiscount}>{formatPercent(item.discount)}</Text>
-              <Text style={styles.itemTax}>{formatPercent(item.taxRate)}</Text>
-              <Text style={styles.itemTotal}>{formatCurrency(item.totalAmount)}</Text>
-            </View>
-          ))}
+              {/* Table Rows */}
+              {quotation.items.map((item, index) => (
+                <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
+                  <Text style={styles.itemCode}>{item.itemCode}</Text>
+                  <Text style={styles.itemDescription}>{item.description}</Text>
+                  <Text style={styles.itemQuantity}>{item.quantity}</Text>
+                  <Text style={styles.itemPrice}>{formatCurrency(item.unitPrice)}</Text>
+                  <Text style={styles.itemDiscount}>{formatPercent(item.discount)}</Text>
+                  <Text style={styles.itemTax}>{formatPercent(item.taxRate)}</Text>
+                  <Text style={styles.itemTotal}>{formatCurrency(item.totalAmount)}</Text>
+                </View>
+              ))}
+            </>
+          ) : null}
         </View>
 
         {/* Totals Section */}

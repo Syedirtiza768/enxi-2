@@ -21,9 +21,10 @@ export default function RootLayout({
   children: React.ReactNode
 }): React.JSX.Element {
   // Preload critical components
-  if (typeof window !== 'undefined') {
-    preloadCriticalComponents()
-  }
+  // Temporarily disabled to fix chunk loading error
+  // if (typeof window !== 'undefined') {
+  //   preloadCriticalComponents()
+  // }
 
   return (
     <html lang="en" suppressHydrationWarning>

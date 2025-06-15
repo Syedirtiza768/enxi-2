@@ -7,7 +7,7 @@ import { apiClient } from '@/lib/api/client'
 interface UseLeadsOptions extends Partial<LeadListQuery> {}
 
 interface UseLeadsReturn {
-  leads: LeadListResponse | null
+  leads: LeadListResponse
   stats: LeadStats | null
   isLoading: boolean
   error: Error | null
@@ -67,7 +67,10 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
 
   const createLead = useCallback(async (data: CreateLeadData) => {
     console.warn('Creating lead with data:', data)
-    const response = await apiClient('/api/leads', data)
+    const response = await apiClient('/api/leads', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to create lead')
@@ -77,7 +80,10 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   }, [])
 
   const updateLead = useCallback(async (id: string, data: UpdateLeadData) => {
-    const response = await apiClient(`/api/leads/${id}`, data)
+    const response = await apiClient(`/api/leads/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to update lead')
@@ -87,7 +93,9 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   }, [])
 
   const deleteLead = useCallback(async (id: string) => {
-    const response = await apiClient(`/api/leads/${id}`)
+    const response = await apiClient(`/api/leads/${id}`, {
+      method: 'DELETE'
+    })
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to delete lead')
@@ -109,7 +117,7 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
   }, [fetchStats])
 
   return {
-    leads,
+    leads: leads || { data: [], total: 0, page: 1, limit: 10 },
     stats,
     isLoading,
     error,

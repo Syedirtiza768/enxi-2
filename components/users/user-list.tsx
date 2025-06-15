@@ -90,12 +90,28 @@ export function UserList(): React.JSX.Element {
       if (roleFilter !== 'all') params.append('role', roleFilter)
       if (statusFilter !== 'all') params.append('isActive', statusFilter)
 
-      const data = await apiClient<UserListResponse>(`/api/users?${params}`)
+      const response = await apiClient<UserListResponse>(`/api/users?${params}`)
       
-      if (data) {
-        setUsers(data?.data || [])
-        setTotal(data?.total || 0)
-        setTotalPages(data?.totalPages || 0)
+      if (response.ok && response.data) {
+        // Ensure we have valid data structure
+        const responseData = response.data
+        if (responseData && typeof responseData === 'object' && 'data' in responseData) {
+          const usersArray = Array.isArray(responseData.data) ? responseData.data : []
+          setUsers(usersArray)
+          setTotal(responseData.total || 0)
+          setTotalPages(responseData.totalPages || 0)
+        } else {
+          // If response.data is directly an array (legacy format)
+          if (Array.isArray(response.data)) {
+            setUsers(response.data)
+            setTotal(response.data.length)
+            setTotalPages(1)
+          } else {
+            console.error('Unexpected response format:', response)
+            setUsers([])
+            setError('Invalid response format from server')
+          }
+        }
       } else {
         throw new Error(response.error || 'Failed to fetch users')
       }
@@ -120,7 +136,7 @@ export function UserList(): React.JSX.Element {
     }
   }, [search, page, fetchUsers])
 
-  const getRoleBadge = (role: Role): void => {
+  const getRoleBadge = (role: Role): React.JSX.Element => {
     const roleConfig = {
       SUPER_ADMIN: { label: 'Super Admin', color: 'bg-red-100 text-red-800' },
       ADMIN: { label: 'Admin', color: 'bg-purple-100 text-purple-800' },
@@ -140,7 +156,7 @@ export function UserList(): React.JSX.Element {
     )
   }
 
-  const getStatusBadge = (isActive: boolean): void => {
+  const getStatusBadge = (isActive: boolean): React.JSX.Element => {
     return (
       <Badge className={isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
         {isActive ? (
@@ -158,7 +174,7 @@ export function UserList(): React.JSX.Element {
     )
   }
 
-  const formatDate = (dateString: string): void => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -166,7 +182,7 @@ export function UserList(): React.JSX.Element {
     })
   }
 
-  const getDisplayName = (user: User): void => {
+  const getDisplayName = (user: User): string => {
     if (user.profile?.firstName || user.profile?.lastName) {
       return `${user.profile.firstName || ''} ${user.profile.lastName || ''}`.trim()
     }
@@ -263,7 +279,7 @@ export function UserList(): React.JSX.Element {
 
             {/* Stats */}
             <div className="text-sm text-gray-600 flex items-center">
-              Showing {users.length} of {total} users
+              Showing {Array.isArray(users) ? users.length : 0} of {total} users
             </div>
           </div>
         </CardContent>
@@ -300,7 +316,7 @@ export function UserList(): React.JSX.Element {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
+                {Array.isArray(users) && users.map((user) => (
                   <TableRow key={user.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div>
@@ -354,7 +370,7 @@ export function UserList(): React.JSX.Element {
               </TableBody>
             </Table>
 
-            {users.length === 0 && !loading && (
+            {Array.isArray(users) && users.length === 0 && !loading && (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Shield className="mx-auto h-12 w-12" />

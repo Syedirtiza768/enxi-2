@@ -81,13 +81,17 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
     try {
       const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
       if (response.ok && response?.data) {
-        setSalesCases(response?.data);
-        if (response.data.length === 1) {
-          setSelectedSalesCase(response?.data[0].id);
+        // The API returns { success: true, data: salesCases[], ... }
+        // So we need to access response.data.data for the actual sales cases array
+        const salesCasesList = response.data?.data || [];
+        setSalesCases(salesCasesList);
+        if (salesCasesList.length === 1) {
+          setSelectedSalesCase(salesCasesList[0].id);
         }
       }
     } catch (error) {
       console.error('Error fetching sales cases:', error);
+      setSalesCases([]);
     }
   };
 
