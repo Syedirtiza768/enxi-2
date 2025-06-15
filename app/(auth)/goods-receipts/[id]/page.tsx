@@ -100,8 +100,8 @@ const params = useParams()
         throw new Error(response.error || 'Failed to fetch goods receipt')
       }
       
-      if (response.data) {
-        setGoodsReceipt(response.data)
+      if (response?.data) {
+        setGoodsReceipt(response?.data)
       }
     } catch (error) {
       console.error('Error fetching goods receipt:', error)

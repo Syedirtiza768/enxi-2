@@ -196,7 +196,7 @@ export function ItemSelectorModal({
         throw new Error('Failed to load items')
       }
 
-      let itemsData = response.data || []
+      let itemsData = response?.data || []
       
       // Filter by stock status
       if (stockFilter !== 'ALL') {
@@ -301,7 +301,7 @@ export function ItemSelectorModal({
         throw new Error(response.error || 'Failed to create item')
       }
 
-      const newItem = response.data
+      const newItem = response?.data
 
       // Add initial stock if specified
       if (newItemForm.trackInventory && newItemForm.initialQuantity > 0) {

@@ -106,7 +106,7 @@ export default function QuotationsPage(): React.JSX.Element {
         throw new Error('Failed to load quotations')
       }
 
-      const responseData = response.data
+      const responseData = response?.data
       const quotationsData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setQuotations(Array.isArray(quotationsData) ? quotationsData : [])
       const total = Array.isArray(responseData) ? quotationsData.length : (responseData?.total || quotationsData.length || 0)
@@ -127,7 +127,7 @@ export default function QuotationsPage(): React.JSX.Element {
         method: 'GET'
       })
       if (response.ok) {
-        const responseData = response.data
+        const responseData = response?.data
         const salesCasesData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
       }

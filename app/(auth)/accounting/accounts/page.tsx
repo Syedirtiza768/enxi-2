@@ -41,27 +41,27 @@ export default function AccountsPage(): React.JSX.Element {
       setLoading(true)
       const response = await apiClient<Account[]>('/api/accounting/accounts', { method: 'GET' })
       
-      if (response.ok && response.data) {
-        setAccounts(Array.isArray(response.data) ? response.data : [])
+      if (response.ok && response?.data) {
+        setAccounts(Array.isArray(response?.data) ? response?.data : [])
       } else {
         console.error('Failed to load accounts:', response.error)
         setAccounts([])
       }
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoading(false)
     }
   }
 
-  const formatCurrency = (amount: number): void => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const getAccountTypeColor = (type: string): void => {
+  const getAccountTypeColor = (type: string): string => {
     const colors: { [key: string]: string } = {
       'ASSET': 'bg-green-100 text-green-800',
       'LIABILITY': 'bg-red-100 text-red-800',
@@ -152,13 +152,13 @@ export default function AccountsPage(): React.JSX.Element {
                 <Input
                   placeholder="Search accounts by name or code..."
                   value={searchTerm}
-                  onChange={(e): void => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
             <div className="w-full sm:w-48">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <Select value={typeFilter || 'all'} onValueChange={setTypeFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="Account Type" />
                 </SelectTrigger>
@@ -177,7 +177,7 @@ export default function AccountsPage(): React.JSX.Element {
                 <input
                   type="checkbox"
                   checked={showInactive}
-                  onChange={(e): void => setShowInactive(e.target.checked)}
+                  onChange={(e) => setShowInactive(e.target.checked)}
                   className="mr-2"
                 />
                 Show Inactive
@@ -280,7 +280,7 @@ export default function AccountsPage(): React.JSX.Element {
               Load Standard Chart
             </Link>
           </Button>
-          <Button variant="outline" onClick={(): void => window.print()}>
+          <Button variant="outline" onClick={() => window.print()}>
             Print Chart
           </Button>
         </div>

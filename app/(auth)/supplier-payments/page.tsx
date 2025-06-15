@@ -97,7 +97,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         throw new Error('Failed to fetch supplier payments')
       }
       
-      const responseData = response.data
+      const responseData = response?.data
       const data = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setPayments(data)
       

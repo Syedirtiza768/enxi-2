@@ -395,8 +395,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({
     allowPrint,
     allowDownload,
     printPDF,
-    downloadPDF,
-  ]);
+    downloadPDF]);
 
   // Full screen change handler
   useEffect(() => {

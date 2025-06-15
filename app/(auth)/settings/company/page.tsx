@@ -273,17 +273,14 @@ export default function CompanySettingsPage() {
               value={settings.defaultCurrency}
               onChange={(e) => handleInputChange('defaultCurrency', e.target.value)}
               fullWidth
-            >
-              {supportedCurrencies && supportedCurrencies.length > 0 ? (
-                supportedCurrencies.map(currency => (
-                  <option key={currency.code} value={currency.code}>
-                    {currency.code} - {currency.name}
-                  </option>
-                ))
-              ) : (
-                <option value="USD">USD - US Dollar</option>
-              )}
-            </Select>
+              options={supportedCurrencies && supportedCurrencies.length > 0 
+                ? supportedCurrencies.map(currency => ({
+                    value: currency.code,
+                    label: `${currency.code} - ${currency.name}`
+                  }))
+                : [{ value: 'USD', label: 'USD - US Dollar' }]
+              }
+            />
           </CardContent>
         </Card>
 

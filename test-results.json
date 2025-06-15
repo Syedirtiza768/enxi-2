@@ -1,0 +1,245 @@
+{
+  "timestamp": "2025-06-15T08:41:04.584Z",
+  "results": {
+    "total": 32,
+    "success": 31,
+    "failed": 0,
+    "warnings": 1,
+    "byModule": {
+      "Sales": {
+        "success": 6,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Core": {
+        "success": 1,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Finance": {
+        "success": 4,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Inventory": {
+        "success": 6,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Procurement": {
+        "success": 3,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Accounting": {
+        "success": 6,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Logistics": {
+        "success": 1,
+        "failed": 0,
+        "warnings": 0
+      },
+      "Admin": {
+        "success": 4,
+        "failed": 0,
+        "warnings": 1
+      }
+    }
+  },
+  "pages": [
+    {
+      "url": "/dashboard",
+      "name": "Dashboard",
+      "module": "Core",
+      "status": "tested"
+    },
+    {
+      "url": "/leads",
+      "name": "Leads",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/sales-cases",
+      "name": "Sales Cases",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/quotations",
+      "name": "Quotations",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/customers",
+      "name": "Customers",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/sales-orders",
+      "name": "Sales Orders",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/customer-pos",
+      "name": "Customer POs",
+      "module": "Sales",
+      "status": "tested"
+    },
+    {
+      "url": "/invoices",
+      "name": "Invoices",
+      "module": "Finance",
+      "status": "tested"
+    },
+    {
+      "url": "/payments",
+      "name": "Payments",
+      "module": "Finance",
+      "status": "tested"
+    },
+    {
+      "url": "/supplier-invoices",
+      "name": "Supplier Invoices",
+      "module": "Finance",
+      "status": "tested"
+    },
+    {
+      "url": "/supplier-payments",
+      "name": "Supplier Payments",
+      "module": "Finance",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory",
+      "name": "Inventory Dashboard",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory/items",
+      "name": "Inventory Items",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory/movements",
+      "name": "Stock Movements",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory/categories",
+      "name": "Categories",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory/stock-in",
+      "name": "Stock In",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/inventory/stock-out",
+      "name": "Stock Out",
+      "module": "Inventory",
+      "status": "tested"
+    },
+    {
+      "url": "/purchase-orders",
+      "name": "Purchase Orders",
+      "module": "Procurement",
+      "status": "tested"
+    },
+    {
+      "url": "/suppliers",
+      "name": "Suppliers",
+      "module": "Procurement",
+      "status": "tested"
+    },
+    {
+      "url": "/goods-receipts",
+      "name": "Goods Receipts",
+      "module": "Procurement",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting",
+      "name": "Accounting Dashboard",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting/accounts",
+      "name": "Chart of Accounts",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting/journal-entries",
+      "name": "Journal Entries",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting/reports/trial-balance",
+      "name": "Trial Balance",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting/reports/balance-sheet",
+      "name": "Balance Sheet",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/accounting/reports/income-statement",
+      "name": "Income Statement",
+      "module": "Accounting",
+      "status": "tested"
+    },
+    {
+      "url": "/shipments",
+      "name": "Shipments",
+      "module": "Logistics",
+      "status": "tested"
+    },
+    {
+      "url": "/users",
+      "name": "Users",
+      "module": "Admin",
+      "status": "tested"
+    },
+    {
+      "url": "/roles",
+      "name": "Roles",
+      "module": "Admin",
+      "status": "tested"
+    },
+    {
+      "url": "/audit",
+      "name": "Audit Log",
+      "module": "Admin",
+      "status": "tested"
+    },
+    {
+      "url": "/settings/company",
+      "name": "Company Settings",
+      "module": "Admin",
+      "status": "tested"
+    },
+    {
+      "url": "/system/health",
+      "name": "System Health",
+      "module": "Admin",
+      "status": "tested"
+    }
+  ]
+}

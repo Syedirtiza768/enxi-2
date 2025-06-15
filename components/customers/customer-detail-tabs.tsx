@@ -57,8 +57,8 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
     setLoading(true)
     try {
       const response = await apiClient<{ data: any }>(`/api/payments?customerId=${customerId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const paymentsData = response.data.data || response.data
+      if (response.ok && response?.data) {
+        const paymentsData = response?.data.data || response?.data
         setPayments(Array.isArray(paymentsData) ? paymentsData : [])
       }
 } catch (error) {
@@ -72,8 +72,8 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
     setLoading(true)
     try {
       const response = await apiClient<{ data: any[] }>(`/api/invoices?customerId=${customerId}&status=open`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const invoicesData = response.data.data || response.data
+      if (response.ok && response?.data) {
+        const invoicesData = response?.data.data || response?.data
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
       }
 } catch (error) {
@@ -264,8 +264,13 @@ export function CustomerDetailTabs({ customerId, customerCurrency }: CustomerDet
                               <Eye className="h-4 w-4" />
                             </Link>
                           </Button>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/invoices/${invoice.id}/payments`}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            asChild
+                            title="View invoice and record payment"
+                          >
+                            <Link href={`/invoices/${invoice.id}`}>
                               <DollarSign className="h-4 w-4" />
                             </Link>
                           </Button>

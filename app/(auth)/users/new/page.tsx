@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -83,7 +83,7 @@ export default function NewUserPage() {
         jobTitle: formData.jobTitle || undefined,
       }
 
-      const response = await api.post('/api/users', userData)
+      const response = await apiClient('/api/users', { method: 'POST', body: JSON.stringify(userData) })
 
       if (response.ok) {
         window.location.href = '/users'

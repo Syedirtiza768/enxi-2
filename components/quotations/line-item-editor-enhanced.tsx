@@ -107,7 +107,7 @@ export function LineItemEditorEnhanced({ quotationItems, onChange, disabled = fa
         const response = await apiClient<{ data?: InventoryItem[] }>('/api/inventory/items', { method: 'GET' })
         
         if (response.ok) {
-          const inventoryData = response.data?.data || response.data || []
+          const inventoryData = response?.data?.data || response?.data || []
           setInventoryItems(Array.isArray(inventoryData) ? inventoryData : [])
         }
       } catch (err) {

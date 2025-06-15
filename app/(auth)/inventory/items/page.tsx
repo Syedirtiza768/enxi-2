@@ -65,7 +65,7 @@ export default function ItemsPage() {
         throw new Error('Failed to load items')
       }
 
-      const data = response.data
+      const data = response?.data
       const itemsData = data ? (Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])) : []
       
       // Transform items to match expected structure
@@ -126,8 +126,8 @@ export default function ItemsPage() {
       const response = await apiClient<{ data: any[]; total?: number }>('/api/inventory/categories', {
         method: 'GET'
       })
-      if (response.ok && response.data) {
-        const data = response.data
+      if (response.ok && response?.data) {
+        const data = response?.data
         setCategories(data ? (Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : [])) : [])
       }
     } catch (error) {

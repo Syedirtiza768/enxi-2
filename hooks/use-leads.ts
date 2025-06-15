@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { LeadListQuery, LeadListResponse, LeadStats, CreateLeadData, UpdateLeadData } from '@/lib/types/lead.types'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 
 interface UseLeadsOptions extends Partial<LeadListQuery> {}
 
@@ -36,13 +36,13 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
       if (options.status) queryParams.set('status', options.status)
       if (options.source) queryParams.set('source', options.source)
 
-      const response = await api.get<LeadListResponse>(`/api/leads?${queryParams}`)
+      const response = await apiClient<LeadListResponse>(`/api/leads?${queryParams}`)
       
       if (!response.ok) {
         throw new Error(response.error || 'Failed to fetch leads')
       }
 
-      setLeads(response.data!)
+      setLeads(response?.data!)
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'))
     } finally {
@@ -52,13 +52,13 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await api.get<LeadStats>('/api/leads/stats')
+      const response = await apiClient<LeadStats>('/api/leads/stats')
       
       if (!response.ok) {
         throw new Error(response.error || 'Failed to fetch stats')
       }
 
-      setStats(response.data!)
+      setStats(response?.data!)
     } catch (err) {
       console.error('Failed to fetch lead stats:', err)
       // Don't set error for stats, it's not critical
@@ -67,33 +67,33 @@ export function useLeads(options: UseLeadsOptions = {}): UseLeadsReturn {
 
   const createLead = useCallback(async (data: CreateLeadData) => {
     console.warn('Creating lead with data:', data)
-    const response = await api.post('/api/leads', data)
+    const response = await apiClient('/api/leads', data)
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to create lead')
     }
 
-    return response.data
+    return response?.data
   }, [])
 
   const updateLead = useCallback(async (id: string, data: UpdateLeadData) => {
-    const response = await api.put(`/api/leads/${id}`, data)
+    const response = await apiClient(`/api/leads/${id}`, data)
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to update lead')
     }
 
-    return response.data
+    return response?.data
   }, [])
 
   const deleteLead = useCallback(async (id: string) => {
-    const response = await api.delete(`/api/leads/${id}`)
+    const response = await apiClient(`/api/leads/${id}`)
 
     if (!response.ok) {
       throw new Error(response.error || 'Failed to delete lead')
     }
 
-    return response.data
+    return response?.data
   }, [])
 
   const refetch = useCallback(async () => {

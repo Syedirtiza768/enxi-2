@@ -216,8 +216,7 @@ export class UserService extends BaseService {
           take: limit,
           orderBy: { createdAt: 'desc' },
         }),
-        prisma.user.count({ where }),
-      ])
+        prisma.user.count({ where })])
 
       return {
         data: users,

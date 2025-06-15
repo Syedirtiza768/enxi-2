@@ -1,8 +1,8 @@
-import type { Permission } from '@/lib/types'
+import type { Permission } from '@/lib/generated/prisma'
 'use client'
 
 import { useState, useEffect } from 'react'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -54,8 +54,8 @@ export default function RolesPage(): React.JSX.Element {
 
       // Fetch all permissions and role permissions
       const [permissionsResponse, rolesResponse] = await Promise.all([
-        api.get('/api/permissions'),
-        api.get('/api/roles/permissions')
+        apiClient('/api/permissions'),
+        apiClient('/api/roles/permissions')
       ])
 
       if (permissionsResponse.ok && permissionsResponse.data) {
@@ -81,15 +81,15 @@ export default function RolesPage(): React.JSX.Element {
     return rolePermissions[role]?.includes(permissionCode) || false
   }
 
-  const togglePermission = async (role: Role, permissionCode: string): void => {
+  const togglePermission = async (role: Role, permissionCode: string): Promise<void> => {
     try {
       setUpdating(true)
       const currentlyHas = hasPermission(role, permissionCode)
       
-      const response = await api.post(`/api/roles/${role}/permissions`, {
+      const response = await apiClient(`/api/roles/${role}/permissions`, { method: 'POST', body: JSON.stringify({
         permissionCode,
         granted: !currentlyHas
-      })
+      }) })
 
       if (response.ok) {
         await fetchData() // Refresh data
@@ -104,7 +104,7 @@ export default function RolesPage(): React.JSX.Element {
     }
   }
 
-  const getPermissionIcon = (role: Role, permissionCode: string): void => {
+  const getPermissionIcon = (role: Role, permissionCode: string): JSX.Element => {
     const hasIt = hasPermission(role, permissionCode)
     return hasIt ? (
       <Check className="w-4 h-4 text-green-600" />
@@ -113,7 +113,7 @@ export default function RolesPage(): React.JSX.Element {
     )
   }
 
-  const getToggleButton = (role: Role, permissionCode: string): void => {
+  const getToggleButton = (role: Role, permissionCode: string): JSX.Element => {
     const hasIt = hasPermission(role, permissionCode)
     
     return (
@@ -146,7 +146,7 @@ export default function RolesPage(): React.JSX.Element {
     }))
   }
 
-  const bulkToggleModule = async (role: Role, module: string, grant: boolean): void => {
+  const bulkToggleModule = async (role: Role, module: string, grant: boolean): Promise<void> => {
     try {
       setBulkUpdating(true)
       const modulePermissions = permissions.filter(p => p.module === module)
@@ -156,15 +156,15 @@ export default function RolesPage(): React.JSX.Element {
         const currentlyHas = hasPermission(role, permission.code)
         
         if (grant && !currentlyHas) {
-          await api.post(`/api/roles/${role}/permissions`, {
+          await apiClient(`/api/roles/${role}/permissions`, { method: 'POST', body: JSON.stringify({
             permissionCode: permission.code,
             granted: true
-          })
+          }) })
         } else if (!grant && currentlyHas) {
-          await api.post(`/api/roles/${role}/permissions`, {
+          await apiClient(`/api/roles/${role}/permissions`, { method: 'POST', body: JSON.stringify({
             permissionCode: permission.code,
             granted: false
-          })
+          }) })
         }
       }
       
@@ -177,7 +177,7 @@ export default function RolesPage(): React.JSX.Element {
     }
   }
 
-  const bulkToggleAll = async (role: Role, grant: boolean): void => {
+  const bulkToggleAll = async (role: Role, grant: boolean): Promise<void> => {
     try {
       setBulkUpdating(true)
       
@@ -186,15 +186,15 @@ export default function RolesPage(): React.JSX.Element {
         const currentlyHas = hasPermission(role, permission.code)
         
         if (grant && !currentlyHas) {
-          await api.post(`/api/roles/${role}/permissions`, {
+          await apiClient(`/api/roles/${role}/permissions`, { method: 'POST', body: JSON.stringify({
             permissionCode: permission.code,
             granted: true
-          })
+          }) })
         } else if (!grant && currentlyHas) {
-          await api.post(`/api/roles/${role}/permissions`, {
+          await apiClient(`/api/roles/${role}/permissions`, { method: 'POST', body: JSON.stringify({
             permissionCode: permission.code,
             granted: false
-          })
+          }) })
         }
       }
       
@@ -207,7 +207,7 @@ export default function RolesPage(): React.JSX.Element {
     }
   }
 
-  const getModulePermissionStatus = (role: Role, module: string): void => {
+  const getModulePermissionStatus = (role: Role, module: string): string => {
     const modulePermissions = permissions.filter(p => p.module === module)
     const grantedCount = modulePermissions.filter(p => hasPermission(role, p.code)).length
     
@@ -239,7 +239,7 @@ export default function RolesPage(): React.JSX.Element {
     return (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={(): void => fetchData()}>Retry</Button>
+        <Button onClick={() => fetchData()}>Retry</Button>
       </div>
     )
   }

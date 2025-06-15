@@ -246,8 +246,7 @@ describe('QuotationService', () => {
         expect.stringContaining('-0001'),
         expect.stringContaining('-0002'),
         expect.stringContaining('-0003'),
-        expect.stringContaining('-0004'),
-      ])
+        expect.stringContaining('-0004')])
     })
   })
 })

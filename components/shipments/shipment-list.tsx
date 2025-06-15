@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { 
   Package, 
   Truck, 
@@ -88,13 +88,13 @@ export function ShipmentList(): React.JSX.Element {
         params.append('search', searchTerm)
       }
 
-      const response = await api.get<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
+      const data = await apiClient<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
       
-      if (response.ok && response.data) {
-        setShipments(response.data.data)
-        setTotal(response.data.total)
+      if (data) {
+        setShipments(data.data)
+        setTotal(data.total)
       } else {
-        throw new Error(response.error || 'Failed to fetch shipments')
+        throw new Error('Failed to fetch shipments')
       }
     } catch (err) {
       console.error('Error fetching shipments:', err)

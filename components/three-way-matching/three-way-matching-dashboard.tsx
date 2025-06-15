@@ -101,11 +101,11 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
         method: 'GET'
       })
 
-      if (!response.ok || !response.data) {
+      if (!response.ok || !response?.data) {
         throw new Error('Failed to fetch matching data')
       }
 
-      setData(response.data)
+      setData(response?.data)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'Failed to fetch dashboard data')
     } finally {

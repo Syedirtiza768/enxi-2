@@ -75,7 +75,7 @@ const params = useParams()
       setLoading(true)
       setError(null)
 
-      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}`, {
+      const response = await apiClient<Invoice | { data: Invoice }>(`/api/invoices/${invoiceId}`, {
         method: 'GET'
       })
 
@@ -83,7 +83,12 @@ const params = useParams()
         throw new Error('Failed to load invoice')
       }
 
-      setInvoice(response.data?.data || response.data)
+      const invoiceData = response?.data
+      if (invoiceData && typeof invoiceData === 'object') {
+        // Handle both direct invoice object and wrapped response
+        const invoice = 'data' in invoiceData ? invoiceData.data : invoiceData as Invoice
+        setInvoice(invoice)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load invoice')
       console.error('Error fetching invoice:', err)
@@ -101,7 +106,7 @@ const params = useParams()
 
   const handleUpdate = async (invoiceData: Record<string, unknown>) => {
     try {
-      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}`, {
+      const response = await apiClient<Invoice | { data: Invoice }>(`/api/invoices/${invoiceId}`, {
         method: 'PUT',
         body: JSON.stringify(invoiceData)
       })
@@ -110,7 +115,11 @@ const params = useParams()
         throw new Error('Failed to update invoice')
       }
 
-      setInvoice(response.data?.data || response.data)
+      const invoiceData = response?.data
+      if (invoiceData && typeof invoiceData === 'object') {
+        const invoice = 'data' in invoiceData ? invoiceData.data : invoiceData as Invoice
+        setInvoice(invoice)
+      }
       setMode('view')
     } catch (error) {
       console.error('Error:', error)
@@ -119,7 +128,7 @@ const params = useParams()
 
   const handleSend = async (): Promise<void> => {
     try {
-      const response = await apiClient<{ data: any[] }>(`/api/invoices/${invoiceId}/send`, {
+      const response = await apiClient<Invoice | { data: Invoice }>(`/api/invoices/${invoiceId}/send`, {
         method: 'POST'
       })
 
@@ -127,7 +136,11 @@ const params = useParams()
         throw new Error('Failed to send invoice')
       }
 
-      setInvoice(response.data?.data || response.data)
+      const invoiceData = response?.data
+      if (invoiceData && typeof invoiceData === 'object') {
+        const invoice = 'data' in invoiceData ? invoiceData.data : invoiceData as Invoice
+        setInvoice(invoice)
+      }
     } catch (error) {
       console.error('Error:', error)
     }
@@ -505,22 +518,26 @@ const params = useParams()
 
       {/* Payment Modal */}
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <PaymentForm
-              invoiceId={invoice.id}
-              customerId={invoice.customer.id}
-              invoiceNumber={invoice.invoiceNumber}
-              customerName={invoice.customer.name}
-              totalAmount={invoice.totalAmount}
-              balanceAmount={invoice.balanceAmount}
-              onSuccess={() => {
-                setShowPaymentModal(false)
-                // Refresh invoice data to show updated payment
-                fetchInvoice()
-              }}
-              onCancel={() => setShowPaymentModal(false)}
-            />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-8">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+            <div className="overflow-y-auto flex-1">
+              <div className="p-6">
+                <PaymentForm
+                  invoiceId={invoice.id}
+                  customerId={invoice.customer.id}
+                  invoiceNumber={invoice.invoiceNumber}
+                  customerName={invoice.customer.name}
+                  totalAmount={invoice.totalAmount}
+                  balanceAmount={invoice.balanceAmount}
+                  onSuccess={() => {
+                    setShowPaymentModal(false)
+                    // Refresh invoice data to show updated payment
+                    fetchInvoice()
+                  }}
+                  onCancel={() => setShowPaymentModal(false)}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

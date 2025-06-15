@@ -123,8 +123,8 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     const fetchSuppliers = async (): Promise<void> => {
       try {
         const response = await apiClient<{ data: Supplier[]; total?: number } | Supplier[]>('/api/suppliers?status=ACTIVE', { method: 'GET' })
-        if (response.ok && response.data) {
-          const suppliersData = response.data
+        if (response.ok && response?.data) {
+          const suppliersData = response?.data
           const suppliers = Array.isArray(suppliersData) ? suppliersData : (suppliersData.data || [])
           setSuppliers(suppliers)
         }
@@ -136,8 +136,8 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
     const fetchItems = async (): Promise<void> => {
       try {
         const response = await apiClient<{ data: Item[]; total?: number } | Item[]>('/api/items', { method: 'GET' })
-        if (response.ok && response.data) {
-          const itemsData = response.data
+        if (response.ok && response?.data) {
+          const itemsData = response?.data
           const items = Array.isArray(itemsData) ? itemsData : (itemsData.data || [])
           setItems(items)
         }
@@ -422,7 +422,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
         const response = await apiClient<{ data: any }>(`/api/purchase-orders/check-number?number=${encodeURIComponent(poNumber)}`, {
           method: 'GET'
         })
-        if (!response.ok || response.data?.exists) {
+        if (!response.ok || response?.data?.exists) {
           return 'This PO number already exists'
         }
       } catch (error) {

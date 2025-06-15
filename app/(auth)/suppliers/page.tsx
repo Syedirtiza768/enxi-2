@@ -90,7 +90,7 @@ export default function SuppliersPage(): React.JSX.Element {
         throw new Error('Failed to fetch suppliers')
       }
       
-      const responseData = response.data
+      const responseData = response?.data
       const data = Array.isArray(responseData) ? responseData : (responseData?.data || [])
       setSuppliers(data)
       

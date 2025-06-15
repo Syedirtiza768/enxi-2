@@ -49,7 +49,7 @@ export default function EditSupplierPaymentPage() {
         throw new Error(response.error || 'Failed to fetch supplier payment')
       }
       
-      const paymentData = response.data
+      const paymentData = response?.data
       
       // Transform the data for the form
       const formData: SupplierPaymentFormData = {

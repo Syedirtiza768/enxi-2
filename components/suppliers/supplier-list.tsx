@@ -81,7 +81,7 @@ export function SupplierList({ onSelect, selectable = false, embedded = false }:
     try {
       const response = await apiClient<{ data: Supplier[]; total?: number } | Supplier[]>('/api/suppliers', { method: 'GET' })
       if (response.ok) {
-        const responseData = response.data
+        const responseData = response?.data
         const suppliersData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setSuppliers(suppliersData)
       } else {

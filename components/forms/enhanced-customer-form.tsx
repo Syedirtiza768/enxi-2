@@ -216,7 +216,7 @@ export function EnhancedCustomerForm({
         throw new Error(response.error || 'Failed to create customer')
       }
       
-      return response.data
+      return response?.data
     }, {
       context: { formData: customerData }
     })

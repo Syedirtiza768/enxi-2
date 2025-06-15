@@ -99,8 +99,8 @@ export default function StockMovementsPage() {
         method: 'GET'
       })
       
-      if (response.ok && response.data) {
-        setLocations(Array.isArray(response.data) ? response.data : [])
+      if (response.ok && response?.data) {
+        setLocations(Array.isArray(response?.data) ? response?.data : [])
       }
     } catch (error) {
       console.error('Error fetching locations:', error)
@@ -125,10 +125,10 @@ export default function StockMovementsPage() {
         throw new Error('Failed to fetch stock movements')
       }
       
-      setMovements(response.data?.movements || [])
+      setMovements(response?.data?.movements || [])
       
       // Calculate stats
-      const stats = calculateStats(response.data?.movements || [])
+      const stats = calculateStats(response?.data?.movements || [])
       setStats(stats)
     } catch (error) {
       console.error('Error fetching movements:', error)

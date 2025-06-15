@@ -119,8 +119,8 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         throw new Error(response.error || 'Failed to fetch supplier invoice')
       }
       
-      if (response.data) {
-        setInvoice(response.data)
+      if (response?.data) {
+        setInvoice(response?.data)
       }
     } catch (error) {
       console.error('Error:', error);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -83,9 +83,9 @@ export default function UserDetailPage() {
 
       // Fetch user details, permissions, and user-specific permissions
       const [userResponse, permissionsResponse, userPermissionsResponse] = await Promise.all([
-        api.get(`/api/users/${userId}`),
-        api.get('/api/permissions'),
-        api.get(`/api/users/${userId}/permissions`)
+        apiClient(`/api/users/${userId}`),
+        apiClient('/api/permissions'),
+        apiClient(`/api/users/${userId}/permissions`)
       ])
 
       if (userResponse.ok && userResponse.data) {
@@ -103,7 +103,7 @@ export default function UserDetailPage() {
         setRolePermissions(userPermissionsResponse.data.rolePermissions || [])
       }
     } catch (err) {
-      console.error('Error fetching user data:', err)
+      console.error('Error fetching user data:', { method: 'POST', body: JSON.stringify(err) })
       setError(err instanceof Error ? err.message : 'Failed to fetch user data')
     } finally {
       setLoading(false)
@@ -132,19 +132,19 @@ export default function UserDetailPage() {
       let response
       if (currentStatus === 'denied' || currentStatus === 'revoked') {
         // Grant permission
-        response = await api.post(`/api/users/${userId}/permissions`, {
+        response = await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
           permissionCode,
           granted: true
-        })
+        }) })
       } else {
         // Revoke permission (if it's from role) or remove user-specific permission
         if (currentStatus === 'role') {
-          response = await api.post(`/api/users/${userId}/permissions`, {
+          response = await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
             permissionCode,
             granted: false
-          })
+          }) })
         } else {
-          response = await api.delete(`/api/users/${userId}/permissions/${permissionCode}`)
+          response = await apiClient(`/api/users/${userId}/permissions/${permissionCode}`)
         }
       }
 
@@ -154,7 +154,7 @@ export default function UserDetailPage() {
         throw new Error('Failed to update permission')
       }
     } catch (err) {
-      console.error('Error updating permission:', err)
+      console.error('Error updating permission:', { method: 'POST', body: JSON.stringify(err) })
       // You might want to show a toast notification here
     } finally {
       setUpdating(false)
@@ -235,21 +235,21 @@ export default function UserDetailPage() {
         if (grant) {
           // Grant permission if not already granted
           if (currentStatus === 'denied' || currentStatus === 'revoked') {
-            await api.post(`/api/users/${userId}/permissions`, {
+            await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
               permissionCode: permission.code,
               granted: true
-            })
+            }) })
           }
         } else {
           // Revoke permission if currently granted
           if (currentStatus === 'role' || currentStatus === 'user') {
             if (currentStatus === 'role') {
-              await api.post(`/api/users/${userId}/permissions`, {
+              await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
                 permissionCode: permission.code,
                 granted: false
-              })
+              }) })
             } else {
-              await api.delete(`/api/users/${userId}/permissions/${permission.code}`)
+              await apiClient(`/api/users/${userId}/permissions/${permission.code}`)
             }
           }
         }
@@ -257,7 +257,7 @@ export default function UserDetailPage() {
       
       await fetchUserData() // Refresh data
     } catch (err) {
-      console.error('Error bulk updating module permissions:', err)
+      console.error('Error bulk updating module permissions:', { method: 'POST', body: JSON.stringify(err) })
     } finally {
       setBulkUpdating(false)
     }
@@ -274,21 +274,21 @@ export default function UserDetailPage() {
         if (grant) {
           // Grant permission if not already granted
           if (currentStatus === 'denied' || currentStatus === 'revoked') {
-            await api.post(`/api/users/${userId}/permissions`, {
+            await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
               permissionCode: permission.code,
               granted: true
-            })
+            }) })
           }
         } else {
           // Revoke permission if currently granted
           if (currentStatus === 'role' || currentStatus === 'user') {
             if (currentStatus === 'role') {
-              await api.post(`/api/users/${userId}/permissions`, {
+              await apiClient(`/api/users/${userId}/permissions`, { method: 'POST', body: JSON.stringify({
                 permissionCode: permission.code,
                 granted: false
-              })
+              }) })
             } else {
-              await api.delete(`/api/users/${userId}/permissions/${permission.code}`)
+              await apiClient(`/api/users/${userId}/permissions/${permission.code}`)
             }
           }
         }
@@ -296,7 +296,7 @@ export default function UserDetailPage() {
       
       await fetchUserData() // Refresh data
     } catch (err) {
-      console.error('Error bulk updating all permissions:', err)
+      console.error('Error bulk updating all permissions:', { method: 'POST', body: JSON.stringify(err) })
     } finally {
       setBulkUpdating(false)
     }

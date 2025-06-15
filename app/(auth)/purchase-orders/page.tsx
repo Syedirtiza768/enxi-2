@@ -101,7 +101,7 @@ export default function PurchaseOrdersPage() {
         throw new Error('Failed to fetch purchase orders')
       }
       
-      const data = response.data?.data || []
+      const data = response?.data?.data || []
       setPurchaseOrders(data)
       
       // Calculate stats

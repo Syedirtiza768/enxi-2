@@ -45,8 +45,8 @@ export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }:
     setLoadingCustomers(true)
     try {
       const response = await apiClient<{ data: any[]; total?: number } | any[]>('/api/customers', { method: 'GET' })
-      if (response.ok && response.data) {
-        const responseData = response.data
+      if (response.ok && response?.data) {
+        const responseData = response?.data
         const customersData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
@@ -89,9 +89,9 @@ export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }:
 
       // Success
       if (onSuccess) {
-        onSuccess(response.data)
+        onSuccess(response?.data)
       } else {
-        router.push(`/sales-cases/${response.data.data.id}`)
+        router.push(`/sales-cases/${response?.data.data.id}`)
       }
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error) {

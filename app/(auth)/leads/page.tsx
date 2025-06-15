@@ -16,7 +16,7 @@ import { useLeads } from '@/hooks/use-leads'
 import { LeadStatus, LeadSource } from '@/lib/types/shared-enums'
 import { LeadResponse } from '@/lib/types/lead.types'
 import { PageLayout, PageHeader, PageSection, VStack } from '@/components/design-system'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 
 interface ConvertFormData {
   address: string
@@ -98,7 +98,7 @@ export default function LeadsPage(): React.JSX.Element {
   const handleConvertLead = async (): Promise<unknown> => {
     if (!selectedLead) return
     try {
-      const response = await api.post(`/api/leads/${selectedLead.id}/convert`, convertFormData)
+      const response = await apiClient(`/api/leads/${selectedLead.id}/convert`, { method: 'POST', body: JSON.stringify(convertFormData) })
       
       if (!response.ok) {
         throw new Error(response.error || 'Failed to convert lead')
@@ -232,7 +232,7 @@ export default function LeadsPage(): React.JSX.Element {
                 <div className="text-center py-8 text-red-600">
                   Error loading leads: {error instanceof Error ? error.message : String(error)}
                 </div>
-              ) : leads?.data.length === 0 ? (
+              ) : leads.data.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   No leads found. Create your first lead to get started.
                 </div>

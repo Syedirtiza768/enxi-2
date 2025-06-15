@@ -110,8 +110,8 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
         throw new Error(response.error || 'Failed to fetch supplier payment')
       }
       
-      if (response.data) {
-        setPayment(response.data)
+      if (response?.data) {
+        setPayment(response?.data)
       }
     } catch (error) {
       console.error('Error:', error)

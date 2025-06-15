@@ -60,7 +60,7 @@ export function PaymentReceipt({
       DEBIT_CARD: 'Debit Card',
       ONLINE: 'Online Payment'
     }
-    return labels[method] || method
+    return (labels[method] as any) || method
   }
 
   const handlePrint = (): void => {

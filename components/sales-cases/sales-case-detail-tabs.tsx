@@ -77,8 +77,8 @@ export function SalesCaseDetailTabs({
     setLoading(true)
     try {
       const response = await apiClient<{ data: Quotation[]; total?: number } | Quotation[]>(`/api/quotations?salesCaseId=${salesCaseId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const responseData = response.data
+      if (response.ok && response?.data) {
+        const responseData = response?.data
         const quotationsData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setQuotations(Array.isArray(quotationsData) ? quotationsData : [])
       }
@@ -93,8 +93,8 @@ export function SalesCaseDetailTabs({
     setLoading(true)
     try {
       const response = await apiClient<{ data: Invoice[]; total?: number } | Invoice[]>(`/api/invoices?salesCaseId=${salesCaseId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const responseData = response.data
+      if (response.ok && response?.data) {
+        const responseData = response?.data
         const invoicesData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
       }
@@ -109,8 +109,8 @@ export function SalesCaseDetailTabs({
     setLoading(true)
     try {
       const response = await apiClient<{ data: SalesCaseSummary; total?: number } | SalesCaseSummary>(`/api/sales-cases/${salesCaseId}/summary`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const responseData = response.data
+      if (response.ok && response?.data) {
+        const responseData = response?.data
         setSummary(Array.isArray(responseData) ? responseData[0] : (responseData.data || responseData))
       }
 } catch (error) {
@@ -318,8 +318,13 @@ export function SalesCaseDetailTabs({
                             </Link>
                           </Button>
                           {invoice.totalAmount > invoice.paidAmount && (
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/invoices/${invoice.id}/payments`}>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              asChild
+                              title="View invoice and record payment"
+                            >
+                              <Link href={`/invoices/${invoice.id}`}>
                                 <DollarSign className="h-4 w-4" />
                               </Link>
                             </Button>

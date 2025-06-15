@@ -126,8 +126,7 @@ describe('ShipmentService', () => {
               expect.objectContaining({
                 salesOrderItemId: 'item-2',
                 quantityShipped: 3,
-              }),
-            ]),
+              })]),
           },
         }),
         include: expect.any(Object),

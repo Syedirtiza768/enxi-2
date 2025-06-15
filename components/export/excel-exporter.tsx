@@ -995,7 +995,7 @@ export function ExcelExporter({
                       <div
                         key={template.id}
                         className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                          selectedTemplate?.id === template.id
+                          selectedTemplate.id === template.id
                             ? 'border-blue-500 bg-blue-50'
                             : 'hover:bg-gray-50'
                         }`}
@@ -1801,10 +1801,10 @@ export function ExcelExporter({
           </Button>
           <Button 
             onClick={startExport}
-            disabled={loading || !sheets.length || !processedData.length || currentJob?.status === 'processing'}
+            disabled={loading || !sheets.length || !processedData.length || currentJob.status === 'processing'}
             className="min-w-32"
           >
-            {loading || currentJob?.status === 'processing' ? (
+            {loading || currentJob.status === 'processing' ? (
               <>
                 <Clock className="w-4 h-4 mr-2 animate-spin" />
                 Processing...

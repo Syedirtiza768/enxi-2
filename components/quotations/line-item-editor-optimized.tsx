@@ -436,7 +436,7 @@ export const LineItemEditorOptimized = memo(({
       setLoading(true)
       try {
         const response = await apiClient.get('/api/inventory/items')
-        setInventoryItems(response.data || [])
+        setInventoryItems(response?.data || [])
       } catch (error) {
         console.error('Failed to load inventory items:', error)
       } finally {

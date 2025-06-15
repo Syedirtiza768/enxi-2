@@ -226,11 +226,22 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
         })
       }
 
-      // Load company settings (you can replace this with actual API call)
+      // Load company settings from API
       try {
-        const savedCompanyName = localStorage.getItem('companyName')
-        if (savedCompanyName) {
-          setCompanySettings({ name: savedCompanyName })
+        const token = localStorage.getItem('token')
+        if (token) {
+          const response = await fetch('/api/settings/company', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.settings?.companyName) {
+              setCompanySettings({ name: data.settings.companyName })
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading company settings:', error);
@@ -266,7 +277,10 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
     }
 
     const handleCompanySettingsChange = (event: CustomEvent): void => {
-      setCompanySettings({ name: event.detail.name })
+      // The settings page sends the full settings object
+      if (event.detail?.companyName) {
+        setCompanySettings({ name: event.detail.companyName })
+      }
     }
 
     loadUserInfo()

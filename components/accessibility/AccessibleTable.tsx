@@ -188,7 +188,7 @@ export const AccessibleTable = forwardRef<HTMLTableElement, AccessibleTableProps
       
       let newDirection: SortDirection = 'asc'
       
-      if (sortConfig?.key === columnKey) {
+      if (sortConfig.key === columnKey) {
         newDirection = sortConfig.direction === 'asc' ? 'desc' : 
                      sortConfig.direction === 'desc' ? 'none' : 'asc'
       }
@@ -314,7 +314,7 @@ export const AccessibleTable = forwardRef<HTMLTableElement, AccessibleTableProps
               {/* Column headers */}
               {columns.map((column, index) => {
                 const colIndex = index + (selection ? 2 : 1)
-                const isSorted = sortConfig?.key === column.key
+                const isSorted = sortConfig.key === column.key
                 const sortDirection = isSorted ? sortConfig.direction : 'none'
                 
                 const headerAria = generateTableHeaderAria({

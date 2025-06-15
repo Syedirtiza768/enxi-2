@@ -3,7 +3,7 @@
  */
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
-import { api, apiClient } from '@/lib/api/client'
+import { apiClient, apiClient  } from '@/lib/api/client'
 import { LeadStats } from '@/lib/types/lead.types'
 
 // Mock localStorage
@@ -119,10 +119,10 @@ describe('API Client', () => {
     it('should automatically add Bearer token from localStorage', async () => {
       localStorageMock.getItem.mockReturnValue('test-token-123')
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(true)
-      expect(response.data).toEqual({
+      expect(response?.data).toEqual({
         NEW: 5,
         CONTACTED: 3,
         QUALIFIED: 2,
@@ -138,19 +138,19 @@ describe('API Client', () => {
       localStorageMock.getItem.mockReturnValue(null)
       document.cookie = 'auth-token=cookie-token-456; path=/'
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(true)
-      expect(response.data).toBeDefined()
+      expect(response?.data).toBeDefined()
     })
 
     it('should handle requests without skipAuth flag by adding auth headers', async () => {
       localStorageMock.getItem.mockReturnValue('valid-token')
       
-      const response = await api.get('/api/leads')
+      const response = await apiClient('/api/leads')
       
       expect(response.ok).toBe(true)
-      expect(response.data).toEqual({
+      expect(response?.data).toEqual({
         data: expect.any(Array),
         total: 1,
         page: 1,
@@ -159,13 +159,13 @@ describe('API Client', () => {
     })
 
     it('should skip auth when skipAuth flag is true', async () => {
-      const response = await api.post('/api/auth/login', 
+      const response = await apiClient('/api/auth/login', 
         { username: 'test', password: 'test' }, 
         { skipAuth: true }
       )
       
       expect(response.ok).toBe(true)
-      expect(response.data).toEqual({
+      expect(response?.data).toEqual({
         token: 'mock-jwt-token',
         user: expect.any(Object),
       })
@@ -176,7 +176,7 @@ describe('API Client', () => {
     it('should handle 401 responses and redirect to login', async () => {
       localStorageMock.getItem.mockReturnValue(null) // No token
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(false)
       expect(response.status).toBe(401)
@@ -203,7 +203,7 @@ describe('API Client', () => {
         })
       )
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(false)
       expect(response.status).toBe(401)
@@ -224,7 +224,7 @@ describe('API Client', () => {
         })
       )
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(false)
       expect(response.status).toBe(500)
@@ -240,7 +240,7 @@ describe('API Client', () => {
         })
       )
       
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(false)
       expect(response.status).toBe(0)
@@ -254,10 +254,10 @@ describe('API Client', () => {
     })
 
     it('should handle GET requests correctly', async () => {
-      const response = await api.get('/api/leads/stats')
+      const response = await apiClient('/api/leads/stats')
       
       expect(response.ok).toBe(true)
-      expect(response.data).toBeDefined()
+      expect(response?.data).toBeDefined()
     })
 
     it('should handle POST requests with data', async () => {
@@ -277,11 +277,11 @@ describe('API Client', () => {
         source: 'WEBSITE',
       }
       
-      const response = await api.post('/api/leads', leadData)
+      const response = await apiClient('/api/leads', leadData)
       
       expect(response.ok).toBe(true)
       expect(response.status).toBe(201)
-      expect(response.data).toEqual({
+      expect(response?.data).toEqual({
         id: 'new-lead-123',
         ...leadData,
       })
@@ -297,10 +297,10 @@ describe('API Client', () => {
       )
       
       const updateData = { status: 'CONTACTED' }
-      const response = await api.put('/api/leads/lead-123', updateData)
+      const response = await apiClient('/api/leads/lead-123', updateData)
       
       expect(response.ok).toBe(true)
-      expect(response.data).toEqual({
+      expect(response?.data).toEqual({
         id: 'lead-123',
         ...updateData,
       })
@@ -315,10 +315,10 @@ describe('API Client', () => {
         })
       )
       
-      const response = await api.delete('/api/leads/lead-123')
+      const response = await apiClient('/api/leads/lead-123')
       
       expect(response.ok).toBe(true)
-      expect(response.data).toEqual({ success: true })
+      expect(response?.data).toEqual({ success: true })
     })
   })
 
@@ -328,11 +328,11 @@ describe('API Client', () => {
       
       const response = await api.get<LeadStats>('/api/leads/stats')
       
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         // TypeScript should infer the correct type here
-        expect(typeof response.data.NEW).toBe('number')
-        expect(typeof response.data.CONTACTED).toBe('number')
-        expect(typeof response.data.QUALIFIED).toBe('number')
+        expect(typeof response?.data.NEW).toBe('number')
+        expect(typeof response?.data.CONTACTED).toBe('number')
+        expect(typeof response?.data.QUALIFIED).toBe('number')
       }
     })
 
@@ -343,7 +343,7 @@ describe('API Client', () => {
       
       expect(response.ok).toBe(false)
       expect(typeof response.error).toBe('string')
-      expect(response.data).toBeUndefined()
+      expect(response?.data).toBeUndefined()
     })
   })
 })

@@ -167,7 +167,7 @@ export function QuotationForm({
           throw new Error(response.error || 'Failed to load sales cases')
         }
         
-        const salesCasesData = response.data || []
+        const salesCasesData = response?.data || []
         setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
         
         // Set selected sales case if editing

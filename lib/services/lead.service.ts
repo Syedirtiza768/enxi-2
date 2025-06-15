@@ -175,8 +175,7 @@ export class LeadService extends BaseService {
         }),
         prisma.lead.count({
           where: Object.keys(where).length > 0 ? where : undefined,
-        }),
-      ])
+        })])
 
       return {
         data,

@@ -6,9 +6,9 @@ import { SalesAnalyticsService } from '@/lib/services/reporting/sales-analytics.
 import { z } from 'zod'
 
 const dashboardMetricsSchema = z.object({
-  asOfDate: z.string().optional(),
-  includeInventory: z.string().optional(),
-  includeSales: z.string().optional()
+  asOfDate: z.string().nullable().optional(),
+  includeInventory: z.string().nullable().optional(),
+  includeSales: z.string().nullable().optional()
 })
 
 export async function GET(request: NextRequest): Promise<NextResponse> {

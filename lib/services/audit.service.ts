@@ -165,8 +165,7 @@ export class AuditService extends BaseService {
           skip,
           take: pagination.limit,
         }),
-        prisma.auditLog.count({ where }),
-      ])
+        prisma.auditLog.count({ where })])
 
       return {
         data,
@@ -211,8 +210,7 @@ export class AuditService extends BaseService {
           skip,
           take: pagination.limit,
         }),
-        prisma.auditLog.count({ where: { userId } }),
-      ])
+        prisma.auditLog.count({ where: { userId } })])
 
       return {
         data,

@@ -188,8 +188,7 @@ describe('Authentication Flow Integration', () => {
         action: 'READ',
         entityType: 'Dashboard',
         entityId: 'main',
-      }),
-    ])
+      })])
 
     const report = await auditService.generateAuditReport(startDate, endDate)
     

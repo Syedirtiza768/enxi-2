@@ -101,3 +101,30 @@ npm test
 5. **Test your changes** before committing
 
 Remember: The goal is to build a maintainable, scalable application. Focus on clarity and simplicity over complexity.
+
+## 🚨 CRITICAL: Code Stability Rules
+
+### API Client Usage
+**IMPORTANT: The codebase has migrated from `api` to `apiClient`. Never break existing working code when fixing issues.**
+
+```typescript
+// ❌ OLD PATTERN (DO NOT USE)
+import { api } from '@/lib/api/client'
+api.get('/endpoint')
+
+// ✅ CORRECT PATTERN (ALWAYS USE)
+import { apiClient } from '@/lib/api/client'
+apiClient('/endpoint')
+```
+
+### Before Making Any Fix:
+1. **Identify the root cause** - Don't just fix symptoms
+2. **Search for similar patterns** - Fix all occurrences to prevent future issues
+3. **Verify no breaking changes** - Ensure existing functionality remains intact
+4. **Test the fix** - Verify it works without breaking other features
+
+### Common Patterns to Watch:
+- API client imports and usage
+- Currency formatter destructuring: `const { format } = useCurrencyFormatter()`
+- Optional chaining on assignments (invalid): `obj?.prop = value` → `obj.prop = value`
+- Promise.all syntax errors

@@ -62,8 +62,8 @@ export function MultiInvoicePayment({
   const loadOutstandingInvoices = async (): Promise<void> => {
     try {
       const response = await apiClient<{ data: any }>(`/api/customers/${customerId}/invoices?status=outstanding`)
-      if (response.ok && response.data) {
-        const invoiceData = response.data.map((inv: any) => ({
+      if (response.ok && response?.data) {
+        const invoiceData = response?.data.map((inv: any) => ({
           ...inv,
           balanceAmount: inv.totalAmount - inv.paidAmount,
           isOverdue: new Date(inv.dueDate) < new Date()

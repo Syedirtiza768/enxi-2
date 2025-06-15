@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 
 interface CustomerBusinessHistoryProps {
   customerId: string
@@ -74,10 +74,6 @@ export function CustomerBusinessHistory({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadCustomerBusinessData()
-  }, [customerId, loadCustomerBusinessData])
-
   const loadCustomerBusinessData = useCallback(async () => {
     try {
       setLoading(true)
@@ -89,16 +85,16 @@ export function CustomerBusinessHistory({
         timelineResponse, 
         trendsResponse
       ] = await Promise.all([
-        api.get(`/api/customers/${customerId}`),
-        api.get(`/api/customers/${customerId}/business-metrics`),
-        api.get(`/api/customers/${customerId}/activity-timeline`),
-        api.get(`/api/customers/${customerId}/payment-trends`)
+        apiClient<Customer>(`/api/customers/${customerId}`),
+        apiClient<BusinessMetrics>(`/api/customers/${customerId}/business-metrics`),
+        apiClient<ActivityEvent[]>(`/api/customers/${customerId}/activity-timeline`),
+        apiClient<PaymentTrends>(`/api/customers/${customerId}/payment-trends`)
       ])
       
-      setCustomer(customerResponse.data)
-      setBusinessMetrics(metricsResponse.data)
-      setActivityTimeline(timelineResponse.data)
-      setPaymentTrends(trendsResponse.data)
+      setCustomer(customerResponse.data as Customer)
+      setBusinessMetrics(metricsResponse.data as BusinessMetrics)
+      setActivityTimeline(timelineResponse.data as ActivityEvent[])
+      setPaymentTrends(trendsResponse.data as PaymentTrends)
     } catch (err) {
       console.error('Error loading customer data:', err)
       setError('Error loading customer data. Please try again.')
@@ -107,14 +103,18 @@ export function CustomerBusinessHistory({
     }
   }, [customerId])
 
-  const formatCurrency = (amount: number): void => {
+  useEffect(() => {
+    loadCustomerBusinessData()
+  }, [loadCustomerBusinessData])
+
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount)
   }
 
-  const formatDate = (dateString: string): void => {
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -122,11 +122,11 @@ export function CustomerBusinessHistory({
     })
   }
 
-  const formatPercentage = (value: number): void => {
+  const formatPercentage = (value: number): string => {
     return `${Math.round(value * 100)}%`
   }
 
-  const getActivityIcon = (type: string): void => {
+  const getActivityIcon = (type: string): React.ReactNode => {
     switch (type) {
       case 'invoice_created':
         return '📄'

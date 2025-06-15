@@ -206,9 +206,11 @@ export class ChartOfAccountsService {
       // Assets (1000s)
       { code: '1000', name: 'Assets', type: AccountType.ASSET },
       { code: '1100', name: 'Current Assets', type: AccountType.ASSET, parentCode: '1000' },
-      { code: '1110', name: 'Cash', type: AccountType.ASSET, parentCode: '1100' },
-      { code: '1120', name: 'Accounts Receivable', type: AccountType.ASSET, parentCode: '1100' },
-      { code: '1130', name: 'Inventory', type: AccountType.ASSET, parentCode: '1100' },
+      { code: '1110', name: 'Cash on Hand', type: AccountType.ASSET, parentCode: '1100', isSystem: true },
+      { code: '1010', name: 'Bank Account', type: AccountType.ASSET, parentCode: '1100', isSystem: true },
+      { code: '1120', name: 'Accounts Receivable', type: AccountType.ASSET, parentCode: '1100', isSystem: true },
+      { code: '1130', name: 'Inventory', type: AccountType.ASSET, parentCode: '1100', isSystem: true },
+      { code: '1140', name: 'Prepaid Expenses', type: AccountType.ASSET, parentCode: '1100' },
       { code: '1200', name: 'Fixed Assets', type: AccountType.ASSET, parentCode: '1000' },
       { code: '1210', name: 'Equipment', type: AccountType.ASSET, parentCode: '1200' },
       { code: '1220', name: 'Accumulated Depreciation', type: AccountType.ASSET, parentCode: '1200' },
@@ -216,28 +218,34 @@ export class ChartOfAccountsService {
       // Liabilities (2000s)
       { code: '2000', name: 'Liabilities', type: AccountType.LIABILITY },
       { code: '2100', name: 'Current Liabilities', type: AccountType.LIABILITY, parentCode: '2000' },
-      { code: '2110', name: 'Accounts Payable', type: AccountType.LIABILITY, parentCode: '2100' },
+      { code: '2110', name: 'Accounts Payable', type: AccountType.LIABILITY, parentCode: '2100', isSystem: true },
       { code: '2120', name: 'Accrued Expenses', type: AccountType.LIABILITY, parentCode: '2100' },
+      { code: '2130', name: 'Tax Payable', type: AccountType.LIABILITY, parentCode: '2100' },
+      { code: '2140', name: 'Salaries Payable', type: AccountType.LIABILITY, parentCode: '2100' },
       { code: '2200', name: 'Long-term Liabilities', type: AccountType.LIABILITY, parentCode: '2000' },
 
       // Equity (3000s)
       { code: '3000', name: 'Equity', type: AccountType.EQUITY },
-      { code: '3100', name: 'Share Capital', type: AccountType.EQUITY, parentCode: '3000' },
+      { code: '3100', name: 'Share Capital', type: AccountType.EQUITY, parentCode: '3000', isSystem: true },
       { code: '3200', name: 'Retained Earnings', type: AccountType.EQUITY, parentCode: '3000' },
 
       // Income (4000s)
       { code: '4000', name: 'Income', type: AccountType.INCOME },
-      { code: '4100', name: 'Sales Revenue', type: AccountType.INCOME, parentCode: '4000' },
+      { code: '4100', name: 'Sales Revenue', type: AccountType.INCOME, parentCode: '4000', isSystem: true },
       { code: '4200', name: 'Service Revenue', type: AccountType.INCOME, parentCode: '4000' },
-      { code: '4300', name: 'Other Income', type: AccountType.INCOME, parentCode: '4000' },
+      { code: '4300', name: 'Sales Discounts', type: AccountType.INCOME, parentCode: '4000' },
+      { code: '4400', name: 'Other Income', type: AccountType.INCOME, parentCode: '4000' },
 
       // Expenses (5000s)
       { code: '5000', name: 'Expenses', type: AccountType.EXPENSE },
-      { code: '5100', name: 'Cost of Goods Sold', type: AccountType.EXPENSE, parentCode: '5000' },
+      { code: '5100', name: 'Cost of Goods Sold', type: AccountType.EXPENSE, parentCode: '5000', isSystem: true },
       { code: '5200', name: 'Operating Expenses', type: AccountType.EXPENSE, parentCode: '5000' },
       { code: '5210', name: 'Salaries and Wages', type: AccountType.EXPENSE, parentCode: '5200' },
       { code: '5220', name: 'Rent Expense', type: AccountType.EXPENSE, parentCode: '5200' },
       { code: '5230', name: 'Utilities Expense', type: AccountType.EXPENSE, parentCode: '5200' },
+      { code: '5240', name: 'Office Supplies', type: AccountType.EXPENSE, parentCode: '5200' },
+      { code: '5250', name: 'Depreciation Expense', type: AccountType.EXPENSE, parentCode: '5200' },
+      { code: '5260', name: 'Bank Charges', type: AccountType.EXPENSE, parentCode: '5200' },
     ]
 
     // Create accounts in order (parents first)
@@ -258,6 +266,7 @@ export class ChartOfAccountsService {
         parentId,
         createdBy: userId,
         description: `Standard ${accountData.name} account`,
+        isSystemAccount: (accountData as any).isSystem || false,
       })
 
       accountMap.set(account.code, account.id)

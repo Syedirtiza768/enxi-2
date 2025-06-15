@@ -128,7 +128,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     try {
       const response = await apiClient<{ data: SupplierWithRelations[] }>('/api/suppliers', { method: 'GET' })
       if (response.ok) {
-        setSuppliers(response.data?.data || [])
+        setSuppliers(response?.data?.data || [])
       }
     } catch (error) {
       console.error('Error fetching suppliers:', error)
@@ -139,7 +139,7 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
     try {
       const response = await apiClient<{ data: GoodsReceiptWithRelations[] }>(`/api/goods-receipts?supplierId=${supplierId}&status=COMPLETED`, { method: 'GET' })
       if (response.ok) {
-        setGoodsReceipts(response.data?.data || [])
+        setGoodsReceipts(response?.data?.data || [])
       }
     } catch (error) {
       console.error('Error fetching goods receipts:', error)
@@ -186,8 +186,8 @@ export function SupplierInvoiceForm({ supplierInvoice, onSuccess }: SupplierInvo
   const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
       const response = await apiClient<{ data: SupplierWithRelations }>(`/api/suppliers/${supplierId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const supplier = response.data.data
+      if (response.ok && response?.data) {
+        const supplier = response?.data.data
         setSelectedSupplier(supplier)
         
         // Update currency if not set

@@ -75,23 +75,36 @@ export function BankReconciliation({
     setLoading(true)
     try {
       // Load bank transactions (in real app, this would come from bank API/import)
-      const bankResponse = await apiClient('/api/bank-transactions', {
-        params: { startDate, endDate, bankAccountId }
+      const bankParams = new URLSearchParams({
+        startDate,
+        endDate,
+        ...(bankAccountId && { bankAccountId })
       })
+      const bankResponse = await apiClient<BankTransaction[] | { data: BankTransaction[] }>(
+        `/api/bank-transactions?${bankParams}`
+      )
       
       // Load system payments
-      const paymentsResponse = await apiClient('/api/payments', {
-        params: { 
-          startDate, 
-          endDate,
-          paymentMethods: ['BANK_TRANSFER', 'WIRE_TRANSFER', 'CHECK'],
-          reconciled: false
-        }
+      const paymentParams = new URLSearchParams({
+        startDate,
+        endDate,
+        paymentMethods: 'BANK_TRANSFER,WIRE_TRANSFER,CHECK',
+        reconciled: 'false'
       })
+      const paymentsResponse = await apiClient<SystemPayment[] | { data: SystemPayment[] }>(
+        `/api/payments?${paymentParams}`
+      )
 
       if (bankResponse.ok && paymentsResponse.ok) {
-        setBankTransactions(bankResponse.data || [])
-        setSystemPayments(paymentsResponse.data || [])
+        const bankData = bankResponse.data
+        const paymentsData = paymentsResponse.data
+        
+        setBankTransactions(
+          Array.isArray(bankData) ? bankData : (bankData?.data || [])
+        )
+        setSystemPayments(
+          Array.isArray(paymentsData) ? paymentsData : (paymentsData?.data || [])
+        )
       }
     } catch (error) {
       console.error('Failed to load reconciliation data:', error)
@@ -103,7 +116,7 @@ export function BankReconciliation({
   const runAutoMatch = async (): Promise<void> => {
     setAutoMatching(true)
     try {
-      const response = await apiClient<{ data: any }>('/api/reconciliation/auto-match', {
+      const response = await apiClient<{ matches: ReconciliationMatch[] }>('/api/reconciliation/auto-match', {
         method: 'POST',
         body: JSON.stringify({
           bankTransactions,
@@ -117,16 +130,18 @@ export function BankReconciliation({
         })
       })
 
-      if (response.ok && response.data) {
-        setMatches(response.data.matches)
+      if (response.ok && response?.data) {
+        const matchData = response?.data.matches || []
+        setMatches(matchData)
+        
         // Update matched status
-        const matchedBankIds = new Set(response.data.matches.map((m: ReconciliationMatch) => m.bankTransactionId))
-        const matchedPaymentIds = new Set(response.data.matches.map((m: ReconciliationMatch) => m.paymentId))
+        const matchedBankIds = new Set(matchData.map((m: ReconciliationMatch) => m.bankTransactionId))
+        const matchedPaymentIds = new Set(matchData.map((m: ReconciliationMatch) => m.paymentId))
         
         setBankTransactions(prev => prev.map(t => ({
           ...t,
           matched: matchedBankIds.has(t.id),
-          matchedPaymentId: response.data.matches.find((m: ReconciliationMatch) => m.bankTransactionId === t.id)?.paymentId
+          matchedPaymentId: matchData.find((m: ReconciliationMatch) => m.bankTransactionId === t.id)?.paymentId
         })))
         
         setSystemPayments(prev => prev.map(p => ({

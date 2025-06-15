@@ -359,8 +359,7 @@ export class ShipmentService extends BaseService {
           take: limit,
           orderBy: { createdAt: 'desc' },
         }),
-        prisma.shipment.count({ where }),
-      ])
+        prisma.shipment.count({ where })])
 
       return {
         data,
@@ -441,8 +440,7 @@ export class ShipmentService extends BaseService {
           take: limit,
           orderBy: { createdAt: 'desc' },
         }),
-        prisma.shipment.count({ where }),
-      ])
+        prisma.shipment.count({ where })])
 
       return {
         data,

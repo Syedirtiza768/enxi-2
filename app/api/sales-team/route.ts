@@ -26,7 +26,7 @@ export const GET = createProtectedHandler(
       }
 
       // Check if user is a manager before trying to get hierarchy
-      if (request.user?.role === 'MANAGER') {
+      if (request.user.role === 'MANAGER') {
         const hierarchy = await salesTeamService.getTeamHierarchy(userId)
         return NextResponse.json(hierarchy)
       }

@@ -74,7 +74,7 @@ export default function QuotationDetailPage() {
           throw new Error('Failed to load quotation')
         }
 
-        setQuotation(response.data?.data || response.data)
+        setQuotation(response?.data?.data || response?.data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load quotation')
         console.error('Error fetching quotation:', err)
@@ -99,7 +99,7 @@ export default function QuotationDetailPage() {
         throw new Error('Failed to update quotation')
       }
 
-      setQuotation(response.data?.data || response.data)
+      setQuotation(response?.data?.data || response?.data)
       setMode('view')
     } catch (error) {
       console.error('Error:', error)
@@ -116,7 +116,7 @@ export default function QuotationDetailPage() {
         throw new Error('Failed to send quotation')
       }
 
-      setQuotation(response.data?.data || response.data)
+      setQuotation(response?.data?.data || response?.data)
     } catch (error) {
       console.error('Error:', error)
     }
@@ -132,7 +132,7 @@ export default function QuotationDetailPage() {
         throw new Error('Failed to duplicate quotation')
       }
 
-      const result = response.data?.data || response.data
+      const result = response?.data?.data || response?.data
       router.push(`/quotations/${result.id}`)
     } catch (error) {
       console.error('Error:', error)
@@ -173,7 +173,7 @@ export default function QuotationDetailPage() {
         throw new Error(response.error || 'Failed to accept quotation')
       }
 
-      const result = response.data || response
+      const result = response?.data || response
       setQuotation(result.quotation || result)
       
       // If a sales order was created, show success message and redirect
@@ -203,7 +203,7 @@ export default function QuotationDetailPage() {
         throw new Error(response.error || 'Failed to reject quotation')
       }
 
-      setQuotation(response.data || response)
+      setQuotation(response?.data || response)
       alert('Quotation has been rejected.')
     } catch (error) {
       console.error('Error:', error)

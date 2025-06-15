@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -78,7 +78,7 @@ function SalesTeamAssignContent() {
       setError(null)
 
       // Fetch users with appropriate roles
-      const usersResponse = await api.get('/api/users?limit=100')
+      const usersResponse = await apiClient('/api/users?limit=100')
       if (usersResponse.ok && usersResponse.data) {
         const users = usersResponse.data?.data || usersResponse.data || []
         setSalespeople(users.filter((u: User) => u.role === Role.SALES_REP || u.role === Role.MANAGER))
@@ -86,12 +86,12 @@ function SalesTeamAssignContent() {
       }
 
       // Fetch customers
-      const customersResponse = await api.get('/api/customers?limit=100')
+      const customersResponse = await apiClient('/api/customers?limit=100')
       if (customersResponse.ok && customersResponse.data) {
         setCustomers(customersResponse.data?.data || customersResponse.data || [])
       }
     } catch (err) {
-      console.error('Error fetching data:', err)
+      console.error('Error fetching data:', { method: 'POST', body: JSON.stringify(err) })
       setError('Failed to load data')
     } finally {
       setLoading(false)
@@ -108,11 +108,11 @@ function SalesTeamAssignContent() {
       setSubmitting(true)
       setError(null)
 
-      const response = await api.post('/api/sales-team/assign-customer', {
+      const response = await apiClient('/api/sales-team/assign-customer', { method: 'POST', body: JSON.stringify({
         customerId: selectedCustomer,
         salespersonId: selectedSalesperson,
         notes,
-      })
+      }) })
 
       if (response.ok) {
         router.push('/sales-team')
@@ -137,10 +137,10 @@ function SalesTeamAssignContent() {
       setSubmitting(true)
       setError(null)
 
-      const response = await api.post('/api/sales-team/assign-manager', {
+      const response = await apiClient('/api/sales-team/assign-manager', { method: 'POST', body: JSON.stringify({
         salespersonId: selectedSalesperson,
         managerId: selectedManager,
-      })
+      }) })
 
       if (response.ok) {
         router.push('/sales-team')

@@ -37,7 +37,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }): R
     }
   }, [])
 
-  const loadCurrencySettings = async (): Promise<unknown> => {
+  const loadCurrencySettings = async (): Promise<void> => {
     try {
       setIsLoading(true)
       const token = localStorage.getItem('token')
@@ -74,7 +74,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }): R
     }
   }
 
-  const formatCurrency = (amount: number, currency?: string): void => {
+  const formatCurrency = (amount: number, currency?: string): string => {
     return formatCurrencyUtil(amount, {
       currency: currency || defaultCurrency
     })
@@ -108,11 +108,11 @@ export function useCurrency(): CurrencyContextType {
 }
 
 // Utility hook for formatting currency with default currency
-export function useCurrencyFormatter(): unknown {
+export function useCurrencyFormatter() {
   const { formatCurrency, defaultCurrency } = useCurrency()
   
   return {
-    format: (amount: number, currency?: string): void => formatCurrency(amount, currency),
+    format: (amount: number, currency?: string): string => formatCurrency(amount, currency),
     defaultCurrency
   }
 }

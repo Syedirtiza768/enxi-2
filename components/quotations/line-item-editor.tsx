@@ -71,7 +71,7 @@ export function LineItemEditor({ quotationItems, onChange, disabled = false }: L
           throw new Error('Failed to load inventory items')
         }
         
-        const responseData = response.data
+        const responseData = response?.data
         const inventoryData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setInventoryItems(Array.isArray(inventoryData) ? inventoryData : [])
       } catch (err) {

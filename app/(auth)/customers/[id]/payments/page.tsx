@@ -36,8 +36,8 @@ export default function CustomerPaymentsPage() {
     try {
       setLoading(true)
       const response = await apiClient<Customer>(`/api/customers/${customerId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        setCustomer(response.data)
+      if (response.ok && response?.data) {
+        setCustomer(response?.data)
       } else {
         setCustomer(null)
       }

@@ -105,8 +105,8 @@ export function SupplierPaymentForm({
   const fetchSupplier = useCallback(async (supplierId: string) => {
     try {
       const response = await apiClient<Supplier>(`/api/suppliers/${supplierId}`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const supplier = response.data
+      if (response.ok && response?.data) {
+        const supplier = response?.data
         setSelectedSupplier(supplier)
         
         if (!formData.currency && supplier.currency) {
@@ -159,8 +159,8 @@ export function SupplierPaymentForm({
   const fetchSuppliers = async (): Promise<void> => {
     try {
       const response = await apiClient<{ data: Supplier[]; total?: number } | Supplier[]>('/api/suppliers?status=active', { method: 'GET' })
-      if (response.ok && response.data) {
-        const suppliersData = response.data
+      if (response.ok && response?.data) {
+        const suppliersData = response?.data
         setSuppliers(Array.isArray(suppliersData) ? suppliersData : (suppliersData.data || []))
       }
     } catch (error) {
@@ -172,8 +172,8 @@ export function SupplierPaymentForm({
   const fetchSupplierInvoices = async (supplierId: string) => {
     try {
       const response = await apiClient<{ data: SupplierInvoice[]; total?: number } | SupplierInvoice[]>(`/api/supplier-invoices?supplierId=${supplierId}&status=POSTED`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const invoicesData = response.data
+      if (response.ok && response?.data) {
+        const invoicesData = response?.data
         const invoices = Array.isArray(invoicesData) ? invoicesData : (invoicesData.data || [])
         // Filter to show only invoices with outstanding balance
         const unpaidInvoices = invoices.filter((inv: SupplierInvoice) => inv.balanceAmount > 0.01)
@@ -187,8 +187,8 @@ export function SupplierPaymentForm({
   const fetchBankAccounts = async (): Promise<void> => {
     try {
       const response = await apiClient<{ data: Account[]; total?: number } | Account[]>('/api/accounting/accounts?type=ASSET&subType=BANK', { method: 'GET' })
-      if (response.ok && response.data) {
-        const accountsData = response.data
+      if (response.ok && response?.data) {
+        const accountsData = response?.data
         setBankAccounts(Array.isArray(accountsData) ? accountsData : (accountsData.data || []))
       }
     } catch (error) {

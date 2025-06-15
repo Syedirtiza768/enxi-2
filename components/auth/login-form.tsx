@@ -57,8 +57,8 @@ export function LoginForm(): React.JSX.Element {
         return
       }
 
-      // Store token as backup and redirect
-      localStorage.setItem('token', result.token)
+      // Store token and redirect
+      localStorage.setItem('auth-token', result.token)
       router.push('/dashboard')
       
     } catch {
@@ -80,7 +80,7 @@ export function LoginForm(): React.JSX.Element {
           </Text>
           {process.env.NODE_ENV === 'development' && (
             <Badge variant="info" size="sm" className="mt-1">
-              Dev: admin@enxi.com / Admin123!
+              Dev: admin / admin123
             </Badge>
           )}
         </VStack>

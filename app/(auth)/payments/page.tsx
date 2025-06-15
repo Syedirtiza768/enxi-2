@@ -124,7 +124,7 @@ export default function PaymentsPage(): React.JSX.Element {
                          (payment.invoice?.invoiceNumber?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (payment.invoice?.customer?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     const matchesPaymentMethod = !paymentMethodFilter || paymentMethodFilter === 'all' || payment.paymentMethod === paymentMethodFilter
-    const matchesCustomer = !customerFilter || customerFilter === 'all' || payment.invoice?.customer?.id === customerFilter
+    const matchesCustomer = !customerFilter || customerFilter === 'all' || payment.invoice?.customer.id === customerFilter
     
     return matchesSearch && matchesPaymentMethod && matchesCustomer
   })

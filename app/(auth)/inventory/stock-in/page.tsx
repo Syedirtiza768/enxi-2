@@ -87,8 +87,8 @@ const [items, setItems] = useState<Item[]>([])
   const fetchItems = async (): Promise<void> => {
     try {
       const response = await apiClient<Item[]>('/api/inventory/items', { method: 'GET' })
-      if (response.ok && response.data) {
-        setItems(Array.isArray(response.data) ? response.data : [])
+      if (response.ok && response?.data) {
+        setItems(Array.isArray(response?.data) ? response?.data : [])
       }
     } catch (error) {
       console.error('Error:', error)
@@ -105,9 +105,9 @@ const [items, setItems] = useState<Item[]>([])
       const response = await apiClient<{ movements: StockMovementWithDetails[] }>(`/api/inventory/stock-movements?${params}`, {
         method: 'GET'
       })
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         // Parse supplier and purchaseRef from notes if available
-        const movements = response.data.movements.map((m: StockMovementWithDetails) => ({
+        const movements = response?.data.movements.map((m: StockMovementWithDetails) => ({
           ...m,
           supplier: m.notes?.split('|')[0]?.replace('Supplier:', '').trim(),
           purchaseRef: m.notes?.split('|')[1]?.replace('PurchaseRef:', '').trim()

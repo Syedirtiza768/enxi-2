@@ -1,6 +1,6 @@
 #!/bin/bash
 # Temporary build script with error suppression
-# Created: 2025-06-14T21:01:12.066Z
+# Created: 2025-06-14T21:02:08.529Z
 
 echo "🚨 Building with TypeScript errors suppressed"
 echo "   See suppressed-errors.json for details"

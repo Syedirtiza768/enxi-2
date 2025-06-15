@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Role } from '@/lib/types/shared-enums'
 import {
   Table,
@@ -90,12 +90,12 @@ export function UserList(): React.JSX.Element {
       if (roleFilter !== 'all') params.append('role', roleFilter)
       if (statusFilter !== 'all') params.append('isActive', statusFilter)
 
-      const response = await api.get<UserListResponse>(`/api/users?${params}`)
+      const data = await apiClient<UserListResponse>(`/api/users?${params}`)
       
-      if (response.ok && response.data) {
-        setUsers(response.data?.data || [])
-        setTotal(response.data?.total || 0)
-        setTotalPages(response.data?.totalPages || 0)
+      if (data) {
+        setUsers(data?.data || [])
+        setTotal(data?.total || 0)
+        setTotalPages(data?.totalPages || 0)
       } else {
         throw new Error(response.error || 'Failed to fetch users')
       }

@@ -5,6 +5,7 @@ import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit, DollarSig
 import { PageLayout, PageHeader, PageSection, VStack, Grid, Card } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
 import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
+import { PaymentForm } from '@/components/payments/payment-form'
 
 interface Invoice {
   id: string
@@ -39,7 +40,7 @@ interface Customer {
 
 
 export default function InvoicesPage() {
-  const { format } = useCurrencyFormatter()
+  const { format: format } = useCurrencyFormatter()
   
   // State management
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -69,7 +70,7 @@ export default function InvoicesPage() {
   
   // Payment modal state
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [_selectedInvoiceForPayment, _setSelectedInvoiceForPayment] = useState<string | null>(null)
+  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<Invoice | null>(null)
 
   // Fetch invoices from API
   const fetchInvoices = async (): Promise<void> => {
@@ -89,7 +90,7 @@ export default function InvoicesPage() {
       if (dateRangeFilter) params.append('dateRange', dateRangeFilter)
       if (overdueOnly) params.append('overdue', 'true')
 
-      const response = await apiClient<{ data: any[] }>(`/api/invoices?${params}`, {
+      const response = await apiClient<Invoice[] | { data: Invoice[], total: number }>(`/api/invoices?${params}`, {
         method: 'GET'
       })
 
@@ -97,10 +98,22 @@ export default function InvoicesPage() {
         throw new Error('Failed to load invoices')
       }
 
-      const invoicesData = response.data?.data || response.data || []
-      setInvoices(Array.isArray(invoicesData) ? invoicesData : [])
-      setTotalItems(response.data?.total || invoicesData.length || 0)
-      setTotalPages(Math.ceil((response.data?.total || invoicesData.length || 0) / limit))
+      const responseData = response?.data
+      if (Array.isArray(responseData)) {
+        // Direct array response
+        setInvoices(responseData)
+        setTotalItems(responseData.length)
+        setTotalPages(Math.ceil(responseData.length / limit))
+      } else if (responseData && typeof responseData === 'object' && 'data' in responseData) {
+        // Paginated response
+        setInvoices(responseData.data || [])
+        setTotalItems(responseData.total || responseData.data.length)
+        setTotalPages(Math.ceil((responseData.total || responseData.data.length) / limit))
+      } else {
+        setInvoices([])
+        setTotalItems(0)
+        setTotalPages(0)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load invoices')
       console.error('Error fetching invoices:', err)
@@ -116,7 +129,7 @@ export default function InvoicesPage() {
         method: 'GET'
       })
       if (response.ok) {
-        const customersData = response.data?.data || response.data || []
+        const customersData = response?.data?.data || response?.data || []
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }
     } catch (error) {
@@ -205,9 +218,9 @@ export default function InvoicesPage() {
     }
   }
 
-  const handleRecordPayment = (invoiceId: string, e: React.MouseEvent) => {
+  const handleRecordPayment = (invoice: Invoice, e: React.MouseEvent) => {
     e.stopPropagation()
-    _setSelectedInvoiceForPayment(invoiceId)
+    setSelectedInvoiceForPayment(invoice)
     setShowPaymentModal(true)
   }
 
@@ -567,13 +580,15 @@ export default function InvoicesPage() {
                               >
                                 <Send className="h-4 w-4" />
                               </button>
-                              <button
-                                onClick={(e) => handleRecordPayment(invoice.id, e)}
-                                aria-label="Record payment"
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                <DollarSign className="h-4 w-4" />
-                              </button>
+                              {invoice.balanceAmount > 0 && invoice.status !== 'DRAFT' && (
+                                <button
+                                  onClick={(e) => handleRecordPayment(invoice, e)}
+                                  aria-label="Record payment"
+                                  className="text-blue-600 hover:text-blue-900"
+                                >
+                                  <DollarSign className="h-4 w-4" />
+                                </button>
+                              )}
                             </div>
                           )}
                         </td>
@@ -587,20 +602,30 @@ export default function InvoicesPage() {
         </PageSection>
 
         {/* Payment Modal */}
-        {showPaymentModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Record Payment</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Payment recording functionality will be implemented in the next phase.
-              </p>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowPaymentModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  Close
-                </button>
+        {showPaymentModal && selectedInvoiceForPayment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-8">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+              <div className="overflow-y-auto flex-1">
+                <div className="p-6">
+                  <PaymentForm
+                    invoiceId={selectedInvoiceForPayment.id}
+                    customerId={selectedInvoiceForPayment.customer.id}
+                    invoiceNumber={selectedInvoiceForPayment.invoiceNumber}
+                    customerName={selectedInvoiceForPayment.customer.name}
+                    totalAmount={selectedInvoiceForPayment.totalAmount}
+                    balanceAmount={selectedInvoiceForPayment.balanceAmount}
+                    onSuccess={() => {
+                      setShowPaymentModal(false)
+                      setSelectedInvoiceForPayment(null)
+                      // Refresh invoice list to show updated payment status
+                      fetchInvoices()
+                    }}
+                    onCancel={() => {
+                      setShowPaymentModal(false)
+                      setSelectedInvoiceForPayment(null)
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>

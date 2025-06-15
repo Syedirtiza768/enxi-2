@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Role } from '@/lib/types/shared-enums'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -97,13 +97,13 @@ export function UserEditForm({ user, onSave, onCancel }: UserEditFormProps): Rea
         jobTitle: formData.jobTitle,
       }
 
-      const response = await api.put(`/api/users/${user.id}`, updateData)
+      const response = await apiClient(`/api/users/${user.id}`, { method: 'POST', body: JSON.stringify(updateData) })
 
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         setSuccess(true)
         const updatedUser = {
           ...user,
-          ...response.data,
+          ...response?.data,
         }
         
         if (onSave) {

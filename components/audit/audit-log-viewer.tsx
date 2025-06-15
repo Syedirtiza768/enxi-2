@@ -10,7 +10,7 @@ import {
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select } from '@/components/design-system/atoms/Select'
 import { Badge } from '@/components/ui/badge'
 import { 
   Table, 
@@ -265,32 +265,36 @@ export function AuditLogViewer({
           <label className="block text-sm font-medium mb-1">Action</label>
           <Select
             value={filters.action || ''}
-            onValueChange={(value) => setFilters({ 
+            onChange={(e) => setFilters({ 
               ...filters, 
-              action: value as AuditAction || undefined 
+              action: e.target.value as AuditAction || undefined 
             })}
-          >
-            <option value="">All Actions</option>
-            {Object.values(AuditAction).map(action => (
-              <option key={action} value={action}>{action}</option>
-            ))}
-          </Select>
+            options={[
+              { value: '', label: 'All Actions' },
+              ...Object.values(AuditAction).map(action => ({
+                value: action,
+                label: action
+              }))
+            ]}
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium mb-1">Entity Type</label>
           <Select
             value={filters.entityType || ''}
-            onValueChange={(value) => setFilters({ 
+            onChange={(e) => setFilters({ 
               ...filters, 
-              entityType: value as EntityType || undefined 
+              entityType: e.target.value as EntityType || undefined 
             })}
-          >
-            <option value="">All Entities</option>
-            {Object.values(EntityType).map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </Select>
+            options={[
+              { value: '', label: 'All Entities' },
+              ...Object.values(EntityType).map(type => ({
+                value: type,
+                label: type
+              }))
+            ]}
+          />
         </div>
 
         <div>
@@ -566,16 +570,17 @@ export function AuditLogViewer({
               </span>
               <Select
                 value={pagination.limit.toString()}
-                onValueChange={(value) => setPagination({ 
+                onChange={(e) => setPagination({ 
                   ...pagination, 
-                  limit: parseInt(value),
+                  limit: parseInt(e.target.value),
                   page: 1 
                 })}
-              >
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
-              </Select>
+                options={[
+                  { value: '25', label: '25 per page' },
+                  { value: '50', label: '50 per page' },
+                  { value: '100', label: '100 per page' }
+                ]}
+              />
             </div>
             
             <div className="flex items-center space-x-2">

@@ -74,9 +74,9 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
     
     try {
       const response = await apiClient<{ data: LeadResponse[] }>(`/api/leads?email=${encodeURIComponent(email)}`)
-      if (response.data && response.data.length > 0 && !isEdit) {
+      if (response?.data && response?.data.length > 0 && !isEdit) {
         // Only check for duplicates if not editing or if email changed
-        const existingLead = response.data.find((lead) => 
+        const existingLead = response?.data.find((lead) => 
           lead.email === email && lead.id !== initialData?.id
         )
         if (existingLead) {

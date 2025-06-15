@@ -37,8 +37,8 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
     setLoading(true)
     try {
       const response = await apiClient<{ data: Customer[]; total?: number } | Customer[]>('/api/customers', { method: 'GET' })
-      if (response.ok && response.data) {
-        const responseData = response.data
+      if (response.ok && response?.data) {
+        const responseData = response?.data
         const customersData = Array.isArray(responseData) ? responseData : (responseData.data || [])
         setCustomers(Array.isArray(customersData) ? customersData : [])
       }

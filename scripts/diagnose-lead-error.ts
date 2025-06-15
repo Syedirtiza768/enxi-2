@@ -11,7 +11,7 @@ async function diagnoseLeadCreation(): Promise<void> {
     // Step 1: Try to create a lead without authentication
     console.warn('1. Testing lead creation without authentication...');
     try {
-      const response = await api.post(`${BASE_URL}/api/leads`, {
+      const response = await apiClient(`${BASE_URL}/api/leads`, {
         firstName: 'Test',
         lastName: 'User',
         email: 'test@example.com',
@@ -31,7 +31,7 @@ async function diagnoseLeadCreation(): Promise<void> {
     // Step 2: Login first
     console.warn('\n2. Attempting to login...');
     try {
-      const loginResponse = await api.post(`${BASE_URL}/api/auth/login`, {
+      const loginResponse = await apiClient(`${BASE_URL}/api/auth/login`, {
         email: 'admin@example.com',
         password: 'password123'
       });
@@ -50,7 +50,7 @@ async function diagnoseLeadCreation(): Promise<void> {
     // Step 3: Try to create a lead with authentication
     console.warn('\n3. Testing lead creation with authentication...');
     try {
-      const leadResponse = await api.post(`${BASE_URL}/api/leads`, {
+      const leadResponse = await apiClient(`${BASE_URL}/api/leads`, {
         firstName: 'Test',
         lastName: 'User',
         email: `test${Date.now()}@example.com`,
@@ -76,7 +76,7 @@ async function diagnoseLeadCreation(): Promise<void> {
     // Step 4: Check if leads table exists
     console.warn('\n4. Checking database structure...');
     try {
-      const leadsResponse = await api.get(`${BASE_URL}/api/leads`);
+      const leadsResponse = await apiClient(`${BASE_URL}/api/leads`);
       console.warn('Leads GET response:', {
         status: leadsResponse.status,
         hasData: !!leadsResponse.data
@@ -91,7 +91,7 @@ async function diagnoseLeadCreation(): Promise<void> {
     // Step 5: Try to access debug logs
     console.warn('\n5. Attempting to access debug logs...');
     try {
-      const logsResponse = await api.get(`${BASE_URL}/api/debug-logs?limit=10`);
+      const logsResponse = await apiClient(`${BASE_URL}/api/debug-logs?limit=10`);
       console.warn('Debug logs accessible:', {
         status: logsResponse.status,
         logCount: logsResponse.data?.logs?.length || 0

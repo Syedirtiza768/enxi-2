@@ -63,8 +63,8 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
   const fetchSalesCaseDetails = async (salesCaseId: string) => {
     try {
       const response = await apiClient(`/api/sales-cases/${salesCaseId}`);
-      if (response.ok && response.data) {
-        const salesCase = response.data;
+      if (response.ok && response?.data) {
+        const salesCase = response?.data;
         setFormData(prev => ({ 
           ...prev, 
           customer_id: salesCase.customerId,
@@ -80,10 +80,10 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
   const fetchSalesCases = async (customerId: string) => {
     try {
       const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
-      if (response.ok && response.data) {
-        setSalesCases(response.data);
+      if (response.ok && response?.data) {
+        setSalesCases(response?.data);
         if (response.data.length === 1) {
-          setSelectedSalesCase(response.data[0].id);
+          setSelectedSalesCase(response?.data[0].id);
         }
       }
     } catch (error) {
@@ -156,7 +156,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
         throw new Error(response.error || 'Failed to create quotation');
       }
 
-      const result = response.data;
+      const result = response?.data;
 
       if (status === 'sent' && result.id) {
         await apiClient(`/api/quotations/${result.id}/send`, {

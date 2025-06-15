@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -71,12 +71,12 @@ export default function SalesTeamPage(): React.JSX.Element {
       setLoading(true)
       _setError(null)
 
-      const response = await api.get('/api/sales-team')
-      if (response.ok && response.data) {
-        setHierarchy(response.data)
+      const response = await apiClient('/api/sales-team')
+      if (response.ok && response?.data) {
+        setHierarchy(response?.data)
       }
     } catch (err) {
-      console.error('Error fetching team data:', err)
+      console.error('Error fetching team data:', { method: 'POST', body: JSON.stringify(err) })
       _setError('Failed to load sales team data')
     } finally {
       setLoading(false)
@@ -89,12 +89,12 @@ export default function SalesTeamPage(): React.JSX.Element {
       if (searchUnassigned) params.append('search', searchUnassigned)
       params.append('view', 'unassigned')
 
-      const response = await api.get(`/api/sales-team?${params}`)
-      if (response.ok && response.data) {
-        setUnassignedCustomers(response.data.customers || [])
+      const response = await apiClient(`/api/sales-team?${params}`)
+      if (response.ok && response?.data) {
+        setUnassignedCustomers(response?.data.customers || [])
       }
     } catch (err) {
-      console.error('Error fetching unassigned customers:', err)
+      console.error('Error fetching unassigned customers:', { method: 'POST', body: JSON.stringify(err) })
     }
   }
 

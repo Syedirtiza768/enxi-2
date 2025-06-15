@@ -81,8 +81,8 @@ export function PaymentHistory({
 
       const response = await apiClient<{ data: any }>(`${endpoint}?${params.toString()}`)
       
-      if (response.ok && response.data) {
-        setPayments(response.data)
+      if (response.ok && response?.data) {
+        setPayments(response?.data)
       } else {
         throw new Error('Failed to load payment history')
       }
@@ -133,14 +133,14 @@ export function PaymentHistory({
     setDownloadingReceipt(payment.id)
     try {
       const response = await apiClient<{ data: any }>(`/api/payments/${payment.id}/receipt`)
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         // If URL is returned, open in new tab
-        if (response.data.url) {
-          window.open(response.data.url, '_blank')
+        if (response?.data.url) {
+          window.open(response?.data.url, '_blank')
         }
         // If blob is returned, download directly
-        else if (response.data.blob) {
-          const blob = new Blob([response.data.blob], { type: 'application/pdf' })
+        else if (response?.data.blob) {
+          const blob = new Blob([response?.data.blob], { type: 'application/pdf' })
           const url = window.URL.createObjectURL(blob)
           const a = document.createElement('a')
           a.href = url

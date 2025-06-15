@@ -138,11 +138,11 @@ export function QuotationFormEnhanced({
         throw new Error('Failed to load sales case')
       }
       
-      setSalesCase(response.data)
+      setSalesCase(response?.data)
       
       // Set default payment terms from customer
-      if (response.data.customer.paymentTerms) {
-        setPaymentTerms(`Net ${response.data.customer.paymentTerms}`)
+      if (response?.data.customer.paymentTerms) {
+        setPaymentTerms(`Net ${response?.data.customer.paymentTerms}`)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load sales case')
@@ -162,7 +162,7 @@ export function QuotationFormEnhanced({
         throw new Error('Failed to load quotation')
       }
       
-      const quotation = response.data
+      const quotation = response?.data
       
       // Set form fields
       setValidUntil(quotation.validUntil.split('T')[0])
@@ -209,7 +209,7 @@ export function QuotationFormEnhanced({
       })
       
       if (response.ok) {
-        const rates = response.data || []
+        const rates = response?.data || []
         setTaxRates(rates)
         const defaultRate = rates.find((r: TaxRate) => r.isDefault)
         setDefaultTaxRate(defaultRate || null)

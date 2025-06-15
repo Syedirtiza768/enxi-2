@@ -109,10 +109,10 @@ function defaultRetryCondition(error: any, attempt: number): boolean {
   if (error?.status >= 500 && error?.status < 600) return true
 
   // Retry on rate limiting (429)
-  if (error?.status === 429) return true
+  if (error.status === 429) return true
 
   // Retry on timeout errors
-  if (error?.code === 'TIMEOUT' || error?.name === 'TimeoutError') return true
+  if (error.code === 'TIMEOUT' || error.name === 'TimeoutError') return true
 
   return false
 }
@@ -154,7 +154,7 @@ export const RetryStrategies = {
       // Retry on network errors and server errors
       return isNetworkError(error) || 
              (error?.status >= 500) || 
-             (error?.status === 429)
+             (error.status === 429)
     }
   },
 
@@ -168,10 +168,10 @@ export const RetryStrategies = {
       // More aggressive retry for critical operations
       return isNetworkError(error) || 
              (error?.status >= 500) || 
-             (error?.status === 429) ||
-             (error?.status === 502) ||
-             (error?.status === 503) ||
-             (error?.status === 504)
+             (error.status === 429) ||
+             (error.status === 502) ||
+             (error.status === 503) ||
+             (error.status === 504)
     }
   },
 

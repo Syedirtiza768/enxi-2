@@ -100,7 +100,7 @@ export default function SupplierInvoicesPage() {
         throw new Error('Failed to fetch supplier invoices')
       }
       
-      const data = response.data?.data || []
+      const data = response?.data?.data || []
       setSupplierInvoices(data)
       
       // Calculate stats

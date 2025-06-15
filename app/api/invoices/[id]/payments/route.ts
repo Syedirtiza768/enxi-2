@@ -18,8 +18,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const userId = 'system' // Replace with actual user authentication
     
     const body = await request.json()
-    const data = createPaymentSchema.parse(body)
+    console.log('Payment API received body:', body)
     
+    // Validate with Zod
+    const validationResult = createPaymentSchema.safeParse(body)
+    if (!validationResult.success) {
+      console.error('Payment validation error:', validationResult.error)
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: validationResult.error.format()
+        },
+        { status: 400 }
+      )
+    }
+    
+    const data = validationResult.data
     const invoiceService = new InvoiceService()
     
     const paymentData = {
@@ -33,6 +47,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json(payment, { status: 201 })
   } catch (error) {
     console.error('Error recording payment:', error)
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: error.errors 
+        },
+        { status: 400 }
+      )
+    }
     
     if (error instanceof Error) {
       return NextResponse.json(

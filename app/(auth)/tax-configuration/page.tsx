@@ -71,8 +71,8 @@ export default function TaxConfigurationPage() {
     try {
       setLoading(true)
       const response = await apiClient<{ data: any[] }>('/api/tax-categories', { method: 'GET' })
-      if (response.ok && response.data) {
-        setCategories(response.data)
+      if (response.ok && response?.data) {
+        setCategories(response?.data)
       } else {
         setError(response.error || 'Failed to fetch tax categories')
       }

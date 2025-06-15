@@ -169,7 +169,7 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
         body: { code }
       })
 
-      const isAvailable = response.data?.available
+      const isAvailable = response?.data?.available
       
       if (!isAvailable) {
         setValidationErrors(prev => ({ ...prev, code: 'This supplier code is already in use' }))

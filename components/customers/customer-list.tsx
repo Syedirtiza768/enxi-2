@@ -213,8 +213,8 @@ export function CustomerList(): JSX.Element {
 
       const response = await apiClient<{ data: any }>(`/api/customers?${queryParams.toString()}`)
       
-      if (response.ok && response.data) {
-        const data = response.data
+      if (response.ok && response?.data) {
+        const data = response?.data
         setCustomers(data.customers || data.data || [])
         setStats(data.stats || stats)
         setPagination(prev => ({
@@ -381,7 +381,7 @@ export function CustomerList(): JSX.Element {
       
       if (response.ok) {
         // Handle file download
-        const blob = new Blob([response.data], { 
+        const blob = new Blob([response?.data], { 
           type: format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
         })
         const url = window.URL.createObjectURL(blob)

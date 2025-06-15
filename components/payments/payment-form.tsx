@@ -394,25 +394,48 @@ export function PaymentForm({
           break
       }
 
+      // Ensure amount is a valid number
+      if (!formData.amount || formData.amount <= 0) {
+        throw new Error('Invalid payment amount')
+      }
+
+      // Format payment date to ISO string with time
+      let paymentDateTime: string
+      if (formData.paymentDate) {
+        // formData.paymentDate is in YYYY-MM-DD format from the date input
+        const [year, month, day] = formData.paymentDate.split('-').map(Number)
+        const date = new Date(year, month - 1, day, 12, 0, 0, 0)
+        paymentDateTime = date.toISOString()
+      } else {
+        paymentDateTime = new Date().toISOString()
+      }
+
+      const requestBody = {
+        amount: formData.amount,
+        paymentMethod: formData.paymentMethod,
+        paymentDate: paymentDateTime,
+        reference: reference || undefined,
+        notes: formData.notes || undefined,
+      }
+
+      console.log('Sending payment request:', requestBody)
+
       const response = await apiClient<{ data?: { id: string }; success?: boolean; paymentId?: string }>(`/api/invoices/${invoiceId}/payments`, {
         method: 'POST',
-        body: JSON.stringify({
-          amount: formData.amount,
-          paymentMethod: formData.paymentMethod,
-          paymentDate: formData.paymentDate,
-          reference: reference || undefined,
-          notes: formData.notes || undefined,
-          metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
-        throw new Error(response.error || 'Payment failed')
+        console.error('Payment API error:', response)
+        const errorMessage = response.error || 
+          (response.errorDetails?.message) || 
+          'Payment failed'
+        throw new Error(errorMessage)
       }
 
       onSuccess()
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Payment submission error:', error);
       setSubmitError(error instanceof Error ? error.message : 'Payment failed. Please try again.');
     } finally {
       setIsSubmitting(false)

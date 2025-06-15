@@ -146,20 +146,20 @@ const [reportType, setReportType] = useState<ReportType>('summary')
       switch (reportType) {
         case 'summary':
         case 'lowstock':
-          setSummaryData(response.data?.items || [])
+          setSummaryData(response?.data?.items || [])
           break
         case 'valuation':
-          setValuationData(response.data?.items || [])
-          setReportStats(prev => ({ ...prev, totalValue: response.data?.totalValue || 0 }))
+          setValuationData(response?.data?.items || [])
+          setReportStats(prev => ({ ...prev, totalValue: response?.data?.totalValue || 0 }))
           break
         case 'expiring':
-          setExpiringData(response.data?.items || [])
+          setExpiringData(response?.data?.items || [])
           break
       }
 
       // Update stats if provided
-      if (response.data?.stats) {
-        setReportStats(response.data.stats)
+      if (response?.data?.stats) {
+        setReportStats(response?.data.stats)
       }
     } catch (error) {
       console.error('Error fetching report data:', error)
@@ -184,7 +184,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
 
       if (response.ok) {
         // Create download link
-        const blob = new Blob([response.data], { 
+        const blob = new Blob([response?.data], { 
           type: format === 'pdf' ? 'application/pdf' : 'text/csv' 
         })
         const url = window.URL.createObjectURL(blob)

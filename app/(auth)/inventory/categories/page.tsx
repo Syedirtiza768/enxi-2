@@ -54,7 +54,7 @@ export default function CategoriesPage() {
       }
 
       // Handle both wrapped and unwrapped responses
-      const categoriesData = response.data?.data || response.data || []
+      const categoriesData = response?.data?.data || response?.data || []
       setCategories(Array.isArray(categoriesData) ? categoriesData : [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

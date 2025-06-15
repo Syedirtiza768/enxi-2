@@ -131,7 +131,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     try {
       const response = await apiClient<{ data: any }>('/api/purchase-orders?status=CONFIRMED', { method: 'GET' })
       if (response.ok) {
-        setPurchaseOrders(response.data?.data || [])
+        setPurchaseOrders(response?.data?.data || [])
       }
     } catch (error) {
       console.error('Error fetching purchase orders:', error)
@@ -142,7 +142,7 @@ export function GoodsReceiptForm({ goodsReceipt, onSuccess }: GoodsReceiptFormPr
     try {
       const response = await apiClient<{ data: any }>(`/api/purchase-orders/${poId}`, { method: 'GET' })
       if (response.ok) {
-        const po = response.data
+        const po = response?.data
         setSelectedPO(po)
         
         // Initialize receipt items from PO items

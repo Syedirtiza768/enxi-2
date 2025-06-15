@@ -97,8 +97,7 @@ async function createPermissions(): Promise<T> {
         module: "accounting",
         action: "manage",
       },
-    }),
-  ]);
+    })]);
   await Promise.all(
     perms.map((p) =>
       prisma.rolePermission.create({
@@ -641,8 +640,7 @@ async function main(): Promise<void> {
     prisma.goodsReceipt.deleteMany(),
     prisma.purchaseOrderItem.deleteMany(),
     prisma.purchaseOrder.deleteMany(),
-    prisma.supplier.deleteMany(),
-  ]);
+    prisma.supplier.deleteMany()]);
 
   const users = await createUsers();
   await createPermissions();

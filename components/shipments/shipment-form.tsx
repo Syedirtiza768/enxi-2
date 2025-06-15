@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { 
   Package, 
@@ -83,15 +83,15 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get<SalesOrder>(`/api/sales-orders/${salesOrderId}`)
-      if (response.ok && response.data) {
-        setSalesOrder(response.data)
+      const data = await apiClient<SalesOrder>(`/api/sales-orders/${salesOrderId}`)
+      if (data) {
+        setSalesOrder(data)
       } else {
-        throw new Error(response.error || 'Failed to fetch sales order')
+        throw new Error('Failed to fetch sales order')
       }
 
         // Check if order is approved
-        if (response.data.status !== 'APPROVED') {
+        if (data.status !== 'APPROVED') {
           setError('Order must be approved before creating shipment')
         }
     } catch (err) {
@@ -232,11 +232,11 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
         createdBy: user.id,
       }
 
-      const response = await api.post('/api/shipments', shipmentData)
+      const response = await apiClient('/api/shipments', { method: 'POST', body: JSON.stringify(shipmentData) })
       if (!response.ok) {
         throw new Error(response.error || 'Failed to create shipment')
       }
-      const shipment = response.data
+      const shipment = response?.data
       
       if (onSuccess) {
         onSuccess(shipment)

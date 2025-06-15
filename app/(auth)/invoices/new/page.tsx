@@ -13,7 +13,7 @@ function NewInvoiceContent() {
 
   const handleSubmit = async (invoiceData: Record<string, unknown>) => {
     try {
-      const response = await apiClient<{ data: any[] }>('/api/invoices', {
+      const response = await apiClient<{ id: string } | { data: { id: string } }>('/api/invoices', {
         method: 'POST',
         body: JSON.stringify(invoiceData)
       })
@@ -22,7 +22,10 @@ function NewInvoiceContent() {
         throw new Error('Failed to create invoice')
       }
 
-      const invoiceId = response.data?.data?.id || response.data?.id
+      const responseData = response?.data
+      const invoiceId = responseData && typeof responseData === 'object' && 'data' in responseData 
+        ? responseData.data.id 
+        : (responseData as { id: string }).id
       
       // Navigate to the new invoice detail page
       window.location.href = `/invoices/${invoiceId}`

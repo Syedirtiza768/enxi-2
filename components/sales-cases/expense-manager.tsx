@@ -72,8 +72,8 @@ export function ExpenseManager({ salesCaseId, salesCaseCurrency, onExpenseUpdate
     setLoading(true)
     try {
       const response = await apiClient<{ data: any[] }>(`/api/sales-cases/${salesCaseId}/expenses`, { method: 'GET' })
-      if (response.ok && response.data) {
-        const expensesData = response.data.data || response.data
+      if (response.ok && response?.data) {
+        const expensesData = response?.data.data || response?.data
         setExpenses(Array.isArray(expensesData) ? expensesData : [])
       }
 } catch (error) {

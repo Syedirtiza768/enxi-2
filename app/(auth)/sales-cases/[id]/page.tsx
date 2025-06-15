@@ -92,7 +92,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     try {
       const response = await apiClient<{ data: any[] }>(`/api/sales-cases/${id}`, { method: 'GET' })
       if (!response.ok) throw new Error('Failed to fetch sales case')
-      const data = response.data?.data || response.data || null
+      const data = response?.data?.data || response?.data || null
       setSalesCase(data)
       if (data) {
         setCloseData({
@@ -112,7 +112,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
     try {
       const response = await apiClient<{ data: any[] }>(`/api/sales-cases/${id}/timeline`, { method: 'GET' })
       if (!response.ok) throw new Error('Failed to fetch timeline')
-      const data = response.data?.data || response.data || []
+      const data = response?.data?.data || response?.data || []
       setTimeline(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error:', error)
@@ -219,7 +219,7 @@ export default function SalesCaseDetailPage({ params }: { params: Promise<{ id: 
       case 'DELIVERED':
         return 'bg-green-100 text-green-800'
       case 'CLOSED':
-        return salesCase?.result === 'WON' 
+        return salesCase.result === 'WON' 
           ? 'bg-green-100 text-green-800' 
           : 'bg-red-100 text-red-800'
       default:

@@ -73,8 +73,8 @@ export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFo
   const fetchSalesCaseDetails = async (salesCaseId: string) => {
     try {
       const response = await apiClient(`/api/sales-cases/${salesCaseId}`);
-      if (response.ok && response.data) {
-        const salesCase = response.data;
+      if (response.ok && response?.data) {
+        const salesCase = response?.data;
         // Set the customer from the sales case
         setFormData(prev => ({ 
           ...prev, 
@@ -91,11 +91,11 @@ export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFo
   const fetchSalesCases = async (customerId: string) => {
     try {
       const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
-      if (response.ok && response.data) {
-        setSalesCases(response.data);
+      if (response.ok && response?.data) {
+        setSalesCases(response?.data);
         // Auto-select if only one open sales case
         if (response.data.length === 1) {
-          setSelectedSalesCase(response.data[0].id);
+          setSelectedSalesCase(response?.data[0].id);
         }
       }
     } catch (error) {
@@ -177,7 +177,7 @@ export function QuotationFormV2({ salesCaseId: initialSalesCaseId }: QuotationFo
         throw new Error(response.error || 'Failed to create quotation');
       }
 
-      const result = response.data;
+      const result = response?.data;
 
       // If status is 'sent', send the quotation
       if (status === 'sent' && result.id) {

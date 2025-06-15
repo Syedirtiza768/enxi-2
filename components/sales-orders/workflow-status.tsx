@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 
 interface WorkflowStatusProps {
   salesOrder: {
@@ -63,9 +63,9 @@ export function WorkflowStatus({ salesOrder }: WorkflowStatusProps): React.JSX.E
   const handleApproveOrder = async (): Promise<void> => {
     setApproving(true)
     try {
-      const response = await api.post(`/api/sales-orders/${salesOrder.id}/approve`, {
+      const response = await apiClient(`/api/sales-orders/${salesOrder.id}/approve`, { method: 'POST', body: JSON.stringify({
         notes: 'Approved via workflow interface'
-      })
+      }) })
 
       if (response.ok) {
         // Refresh the page or update state

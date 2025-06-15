@@ -99,8 +99,8 @@ const params = useParams()
         throw new Error(response.error || 'Failed to fetch purchase order')
       }
       
-      if (response.data) {
-        setPurchaseOrder(response.data)
+      if (response?.data) {
+        setPurchaseOrder(response?.data)
       }
     } catch (error) {
       console.error('Error fetching purchase order:', error)

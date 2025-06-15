@@ -109,7 +109,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
     
     try {
       const response = await apiClient<{ data: { id: string; email: string }[] }>(`/api/customers?email=${encodeURIComponent(email)}`)
-      if (response.data && response.data.length > 0) {
+      if (response?.data && response?.data.length > 0) {
         setErrors(prev => ({ ...prev, email: 'A customer with this email already exists' }))
         setFieldStatus(prev => ({ ...prev, email: 'error' }))
       } else {
@@ -237,9 +237,9 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
 
       // Success
       if (onSuccess) {
-        onSuccess(response.data)
+        onSuccess(response?.data)
       } else {
-        router.push(`/customers/${response.data?.id}`)
+        router.push(`/customers/${response?.data?.id}`)
       }
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error) {

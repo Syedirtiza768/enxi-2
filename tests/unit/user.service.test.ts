@@ -307,8 +307,7 @@ describe('UserService', () => {
       jest.spyOn(userService, 'getUserPermissions').mockResolvedValue([
         'sales.create',
         'sales.read',
-        'inventory.read',
-      ])
+        'inventory.read'])
 
       const hasPermission = await userService.hasPermission('user123', 'sales.create')
       const doesNotHavePermission = await userService.hasPermission('user123', 'sales.delete')

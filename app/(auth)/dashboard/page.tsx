@@ -16,7 +16,7 @@ import {
 } from '@/components/design-system'
 import { LeadStats } from '@/components/leads/lead-stats'
 import { LeadStats as LeadStatsType } from '@/lib/types/lead.types'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import Link from 'next/link'
 import { Users, Plus, TrendingUp } from 'lucide-react'
 
@@ -27,14 +27,17 @@ export default function DashboardPage(): React.JSX.Element {
   useEffect(() => {
     const fetchStats = async (): Promise<void> => {
       try {
-        const response = await api.get<LeadStatsType>('/api/leads/stats')
-        if (response.ok) {
-          setLeadStats(response.data!)
+        const response = await apiClient<LeadStatsType>('/api/leads/stats')
+        if (response.ok && response.data) {
+          setLeadStats(response.data)
+        } else {
+          console.error('Failed to fetch lead stats:', response.error)
         }
-} catch (error) {
-      console.error('Error:', error);
-      setIsLoading(false)
-    }
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Error:', error);
+        setIsLoading(false)
+      }
     }
 
     fetchStats()

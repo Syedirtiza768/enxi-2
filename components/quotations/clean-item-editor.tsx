@@ -54,8 +54,8 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     setLoading(true);
     try {
       const response = await apiClient<{ data: any }>(`/api/inventory/items?search=${searchQuery}`);
-      if (response.ok && response.data) {
-        setInventoryItems(response.data);
+      if (response.ok && response?.data) {
+        setInventoryItems(response?.data);
       }
     } catch (error) {
       console.error('Failed to search inventory:', error);

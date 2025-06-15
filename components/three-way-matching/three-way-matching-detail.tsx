@@ -278,11 +278,11 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
       clearInterval(progressInterval)
       setMatchingProgress(100)
 
-      if (!response.ok || !response.data) {
+      if (!response.ok || !response?.data) {
         throw new Error(response.error || 'Failed to fetch three-way matching analysis')
       }
 
-      const data = response.data
+      const data = response?.data
       setAnalysis(data)
       
       // Validate the analysis results

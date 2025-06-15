@@ -68,8 +68,8 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
         method: 'GET'
       })
 
-      if (response.ok && response.data) {
-        const entryData = response.data && 'data' in response.data ? response.data.data : response.data
+      if (response.ok && response?.data) {
+        const entryData = response?.data && 'data' in response?.data ? response?.data.data : response?.data
         setJournalEntry(entryData)
       } else {
         setError('Failed to load journal entry')

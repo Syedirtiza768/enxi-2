@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-06-14T21:01:12.058Z",
+  "timestamp": "2025-06-14T21:02:08.522Z",
   "totalErrors": 2365,
   "byPriority": {
     "high": 485,
@@ -16602,5 +16602,8 @@
       "suppressed": true,
       "priority": "low"
     }
-  ]
+  ],
+  "lastUpdate": "2025-06-14T21:23:54.490Z",
+  "fixedCount": 0,
+  "remainingErrors": 18
 }

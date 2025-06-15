@@ -70,7 +70,7 @@ export function isApiResponse<T>(response: unknown): response is ApiResponse<T> 
  * Type guard for successful API responses
  */
 export function isSuccessResponse<T>(response: ApiResponse<T>): response is ApiResponse<T> & { data: T } {
-  return response.ok && response.data !== undefined
+  return response.ok && response?.data !== undefined
 }
 
 /**

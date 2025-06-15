@@ -1248,8 +1248,7 @@ async function printSummary(): Promise<void> {
     prisma.invoice.count(),
     prisma.payment.count(),
     prisma.shipment.count(),
-    prisma.stockLot.count(),
-  ]);
+    prisma.stockLot.count()]);
   
   const [
     users, customers, suppliers, items, leads, cases, 

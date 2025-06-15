@@ -146,7 +146,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await GET(request)
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(200)
       expect(data.data).toBeDefined()
@@ -160,7 +160,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await GET(request)
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(200)
       expect(data.data).toBeDefined()
@@ -177,7 +177,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await GET(request)
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(200)
       if (data.data.length > 0) {
@@ -196,7 +196,7 @@ describe('Supplier Payments API', () => {
       const response = await GET(request)
       
       expect(response.status).toBe(401)
-      expect(response.data.error).toBe('Unauthorized')
+      expect(response?.data.error).toBe('Unauthorized')
     })
   })
 
@@ -220,7 +220,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await POST(request)
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(201)
       expect(data.data).toBeDefined()
@@ -248,7 +248,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await POST(request)
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(201)
       expect(data.data).toBeDefined()
@@ -271,7 +271,7 @@ describe('Supplier Payments API', () => {
       const response = await POST(request)
       
       expect(response.status).toBe(400)
-      expect(response.data.error).toContain('required')
+      expect(response?.data.error).toContain('required')
     })
 
     test('should return 400 for invalid amount', async () => {
@@ -292,7 +292,7 @@ describe('Supplier Payments API', () => {
       const response = await POST(request)
       
       expect(response.status).toBe(400)
-      expect(response.data.error).toContain('positive')
+      expect(response?.data.error).toContain('positive')
     })
 
     test('should return 400 for payment exceeding invoice balance', async () => {
@@ -314,7 +314,7 @@ describe('Supplier Payments API', () => {
       const response = await POST(request)
       
       expect(response.status).toBe(400)
-      expect(response.data.error).toContain('exceeds')
+      expect(response?.data.error).toContain('exceeds')
     })
 
     test('should return 404 for non-existent supplier', async () => {
@@ -335,7 +335,7 @@ describe('Supplier Payments API', () => {
       const response = await POST(request)
       
       expect(response.status).toBe(404)
-      expect(response.data.error).toContain('not found')
+      expect(response?.data.error).toContain('not found')
     })
 
     test('should return 401 for unauthorized access', async () => {
@@ -353,7 +353,7 @@ describe('Supplier Payments API', () => {
       const response = await POST(request)
       
       expect(response.status).toBe(401)
-      expect(response.data.error).toBe('Unauthorized')
+      expect(response?.data.error).toBe('Unauthorized')
     })
   })
 
@@ -382,7 +382,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await GetPayment(request, { params: { id: createdPayment.id } })
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(200)
       expect(data.data).toBeDefined()
@@ -401,7 +401,7 @@ describe('Supplier Payments API', () => {
       const response = await GetPayment(request, { params: { id: 'non-existent-id' } })
       
       expect(response.status).toBe(404)
-      expect(response.data.error).toContain('not found')
+      expect(response?.data.error).toContain('not found')
     })
 
     test('should return 401 for unauthorized access', async () => {
@@ -413,7 +413,7 @@ describe('Supplier Payments API', () => {
       const response = await GetPayment(request, { params: { id: 'some-id' } })
       
       expect(response.status).toBe(401)
-      expect(response.data.error).toBe('Unauthorized')
+      expect(response?.data.error).toBe('Unauthorized')
     })
   })
 
@@ -445,7 +445,7 @@ describe('Supplier Payments API', () => {
         .mockResolvedValueOnce({ id: testUser.id, role: 'ACCOUNTANT' })
 
       const response = await UpdatePayment(request, { params: { id: createdPayment.id } })
-      const data = response.data
+      const data = response?.data
 
       expect(response.status).toBe(200)
       expect(data.data).toBeDefined()
@@ -464,7 +464,7 @@ describe('Supplier Payments API', () => {
       const response = await UpdatePayment(request, { params: { id: 'non-existent-id' } })
       
       expect(response.status).toBe(404)
-      expect(response.data.error).toContain('not found')
+      expect(response?.data.error).toContain('not found')
     })
 
     test('should return 400 when trying to update amount (should not be allowed)', async () => {
@@ -493,7 +493,7 @@ describe('Supplier Payments API', () => {
       const response = await UpdatePayment(request, { params: { id: createdPayment.id } })
       
       expect(response.status).toBe(400)
-      expect(response.data.error).toContain('amount cannot be modified')
+      expect(response?.data.error).toContain('amount cannot be modified')
     })
 
     test('should return 401 for unauthorized access', async () => {
@@ -506,7 +506,7 @@ describe('Supplier Payments API', () => {
       const response = await UpdatePayment(request, { params: { id: 'some-id' } })
       
       expect(response.status).toBe(401)
-      expect(response.data.error).toBe('Unauthorized')
+      expect(response?.data.error).toBe('Unauthorized')
     })
   })
 })

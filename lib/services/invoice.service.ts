@@ -525,6 +525,9 @@ export class InvoiceService extends BaseService {
 
 
         return payment
+      }, {
+        timeout: 20000, // Increase timeout to 20 seconds
+        maxWait: 10000, // Maximum time to wait for a transaction slot
       })
     })
   }
@@ -738,8 +741,8 @@ export class InvoiceService extends BaseService {
     return this.withLogging('createPaymentJournalEntry', async () => {
       // Debit: Cash/Bank, Credit: Accounts Receivable
       const cashAccountId = payment.paymentMethod === PaymentMethod.CASH 
-        ? await this.getAccountByCode('1000') // Cash
-        : await this.getAccountByCode('1010') // Bank
+        ? await this.getAccountByCode('1110', tx) // Cash on Hand (updated code)
+        : await this.getAccountByCode('1010', tx) // Bank
 
     const lines = [
       {
@@ -749,7 +752,7 @@ export class InvoiceService extends BaseService {
         creditAmount: 0
       },
       {
-        accountId: await this.getAccountByCode('1200'), // Accounts Receivable
+        accountId: await this.getAccountByCode('1200', tx), // Accounts Receivable
         description: `Payment for invoice ${invoice.invoiceNumber}`,
         debitAmount: 0,
         creditAmount: payment.amount
@@ -767,9 +770,10 @@ export class InvoiceService extends BaseService {
     })
   }
 
-  private async getAccountByCode(code: string): Promise<string> {
+  private async getAccountByCode(code: string, tx?: any): Promise<string> {
     return this.withLogging('getAccountByCode', async () => {
-      const account = await prisma.account.findFirst({
+      const db = tx || prisma
+      const account = await db.account.findFirst({
         where: { code }
       })
       

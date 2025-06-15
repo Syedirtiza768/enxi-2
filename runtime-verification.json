@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-06-14T22:00:37.465Z",
+  "results": [
+    {
+      "component": "currency-context",
+      "status": "fail",
+      "checks": {
+        "imports": true,
+        "hooks": true,
+        "runtime": false
+      },
+      "error": "formatCurrency still returns void"
+    },
+    {
+      "component": "page.tsx",
+      "status": "pass",
+      "checks": {
+        "imports": true,
+        "hooks": true,
+        "runtime": false
+      }
+    },
+    {
+      "component": "bank-reconciliation.tsx",
+      "status": "pass",
+      "checks": {
+        "imports": true,
+        "hooks": true,
+        "runtime": true
+      }
+    },
+    {
+      "component": "customer-business-history.tsx",
+      "status": "pass",
+      "checks": {
+        "imports": true,
+        "hooks": true,
+        "runtime": true
+      }
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1
+  }
+}

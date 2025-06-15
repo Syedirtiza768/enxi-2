@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { UserEditForm } from '@/components/users/user-edit-form'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -43,15 +43,15 @@ export default function UserEditPage() {
       setLoading(true)
       setError(null)
 
-      const response = await api.get(`/api/users/${userId}`)
+      const response = await apiClient(`/api/users/${userId}`)
       
-      if (response.ok && response.data) {
-        setUser(response.data)
+      if (response.ok && response?.data) {
+        setUser(response?.data)
       } else {
         throw new Error('Failed to fetch user details')
       }
     } catch (err) {
-      console.error('Error fetching user:', err)
+      console.error('Error fetching user:', { method: 'POST', body: JSON.stringify(err) })
       setError(err instanceof Error ? err.message : 'Failed to fetch user')
     } finally {
       setLoading(false)

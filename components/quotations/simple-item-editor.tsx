@@ -53,7 +53,7 @@ export function SimpleItemEditor({ quotationItems, onChange, disabled = false }:
           throw new Error('Failed to load inventory items')
         }
         
-        const responseData = response.data
+        const responseData = response?.data
         const inventoryData = Array.isArray(responseData) ? responseData : (responseData?.data || [])
         setInventoryItems(Array.isArray(inventoryData) ? inventoryData : [])
       } catch (err) {

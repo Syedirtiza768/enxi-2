@@ -53,7 +53,7 @@ export default function SupplierDetailPage() {
         throw new Error('Failed to fetch supplier')
       }
       
-      setSupplier(response.data)
+      setSupplier(response?.data)
 } catch (error) {
       console.error('Error:', error);
     } finally {

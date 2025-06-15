@@ -137,8 +137,7 @@ export const leadSourceValidator = z.enum([
   'PHONE_CALL',
   'TRADE_SHOW',
   'PARTNER',
-  'OTHER',
-]);
+  'OTHER']);
 
 export const leadStatusValidator = z.enum([
   'NEW',
@@ -146,16 +145,14 @@ export const leadStatusValidator = z.enum([
   'QUALIFIED',
   'NEGOTIATION',
   'CONVERTED',
-  'LOST',
-]);
+  'LOST']);
 
 export const paymentMethodValidator = z.enum([
   'CASH',
   'CHECK',
   'BANK_TRANSFER',
   'CREDIT_CARD',
-  'DEBIT_CARD',
-]);
+  'DEBIT_CARD']);
 
 // Business rule validators
 export const creditLimitValidator = z

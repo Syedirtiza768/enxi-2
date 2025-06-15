@@ -123,133 +123,412 @@ async function createUsers() {
 }
 
 async function createChartOfAccounts(userId: string) {
-  // Assets
-  const cash = await prisma.account.create({
+  // Create accounts in a structured order with parent-child relationships
+  const accounts: Record<string, any> = {}
+
+  // 1000 - ASSETS
+  const assets = await prisma.account.create({
     data: {
       code: '1000',
-      name: 'Cash',
+      name: 'Assets',
       type: AccountType.ASSET,
-      description: 'Cash and cash equivalents',
+      description: 'All company assets',
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  // 1100 - Current Assets
+  const currentAssets = await prisma.account.create({
+    data: {
+      code: '1100',
+      name: 'Current Assets',
+      type: AccountType.ASSET,
+      description: 'Assets expected to be converted to cash within one year',
+      parentId: assets.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  const accountsReceivable = await prisma.account.create({
+  // Cash accounts
+  accounts.cash = await prisma.account.create({
+    data: {
+      code: '1110',
+      name: 'Cash on Hand',
+      type: AccountType.ASSET,
+      description: 'Physical cash and petty cash',
+      parentId: currentAssets.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.bank = await prisma.account.create({
+    data: {
+      code: '1010',
+      name: 'Bank Account',
+      type: AccountType.ASSET,
+      description: 'Main operating bank account',
+      parentId: currentAssets.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.bankSavings = await prisma.account.create({
+    data: {
+      code: '1020',
+      name: 'Bank Savings Account',
+      type: AccountType.ASSET,
+      description: 'Savings and reserve accounts',
+      parentId: currentAssets.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.accountsReceivable = await prisma.account.create({
     data: {
       code: '1200',
       name: 'Accounts Receivable',
       type: AccountType.ASSET,
       description: 'Customer receivables',
+      parentId: currentAssets.id,
       isActive: true,
+      isSystemAccount: true,
       createdBy: userId
     }
   })
 
-  const inventory = await prisma.account.create({
+  accounts.inventory = await prisma.account.create({
     data: {
       code: '1300',
       name: 'Inventory',
       type: AccountType.ASSET,
-      description: 'Inventory asset',
+      description: 'Products held for sale',
+      parentId: currentAssets.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.prepaidExpenses = await prisma.account.create({
+    data: {
+      code: '1400',
+      name: 'Prepaid Expenses',
+      type: AccountType.ASSET,
+      description: 'Expenses paid in advance',
+      parentId: currentAssets.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  // Liabilities
-  const accountsPayable = await prisma.account.create({
+  // 1500 - Fixed Assets
+  const fixedAssets = await prisma.account.create({
+    data: {
+      code: '1500',
+      name: 'Fixed Assets',
+      type: AccountType.ASSET,
+      description: 'Long-term tangible assets',
+      parentId: assets.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.equipment = await prisma.account.create({
+    data: {
+      code: '1510',
+      name: 'Equipment',
+      type: AccountType.ASSET,
+      description: 'Office and operational equipment',
+      parentId: fixedAssets.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.accumulatedDepreciation = await prisma.account.create({
+    data: {
+      code: '1520',
+      name: 'Accumulated Depreciation - Equipment',
+      type: AccountType.ASSET,
+      description: 'Accumulated depreciation on equipment',
+      parentId: fixedAssets.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  // 2000 - LIABILITIES
+  const liabilities = await prisma.account.create({
     data: {
       code: '2000',
-      name: 'Accounts Payable',
+      name: 'Liabilities',
       type: AccountType.LIABILITY,
-      description: 'Vendor payables',
+      description: 'All company liabilities',
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  // 2100 - Current Liabilities
+  const currentLiabilities = await prisma.account.create({
+    data: {
+      code: '2100',
+      name: 'Current Liabilities',
+      type: AccountType.LIABILITY,
+      description: 'Liabilities due within one year',
+      parentId: liabilities.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  // Equity
-  const capitalStock = await prisma.account.create({
+  accounts.accountsPayable = await prisma.account.create({
+    data: {
+      code: '2110',
+      name: 'Accounts Payable',
+      type: AccountType.LIABILITY,
+      description: 'Amounts owed to suppliers',
+      parentId: currentLiabilities.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.taxPayable = await prisma.account.create({
+    data: {
+      code: '2200',
+      name: 'Tax Payable',
+      type: AccountType.LIABILITY,
+      description: 'Taxes owed to government',
+      parentId: currentLiabilities.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.salariesPayable = await prisma.account.create({
+    data: {
+      code: '2300',
+      name: 'Salaries Payable',
+      type: AccountType.LIABILITY,
+      description: 'Salaries owed to employees',
+      parentId: currentLiabilities.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  // 3000 - EQUITY
+  const equity = await prisma.account.create({
     data: {
       code: '3000',
+      name: 'Equity',
+      type: AccountType.EQUITY,
+      description: 'Owner\'s equity',
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.capitalStock = await prisma.account.create({
+    data: {
+      code: '3100',
       name: 'Capital Stock',
       type: AccountType.EQUITY,
       description: 'Common stock',
+      parentId: equity.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.retainedEarnings = await prisma.account.create({
+    data: {
+      code: '3200',
+      name: 'Retained Earnings',
+      type: AccountType.EQUITY,
+      description: 'Accumulated profits',
+      parentId: equity.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  // Income
-  const salesRevenue = await prisma.account.create({
+  // 4000 - INCOME
+  const income = await prisma.account.create({
     data: {
       code: '4000',
+      name: 'Income',
+      type: AccountType.INCOME,
+      description: 'All revenue accounts',
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.salesRevenue = await prisma.account.create({
+    data: {
+      code: '4100',
       name: 'Sales Revenue',
       type: AccountType.INCOME,
-      description: 'Revenue from sales',
+      description: 'Revenue from product sales',
+      parentId: income.id,
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.serviceRevenue = await prisma.account.create({
+    data: {
+      code: '4200',
+      name: 'Service Revenue',
+      type: AccountType.INCOME,
+      description: 'Revenue from services',
+      parentId: income.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  // Expenses
-  const cogs = await prisma.account.create({
+  accounts.discountRevenue = await prisma.account.create({
+    data: {
+      code: '4300',
+      name: 'Sales Discounts',
+      type: AccountType.INCOME,
+      description: 'Discounts given to customers',
+      parentId: income.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  // 5000 - EXPENSES
+  const expenses = await prisma.account.create({
     data: {
       code: '5000',
+      name: 'Expenses',
+      type: AccountType.EXPENSE,
+      description: 'All expense accounts',
+      isActive: true,
+      isSystemAccount: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.cogs = await prisma.account.create({
+    data: {
+      code: '5010',
       name: 'Cost of Goods Sold',
       type: AccountType.EXPENSE,
-      description: 'Direct cost of goods sold',
+      description: 'Direct cost of products sold',
+      parentId: expenses.id,
       isActive: true,
+      isSystemAccount: true,
       createdBy: userId
     }
   })
 
-  const salariesExpense = await prisma.account.create({
+  // Operating Expenses
+  const operatingExpenses = await prisma.account.create({
     data: {
       code: '5100',
-      name: 'Salaries Expense',
+      name: 'Operating Expenses',
       type: AccountType.EXPENSE,
-      description: 'Employee salaries',
+      description: 'General operating expenses',
+      parentId: expenses.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  const rentExpense = await prisma.account.create({
+  accounts.salariesExpense = await prisma.account.create({
+    data: {
+      code: '5110',
+      name: 'Salaries and Wages',
+      type: AccountType.EXPENSE,
+      description: 'Employee salaries and wages',
+      parentId: operatingExpenses.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.rentExpense = await prisma.account.create({
     data: {
       code: '5200',
       name: 'Rent Expense',
       type: AccountType.EXPENSE,
-      description: 'Office rent',
+      description: 'Office and warehouse rent',
+      parentId: operatingExpenses.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  const utilitiesExpense = await prisma.account.create({
+  accounts.utilitiesExpense = await prisma.account.create({
     data: {
       code: '5300',
       name: 'Utilities Expense',
       type: AccountType.EXPENSE,
-      description: 'Utilities and services',
+      description: 'Electricity, water, internet',
+      parentId: operatingExpenses.id,
       isActive: true,
       createdBy: userId
     }
   })
 
-  return {
-    cash,
-    accountsReceivable,
-    inventory,
-    accountsPayable,
-    capitalStock,
-    salesRevenue,
-    cogs,
-    salariesExpense,
-    rentExpense,
-    utilitiesExpense
-  }
+  accounts.officeSupplies = await prisma.account.create({
+    data: {
+      code: '5400',
+      name: 'Office Supplies Expense',
+      type: AccountType.EXPENSE,
+      description: 'Office supplies and materials',
+      parentId: operatingExpenses.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.depreciationExpense = await prisma.account.create({
+    data: {
+      code: '5500',
+      name: 'Depreciation Expense',
+      type: AccountType.EXPENSE,
+      description: 'Depreciation on fixed assets',
+      parentId: operatingExpenses.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  accounts.bankCharges = await prisma.account.create({
+    data: {
+      code: '5600',
+      name: 'Bank Charges',
+      type: AccountType.EXPENSE,
+      description: 'Bank fees and charges',
+      parentId: operatingExpenses.id,
+      isActive: true,
+      createdBy: userId
+    }
+  })
+
+  return accounts
 }
 
 async function createCustomers(adminId: string, salesId: string) {

@@ -59,7 +59,7 @@ export default function EditSupplierInvoicePage() {
         throw new Error(response.error || 'Failed to fetch supplier invoice')
       }
       
-      const invoiceData = response.data
+      const invoiceData = response?.data
       
       // Check if invoice is editable
       if (invoiceData.status !== 'DRAFT') {

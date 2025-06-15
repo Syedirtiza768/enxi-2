@@ -98,7 +98,7 @@ export default function GoodsReceiptsPage(): React.JSX.Element {
         throw new Error('Failed to fetch goods receipts')
       }
       
-      const data = response.data?.data || []
+      const data = response?.data?.data || []
       setGoodsReceipts(data)
       
       // Calculate stats

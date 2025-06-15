@@ -83,8 +83,8 @@ export default function StockOutPage() {
   const fetchItems = async (): Promise<void> => {
     try {
       const response = await apiClient<{ data: any[] }>('/api/inventory/items', { method: 'GET' })
-      if (response.ok && response.data) {
-        const itemsData = response.data?.data || response.data || []
+      if (response.ok && response?.data) {
+        const itemsData = response?.data?.data || response?.data || []
         setItems(Array.isArray(itemsData) ? itemsData : [])
       }
     } catch (error) {
@@ -102,9 +102,9 @@ export default function StockOutPage() {
       const response = await apiClient<{ movements: StockMovementWithDetails[] }>(`/api/inventory/stock-movements?${params}`, {
         method: 'GET'
       })
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         // Parse customer from notes if available
-        const movements = response.data.movements.map((m: StockMovementWithDetails) => ({
+        const movements = response?.data.movements.map((m: StockMovementWithDetails) => ({
           ...m,
           customer: m.notes?.split('|')[0]?.replace('Customer:', '').trim()
         }))

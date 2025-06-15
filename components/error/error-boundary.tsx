@@ -77,7 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
       
       console.log('Error Report:', errorReport)
-      // await api.post('/api/errors/report', errorReport)
+      // await apiClient('/api/errors/report', { method: 'POST', body: JSON.stringify(errorReport) })
     } catch (reportingError) {
       console.error('Failed to report error:', reportingError)
     }

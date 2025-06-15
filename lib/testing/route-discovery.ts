@@ -89,6 +89,19 @@ export class RouteDiscovery {
     try {
       // Note: Dynamic imports can cause webpack warnings in production builds
       // This is acceptable for testing utilities
+      // Skip dynamic imports in production build
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          path: '/api' + currentPath,
+          type: 'api',
+          methods: ['GET'], // Default assumption
+          filePath,
+          requiresAuth: await this.checkAuthRequirement(filePath),
+          hasParams: this.extractParameters(currentPath).length > 0,
+          parameters: this.extractParameters(currentPath),
+          description: this.generateApiDescription('/api' + currentPath, ['GET'])
+        };
+      }
       const content = await import(filePath);
       const methods: string[] = [];
       

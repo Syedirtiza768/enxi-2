@@ -86,7 +86,7 @@ async function healthHandler(request: NextRequest) {
     console.warn('Health check completed', {
       status: response.status,
       responseTime,
-      databaseStatus: response.database.status,
+      databaseStatus: response?.database.status,
       totalRoutes: systemHealth.totalRoutes,
       totalErrors: errorHealth.totalErrors
     });

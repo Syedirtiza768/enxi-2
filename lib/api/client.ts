@@ -29,18 +29,19 @@ export type ApiResponse<T> = ApiClientResponse<T>
  * Get auth token from localStorage or cookies
  */
 function getAuthToken(): string | null {
-  // Try reading from cookies first (most reliable)
+  // Check cookies first
   if (typeof document !== 'undefined') {
-    const cookies = document.cookie.split(';')
-    const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth-token='))
-    if (authCookie) {
-      return authCookie.split('=')[1] || null
-    }
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('auth-token='))
+      ?.split('=')[1]
+    
+    if (cookieValue) return cookieValue
   }
 
   // Fallback to localStorage
   if (typeof window !== 'undefined') {
-    const localToken = localStorage.getItem('token')
+    const localToken = localStorage.getItem('auth-token')
     if (localToken) return localToken
   }
 

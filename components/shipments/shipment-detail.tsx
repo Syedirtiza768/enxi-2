@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { api } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { 
   Package, 
@@ -107,14 +107,14 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     try {
       setLoading(true)
       setError(null)
-      const response = await api.get<Shipment>(`/api/shipments/${shipmentId}`)
-      if (response.ok && response.data) {
-        setShipment(response.data)
+      const data = await apiClient<Shipment>(`/api/shipments/${shipmentId}`)
+      if (data) {
+        setShipment(data)
         // Initialize tracking data
         setTrackingData({
-          carrier: response.data.carrier || '',
-          trackingNumber: response.data.trackingNumber || '',
-          shippingMethod: response.data.shippingMethod || '',
+          carrier: data.carrier || '',
+          trackingNumber: data.trackingNumber || '',
+          shippingMethod: data.shippingMethod || '',
         })
       } else {
         throw new Error(response.error || 'Failed to fetch shipment')
@@ -136,11 +136,11 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
 
     try {
       setActionLoading(true)
-      const response = await api.post(`/api/shipments/${shipmentId}/confirm`, {
+      const response = await apiClient(`/api/shipments/${shipmentId}/confirm`, { method: 'POST', body: JSON.stringify({
         shippedBy: user.id,
-      })
-      if (response.ok && response.data) {
-        setShipment(response.data)
+      }) })
+      if (response.ok && response?.data) {
+        setShipment(response?.data)
       } else {
         throw new Error(response.error || 'Failed to confirm shipment')
       }
@@ -158,13 +158,13 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
 
     try {
       setActionLoading(true)
-      const response = await api.post(`/api/shipments/${shipmentId}/deliver`, {
+      const response = await apiClient(`/api/shipments/${shipmentId}/deliver`, { method: 'POST', body: JSON.stringify({
         deliveredBy: user.id,
         deliveryNotes,
         recipientName,
-      })
-      if (response.ok && response.data) {
-        setShipment(response.data)
+      }) })
+      if (response.ok && response?.data) {
+        setShipment(response?.data)
       } else {
         throw new Error(response.error || 'Failed to deliver shipment')
       }
@@ -184,12 +184,12 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
 
     try {
       setActionLoading(true)
-      const response = await api.post(`/api/shipments/${shipmentId}/cancel`, {
+      const response = await apiClient(`/api/shipments/${shipmentId}/cancel`, { method: 'POST', body: JSON.stringify({
         cancelledBy: user.id,
-        reason: cancelReason.trim(),
+        reason: cancelReason.trim() }),
       })
-      if (response.ok && response.data) {
-        setShipment(response.data)
+      if (response.ok && response?.data) {
+        setShipment(response?.data)
       } else {
         throw new Error(response.error || 'Failed to cancel shipment')
       }
@@ -206,9 +206,9 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
   const handleUpdateTracking: () => Promise<void>= async(): void => {
     try {
       setActionLoading(true)
-      const response = await api.put(`/api/shipments/${shipmentId}`, trackingData)
-      if (response.ok && response.data) {
-        setShipment(response.data)
+      const response = await apiClient(`/api/shipments/${shipmentId}`, { method: 'POST', body: JSON.stringify(trackingData) })
+      if (response.ok && response?.data) {
+        setShipment(response?.data)
       } else {
         throw new Error(response.error || 'Failed to update tracking')
       }
@@ -267,10 +267,10 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     })
   }
 
-  const canConfirm = shipment?.status === 'PREPARING' || shipment?.status === 'READY'
-  const canDeliver = shipment?.status === 'SHIPPED' || shipment?.status === 'IN_TRANSIT'
-  const canCancel = shipment?.status === 'PREPARING' || shipment?.status === 'READY'
-  const canEdit = shipment?.status === 'PREPARING' || shipment?.status === 'READY'
+  const canConfirm = shipment.status === 'PREPARING' || shipment.status === 'READY'
+  const canDeliver = shipment.status === 'SHIPPED' || shipment.status === 'IN_TRANSIT'
+  const canCancel = shipment.status === 'PREPARING' || shipment.status === 'READY'
+  const canEdit = shipment.status === 'PREPARING' || shipment.status === 'READY'
 
   if (loading) {
     return (

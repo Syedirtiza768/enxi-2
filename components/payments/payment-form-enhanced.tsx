@@ -122,8 +122,8 @@ export function PaymentFormEnhanced({
     setLoadingHistory(true)
     try {
       const response = await apiClient<{ data: any }>(`/api/invoices/${invoiceId}/payments`)
-      if (response.ok && response.data) {
-        setPaymentHistory(response.data)
+      if (response.ok && response?.data) {
+        setPaymentHistory(response?.data)
       }
     } catch (error) {
       console.error('Failed to load payment history:', error)
@@ -278,7 +278,7 @@ export function PaymentFormEnhanced({
 
       // Generate and send receipt if requested
       if (formData.sendReceipt) {
-        await generateAndSendReceipt(response.data.id)
+        await generateAndSendReceipt(response?.data.id)
       }
 
       onSuccess()
@@ -329,9 +329,9 @@ export function PaymentFormEnhanced({
   const handleDownloadReceipt = async (paymentId: string) => {
     try {
       const response = await apiClient<{ data: any }>(`/api/payments/${paymentId}/receipt`)
-      if (response.ok && response.data) {
+      if (response.ok && response?.data) {
         // Handle receipt download
-        window.open(response.data.url, '_blank')
+        window.open(response?.data.url, '_blank')
       }
     } catch (error) {
       console.error('Failed to download receipt:', error)
