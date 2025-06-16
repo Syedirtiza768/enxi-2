@@ -4,14 +4,13 @@ import { CustomerService } from './customer.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
 import { 
   SalesCase,
-  SalesCaseStatus,
   Customer,
   CaseExpense,
-  ExpenseStatus,
   Prisma,
   Quotation,
   SalesOrder
 } from '@/lib/generated/prisma'
+import { SalesCaseStatus, ExpenseStatus } from '@/lib/types/shared-enums'
 
 export interface CreateSalesCaseInput {
   customerId: string
@@ -228,9 +227,9 @@ export class SalesCaseService {
 
     if (options?.search) {
       where.OR = [
-        { title: { contains: options.search, mode: 'insensitive' } },
-        { caseNumber: { contains: options.search, mode: 'insensitive' } },
-        { description: { contains: options.search, mode: 'insensitive' } }
+        { title: { contains: options.search } },
+        { caseNumber: { contains: options.search } },
+        { description: { contains: options.search } }
       ]
     }
 
@@ -730,13 +729,16 @@ export class SalesCaseService {
     return {
       customer: true,
       quotations: {
-        orderBy: { createdAt: 'desc' as const }
+        orderBy: { createdAt: 'desc' as const },
+        take: 10 // Limit to prevent memory issues
       },
       salesOrders: {
-        orderBy: { createdAt: 'desc' as const }
+        orderBy: { createdAt: 'desc' as const },
+        take: 10 // Limit to prevent memory issues
       },
       expenses: {
-        orderBy: { expenseDate: 'desc' as const }
+        orderBy: { expenseDate: 'desc' as const },
+        take: 20 // Limit to prevent memory issues
       },
       _count: {
         select: {

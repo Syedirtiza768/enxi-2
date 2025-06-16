@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
-import { SalesCaseStatus } from '@/lib/generated/prisma'
 import { prisma } from '@/lib/db/prisma'
+import { SalesCaseStatus } from '@/lib/types/shared-enums'
 
 // GET /api/sales-cases - List all sales cases with filtering
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    console.log('GET /api/sales-cases - Request received');
+    
+    // Try to get authenticated user, but provide fallback for development
+    let user: { id: string; role?: string } | null = null
+    
+    try {
+      user = await getUserFromRequest(request)
+    } catch (authError) {
+      // In development, allow unauthenticated access with limited permissions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Auth failed in development mode, using fallback user:', authError)
+        user = { id: 'dev-user', role: 'VIEWER' }
+      } else {
+        // In production, auth is required
+        throw authError
+      }
+    }
+    
     const salesCaseService = new SalesCaseService()
     const searchParams = request.nextUrl.searchParams
     
@@ -61,30 +77,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (offset) options.offset = parseInt(offset)
     }
 
-    // Apply role-based visibility rules
-    if (user.role === 'SALES_REP') {
-      // Sales reps can only see their own sales cases
-      options.assignedTo = session.user.id
-    } else if (user.role === 'MANAGER') {
-      // Managers can see their team's sales cases
-      // If no specific assignedTo is provided, we'll let the service handle team filtering
-      if (!options.assignedTo) {
-        // Get team members under this manager
-        const teamMembers = await prisma.user.findMany({
-          where: { managerId: session.user.id },
-          select: { id: true }
-        })
-        
-        // Include the manager themselves and their team members
-        const teamIds = [session.user.id, ...teamMembers.map(m => m.id)]
-        options.assignedTo = teamIds.length > 1 ? teamIds.join(',') : session.user.id
+    // Apply role-based visibility rules only if user has a role
+    if (user && user.role) {
+      if (user.role === 'SALES_REP') {
+        // Sales reps can only see their own sales cases
+        options.assignedTo = user.id
+      } else if (user.role === 'MANAGER') {
+        // Managers can see their team's sales cases
+        // If no specific assignedTo is provided, we'll let the service handle team filtering
+        if (!options.assignedTo) {
+          // Get team members under this manager
+          const teamMembers = await prisma.user.findMany({
+            where: { managerId: user.id },
+            select: { id: true }
+          })
+          
+          // Include the manager themselves and their team members
+          const teamIds = [user.id, ...teamMembers.map(m => m.id)]
+          options.assignedTo = teamIds.length > 1 ? teamIds.join(',') : user.id
+        }
       }
+      // SUPER_ADMIN, ADMIN, VIEWER can see all sales cases (no restrictions)
     }
-    // SUPER_ADMIN, ADMIN can see all sales cases (no restrictions)
 
+    console.log('Fetching sales cases with options:', options);
     const salesCases = await salesCaseService.getAllSalesCases(options)
+    console.log(`Found ${salesCases.length} sales cases`);
     
     // Get total count for pagination
+    console.log('Getting total count for pagination');
     const totalCount = await prisma.salesCase.count({
       where: {
         ...(options.customerId && { customerId: options.customerId }),
@@ -119,6 +140,19 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     })
 } catch (error) {
     console.error('Error in GET /api/sales-cases:', error);
+    
+    // Provide more detailed error information in development
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.json(
+        { 
+          error: 'Internal server error',
+          details: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { 
         error: 'Internal server error',
@@ -132,8 +166,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // POST /api/sales-cases - Create new sales case
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Try to get authenticated user, but provide fallback for development
+    let user: { id: string; role?: string } | null = null
+    
+    try {
+      user = await getUserFromRequest(request)
+    } catch (authError) {
+      // In development, allow unauthenticated access with limited permissions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Auth failed in development mode, using fallback user')
+        user = { id: 'dev-user', role: 'VIEWER' }
+      } else {
+        // In production, auth is required
+        throw authError
+      }
+    }
+    
     const body = await request.json()
     
     const { customerId, title, description, estimatedValue, assignedTo } = body
@@ -153,7 +201,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       description,
       estimatedValue,
       assignedTo,
-      createdBy: session.user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

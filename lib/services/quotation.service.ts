@@ -10,9 +10,9 @@ import {
   Quotation,
   QuotationItem,
   QuotationStatus,
-  SalesCaseStatus,
   Prisma
 } from '@/lib/generated/prisma'
+import { SalesCaseStatus } from '@/lib/types/shared-enums'
 
 export interface CreateQuotationInput {
   salesCaseId: string

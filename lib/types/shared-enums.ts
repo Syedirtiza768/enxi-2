@@ -9,14 +9,12 @@ export {
   AccountType,
   AccountStatus,
   JournalStatus,
-  SalesCaseStatus,
   QuotationStatus,
   OrderStatus,
   ShipmentStatus,
   InvoiceType,
   InvoiceStatus,
   PaymentMethod,
-  ExpenseStatus,
   ItemType,
   MovementType,
   ReservationStatus,
@@ -28,6 +26,25 @@ export {
   CountType,
   CountStatus
 } from '@/lib/generated/prisma'
+
+// Define SalesCaseStatus and ExpenseStatus as constants since they're not enums in the schema
+export const SalesCaseStatus = {
+  OPEN: 'OPEN',
+  WON: 'WON',
+  LOST: 'LOST'
+} as const
+
+export type SalesCaseStatus = typeof SalesCaseStatus[keyof typeof SalesCaseStatus]
+
+export const ExpenseStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PAID: 'PAID'
+} as const
+
+export type ExpenseStatus = typeof ExpenseStatus[keyof typeof ExpenseStatus]
 
 // Re-export type aliases for consistency
 export type {

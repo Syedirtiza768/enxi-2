@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
-import { SalesCaseStatus } from '@/lib/generated/prisma'
+import { SalesCaseStatus } from '@/lib/types/shared-enums'
 
 interface RouteParams {
   params: Promise<{ id: string }>
