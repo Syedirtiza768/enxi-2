@@ -3,6 +3,7 @@ import { BaseService } from './base.service'
 import { AuditService } from './audit.service'
 import { QuotationService } from './quotation.service'
 import { JournalEntryService } from './accounting/journal-entry.service'
+import { CompanySettingsService } from './company-settings.service'
 import { taxService } from './tax.service'
 import { 
   SalesOrder,
@@ -48,11 +49,17 @@ export interface CreateSalesOrderInput {
 }
 
 export interface CreateSalesOrderItemInput {
+  lineNumber: number
+  lineDescription?: string
+  isLineHeader: boolean
+  itemType: 'PRODUCT' | 'SERVICE'
   itemId?: string
   itemCode: string
   description: string
+  internalDescription?: string
   quantity: number
   unitPrice: number
+  cost?: number
   discount?: number
   taxRate?: number
   taxRateId?: string // Link to centralized tax configuration
@@ -75,12 +82,14 @@ export class SalesOrderService extends BaseService {
   private auditService: AuditService
   private quotationService: QuotationService
   private journalEntryService: JournalEntryService
+  private companySettingsService: CompanySettingsService
 
   constructor() {
     super('SalesOrderService')
     this.auditService = new AuditService()
     this.quotationService = new QuotationService()
     this.journalEntryService = new JournalEntryService()
+    this.companySettingsService = new CompanySettingsService()
   }
 
   async createSalesOrder(
@@ -153,11 +162,17 @@ export class SalesOrderService extends BaseService {
             return await tx.salesOrderItem.create({
               data: {
                 salesOrderId: salesOrder.id,
+                lineNumber: itemData.lineNumber,
+                lineDescription: itemData.lineDescription,
+                isLineHeader: itemData.isLineHeader,
+                itemType: itemData.itemType,
                 itemId: itemData.itemId,
                 itemCode: itemData.itemCode,
                 description: itemData.description,
+                internalDescription: itemData.internalDescription,
                 quantity: itemData.quantity,
                 unitPrice: itemData.unitPrice,
+                cost: itemData.cost,
                 discount: itemData.discount || 0,
                 taxRate: itemCalculations.effectiveTaxRate, // Use the effective tax rate from calculation
                 taxRateId: itemData.taxRateId, // Store the tax rate ID reference
@@ -207,6 +222,7 @@ export class SalesOrderService extends BaseService {
     tx?: Prisma.TransactionClient
   ): Promise<SalesOrderWithDetails | null> {
     return this.withLogging('getSalesOrder', async () => {
+      console.log('Getting sales order with ID:', id)
 
       const client = tx || prisma
 
@@ -239,9 +255,9 @@ export class SalesOrderService extends BaseService {
       })
 
       if (!salesOrder) {
-        // Sales order not found
+        console.log('Sales order not found for ID:', id)
       } else {
-        // Sales order found
+        console.log('Sales order found:', salesOrder.orderNumber)
       }
 
       return salesOrder as SalesOrderWithDetails | null
@@ -615,29 +631,118 @@ export class SalesOrderService extends BaseService {
   }
 
   private async generateOrderNumber(tx?: Prisma.TransactionClient): Promise<string> {
-    const year = new Date().getFullYear()
-    const prefix = `SO${year}`
-    
-    const client = tx || prisma
-    
-    // Get the latest order number for this year
-    const latestOrder = await client.salesOrder.findFirst({
-      where: {
-        orderNumber: {
-          startsWith: prefix
-        }
-      },
-      orderBy: {
-        orderNumber: 'desc'
-      }
-    })
+    // Use the configured order number generation
+    return await this.companySettingsService.generateSalesOrderNumber()
+  }
 
-    let nextNumber = 1
-    if (latestOrder) {
-      const currentNumber = parseInt(latestOrder.orderNumber.substring(prefix.length))
-      nextNumber = currentNumber + 1
+  async createSalesOrderFromTemplate(
+    templateId: string,
+    data: {
+      salesCaseId: string
+      customerPO?: string
+      requestedDate?: Date
+      promisedDate?: Date
+      shippingAddress?: string
+      billingAddress?: string
+      notes?: string
+      createdBy: string
     }
+  ): Promise<SalesOrderWithDetails> {
+    return this.withLogging('createSalesOrderFromTemplate', async () => {
+      const templateService = new (await import('./sales-order-template.service')).SalesOrderTemplateService()
+      
+      // Get template with items
+      const template = await templateService.getTemplate(templateId)
+      if (!template) {
+        throw new Error('Sales order template not found')
+      }
 
-    return `${prefix}${nextNumber.toString().padStart(6, '0')}`
+      // Map template items to sales order items
+      const items: CreateSalesOrderItemInput[] = template.items.map(item => ({
+        lineNumber: item.lineNumber,
+        lineDescription: item.lineDescription,
+        isLineHeader: item.isLineHeader,
+        itemType: item.itemType,
+        itemId: item.itemId,
+        itemCode: item.itemCode,
+        description: item.description,
+        internalDescription: item.internalDescription,
+        quantity: item.defaultQuantity,
+        unitPrice: item.defaultUnitPrice,
+        cost: 0, // Will be calculated based on inventory
+        discount: item.defaultDiscount || 0,
+        taxRate: item.defaultTaxRate,
+        taxRateId: item.taxRateId,
+        unitOfMeasureId: item.unitOfMeasureId
+      }))
+
+      // Calculate promised date based on template lead days
+      const promisedDate = data.promisedDate || new Date(Date.now() + template.defaultLeadDays * 24 * 60 * 60 * 1000)
+
+      // Create sales order
+      return await this.createSalesOrder({
+        salesCaseId: data.salesCaseId,
+        customerPO: data.customerPO,
+        requestedDate: data.requestedDate,
+        promisedDate,
+        paymentTerms: template.paymentTerms || undefined,
+        shippingTerms: template.shippingTerms || undefined,
+        shippingAddress: data.shippingAddress || template.shippingAddress,
+        billingAddress: data.billingAddress || template.billingAddress,
+        notes: data.notes || template.notes,
+        items,
+        createdBy: data.createdBy
+      })
+    })
+  }
+
+  async cloneSalesOrder(
+    orderId: string,
+    data: {
+      salesCaseId?: string // Optional - use same sales case if not provided
+      createdBy: string
+    }
+  ): Promise<SalesOrderWithDetails> {
+    return this.withLogging('cloneSalesOrder', async () => {
+      // Get existing order with all details
+      const existingOrder = await this.getSalesOrder(orderId)
+      if (!existingOrder) {
+        throw new Error('Sales order not found')
+      }
+
+      // Map existing items
+      const items: CreateSalesOrderItemInput[] = existingOrder.items.map(item => ({
+        lineNumber: item.lineNumber,
+        lineDescription: item.lineDescription,
+        isLineHeader: item.isLineHeader,
+        itemType: item.itemType,
+        itemId: item.itemId,
+        itemCode: item.itemCode,
+        description: item.description,
+        internalDescription: item.internalDescription,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        cost: item.cost || 0,
+        discount: item.discount,
+        taxRate: item.taxRate,
+        taxRateId: item.taxRateId,
+        unitOfMeasureId: item.unitOfMeasureId
+      }))
+
+      // Create new order
+      return await this.createSalesOrder({
+        salesCaseId: data.salesCaseId || existingOrder.salesCaseId,
+        requestedDate: existingOrder.requestedDate || undefined,
+        promisedDate: existingOrder.promisedDate || undefined,
+        paymentTerms: existingOrder.paymentTerms || undefined,
+        shippingTerms: existingOrder.shippingTerms || undefined,
+        shippingAddress: existingOrder.shippingAddress || undefined,
+        billingAddress: existingOrder.billingAddress || undefined,
+        customerPO: existingOrder.customerPO ? `${existingOrder.customerPO} (Clone)` : undefined,
+        notes: existingOrder.notes || undefined,
+        items,
+        createdBy: data.createdBy
+      })
+    })
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
+// import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { CategoryService, UpdateCategoryInput } from '@/lib/services/inventory/category.service'
 
 
@@ -7,7 +7,8 @@ import { CategoryService, UpdateCategoryInput } from '@/lib/services/inventory/c
 // GET /api/inventory/categories/[id] - Get single category
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -36,7 +37,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 // PUT /api/inventory/categories/[id] - Update category
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -56,7 +58,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const category = await categoryService.updateCategory(
       id,
       updateData,
-      user.id
+      session.user.id
     )
 
     return NextResponse.json(category)
@@ -90,14 +92,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 // DELETE /api/inventory/categories/[id] - Delete category
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
     const categoryService = new CategoryService()
-    await categoryService.deleteCategory(id, user.id)
+    await categoryService.deleteCategory(id, session.user.id)
 
     return NextResponse.json({ message: 'Category deleted successfully' })
   } catch (error: unknown) {

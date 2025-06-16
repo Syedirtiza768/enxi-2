@@ -303,6 +303,70 @@ model Quotation {
   @@index([createdAt])
 }
 
+// Quotation templates for reusable quotation structures
+model QuotationTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+  
+  // Template content
+  paymentTerms  String?
+  deliveryTerms String?
+  notes         String?
+  footerNotes   String?
+  
+  // Validity settings
+  defaultValidityDays Int @default(30)
+  
+  // Audit fields
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  items QuotationTemplateItem[]
+  
+  @@index([isActive])
+  @@index([name])
+}
+
+// Template line items
+model QuotationTemplateItem {
+  id         String            @id @default(cuid())
+  templateId String
+  template   QuotationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  
+  // Line grouping
+  lineNumber      Int     @default(1)
+  lineDescription String?
+  isLineHeader    Boolean @default(false)
+  
+  // Item details
+  itemType            ItemType @default(PRODUCT)
+  itemId              String? // Optional link to Item master
+  item                Item?    @relation("TemplateItemProduct", fields: [itemId], references: [id])
+  itemCode            String
+  description         String
+  internalDescription String?
+  defaultQuantity     Float    @default(1)
+  defaultUnitPrice    Float    @default(0)
+  unitOfMeasureId     String?
+  unitOfMeasure       UnitOfMeasure? @relation("TemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  
+  // Default rates
+  defaultDiscount Float @default(0)
+  defaultTaxRate  Float @default(0)
+  taxRateId       String?
+  taxRateConfig   TaxRate? @relation("TemplateItemTaxRate", fields: [taxRateId], references: [id])
+  
+  // Sort order
+  sortOrder Int @default(0)
+  
+  @@index([templateId])
+  @@index([itemId])
+}
+
 // Quotation line items
 model QuotationItem {
   id          String    @id @default(cuid())
@@ -418,17 +482,27 @@ model SalesOrderItem {
   salesOrderId String
   salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
 
+  // Line grouping
+  lineNumber      Int     @default(1) // Groups items into lines
+  lineDescription String? // Description for the line (shown to customer)
+  isLineHeader    Boolean @default(false) // First item in each line
+
+  // Item type
+  itemType ItemType @default(PRODUCT) // PRODUCT or SERVICE
+
   // Item details
-  itemId        String? // Optional link to Item master
-  item          Item?    @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
-  itemCode      String
-  description   String
-  quantity      Float    @default(1)
-  unitPrice     Float    @default(0)
-  discount      Float    @default(0) // Percentage
-  taxRate       Float    @default(0) // Percentage
-  taxRateId     String? // Link to tax configuration
-  taxRateConfig TaxRate? @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
+  itemId              String? // Optional link to Item master
+  item                Item?    @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
+  itemCode            String
+  description         String
+  internalDescription String? // Internal description not visible to customers
+  quantity            Float    @default(1)
+  unitPrice           Float    @default(0)
+  cost                Float?   @default(0) // Cost per unit for margin calculation
+  discount            Float    @default(0) // Percentage
+  taxRate             Float    @default(0) // Percentage
+  taxRateId           String? // Link to tax configuration
+  taxRateConfig       TaxRate? @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
 
   // Unit of measure
   unitOfMeasureId String?
@@ -452,6 +526,71 @@ model SalesOrderItem {
   stockReservations StockReservation[] @relation("OrderItemStockReservations")
 
   @@index([salesOrderId])
+  @@index([itemId])
+}
+
+// Sales Order Template for reusable order configurations
+model SalesOrderTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+  
+  // Template content
+  paymentTerms    String?
+  shippingTerms   String?
+  shippingAddress String?
+  billingAddress  String?
+  notes           String?
+  
+  // Default delivery settings
+  defaultLeadDays Int @default(7) // Default days to add for promised delivery
+  
+  // Audit fields
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  items SalesOrderTemplateItem[]
+  
+  @@index([isActive])
+  @@index([name])
+}
+
+// Template line items
+model SalesOrderTemplateItem {
+  id         String             @id @default(cuid())
+  templateId String
+  template   SalesOrderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  
+  // Line grouping
+  lineNumber      Int     @default(1)
+  lineDescription String?
+  isLineHeader    Boolean @default(false)
+  
+  // Item details
+  itemType            ItemType @default(PRODUCT)
+  itemId              String? // Optional link to Item master
+  item                Item?    @relation("SalesOrderTemplateItemProduct", fields: [itemId], references: [id])
+  itemCode            String
+  description         String
+  internalDescription String?
+  defaultQuantity     Float    @default(1)
+  defaultUnitPrice    Float    @default(0)
+  unitOfMeasureId     String?
+  unitOfMeasure       UnitOfMeasure? @relation("SalesOrderTemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  
+  // Default rates
+  defaultDiscount Float @default(0)
+  defaultTaxRate  Float @default(0)
+  taxRateId       String?
+  taxRateConfig   TaxRate? @relation("SalesOrderTemplateItemTaxRate", fields: [taxRateId], references: [id])
+  
+  // Sort order
+  sortOrder Int @default(0)
+  
+  @@index([templateId])
   @@index([itemId])
 }
 
@@ -793,7 +932,9 @@ model UnitOfMeasure {
   items              Item[]
   stockMovements     StockMovement[]
   quotationItems     QuotationItem[]     @relation("QuotationItemUoM")
+  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemUoM")
   salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemUoM")
+  salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemUoM")
   purchaseOrderItems PurchaseOrderItem[] @relation("POItemUoM")
 
   @@index([code])
@@ -848,7 +989,9 @@ model Item {
   stockLots          StockLot[]
   stockReservations  StockReservation[]  @relation("ItemStockReservations")
   quotationItems     QuotationItem[]     @relation("QuotationItemProduct")
+  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemProduct")
   salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemProduct")
+  salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemProduct")
   shipmentItems      ShipmentItem[]      @relation("ShipmentItemProduct")
   invoiceItems       InvoiceItem[]       @relation("InvoiceItemProduct")
   purchaseOrderItems PurchaseOrderItem[] @relation("POItemProduct")
@@ -1517,7 +1660,9 @@ model TaxRate {
 
   // Relations
   quotationItems     QuotationItem[]     @relation("QuotationItemTaxRate")
+  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemTaxRate")
   salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemTaxRate")
+  salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemTaxRate")
   invoiceItems       InvoiceItem[]       @relation("InvoiceItemTaxRate")
   purchaseOrderItems PurchaseOrderItem[] @relation("POItemTaxRate")
   taxExemptions      TaxExemption[]
@@ -1595,6 +1740,29 @@ model CompanySettings {
   defaultTaxRateId      String? // Default tax rate for new transactions
   taxRegistrationNumber String? // Company's tax registration number
 
+  // Quotation settings
+  quotationTermsAndConditions String? // Default T&C for quotations
+  quotationFooterNotes        String? // Default footer notes
+  quotationValidityDays       Int     @default(30) // Default validity period in days
+  quotationPrefix             String  @default("QUOT") // Prefix for quotation numbers
+  quotationNumberFormat       String  @default("PREFIX-YYYY-NNNN") // Number format pattern
+  
+  // Sales Order settings
+  orderPrefix                String  @default("SO") // Prefix for sales order numbers
+  orderNumberFormat          String  @default("PREFIX-YYYY-NNNN") // Number format pattern
+  defaultOrderPaymentTerms   String? // Default payment terms for orders
+  defaultOrderShippingTerms  String? // Default shipping terms
+  defaultShippingMethod      String? // Default shipping method
+  autoReserveInventory       Boolean @default(true) // Auto-reserve inventory on order approval
+  requireCustomerPO          Boolean @default(false) // Require customer PO for orders
+  orderApprovalThreshold     Float?  // Orders above this amount require approval
+  orderConfirmationTemplate  String? // Template for order confirmation emails
+  
+  // Display settings
+  showCompanyLogoOnQuotations Boolean @default(true)
+  showCompanyLogoOnOrders     Boolean @default(true)
+  showTaxBreakdown            Boolean @default(true)
+  
   // System flags
   isActive Boolean @default(true)
 

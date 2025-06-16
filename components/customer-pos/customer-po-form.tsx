@@ -292,7 +292,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
               type="text"
               id="customer"
               value={quotation?.salesCase?.customer?.name || ''}
-              readOnly={!!quotation}
+              readOnly
               className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 sm:text-sm"
               placeholder="Select customer"
             />
@@ -430,7 +430,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
             <textarea
               id="notes"
               name="notes"
-              value={formData.notes}
+              value={formData.notes || ''}
               onChange={handleInputChange}
               rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"

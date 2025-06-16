@@ -1,162 +1,395 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
-import { AuditService } from './audit.service'
-
-export interface CompanySettings {
-  id: string
-  companyName: string
-  address?: string | null
-  phone?: string | null
-  email?: string | null
-  website?: string | null
-  logoUrl?: string | null
-  defaultCurrency: string
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  updatedBy?: string | null
-}
+import { CompanySettings } from '@/lib/generated/prisma'
 
 export interface UpdateCompanySettingsInput {
   companyName?: string
-  address?: string | null
-  phone?: string | null
-  email?: string | null
-  website?: string | null
-  logoUrl?: string | null
+  address?: string
+  phone?: string
+  email?: string
+  website?: string
+  logoUrl?: string
   defaultCurrency?: string
-  updatedBy: string
+  defaultTaxRateId?: string
+  taxRegistrationNumber?: string
+  quotationTermsAndConditions?: string
+  quotationFooterNotes?: string
+  quotationValidityDays?: number
+  quotationPrefix?: string
+  quotationNumberFormat?: string
+  showCompanyLogoOnQuotations?: boolean
+  showTaxBreakdown?: boolean
+  // Sales Order settings
+  orderPrefix?: string
+  orderNumberFormat?: string
+  defaultOrderPaymentTerms?: string
+  defaultOrderShippingTerms?: string
+  defaultShippingMethod?: string
+  autoReserveInventory?: boolean
+  requireCustomerPO?: boolean
+  orderApprovalThreshold?: number
+  orderConfirmationTemplate?: string
+  showCompanyLogoOnOrders?: boolean
 }
 
 export class CompanySettingsService extends BaseService {
-  private auditService: AuditService
-  private static instance: CompanySettings | null = null
-
   constructor() {
     super('CompanySettingsService')
-    this.auditService = new AuditService()
   }
 
-  /**
-   * Get or create company settings (singleton pattern)
-   */
   async getSettings(): Promise<CompanySettings> {
     return this.withLogging('getSettings', async () => {
-      // Check cache first
-      if (CompanySettingsService.instance) {
-        return CompanySettingsService.instance
-      }
-
+      // Get the first active settings record
       let settings = await prisma.companySettings.findFirst({
         where: { isActive: true }
       })
 
-      // Create default settings if none exist
+      // If no settings exist, create default settings
       if (!settings) {
         settings = await prisma.companySettings.create({
           data: {
             companyName: 'EnXi ERP',
             defaultCurrency: 'USD',
-            isActive: true
+            quotationValidityDays: 30,
+            quotationPrefix: 'QUOT',
+            quotationNumberFormat: 'PREFIX-YYYY-NNNN',
+            showCompanyLogoOnQuotations: true,
+            showTaxBreakdown: true,
+            // Sales Order defaults
+            orderPrefix: 'SO',
+            orderNumberFormat: 'PREFIX-YYYY-NNNN',
+            autoReserveInventory: true,
+            requireCustomerPO: false,
+            showCompanyLogoOnOrders: true
           }
         })
-
-        await this.auditService.logAction({
-          userId: 'system',
-          action: 'CREATE',
-          entityType: 'CompanySettings',
-          entityId: settings.id,
-          metadata: { action: 'Default settings created' }
-        })
       }
 
-      CompanySettingsService.instance = settings as CompanySettings
-      return settings as CompanySettings
+      return settings
     })
   }
 
-  /**
-   * Update company settings
-   */
-  async updateSettings(data: UpdateCompanySettingsInput): Promise<CompanySettings> {
+  async updateSettings(
+    data: UpdateCompanySettingsInput & { updatedBy: string }
+  ): Promise<CompanySettings> {
     return this.withLogging('updateSettings', async () => {
-      const currentSettings = await this.getSettings()
+      const settings = await this.getSettings()
 
-      // Validate currency if provided
-      if (data.defaultCurrency) {
-        const supportedCurrencies = ['USD', 'EUR', 'GBP', 'AED', 'PKR']
-        if (!supportedCurrencies.includes(data.defaultCurrency)) {
-          throw new Error(`Unsupported currency: ${data.defaultCurrency}. Supported currencies: ${supportedCurrencies.join(', ')}`)
-        }
-      }
+      // Validate settings
+      this.validateSettings(data)
 
-      const updatedSettings = await prisma.companySettings.update({
-        where: { id: currentSettings.id },
+      // Update settings
+      const updated = await prisma.companySettings.update({
+        where: { id: settings.id },
         data: {
-          companyName: data.companyName ?? currentSettings.companyName,
-          address: data.address !== undefined ? data.address : currentSettings.address,
-          phone: data.phone !== undefined ? data.phone : currentSettings.phone,
-          email: data.email !== undefined ? data.email : currentSettings.email,
-          website: data.website !== undefined ? data.website : currentSettings.website,
-          logoUrl: data.logoUrl !== undefined ? data.logoUrl : currentSettings.logoUrl,
-          defaultCurrency: data.defaultCurrency ?? currentSettings.defaultCurrency,
-          updatedBy: data.updatedBy
+          ...data,
+          updatedAt: new Date()
         }
       })
 
-      // Clear cache
-      CompanySettingsService.instance = null
-
-      // Audit log
-      await this.auditService.logAction({
-        userId: data.updatedBy,
-        action: 'UPDATE',
-        entityType: 'CompanySettings',
-        entityId: updatedSettings.id,
-        metadata: {
-          changes: data,
-          previousCurrency: currentSettings.defaultCurrency !== data.defaultCurrency ? currentSettings.defaultCurrency : undefined
-        }
-      })
-
-      // Trigger event for other parts of the system
-      if (data.defaultCurrency && data.defaultCurrency !== currentSettings.defaultCurrency) {
-        this.logger.info('Default currency changed', {
-          from: currentSettings.defaultCurrency,
-          to: data.defaultCurrency
-        })
-      }
-
-      CompanySettingsService.instance = updatedSettings as CompanySettings
-      return updatedSettings as CompanySettings
+      return updated
     })
   }
 
-  /**
-   * Get the default currency
-   */
-  async getDefaultCurrency(): Promise<string> {
-    const settings = await this.getSettings()
-    return settings.defaultCurrency
+  async getQuotationSettings(): Promise<{
+    termsAndConditions: string | null
+    footerNotes: string | null
+    validityDays: number
+    prefix: string
+    numberFormat: string
+    showLogo: boolean
+    showTaxBreakdown: boolean
+    defaultTaxRateId: string | null
+    defaultCurrency: string
+    companyInfo: {
+      name: string
+      address: string | null
+      phone: string | null
+      email: string | null
+      website: string | null
+      logoUrl: string | null
+      taxRegistrationNumber: string | null
+    }
+  }> {
+    return this.withLogging('getQuotationSettings', async () => {
+      const settings = await this.getSettings()
+
+      return {
+        termsAndConditions: settings.quotationTermsAndConditions,
+        footerNotes: settings.quotationFooterNotes,
+        validityDays: settings.quotationValidityDays,
+        prefix: settings.quotationPrefix,
+        numberFormat: settings.quotationNumberFormat,
+        showLogo: settings.showCompanyLogoOnQuotations,
+        showTaxBreakdown: settings.showTaxBreakdown,
+        defaultTaxRateId: settings.defaultTaxRateId,
+        defaultCurrency: settings.defaultCurrency,
+        companyInfo: {
+          name: settings.companyName,
+          address: settings.address,
+          phone: settings.phone,
+          email: settings.email,
+          website: settings.website,
+          logoUrl: settings.logoUrl,
+          taxRegistrationNumber: settings.taxRegistrationNumber
+        }
+      }
+    })
   }
 
-  /**
-   * Get supported currencies
-   */
-  getSupportedCurrencies(): Array<{ code: string; name: string }> {
+  async generateQuotationNumber(): Promise<string> {
+    return this.withLogging('generateQuotationNumber', async () => {
+      const settings = await this.getSettings()
+      const format = settings.quotationNumberFormat
+      const prefix = settings.quotationPrefix
+
+      // Get current count for sequence
+      const count = await prisma.quotation.count()
+      const sequence = count + 1
+
+      // Parse format and generate number
+      let quotationNumber = format
+
+      // Replace PREFIX with actual prefix
+      quotationNumber = quotationNumber.replace('PREFIX', prefix)
+
+      // Replace YYYY with current year
+      const year = new Date().getFullYear()
+      quotationNumber = quotationNumber.replace('YYYY', year.toString())
+
+      // Replace YY with 2-digit year
+      const shortYear = year.toString().slice(-2)
+      quotationNumber = quotationNumber.replace('YY', shortYear)
+
+      // Replace MM with month
+      const month = (new Date().getMonth() + 1).toString().padStart(2, '0')
+      quotationNumber = quotationNumber.replace('MM', month)
+
+      // Replace DD with day
+      const day = new Date().getDate().toString().padStart(2, '0')
+      quotationNumber = quotationNumber.replace('DD', day)
+
+      // Replace NNNN with sequence (padded based on N count)
+      const nCount = (format.match(/N+/) || ['NNNN'])[0].length
+      const paddedSequence = sequence.toString().padStart(nCount, '0')
+      quotationNumber = quotationNumber.replace(/N+/, paddedSequence)
+
+      // Verify uniqueness
+      const existing = await prisma.quotation.findUnique({
+        where: { quotationNumber }
+      })
+
+      if (existing) {
+        // Add timestamp suffix for uniqueness
+        const timestamp = Date.now().toString().slice(-6)
+        quotationNumber = `${quotationNumber}-${timestamp}`
+      }
+
+      return quotationNumber
+    })
+  }
+
+  async getSalesOrderSettings(): Promise<{
+    prefix: string
+    numberFormat: string
+    defaultPaymentTerms: string | null
+    defaultShippingTerms: string | null
+    defaultShippingMethod: string | null
+    autoReserveInventory: boolean
+    requireCustomerPO: boolean
+    orderApprovalThreshold: number | null
+    orderConfirmationTemplate: string | null
+    showLogo: boolean
+    showTaxBreakdown: boolean
+    defaultTaxRateId: string | null
+    defaultCurrency: string
+    companyInfo: {
+      name: string
+      address: string | null
+      phone: string | null
+      email: string | null
+      website: string | null
+      logoUrl: string | null
+      taxRegistrationNumber: string | null
+    }
+  }> {
+    return this.withLogging('getSalesOrderSettings', async () => {
+      const settings = await this.getSettings()
+
+      return {
+        prefix: settings.orderPrefix,
+        numberFormat: settings.orderNumberFormat,
+        defaultPaymentTerms: settings.defaultOrderPaymentTerms,
+        defaultShippingTerms: settings.defaultOrderShippingTerms,
+        defaultShippingMethod: settings.defaultShippingMethod,
+        autoReserveInventory: settings.autoReserveInventory,
+        requireCustomerPO: settings.requireCustomerPO,
+        orderApprovalThreshold: settings.orderApprovalThreshold,
+        orderConfirmationTemplate: settings.orderConfirmationTemplate,
+        showLogo: settings.showCompanyLogoOnOrders,
+        showTaxBreakdown: settings.showTaxBreakdown,
+        defaultTaxRateId: settings.defaultTaxRateId,
+        defaultCurrency: settings.defaultCurrency,
+        companyInfo: {
+          name: settings.companyName,
+          address: settings.address,
+          phone: settings.phone,
+          email: settings.email,
+          website: settings.website,
+          logoUrl: settings.logoUrl,
+          taxRegistrationNumber: settings.taxRegistrationNumber
+        }
+      }
+    })
+  }
+
+  async generateSalesOrderNumber(): Promise<string> {
+    return this.withLogging('generateSalesOrderNumber', async () => {
+      const settings = await this.getSettings()
+      const format = settings.orderNumberFormat
+      const prefix = settings.orderPrefix
+
+      // Get current count for sequence
+      const count = await prisma.salesOrder.count()
+      const sequence = count + 1
+
+      // Parse format and generate number
+      let orderNumber = format
+
+      // Replace PREFIX with actual prefix
+      orderNumber = orderNumber.replace('PREFIX', prefix)
+
+      // Replace YYYY with current year
+      const year = new Date().getFullYear()
+      orderNumber = orderNumber.replace('YYYY', year.toString())
+
+      // Replace YY with 2-digit year
+      const shortYear = year.toString().slice(-2)
+      orderNumber = orderNumber.replace('YY', shortYear)
+
+      // Replace MM with month
+      const month = (new Date().getMonth() + 1).toString().padStart(2, '0')
+      orderNumber = orderNumber.replace('MM', month)
+
+      // Replace DD with day
+      const day = new Date().getDate().toString().padStart(2, '0')
+      orderNumber = orderNumber.replace('DD', day)
+
+      // Replace NNNN with sequence (padded based on N count)
+      const nCount = (format.match(/N+/) || ['NNNN'])[0].length
+      const paddedSequence = sequence.toString().padStart(nCount, '0')
+      orderNumber = orderNumber.replace(/N+/, paddedSequence)
+
+      // Verify uniqueness
+      const existing = await prisma.salesOrder.findUnique({
+        where: { orderNumber }
+      })
+
+      if (existing) {
+        // Add timestamp suffix for uniqueness
+        const timestamp = Date.now().toString().slice(-6)
+        orderNumber = `${orderNumber}-${timestamp}`
+      }
+
+      return orderNumber
+    })
+  }
+
+  private validateSettings(data: UpdateCompanySettingsInput): void {
+    if (data.companyName && data.companyName.length > 200) {
+      throw new Error('Company name must be 200 characters or less')
+    }
+
+    if (data.email && !this.isValidEmail(data.email)) {
+      throw new Error('Invalid email format')
+    }
+
+    if (data.website && !this.isValidUrl(data.website)) {
+      throw new Error('Invalid website URL format')
+    }
+
+    if (data.quotationValidityDays !== undefined) {
+      if (data.quotationValidityDays < 1 || data.quotationValidityDays > 365) {
+        throw new Error('Quotation validity days must be between 1 and 365')
+      }
+    }
+
+    if (data.quotationPrefix && data.quotationPrefix.length > 10) {
+      throw new Error('Quotation prefix must be 10 characters or less')
+    }
+
+    if (data.quotationNumberFormat) {
+      // Validate format contains at least one N for sequence
+      if (!data.quotationNumberFormat.includes('N')) {
+        throw new Error('Quotation number format must include at least one N for sequence')
+      }
+      if (data.quotationNumberFormat.length > 50) {
+        throw new Error('Quotation number format must be 50 characters or less')
+      }
+    }
+
+    if (data.defaultCurrency && data.defaultCurrency.length !== 3) {
+      throw new Error('Currency code must be 3 characters (e.g., USD, EUR)')
+    }
+
+    // Sales Order settings validation
+    if (data.orderPrefix && data.orderPrefix.length > 10) {
+      throw new Error('Order prefix must be 10 characters or less')
+    }
+
+    if (data.orderNumberFormat) {
+      // Validate format contains at least one N for sequence
+      if (!data.orderNumberFormat.includes('N')) {
+        throw new Error('Order number format must include at least one N for sequence')
+      }
+      if (data.orderNumberFormat.length > 50) {
+        throw new Error('Order number format must be 50 characters or less')
+      }
+    }
+
+    if (data.orderApprovalThreshold !== undefined && data.orderApprovalThreshold < 0) {
+      throw new Error('Order approval threshold cannot be negative')
+    }
+  }
+
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  getSupportedCurrencies(): Array<{ code: string; name: string; symbol: string }> {
     return [
-      { code: 'USD', name: 'US Dollar' },
-      { code: 'EUR', name: 'Euro' },
-      { code: 'GBP', name: 'British Pound' },
-      { code: 'AED', name: 'UAE Dirham' },
-      { code: 'PKR', name: 'Pakistani Rupee' }
+      { code: 'USD', name: 'US Dollar', symbol: '$' },
+      { code: 'EUR', name: 'Euro', symbol: '€' },
+      { code: 'GBP', name: 'British Pound', symbol: '£' },
+      { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
+      { code: 'PKR', name: 'Pakistani Rupee', symbol: 'Rs' },
+      { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+      { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+      { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+      { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
+      { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+      { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+      { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+      { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+      { code: 'MXN', name: 'Mexican Peso', symbol: '$' },
+      { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+      { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+      { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+      { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+      { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
+      { code: 'RUB', name: 'Russian Ruble', symbol: '₽' },
+      { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+      { code: 'ZAR', name: 'South African Rand', symbol: 'R' }
     ]
-  }
-
-  /**
-   * Clear settings cache (useful for testing or after direct DB updates)
-   */
-  clearCache(): void {
-    CompanySettingsService.instance = null
   }
 }

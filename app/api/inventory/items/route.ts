@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
+// import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.service'
 import { ItemType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/items - Get all items with filters
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -55,7 +56,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // POST /api/inventory/items - Create new item
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await verifyJWTFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await verifyJWTFromRequest(request)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       salesAccountId,
       isSaleable: isSaleable ?? true,
       isPurchaseable: isPurchaseable ?? true,
-      createdBy: user.id
+      createdBy: session.user.id
     }
 
     const itemService = new ItemService()

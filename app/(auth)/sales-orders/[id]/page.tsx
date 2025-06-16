@@ -90,7 +90,9 @@ export default function SalesOrderDetailPage() {
         })
 
         if (!response.ok) {
-          throw new Error('Failed to load sales order')
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('API Error:', response.status, errorData)
+          throw new Error(errorData.error || `Failed to load sales order: ${response.status}`)
         }
 
         const data = await response.json()

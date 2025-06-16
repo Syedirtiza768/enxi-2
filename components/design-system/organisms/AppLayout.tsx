@@ -204,7 +204,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
   useEffect(() => {
     const loadUserInfo = async (): Promise<void> => {
       // Get user info from token
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth-token')
       if (token) {
         try {
           // Decode JWT token (simple base64 decode for demo)
@@ -301,7 +301,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
         method: 'POST',
         credentials: 'include'
       })
-      localStorage.removeItem('token')
+      localStorage.removeItem('auth-token')
       router.push('/login')
     } catch (error) {
       console.error('Error:', error);

@@ -10,8 +10,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CustomerSearch } from '@/components/customers/customer-search';
 import { CleanItemEditor } from './clean-item-editor';
+import { LineBasedItemEditor } from './line-based-item-editor';
 import { useToast } from '@/components/ui/use-toast';
-import { Calendar, CreditCard, Truck, Send, Save, AlertCircle } from 'lucide-react';
+import { Calendar, CreditCard, Truck, Send, Save, AlertCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { apiClient } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format';
@@ -41,7 +42,9 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
     deliveryTerms: '',
     specialInstructions: '',
     internalNotes: '',
-    items: [] as any[]
+    items: [] as any[],
+    lines: [] as any[],
+    useLineBasedEditor: true
   });
 
   // Calculate dates based on validDays
@@ -133,36 +136,52 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
 
     setLoading(true);
     try {
+      
       const quotationData = {
         salesCaseId: selectedSalesCase,
-        validUntil: format(expiryDate, 'yyyy-MM-dd'),
+        validUntil: expiryDate.toISOString(),
         paymentTerms: formData.paymentTerms,
         deliveryTerms: formData.deliveryTerms,
         notes: formData.specialInstructions,
         internalNotes: formData.internalNotes,
-        items: formData.items.map(item => ({
+        items: formData.items.filter(item => item.name || item.description).map(item => ({
+          lineNumber: item.lineNumber || 1,
+          lineDescription: item.lineDescription || '',
+          isLineHeader: item.isLineHeader || false,
+          itemType: item.itemType || 'PRODUCT',
+          itemId: item.inventoryItemId || item.itemId,
           itemCode: item.code || item.itemCode || '',
-          description: item.description || '',
-          quantity: item.quantity || 0,
+          description: item.description || item.name || '',
+          internalDescription: item.internalDescription || '',
+          quantity: Number(item.quantity) || 1,
           unitPrice: item.unitPrice || item.price || 0,
           discount: item.discount || 0,
+          taxRate: item.taxRate || 0,
           taxRateId: item.taxRateId,
-          cost: item.cost || 0
+          unitOfMeasureId: item.unitOfMeasureId,
+          cost: item.cost || 0,
+          sortOrder: item.sortOrder
         }))
       };
 
-      const response = await apiClient<{ data: any[] }>('/api/quotations', {
+      const response = await apiClient<{ data: { id: string; quotationNumber: string } }>('/api/quotations', {
         method: 'POST',
         body: JSON.stringify(quotationData)
       });
 
       if (!response.ok) {
-        throw new Error(response.error || 'Failed to create quotation');
+        const errorMsg = response.message || response.error || 'Failed to create quotation';
+        const errorDetails = response.details ? ` Details: ${response.details}` : '';
+        throw new Error(errorMsg + errorDetails);
       }
 
       const result = response?.data;
 
-      if (status === 'sent' && result.id) {
+      if (!result || !result.id) {
+        throw new Error('Invalid response from server - no quotation ID received');
+      }
+
+      if (status === 'sent') {
         await apiClient(`/api/quotations/${result.id}/send`, {
           method: 'POST'
         });
@@ -235,10 +254,43 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
       {/* Items Section */}
       <Card>
         <CardContent className="pt-6">
-          <CleanItemEditor
-            items={formData.items}
-            onItemsChange={(items) => setFormData(prev => ({ ...prev, items }))}
-          />
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-medium">Quote Items</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setFormData(prev => ({ ...prev, useLineBasedEditor: !prev.useLineBasedEditor }))}
+              className="gap-2"
+            >
+              {formData.useLineBasedEditor ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+              {formData.useLineBasedEditor ? 'Line-based View' : 'Simple View'}
+            </Button>
+          </div>
+          
+          {formData.useLineBasedEditor ? (
+            <LineBasedItemEditor
+              lines={formData.lines}
+              onLinesChange={(lines) => {
+                // Convert lines to flat items array for backend compatibility
+                const items = lines.flatMap(line => 
+                  line.items.map((item, index) => ({
+                    ...item,
+                    lineNumber: line.lineNumber,
+                    lineDescription: line.lineDescription,
+                    isLineHeader: index === 0,
+                    sortOrder: (line.lineNumber - 1) * 100 + index
+                  }))
+                );
+                setFormData(prev => ({ ...prev, lines, items }));
+              }}
+            />
+          ) : (
+            <CleanItemEditor
+              items={formData.items}
+              onItemsChange={(items) => setFormData(prev => ({ ...prev, items }))}
+            />
+          )}
         </CardContent>
       </Card>
 

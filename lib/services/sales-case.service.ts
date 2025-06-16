@@ -8,7 +8,9 @@ import {
   Customer,
   CaseExpense,
   ExpenseStatus,
-  Prisma
+  Prisma,
+  Quotation,
+  SalesOrder
 } from '@/lib/generated/prisma'
 
 export interface CreateSalesCaseInput {
@@ -69,8 +71,8 @@ export interface SalesCaseMetrics {
 
 export interface SalesCaseWithDetails extends SalesCase {
   customer: Customer
-  quotations: Record<string, unknown>[]
-  salesOrders: Record<string, unknown>[]
+  quotations: Quotation[]
+  salesOrders: SalesOrder[]
   expenses: CaseExpense[]
   _count?: {
     quotations: number
@@ -216,14 +218,19 @@ export class SalesCaseService {
     }
 
     if (options?.assignedTo) {
-      where.assignedTo = options.assignedTo
+      // Handle comma-separated assignedTo values
+      if (options.assignedTo.includes(',')) {
+        where.assignedTo = { in: options.assignedTo.split(',') }
+      } else {
+        where.assignedTo = options.assignedTo
+      }
     }
 
     if (options?.search) {
       where.OR = [
-        { title: { contains: options.search } },
-        { caseNumber: { contains: options.search } },
-        { description: { contains: options.search } }
+        { title: { contains: options.search, mode: 'insensitive' } },
+        { caseNumber: { contains: options.search, mode: 'insensitive' } },
+        { description: { contains: options.search, mode: 'insensitive' } }
       ]
     }
 
@@ -259,7 +266,12 @@ export class SalesCaseService {
     }
 
     if (options?.assignedTo) {
-      where.assignedTo = options.assignedTo
+      // Handle comma-separated assignedTo values
+      if (options.assignedTo.includes(',')) {
+        where.assignedTo = { in: options.assignedTo.split(',') }
+      } else {
+        where.assignedTo = options.assignedTo
+      }
     }
 
     if (options?.dateFrom || options?.dateTo) {

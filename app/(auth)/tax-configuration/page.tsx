@@ -70,20 +70,30 @@ export default function TaxConfigurationPage() {
   const fetchCategories = async (): Promise<void> => {
     try {
       setLoading(true)
-      const response = await apiClient<{ data: any[] }>('/api/tax-categories', { method: 'GET' })
-      if (response.ok && response?.data) {
-        setCategories(response?.data)
+      const response = await apiClient<{ success: boolean; data: TaxCategoryWithRates[] }>('/api/tax-categories', { method: 'GET' })
+      if (response.ok && response.data) {
+        // The actual categories are nested inside response.data.data due to the API response format
+        const categoriesData = response.data.data || []
+        setCategories(Array.isArray(categoriesData) ? categoriesData : [])
       } else {
         setError(response.error || 'Failed to fetch tax categories')
+        setCategories([]) // Set to empty array on error
       }
     } catch (err) {
       setError('Failed to fetch tax categories')
+      setCategories([]) // Set to empty array on error
     } finally {
       setLoading(false)
     }
   }
 
   const handleCreateCategory = async (): Promise<void> => {
+    // Validate required fields
+    if (!categoryForm.code || !categoryForm.name) {
+      alert('Code and name are required')
+      return
+    }
+
     try {
       const response = await apiClient('/api/tax-categories', {
         method: 'POST',
@@ -105,6 +115,12 @@ export default function TaxConfigurationPage() {
   const handleUpdateCategory = async (): Promise<void> => {
     if (!editingCategory) return
     
+    // Validate required fields
+    if (!categoryForm.code || !categoryForm.name) {
+      alert('Code and name are required')
+      return
+    }
+
     try {
       const response = await apiClient(`/api/tax-categories/${editingCategory.id}`, {
         method: 'PUT',
@@ -125,6 +141,12 @@ export default function TaxConfigurationPage() {
   }
 
   const handleCreateRate = async (): Promise<void> => {
+    // Validate required fields
+    if (!rateForm.code || !rateForm.name || !rateForm.categoryId) {
+      alert('Code, name, and category are required')
+      return
+    }
+
     try {
       const response = await apiClient('/api/tax-rates', {
         method: 'POST',
@@ -162,6 +184,12 @@ export default function TaxConfigurationPage() {
   const handleUpdateRate = async (): Promise<void> => {
     if (!editingRate) return
     
+    // Validate required fields
+    if (!rateForm.code || !rateForm.name || !rateForm.categoryId) {
+      alert('Code, name, and category are required')
+      return
+    }
+
     try {
       const response = await apiClient(`/api/tax-rates/${editingRate.id}`, {
         method: 'PUT',
@@ -291,7 +319,7 @@ export default function TaxConfigurationPage() {
 
       <PageSection>
         <VStack gap="xl">
-          {categories.map((category) => (
+          {(categories || []).map((category) => (
             <Card key={category.id} variant="elevated">
               <CardContent>
                 <VStack gap="lg">
@@ -336,11 +364,11 @@ export default function TaxConfigurationPage() {
                       </Button>
                     </HStack>
 
-                    {category.taxRates.length === 0 ? (
+                    {(!category.taxRates || category.taxRates.length === 0) ? (
                       <Text size="sm" color="muted">No tax rates configured</Text>
                     ) : (
                       <div className="space-y-2">
-                        {category.taxRates.map((rate) => (
+                        {(category.taxRates || []).map((rate) => (
                           <div
                             key={rate.id}
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -399,6 +427,7 @@ export default function TaxConfigurationPage() {
                 value={categoryForm.code}
                 onChange={(e) => setCategoryForm({ ...categoryForm, code: e.target.value })}
                 placeholder="e.g., STANDARD"
+                required
               />
             </div>
             <div className="grid gap-2">
@@ -408,6 +437,7 @@ export default function TaxConfigurationPage() {
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
                 placeholder="e.g., Standard Tax"
+                required
               />
             </div>
             <div className="grid gap-2">
@@ -493,7 +523,7 @@ export default function TaxConfigurationPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="">Select category</option>
-                  {categories.map((cat) => (
+                  {(categories || []).map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
                 </select>

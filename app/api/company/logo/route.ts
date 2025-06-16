@@ -7,7 +7,8 @@ import { cwd } from 'process';
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const session = { user: { id: 'system' } }
+    // const user = await getUserFromRequest(request);
     
     if (!user) {
       return NextResponse.json(

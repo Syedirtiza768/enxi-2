@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
 
 interface QuotationPDFData {
   id: string
@@ -27,6 +27,7 @@ interface QuotationPDFData {
   paymentTerms?: string
   deliveryTerms?: string
   notes?: string
+  internalNotes?: string
   lines?: Array<{
     lineNumber: number
     lineDescription: string
@@ -35,13 +36,20 @@ interface QuotationPDFData {
   }>
   items?: Array<{
     id: string
+    lineNumber: number
+    lineDescription?: string
+    isLineHeader: boolean
     itemCode: string
     description: string
+    internalDescription?: string
     quantity: number
     unitPrice: number
     discount: number
     taxRate: number
     totalAmount: number
+    cost?: number
+    margin?: number
+    availabilityStatus?: string
   }>
 }
 
@@ -50,7 +58,7 @@ const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
-    padding: 30,
+    padding: 40,
     fontSize: 11,
     fontFamily: 'Helvetica',
   },
@@ -62,6 +70,12 @@ const styles = StyleSheet.create({
     borderBottom: 2,
     borderBottomColor: '#E5E7EB',
     paddingBottom: 20,
+  },
+  logo: {
+    width: 150,
+    height: 50,
+    marginBottom: 10,
+    objectFit: 'contain',
   },
   companyInfo: {
     flexDirection: 'column',
@@ -77,16 +91,18 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6B7280',
     lineHeight: 1.4,
+    maxWidth: 200,
   },
   quotationInfo: {
     flexDirection: 'column',
     alignItems: 'flex-end',
   },
   quotationTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#059669',
+    color: '#1F2937',
     marginBottom: 10,
+    letterSpacing: 1,
   },
   quotationNumber: {
     fontSize: 14,
@@ -112,11 +128,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   customerInfo: {
-    backgroundColor: '#F9FAFB',
-    padding: 15,
+    backgroundColor: '#FAFBFC',
+    padding: 20,
     borderRadius: 4,
-    border: 1,
+    borderWidth: 1,
     borderColor: '#E5E7EB',
+    borderStyle: 'solid',
+    borderLeft: 4,
+    borderLeftColor: '#3B82F6',
   },
   customerName: {
     fontSize: 12,
@@ -134,34 +153,46 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1F2937',
-    color: '#FFFFFF',
-    paddingVertical: 8,
+    backgroundColor: '#F3F4F6',
+    color: '#1F2937',
+    paddingVertical: 10,
     paddingHorizontal: 10,
     fontSize: 10,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    borderTop: 1,
+    borderTopColor: '#E5E7EB',
+    borderBottom: 1,
+    borderBottomColor: '#E5E7EB',
   },
   tableRow: {
     flexDirection: 'row',
     borderBottom: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingVertical: 8,
+    borderBottomColor: '#F3F4F6',
+    paddingVertical: 10,
     paddingHorizontal: 10,
     fontSize: 10,
+    minHeight: 35,
+    alignItems: 'flex-start',
   },
   tableRowAlt: {
     flexDirection: 'row',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FAFBFC',
     borderBottom: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingVertical: 8,
+    borderBottomColor: '#F3F4F6',
+    paddingVertical: 10,
     paddingHorizontal: 10,
     fontSize: 10,
+    minHeight: 35,
+    alignItems: 'flex-start',
   },
   itemCode: { width: '15%' },
-  itemDescription: { width: '35%' },
+  itemDescription: { 
+    width: '35%',
+    flexWrap: 'wrap',
+    paddingRight: 5,
+  },
   itemQuantity: { width: '10%', textAlign: 'right' },
   itemPrice: { width: '12%', textAlign: 'right' },
   itemDiscount: { width: '10%', textAlign: 'right' },
@@ -187,13 +218,13 @@ const styles = StyleSheet.create({
   totalRowBold: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    fontSize: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    fontSize: 14,
     fontWeight: 'bold',
-    backgroundColor: '#F3F4F6',
-    borderTop: 2,
-    borderTopColor: '#1F2937',
+    backgroundColor: '#1F2937',
+    color: '#FFFFFF',
+    marginTop: 5,
   },
   termsSection: {
     marginTop: 40,
@@ -208,6 +239,15 @@ const styles = StyleSheet.create({
   },
   termsColumn: {
     width: '48%',
+  },
+  lineItemText: {
+    fontSize: 10,
+    lineHeight: 1.4,
+    flexWrap: 'wrap',
+  },
+  cellText: {
+    fontSize: 10,
+    lineHeight: 1.2,
   },
   termTitle: {
     fontSize: 10,
@@ -228,12 +268,15 @@ const styles = StyleSheet.create({
   notesText: {
     fontSize: 10,
     color: '#6B7280',
-    lineHeight: 1.4,
-    backgroundColor: '#F9FAFB',
-    padding: 15,
+    lineHeight: 1.6,
+    backgroundColor: '#FAFBFC',
+    padding: 20,
     borderRadius: 4,
-    border: 1,
+    borderWidth: 1,
     borderColor: '#E5E7EB',
+    borderStyle: 'solid',
+    borderLeft: 4,
+    borderLeftColor: '#10B981',
   },
   footer: {
     position: 'absolute',
@@ -275,11 +318,16 @@ interface QuotationPDFProps {
   quotation: QuotationPDFData
   companyInfo?: {
     name: string
-    address: string
-    phone: string
-    email: string
-    website?: string
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logoUrl?: string | null
+    taxRegistrationNumber?: string | null
   }
+  showLogo?: boolean
+  showTaxBreakdown?: boolean
+  viewType?: 'client' | 'internal'
 }
 
 export const QuotationPDF: React.FC<QuotationPDFProps> = ({ 
@@ -290,7 +338,10 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     phone: '+1 (555) 123-4567',
     email: 'info@enxi-erp.com',
     website: 'www.enxi-erp.com'
-  }
+  },
+  showLogo = true,
+  showTaxBreakdown = true,
+  viewType = 'client'
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -340,11 +391,17 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.companyInfo}>
-            <Text style={styles.companyName}>{companyInfo.name}</Text>
+            {showLogo && companyInfo.logoUrl ? (
+              <Image style={styles.logo} src={companyInfo.logoUrl} />
+            ) : (
+              <Text style={styles.companyName}>{companyInfo.name}</Text>
+            )}
             <Text style={styles.companyDetails}>
-              {companyInfo.address}{'\n'}
-              {companyInfo.phone} • {companyInfo.email}
+              {companyInfo.address && `${companyInfo.address}\n`}
+              {companyInfo.phone && companyInfo.email ? `${companyInfo.phone} • ${companyInfo.email}` : 
+               companyInfo.phone || companyInfo.email || ''}
               {companyInfo.website && `\n${companyInfo.website}`}
+              {companyInfo.taxRegistrationNumber && `\nTax Reg: ${companyInfo.taxRegistrationNumber}`}
             </Text>
           </View>
           
@@ -401,8 +458,7 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
         <View style={styles.itemsTable}>
           <Text style={styles.sectionTitle}>Items & Services:</Text>
           
-          {/* Check if we have lines (client view) or items (internal view) */}
-          {quotation.lines ? (
+          {viewType === 'client' && quotation.lines ? (
             <>
               {/* Client View - Show Lines */}
               <View style={styles.tableHeader}>
@@ -415,36 +471,76 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
               {/* Line Rows */}
               {quotation.lines.map((line, index) => (
                 <View key={line.lineNumber} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                  <Text style={{ ...styles.itemCode, width: '10%' }}>{line.lineNumber}</Text>
-                  <Text style={{ ...styles.itemDescription, width: '60%' }}>{line.lineDescription || 'No description'}</Text>
-                  <Text style={{ ...styles.itemQuantity, width: '10%' }}>{line.quantity}</Text>
-                  <Text style={{ ...styles.itemTotal, width: '20%' }}>{formatCurrency(line.totalAmount)}</Text>
+                  <Text style={{ ...styles.itemCode, width: '10%' }}>
+                    <Text style={styles.cellText}>{line.lineNumber}</Text>
+                  </Text>
+                  <View style={{ ...styles.itemDescription, width: '60%' }}>
+                    <Text style={styles.lineItemText}>{line.lineDescription || 'No description'}</Text>
+                  </View>
+                  <Text style={{ ...styles.itemQuantity, width: '10%' }}>
+                    <Text style={styles.cellText}>{line.quantity}</Text>
+                  </Text>
+                  <Text style={{ ...styles.itemTotal, width: '20%' }}>
+                    <Text style={styles.cellText}>{formatCurrency(line.totalAmount)}</Text>
+                  </Text>
                 </View>
               ))}
             </>
-          ) : quotation.items ? (
+          ) : viewType === 'internal' && quotation.items ? (
             <>
-              {/* Internal View - Show Items */}
+              {/* Internal View - Show Detailed Items */}
               <View style={styles.tableHeader}>
-                <Text style={styles.itemCode}>Item Code</Text>
-                <Text style={styles.itemDescription}>Description</Text>
-                <Text style={styles.itemQuantity}>Qty</Text>
-                <Text style={styles.itemPrice}>Unit Price</Text>
-                <Text style={styles.itemDiscount}>Disc %</Text>
-                <Text style={styles.itemTax}>Tax %</Text>
-                <Text style={styles.itemTotal}>Total</Text>
+                <Text style={{ ...styles.itemCode, width: '12%' }}>Item Code</Text>
+                <Text style={{ ...styles.itemDescription, width: '28%' }}>Description</Text>
+                <Text style={{ ...styles.itemQuantity, width: '8%' }}>Qty</Text>
+                <Text style={{ ...styles.itemPrice, width: '10%' }}>Price</Text>
+                <Text style={{ ...styles.itemDiscount, width: '8%' }}>Disc</Text>
+                <Text style={{ ...styles.itemTax, width: '8%' }}>Tax</Text>
+                <Text style={{ ...styles.itemTotal, width: '12%' }}>Total</Text>
+                {viewType === 'internal' && (
+                  <>
+                    <Text style={{ ...styles.itemTotal, width: '7%' }}>Cost</Text>
+                    <Text style={{ ...styles.itemTotal, width: '7%' }}>Margin</Text>
+                  </>
+                )}
               </View>
 
               {/* Table Rows */}
               {quotation.items.map((item, index) => (
                 <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                  <Text style={styles.itemCode}>{item.itemCode}</Text>
-                  <Text style={styles.itemDescription}>{item.description}</Text>
-                  <Text style={styles.itemQuantity}>{item.quantity}</Text>
-                  <Text style={styles.itemPrice}>{formatCurrency(item.unitPrice)}</Text>
-                  <Text style={styles.itemDiscount}>{formatPercent(item.discount)}</Text>
-                  <Text style={styles.itemTax}>{formatPercent(item.taxRate)}</Text>
-                  <Text style={styles.itemTotal}>{formatCurrency(item.totalAmount)}</Text>
+                  <Text style={{ ...styles.itemCode, width: '12%' }}>
+                    <Text style={styles.cellText}>{item.itemCode}</Text>
+                  </Text>
+                  <View style={{ ...styles.itemDescription, width: '28%' }}>
+                    <Text style={styles.lineItemText}>
+                      {viewType === 'internal' && item.internalDescription ? item.internalDescription : item.description}
+                    </Text>
+                  </View>
+                  <Text style={{ ...styles.itemQuantity, width: '8%' }}>
+                    <Text style={styles.cellText}>{item.quantity}</Text>
+                  </Text>
+                  <Text style={{ ...styles.itemPrice, width: '10%' }}>
+                    <Text style={styles.cellText}>{formatCurrency(item.unitPrice)}</Text>
+                  </Text>
+                  <Text style={{ ...styles.itemDiscount, width: '8%' }}>
+                    <Text style={styles.cellText}>{formatPercent(item.discount)}</Text>
+                  </Text>
+                  <Text style={{ ...styles.itemTax, width: '8%' }}>
+                    <Text style={styles.cellText}>{formatPercent(item.taxRate)}</Text>
+                  </Text>
+                  <Text style={{ ...styles.itemTotal, width: '12%' }}>
+                    <Text style={styles.cellText}>{formatCurrency(item.totalAmount)}</Text>
+                  </Text>
+                  {viewType === 'internal' && (
+                    <>
+                      <Text style={{ ...styles.itemTotal, width: '7%' }}>
+                        {item.cost ? formatCurrency(item.cost) : '-'}
+                      </Text>
+                      <Text style={{ ...styles.itemTotal, width: '7%' }}>
+                        {item.margin !== undefined ? formatPercent(item.margin) : '-'}
+                      </Text>
+                    </>
+                  )}
                 </View>
               ))}
             </>
@@ -458,17 +554,21 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
               <Text>Subtotal:</Text>
               <Text>{formatCurrency(quotation.subtotal)}</Text>
             </View>
-            <View style={styles.totalRow}>
-              <Text>Discount:</Text>
-              <Text>-{formatCurrency(quotation.discountAmount)}</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text>Tax:</Text>
-              <Text>{formatCurrency(quotation.taxAmount)}</Text>
-            </View>
+            {quotation.discountAmount > 0 && (
+              <View style={styles.totalRow}>
+                <Text>Discount:</Text>
+                <Text>-{formatCurrency(quotation.discountAmount)}</Text>
+              </View>
+            )}
+            {showTaxBreakdown && (
+              <View style={styles.totalRow}>
+                <Text>Tax:</Text>
+                <Text>{formatCurrency(quotation.taxAmount)}</Text>
+              </View>
+            )}
             <View style={styles.totalRowBold}>
-              <Text>Total Amount:</Text>
-              <Text>{formatCurrency(quotation.totalAmount)}</Text>
+              <Text style={{color: '#FFFFFF'}}>Total Amount:</Text>
+              <Text style={{color: '#FFFFFF'}}>{formatCurrency(quotation.totalAmount)}</Text>
             </View>
           </View>
         </View>
@@ -500,12 +600,19 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
               <Text style={styles.notesText}>{quotation.notes}</Text>
             </View>
           )}
+          
+          {viewType === 'internal' && quotation.internalNotes && (
+            <View style={styles.notesSection}>
+              <Text style={styles.termTitle}>Internal Notes:</Text>
+              <Text style={styles.notesText}>{quotation.internalNotes}</Text>
+            </View>
+          )}
         </View>
 
         {/* Footer */}
         <Text style={styles.footer}>
           This quotation is valid until {formatDate(quotation.validUntil)}. 
-          All prices are in USD and exclude applicable taxes unless otherwise stated.{'\n'}
+          All prices are in {quotation.currency || 'USD'} and exclude applicable taxes unless otherwise stated.{'\n'}
           Generated on {formatDate(new Date())} • {companyInfo.name}
         </Text>
       </Page>

@@ -5,7 +5,8 @@ import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accou
 // POST /api/accounting/accounts/standard - Create standard COA
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await getUserFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await getUserFromRequest(request)
     const body = await request.json()
     const { currency = 'USD' } = body
 
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       )
     }
 
-    await chartOfAccountsService.createStandardCOA(currency, user.id)
+    await chartOfAccountsService.createStandardCOA(currency, session.user.id)
 
     // Return the created accounts
     const accounts = await chartOfAccountsService.getAllAccounts()

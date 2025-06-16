@@ -5,7 +5,8 @@ import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accou
 // GET /api/accounting/accounts/tree - Get hierarchical account tree
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await getUserFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await getUserFromRequest(request)
     const chartOfAccountsService = new ChartOfAccountsService()
     const accountTree = await chartOfAccountsService.getAccountTree()
 

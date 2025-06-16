@@ -53,12 +53,16 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     
     setLoading(true);
     try {
-      const response = await apiClient<{ data: any }>(`/api/inventory/items?search=${searchQuery}`);
-      if (response.ok && response?.data) {
-        setInventoryItems(response?.data);
+      const response = await apiClient<{ data: any[] }>(`/api/inventory/items?search=${searchQuery}`);
+      
+      if (response.ok && response.data) {
+        setInventoryItems(response.data);
+      } else {
+        setInventoryItems([]);
       }
     } catch (error) {
       console.error('Failed to search inventory:', error);
+      setInventoryItems([]); // Reset to empty array on error
     } finally {
       setLoading(false);
     }
@@ -80,14 +84,15 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
       inventoryItemId: item.id,
       code: item.code,
       name: item.name,
-      description: item.description || '',
+      description: item.description || item.name || '',
       quantity: 1,
-      unitPrice: item.sellingPrice || 0,
-      cost: item.cost || 0,
+      unitPrice: item.listPrice || 0,
+      cost: item.standardCost || 0,
       discount: 0,
       taxRateId: '',
-      subtotal: item.sellingPrice || 0,
-      total: item.sellingPrice || 0
+      unitOfMeasureId: item.unitOfMeasureId,
+      subtotal: item.listPrice || 0,
+      total: item.listPrice || 0
     };
 
     onItemsChange([...items, newItem]);
@@ -362,8 +367,10 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="font-medium">{formatCurrency(item.sellingPrice)}</div>
-                            <div className="text-sm text-gray-500">Stock: {item.currentStock}</div>
+                            <div className="font-medium">{formatCurrency(item.listPrice || 0)}</div>
+                            {item.trackInventory && (
+                              <div className="text-sm text-gray-500">Stock: {item.currentStock || 0}</div>
+                            )}
                           </div>
                         </div>
                       </Card>

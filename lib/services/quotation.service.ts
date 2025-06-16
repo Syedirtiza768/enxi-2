@@ -4,6 +4,8 @@ import { AuditService } from './audit.service'
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 import { SalesCaseService } from './sales-case.service'
 import { taxService } from './tax.service'
+import { CompanySettingsService } from './company-settings.service'
+import { QuotationTemplateService } from './quotation-template.service'
 import { 
   Quotation,
   QuotationItem,
@@ -14,12 +16,13 @@ import {
 
 export interface CreateQuotationInput {
   salesCaseId: string
-  validUntil: Date
+  validUntil?: Date // Optional, will use settings default
   paymentTerms?: string
   deliveryTerms?: string
   notes?: string
   internalNotes?: string
   items: CreateQuotationItemInput[]
+  templateId?: string // Optional template to use
 }
 
 export interface CreateQuotationItemInput {
@@ -68,41 +71,132 @@ export interface QuotationWithDetails extends Quotation {
 export class QuotationService extends BaseService {
   private auditService: AuditService
   private salesCaseService: SalesCaseService
+  private settingsService: CompanySettingsService
+  private templateService: QuotationTemplateService
 
   constructor() {
     super('QuotationService')
     this.auditService = new AuditService()
     this.salesCaseService = new SalesCaseService()
+    this.settingsService = new CompanySettingsService()
+    this.templateService = new QuotationTemplateService()
   }
 
   async createQuotation(
     data: CreateQuotationInput & { createdBy: string }
   ): Promise<QuotationWithDetails> {
     return this.withLogging('createQuotation', async () => {
+      // Get quotation settings
+      const settings = await this.settingsService.getQuotationSettings()
+
+      // If template is specified, load template data
+      if (data.templateId) {
+        const template = await this.templateService.getTemplate(data.templateId)
+        if (template) {
+          // Merge template data with input data
+          data.paymentTerms = data.paymentTerms || template.paymentTerms || null
+          data.deliveryTerms = data.deliveryTerms || template.deliveryTerms || null
+          data.notes = data.notes || template.notes || null
+          
+          // If no items provided, use template items
+          if (!data.items || data.items.length === 0) {
+            data.items = template.items.map(item => ({
+              lineNumber: item.lineNumber,
+              lineDescription: item.lineDescription || undefined,
+              isLineHeader: item.isLineHeader,
+              itemType: item.itemType,
+              itemId: item.itemId || undefined,
+              itemCode: item.itemCode,
+              description: item.description,
+              internalDescription: item.internalDescription || undefined,
+              quantity: item.defaultQuantity,
+              unitPrice: item.defaultUnitPrice,
+              unitOfMeasureId: item.unitOfMeasureId || undefined,
+              cost: undefined,
+              discount: item.defaultDiscount || undefined,
+              taxRate: item.defaultTaxRate || undefined,
+              taxRateId: item.taxRateId || undefined,
+              sortOrder: item.sortOrder || undefined
+            }))
+          }
+        }
+      }
+
+      // Set default validity if not provided
+      if (!data.validUntil) {
+        const validityDays = settings.validityDays
+        const validUntil = new Date()
+        validUntil.setDate(validUntil.getDate() + validityDays)
+        data.validUntil = validUntil
+      }
+
+      // Apply default terms from settings if not provided
+      if (!data.paymentTerms && settings.termsAndConditions) {
+        data.paymentTerms = settings.termsAndConditions
+      }
+
       // Validate header fields
-      await this.validateQuotationHeader(data)
+      try {
+        await this.validateQuotationHeader(data)
+      } catch (error) {
+        console.error('Header validation failed:', error)
+        throw error
+      }
 
       // Validate sales case exists and is open
-      const salesCase = await this.salesCaseService.getSalesCase(data.salesCaseId)
-      if (!salesCase) {
-        throw new Error('Sales case not found')
-      }
-      if (salesCase.status !== SalesCaseStatus.OPEN && salesCase.status !== SalesCaseStatus.IN_PROGRESS) {
-        throw new Error('Can only create quotations for open or in-progress sales cases')
+      let salesCase
+      try {
+        salesCase = await this.salesCaseService.getSalesCase(data.salesCaseId)
+        console.log('Sales case retrieved:', { id: salesCase?.id, status: salesCase?.status, hasCustomer: !!salesCase?.customer })
+        if (!salesCase) {
+          throw new Error('Sales case not found')
+        }
+        if (salesCase.status !== SalesCaseStatus.OPEN && salesCase.status !== SalesCaseStatus.IN_PROGRESS) {
+          throw new Error('Can only create quotations for open or in-progress sales cases')
+        }
+      } catch (error) {
+        console.error('Sales case validation failed:', error)
+        throw error
       }
 
       // Validate and enrich items with line grouping
-      await this.validateQuotationItems(data.items)
-      const enrichedItems = await this.enrichQuotationItems(data.items)
+      try {
+        await this.validateQuotationItems(data.items)
+      } catch (error) {
+        console.error('Item validation failed:', error)
+        throw error
+      }
+      
+      // Temporarily skip enrichment to isolate the issue
+      const enrichedItems = data.items
+      const itemsWithAvailability = enrichedItems
+      
+      // TODO: Re-enable after debugging
+      // const enrichedItems = await this.enrichQuotationItems(data.items)
+      // const itemsWithAvailability = await this.checkInventoryAvailability(enrichedItems)
 
-      // Check inventory availability and calculate FIFO costs
-      const itemsWithAvailability = await this.checkInventoryAvailability(enrichedItems)
-
-      // Generate quotation number
-      const quotationNumber = await this.generateQuotationNumber()
+      // Generate quotation number using settings
+      let quotationNumber
+      try {
+        quotationNumber = await this.settingsService.generateQuotationNumber()
+        console.log('Generated quotation number:', quotationNumber)
+      } catch (error) {
+        console.error('Failed to generate quotation number:', error)
+        throw error
+      }
 
       // Calculate totals
-      const calculations = await this.calculateTotals(itemsWithAvailability, salesCase.customer.id)
+      let calculations
+      try {
+        if (!salesCase.customer) {
+          throw new Error('Sales case does not have a customer')
+        }
+        calculations = await this.calculateTotals(itemsWithAvailability, salesCase.customer.id)
+        console.log('Calculations:', calculations)
+      } catch (error) {
+        console.error('Failed to calculate totals:', error)
+        throw error
+      }
 
       // Create quotation with items in a transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -131,7 +225,6 @@ export class QuotationService extends BaseService {
               create: itemsWithAvailability.map((item, index) => ({
                 ...item,
                 ...itemTotalsArray[index],
-                taxRate: itemTotalsArray[index].effectiveTaxRate, // Store the effective tax rate
                 sortOrder: item.sortOrder ?? index
               }))
             }
@@ -342,7 +435,6 @@ export class QuotationService extends BaseService {
               create: data.items.map((item, index) => ({
                 ...item,
                 ...itemTotalsArray[index],
-                taxRate: itemTotalsArray[index].effectiveTaxRate, // Store the effective tax rate
                 sortOrder: item.sortOrder ?? index
               }))
             }
@@ -752,7 +844,6 @@ export class QuotationService extends BaseService {
     discountAmount: number
     taxAmount: number
     totalAmount: number
-    effectiveTaxRate: number
   }> {
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * (item.discount || 0) / 100
@@ -784,8 +875,7 @@ export class QuotationService extends BaseService {
       subtotal,
       discountAmount,
       taxAmount,
-      totalAmount,
-      effectiveTaxRate
+      totalAmount
     }
   }
 
@@ -935,24 +1025,22 @@ export class QuotationService extends BaseService {
       throw new Error('Sales case ID is required')
     }
     
-    // Validate validUntil date
-    if (!data.validUntil) {
-      throw new Error('Valid until date is required')
-    }
-    
-    const validUntilDate = new Date(data.validUntil)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    if (validUntilDate <= today) {
-      throw new Error('Valid until date must be in the future')
-    }
-    
-    // Maximum 180 days in future
-    const maxDate = new Date()
-    maxDate.setDate(maxDate.getDate() + 180)
-    if (validUntilDate > maxDate) {
-      throw new Error('Valid until date should not be more than 6 months in the future')
+    // Validate validUntil date if provided
+    if (data.validUntil) {
+      const validUntilDate = new Date(data.validUntil)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      
+      if (validUntilDate <= today) {
+        throw new Error('Valid until date must be in the future')
+      }
+      
+      // Maximum 365 days in future
+      const maxDate = new Date()
+      maxDate.setDate(maxDate.getDate() + 365)
+      if (validUntilDate > maxDate) {
+        throw new Error('Valid until date should not be more than 1 year in the future')
+      }
     }
     
     // Validate payment terms
@@ -1099,30 +1187,140 @@ export class QuotationService extends BaseService {
     }
   }
 
-  private async generateQuotationNumber(): Promise<string> {
-    return this.withLogging('generateQuotationNumber', async () => {
-      // Generate a unique quotation number using timestamp and random suffix
-      const timestamp = Date.now()
-      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-    
-    // First try to get the count of existing quotations for numbering
-    const count = await prisma.quotation.count()
-    const sequence = (count + 1).toString().padStart(4, '0')
-    
-    // Create a unique number that combines sequence and timestamp
-    const quotationNumber = `QUOT-${sequence}-${timestamp}${randomSuffix}`
-    
-    // Verify it doesn't exist (extra safety)
-    const existing = await prisma.quotation.findUnique({
-      where: { quotationNumber }
+  async getQuotationPDFData(quotationId: string, viewType: 'client' | 'internal' = 'client'): Promise<{
+    quotation: any
+    companyInfo: any
+    showLogo: boolean
+    showTaxBreakdown: boolean
+  }> {
+    return this.withLogging('getQuotationPDFData', async () => {
+      const settings = await this.settingsService.getQuotationSettings()
+      
+      // Get quotation data based on view type
+      const quotationData = viewType === 'client' 
+        ? await this.getQuotationClientView(quotationId)
+        : await this.getQuotationInternalView(quotationId)
+
+      // Add footer notes from settings if not present
+      if (!quotationData.notes && settings.footerNotes) {
+        quotationData.notes = settings.footerNotes
+      }
+
+      return {
+        quotation: quotationData,
+        companyInfo: settings.companyInfo,
+        showLogo: settings.showLogo,
+        showTaxBreakdown: settings.showTaxBreakdown
+      }
     })
-    
-    if (existing) {
-      // If by some chance it exists, recursively try again
-      return this.generateQuotationNumber()
-    }
-    
-      return quotationNumber
+  }
+
+  async createQuotationFromTemplate(
+    templateId: string,
+    salesCaseId: string,
+    userId: string,
+    overrides?: Partial<CreateQuotationInput>
+  ): Promise<QuotationWithDetails> {
+    return this.withLogging('createQuotationFromTemplate', async () => {
+      const template = await this.templateService.getTemplate(templateId)
+      if (!template) {
+        throw new Error('Template not found')
+      }
+
+      // Build quotation input from template
+      const quotationInput: CreateQuotationInput & { createdBy: string } = {
+        salesCaseId,
+        templateId,
+        validUntil: undefined, // Will use settings default
+        paymentTerms: template.paymentTerms || undefined,
+        deliveryTerms: template.deliveryTerms || undefined,
+        notes: template.notes || undefined,
+        internalNotes: undefined,
+        items: template.items.map(item => ({
+          lineNumber: item.lineNumber,
+          lineDescription: item.lineDescription || undefined,
+          isLineHeader: item.isLineHeader,
+          itemType: item.itemType,
+          itemId: item.itemId || undefined,
+          itemCode: item.itemCode,
+          description: item.description,
+          internalDescription: item.internalDescription || undefined,
+          quantity: item.defaultQuantity,
+          unitPrice: item.defaultUnitPrice,
+          unitOfMeasureId: item.unitOfMeasureId || undefined,
+          cost: undefined,
+          discount: item.defaultDiscount || undefined,
+          taxRate: item.defaultTaxRate || undefined,
+          taxRateId: item.taxRateId || undefined,
+          sortOrder: item.sortOrder || undefined
+        })),
+        createdBy: userId,
+        ...overrides
+      }
+
+      return this.createQuotation(quotationInput)
+    })
+  }
+
+  async cloneQuotation(
+    quotationId: string,
+    userId: string
+  ): Promise<QuotationWithDetails> {
+    return this.withLogging('cloneQuotation', async () => {
+      // Get the original quotation
+      const originalQuotation = await this.getQuotation(quotationId)
+      if (!originalQuotation) {
+        throw new Error('Quotation not found')
+      }
+
+      // Build new quotation input from the original
+      const quotationInput: CreateQuotationInput & { createdBy: string } = {
+        salesCaseId: originalQuotation.salesCaseId,
+        validUntil: undefined, // Will use settings default for new validity period
+        paymentTerms: originalQuotation.paymentTerms || undefined,
+        deliveryTerms: originalQuotation.deliveryTerms || undefined,
+        notes: originalQuotation.notes || undefined,
+        internalNotes: originalQuotation.internalNotes || undefined,
+        items: originalQuotation.items.map(item => ({
+          lineNumber: item.lineNumber,
+          lineDescription: item.lineDescription || undefined,
+          isLineHeader: item.isLineHeader,
+          itemType: item.itemType,
+          itemId: item.itemId || undefined,
+          itemCode: item.itemCode,
+          description: item.description,
+          internalDescription: item.internalDescription || undefined,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          unitOfMeasureId: item.unitOfMeasureId || undefined,
+          cost: item.cost || undefined,
+          discount: item.discount || undefined,
+          taxRate: item.taxRate || undefined,
+          taxRateId: item.taxRateId || undefined,
+          sortOrder: item.sortOrder || undefined
+        })),
+        createdBy: userId
+      }
+
+      // Create the new quotation (will automatically get a new version number)
+      const newQuotation = await this.createQuotation(quotationInput)
+
+      // Audit log the clone action
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.CREATE,
+        entityType: EntityType.QUOTATION,
+        entityId: newQuotation.id,
+        afterData: { clonedFrom: quotationId },
+        metadata: {
+          operation: 'clone_quotation',
+          originalQuotationId: quotationId,
+          originalVersion: originalQuotation.version,
+          newVersion: newQuotation.version
+        }
+      })
+
+      return newQuotation
     })
   }
 }

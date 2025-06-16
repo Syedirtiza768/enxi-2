@@ -28,6 +28,7 @@
     "seed:marine": "tsx prisma/seed-uae-marine-comprehensive-fixed.ts",
     "seed:admin": "tsx scripts/seed/seed-admin.ts",
     "seed:accounting": "tsx prisma/seed-accounting.ts",
+    "seed:production": "tsx scripts/seed-production.ts",
     "setup:accounts": "tsx scripts/setup-chart-of-accounts.ts",
     "test:integration": "tsx scripts/test-integration.ts",
     "test:ui-backend": "tsx scripts/test-ui-backend-integration.ts",

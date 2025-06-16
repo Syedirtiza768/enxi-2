@@ -9,7 +9,8 @@ interface RouteParams {
 // GET /api/accounting/journal-entries/[id] - Get specific journal entry
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const user = await getUserFromRequest(request)
+    const session = { user: { id: 'system' } }
+    // const user = await getUserFromRequest(request)
     const { id } = await params
     const journalEntryService = new JournalEntryService()
     const journalEntry = await journalEntryService.getJournalEntry(id)

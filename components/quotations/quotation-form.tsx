@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Save, X, FileText, Clock, Edit3, CheckCircle, AlertCircle, AlertTriangle, Info, CheckCircle2 } from 'lucide-react'
-import { LineItemEditorV2 } from './line-item-editor-v2'
+import { CleanLineEditor } from './clean-line-editor'
 import { ClientQuotationView } from './client-quotation-view'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient, type ApiResponse } from '@/lib/api/client'
@@ -94,7 +94,7 @@ interface SalesCase {
 
 interface QuotationFormProps {
   quotation?: Quotation & { lines?: any[] }
-  onSubmit: (quotation: Quotation) => Promise<void>
+  onSubmit: (quotation: Partial<Quotation>) => Promise<void>
   onCancel: () => void
   mode?: 'create' | 'edit' | 'preview'
   autoSave?: boolean
@@ -151,7 +151,7 @@ export function QuotationForm({
   const [selectedSalesCase, setSelectedSalesCase] = useState<SalesCase | null>(null)
 
   // Auto-save timer and refs
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null)
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const hasUnsavedChangesRef = useRef(false)
 
@@ -162,20 +162,21 @@ export function QuotationForm({
         setLoading(true)
         setError(null)
         
-        const response = await apiClient<SalesCase[]>('/api/sales-cases?status=OPEN', {
+        const response = await apiClient<{ data: SalesCase[] }>('/api/sales-cases?status=OPEN', {
           method: 'GET'
         })
         
-        if (!('data' in response)) {
+        if (!response.ok) {
           throw new Error(response.error || 'Failed to load sales cases')
         }
         
-        const salesCasesData = response?.data || []
-        setSalesCases(Array.isArray(salesCasesData) ? salesCasesData : [])
+        const salesCasesData = response.data?.data || []
+        const salesCasesArray = Array.isArray(salesCasesData) ? salesCasesData : []
+        setSalesCases(salesCasesArray)
         
         // Set selected sales case if editing
-        if (formData.salesCaseId) {
-          const salesCase = salesCasesData.find((sc: SalesCase) => sc.id === formData.salesCaseId)
+        if (formData.salesCaseId && salesCasesArray.length > 0) {
+          const salesCase = salesCasesArray.find((sc: SalesCase) => sc.id === formData.salesCaseId)
           if (salesCase) {
             setSelectedSalesCase(salesCase)
           }
@@ -414,18 +415,26 @@ export function QuotationForm({
 
   // Auto-save functionality
   useEffect(() => {
-    if (autoSave && hasUnsavedChanges && !saving && formData.id) {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer)
+    if (autoSave && hasUnsavedChanges && !saving) {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current)
       }
 
       const timer = setTimeout(async () => {
-        // Only auto-save if form is valid
-        if (validateForm()) {
+        // Only auto-save if form has minimum required data
+        if (formData.salesCaseId && formData.items.length > 0) {
           try {
             setSaving(true)
             setAutoSaveError(null)
-            await onSubmit({ ...formData, status: 'DRAFT' })
+            // Only send fields that the PUT endpoint accepts
+            const updateData = {
+              validUntil: formData.validUntil,
+              paymentTerms: formData.paymentTerms,
+              deliveryTerms: formData.deliveryTerms,
+              notes: formData.notes,
+              items: formData.items
+            }
+            await onSubmit(updateData)
             setHasUnsavedChanges(false)
             setLastAutoSave(new Date())
           } catch (error) {
@@ -437,41 +446,53 @@ export function QuotationForm({
         }
       }, 3000) // Auto-save after 3 seconds of inactivity
 
-      setAutoSaveTimer(timer)
+      autoSaveTimerRef.current = timer
     }
 
     return () => {
-      if (autoSaveTimer) {
-        clearTimeout(autoSaveTimer)
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current)
       }
     }
-  }, [autoSave, hasUnsavedChanges, formData, onSubmit, saving, autoSaveTimer, validateForm])
+  }, [autoSave, hasUnsavedChanges, formData, onSubmit, saving])
 
   // Handle form submission
   const handleSubmit = async (status: 'DRAFT' | 'SENT' = 'SENT') => {
-    // Mark all fields as touched to show all validation errors
-    const allFields = ['salesCaseId', 'validUntil', 'paymentTerms', 'deliveryTerms', 'notes', 'internalNotes', 'items']
-    allFields.forEach(field => setTouchedFields(prev => new Set(prev).add(field)))
-    
-    if (!validateForm(undefined, true)) {
-      // Scroll to first error
-      const firstErrorField = document.querySelector('[data-has-error="true"]')
-      if (firstErrorField) {
-        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // For drafts, only require minimal validation
+    if (status === 'DRAFT') {
+      // Just ensure we have either a sales case or some items
+      if (!formData.salesCaseId && formData.items.length === 0) {
+        setError('Please select a sales case or add at least one item to save as draft')
+        return
       }
-      return
+    } else {
+      // For sending, do full validation
+      const allFields = ['salesCaseId', 'validUntil', 'paymentTerms', 'deliveryTerms', 'notes', 'internalNotes', 'items']
+      allFields.forEach(field => setTouchedFields(prev => new Set(prev).add(field)))
+      
+      if (!validateForm(undefined, true)) {
+        // Scroll to first error
+        const firstErrorField = document.querySelector('[data-has-error="true"]')
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+        return
+      }
     }
 
     try {
       setSaving(true)
       setError(null)
       
-      const totals = calculateTotals(formData.items)
-      await onSubmit({
-        ...formData,
-        status,
-        ...totals
-      })
+      // Only send fields that the PUT endpoint accepts
+      const updateData = {
+        validUntil: formData.validUntil,
+        paymentTerms: formData.paymentTerms,
+        deliveryTerms: formData.deliveryTerms,
+        notes: formData.notes,
+        items: formData.items
+      }
+      await onSubmit(updateData)
       
       setHasUnsavedChanges(false)
       setShowSuccessMessage(true)
@@ -998,31 +1019,28 @@ export function QuotationForm({
                 </p>
               )}
             </div>
-            {viewMode === 'internal' ? (
-              <LineItemEditorV2
-                quotationItems={formData.items}
-                onChange={(items) => {
-                  updateFormData({ items })
-                  setTouchedFields(prev => new Set(prev).add('items'))
-                  
-                  // Validate items immediately
-                  const error = validateField('items', items)
-                  if (error) {
-                    setValidationErrors(prev => ({ ...prev, items: error }))
-                    setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
-                  } else {
-                    setValidationErrors(prev => {
-                      const { items, ...rest } = prev
-                      return rest
-                    })
-                    setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
+            <CleanLineEditor
+              items={formData.items}
+              onChange={(items) => {
+                updateFormData({ items })
+                setTouchedFields(prev => new Set(prev).add('items'))
+                
+                // Validate items immediately
+                const error = validateField('items', items)
+                if (error) {
+                  setValidationErrors(prev => ({ ...prev, items: error }))
+                  setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
+                } else {
+                  setValidationErrors(prev => {
+                    const { items, ...rest } = prev
+                    return rest
+                  })
+                  setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
                   }
                 }}
+                viewMode={viewMode}
                 disabled={isPreview}
               />
-            ) : (
-              <ClientQuotationView lines={quotation?.lines || []} items={formData.items} />
-            )}
             {validationErrors.items && (
               <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-800 flex items-center">
@@ -1131,13 +1149,13 @@ export function QuotationForm({
                 
                 <button
                   onClick={() => handleSubmit('DRAFT')}
-                  disabled={saving || !isFormValid}
+                  disabled={saving || (!formData.salesCaseId && formData.items.length === 0)}
                   className={`w-full flex items-center justify-center px-4 py-2 border rounded-md transition-colors ${
-                    isFormValid
+                    formData.salesCaseId || formData.items.length > 0
                       ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
                       : 'border-gray-200 text-gray-400 cursor-not-allowed'
                   } disabled:opacity-50`}
-                  title={!isFormValid ? 'Please fill in all required fields' : ''}
+                  title={(!formData.salesCaseId && formData.items.length === 0) ? 'Select a sales case or add items to save as draft' : ''}
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Save as Draft

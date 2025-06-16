@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit } from 'lucide-react'
 import { PageLayout, PageHeader, PageSection, VStack, Grid } from '@/components/design-system'
 import { Card } from '@/components/ui/card'
@@ -56,6 +57,7 @@ interface SalesCase {
 
 export default function QuotationsPage(): React.JSX.Element {
   // Hooks
+  const router = useRouter()
   const { formatCurrency } = useCurrency()
   
   // State management
@@ -147,7 +149,7 @@ export default function QuotationsPage(): React.JSX.Element {
 
   // Helper functions
 
-  const getStatusBadge = (status: Quotation['status'], validUntil: string): void => {
+  const getStatusBadge = (status: Quotation['status'], validUntil: string): React.ReactElement => {
     const isExpired = new Date(validUntil) < new Date() && status === 'SENT'
     
     if (isExpired) {
@@ -172,16 +174,16 @@ export default function QuotationsPage(): React.JSX.Element {
 
   // Event handlers
   const handleQuotationSelect = (quotation: Quotation): void => {
-    window.location.href = `/quotations/${quotation.id}`
+    router.push(`/quotations/${quotation.id}`)
   }
 
   const handleCreateNew = (): void => {
-    window.location.href = '/quotations/new'
+    router.push('/quotations/new')
   }
 
   const handleEdit = (quotationId: string, e: React.MouseEvent): void => {
     e.stopPropagation()
-    window.location.href = `/quotations/${quotationId}/edit`
+    router.push(`/quotations/${quotationId}`)
   }
 
   const handleSend = async (quotationId: string, e: React.MouseEvent): void => {

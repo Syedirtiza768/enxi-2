@@ -26,8 +26,19 @@ const updateSalesOrderSchema = z.object({
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
     const resolvedParams = await params
+    const orderId = resolvedParams.id
+    
+    console.log('Fetching sales order with ID:', orderId)
+    
+    if (!orderId) {
+      return NextResponse.json(
+        { error: 'Order ID is required' },
+        { status: 400 }
+      )
+    }
+    
     const salesOrderService = new SalesOrderService()
-    const salesOrder = await salesOrderService.getSalesOrder(resolvedParams.id)
+    const salesOrder = await salesOrderService.getSalesOrder(orderId)
     
     if (!salesOrder) {
       return NextResponse.json(
@@ -37,10 +48,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
     
     return NextResponse.json(salesOrder)
-} catch (error) {
-    console.error('Error:', error);
+  } catch (error) {
+    console.error('Error fetching sales order:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch sales order' },
       { status: 500 }
     )
   }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Edit, Send, FileText, Trash2, Copy, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Edit, Send, FileText, Trash2, Copy, CheckCircle, XCircle, Eye, EyeOff, Printer, Download } from 'lucide-react'
 import { QuotationForm } from '@/components/quotations/quotation-form'
 import { apiClient } from '@/lib/api/client'
 
@@ -67,7 +67,7 @@ export default function QuotationDetailPage() {
         setLoading(true)
         setError(null)
 
-        const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}?view=${viewMode}`, {
+        const response = await apiClient<{ data: Quotation }>(`/api/quotations/${quotationId}?view=${viewMode}`, {
           method: 'GET'
         })
 
@@ -75,7 +75,8 @@ export default function QuotationDetailPage() {
           throw new Error('Failed to load quotation')
         }
 
-        setQuotation(response?.data?.data || response?.data)
+        const quotationData = response?.data?.data || response?.data
+        setQuotation(quotationData as Quotation)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load quotation')
         console.error('Error fetching quotation:', err)
@@ -100,7 +101,16 @@ export default function QuotationDetailPage() {
         throw new Error('Failed to update quotation')
       }
 
-      setQuotation(response?.data?.data || response?.data)
+      // After successful update, refresh the quotation with the current view mode
+      const refreshResponse = await apiClient<{ data: Quotation }>(`/api/quotations/${quotationId}?view=${viewMode}`, {
+        method: 'GET'
+      })
+
+      if (refreshResponse.ok) {
+        const quotationData = refreshResponse?.data?.data || refreshResponse?.data
+        setQuotation(quotationData as Quotation)
+      }
+      
       setMode('view')
     } catch (error) {
       console.error('Error:', error)
@@ -117,7 +127,15 @@ export default function QuotationDetailPage() {
         throw new Error('Failed to send quotation')
       }
 
-      setQuotation(response?.data?.data || response?.data)
+      // Refresh with current view mode
+      const refreshResponse = await apiClient<{ data: Quotation }>(`/api/quotations/${quotationId}?view=${viewMode}`, {
+        method: 'GET'
+      })
+
+      if (refreshResponse.ok) {
+        const quotationData = refreshResponse?.data?.data || refreshResponse?.data
+        setQuotation(quotationData as Quotation)
+      }
     } catch (error) {
       console.error('Error:', error)
     }
@@ -208,6 +226,44 @@ export default function QuotationDetailPage() {
       alert('Quotation has been rejected.')
     } catch (error) {
       console.error('Error:', error)
+    }
+  }
+
+  const handlePrint = async () => {
+    try {
+      // Open PDF in new window for printing
+      const pdfUrl = `/api/quotations/${quotationId}/pdf?view=${viewMode}`
+      window.open(pdfUrl, '_blank')
+    } catch (error) {
+      console.error('Error opening PDF:', error)
+      alert('Failed to open PDF for printing')
+    }
+  }
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(`/api/quotations/${quotationId}/pdf?view=${viewMode}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-token')}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to download PDF')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${quotation?.quotationNumber || 'quotation'}-${viewMode}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Error downloading PDF:', error)
+      alert('Failed to download PDF')
     }
   }
 
@@ -374,6 +430,26 @@ export default function QuotationDetailPage() {
                 Client View
               </>
             )}
+          </button>
+
+          {/* Print Button */}
+          <button
+            onClick={handlePrint}
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            title="Print quotation"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </button>
+
+          {/* Download Button */}
+          <button
+            onClick={handleDownload}
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            title="Download PDF"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF
           </button>
 
           {quotation.status === 'DRAFT' && (
