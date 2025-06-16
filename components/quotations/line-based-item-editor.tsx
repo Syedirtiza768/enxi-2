@@ -62,7 +62,6 @@ interface LineBasedItemEditorProps {
 export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal' }: LineBasedItemEditorProps) {
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [currentLineNumber, setCurrentLineNumber] = useState<number | null>(null);
-  const [editingLine, setEditingLine] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<{ item: QuotationItem; lineNumber: number; itemIndex: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
@@ -118,7 +117,6 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
       isExpanded: true
     };
     onLinesChange([...lines, newLine]);
-    setEditingLine(newLineNumber);
   };
 
   const updateLineDescription = (lineNumber: number, description: string) => {
@@ -320,23 +318,12 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
                     </Button>
                     <div className="flex items-center gap-2 flex-1">
                       <span className="font-medium text-sm">Line {line.lineNumber}</span>
-                      {editingLine === line.lineNumber ? (
-                        <Input
-                          value={line.lineDescription}
-                          onChange={(e) => updateLineDescription(line.lineNumber, e.target.value)}
-                          onBlur={() => setEditingLine(null)}
-                          placeholder="Enter line description..."
-                          className="flex-1"
-                          autoFocus
-                        />
-                      ) : (
-                        <div 
-                          className="flex-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1"
-                          onClick={() => setEditingLine(line.lineNumber)}
-                        >
-                          {line.lineDescription || <span className="text-gray-400">Click to add description...</span>}
-                        </div>
-                      )}
+                      <Input
+                        value={line.lineDescription}
+                        onChange={(e) => updateLineDescription(line.lineNumber, e.target.value)}
+                        placeholder="Line description (shown to client)"
+                        className="flex-1"
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
