@@ -4,6 +4,8 @@ import React, { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Package } from 'lucide-react'
 import { SalesOrderForm } from '@/components/sales-orders/sales-order-form'
+import { CustomerSearch } from '@/components/customers/customer-search'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function NewSalesOrderContent() {
   const router = useRouter()
@@ -14,6 +16,9 @@ function NewSalesOrderContent() {
   const [salesCaseData, setSalesCaseData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
+  const [customerError, setCustomerError] = useState<string>('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,12 +58,26 @@ function NewSalesOrderContent() {
     }
   }, [quotationId, salesCaseId])
 
+  const handleCustomerChange = (customerId: string, customer?: any) => {
+    setSelectedCustomerId(customerId)
+    setSelectedCustomer(customer)
+    setCustomerError('')
+  }
+
   const handleSubmit = async (formData: any) => {
+    // If no sales case, ensure customer is selected
+    if (!salesCaseData && !salesCaseId && !selectedCustomerId) {
+      setCustomerError('Please select a customer')
+      return
+    }
+
     try {
       const payload = {
         ...formData,
         quotationId,
         salesCaseId: salesCaseData?.id || salesCaseId,
+        // If creating without sales case, we'll need to create one
+        customerId: !salesCaseData && !salesCaseId ? selectedCustomerId : undefined,
       }
 
       const response = await fetch('/api/sales-orders', {
@@ -117,7 +136,18 @@ function NewSalesOrderContent() {
   const tempOrder = {
     id: 'new',
     orderNumber: 'NEW',
-    salesCase: salesCaseData || {
+    salesCase: salesCaseData || (selectedCustomer ? {
+      id: '',
+      caseNumber: '',
+      title: '',
+      customer: {
+        id: selectedCustomer.id,
+        name: selectedCustomer.name,
+        email: selectedCustomer.email,
+        phone: selectedCustomer.phone || '',
+        address: selectedCustomer.address || '',
+      }
+    } : {
       id: '',
       caseNumber: '',
       title: '',
@@ -128,7 +158,7 @@ function NewSalesOrderContent() {
         phone: '',
         address: '',
       }
-    },
+    }),
     quotation: quotationData ? {
       id: quotationData.id,
       quotationNumber: quotationData.quotationNumber
@@ -182,17 +212,38 @@ function NewSalesOrderContent() {
         <p className="text-gray-600 mt-1">
           {quotationId 
             ? `Creating order from quotation ${quotationData?.quotationNumber || ''}` 
+            : salesCaseId
+            ? `Creating order for sales case ${salesCaseData?.caseNumber || ''}`
             : 'Create a new sales order for your customer'}
         </p>
       </div>
 
-      {/* Form */}
-      <SalesOrderForm 
-        order={tempOrder} 
-        onSubmit={handleSubmit}
-        onCancel={() => router.push('/sales-orders')}
-        mode="edit"
-      />
+      {/* Customer Selection - Show only when no sales case or quotation */}
+      {!quotationId && !salesCaseId && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Select Customer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomerSearch
+              value={selectedCustomerId}
+              onChange={handleCustomerChange}
+              required
+              error={customerError}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Form - Show only when customer is selected or we have sales case/quotation */}
+      {(quotationId || salesCaseId || selectedCustomerId) && (
+        <SalesOrderForm 
+          order={tempOrder} 
+          onSubmit={handleSubmit}
+          onCancel={() => router.push('/sales-orders')}
+          mode="edit"
+        />
+      )}
     </div>
   )
 }

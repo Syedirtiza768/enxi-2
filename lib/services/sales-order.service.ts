@@ -36,7 +36,7 @@ export interface SalesOrderWithDetails extends SalesOrder {
 
 export interface CreateSalesOrderInput {
   quotationId?: string
-  salesCaseId: string
+  salesCaseId: string // Required at service level, but API handles creation if needed
   requestedDate?: Date
   promisedDate?: Date
   paymentTerms?: string

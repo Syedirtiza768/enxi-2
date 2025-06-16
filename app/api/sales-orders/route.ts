@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SalesOrderService } from '@/lib/services/sales-order.service'
+import { SalesCaseService } from '@/lib/services/sales-case.service'
 import { OrderStatus } from '@/lib/generated/prisma'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withCrudAudit } from '@/lib/middleware/audit.middleware'
@@ -8,7 +9,8 @@ import { z } from 'zod'
 
 const createSalesOrderSchema = z.object({
   quotationId: z.string().optional(),
-  salesCaseId: z.string(),
+  salesCaseId: z.string().optional(), // Made optional to allow customer-only creation
+  customerId: z.string().optional(), // Added to support direct customer selection
   requestedDate: z.string().datetime().optional(),
   promisedDate: z.string().datetime().optional(),
   paymentTerms: z.string().optional(),
@@ -27,6 +29,8 @@ const createSalesOrderSchema = z.object({
     taxRate: z.number().min(0).max(100).optional(),
     unitOfMeasureId: z.string().optional()
   })).min(1)
+}).refine(data => data.salesCaseId || data.customerId, {
+  message: "Either salesCaseId or customerId must be provided"
 })
 
 // GET /api/sales-orders - List all sales orders with filtering
@@ -113,10 +117,28 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     }
     
     const salesOrderService = new SalesOrderService()
+    const salesCaseService = new SalesCaseService()
+    
+    // If no sales case but customer ID provided, create a sales case
+    let salesCaseId = data.salesCaseId
+    if (!salesCaseId && data.customerId) {
+      const newSalesCase = await salesCaseService.createSalesCase({
+        customerId: data.customerId,
+        title: `Direct Sales Order - ${new Date().toLocaleDateString()}`,
+        description: 'Sales case created for direct sales order',
+        createdBy: session.user.id
+      })
+      salesCaseId = newSalesCase.id
+    }
+    
+    if (!salesCaseId) {
+      throw new Error('Sales case ID could not be determined')
+    }
     
     // Prepare sales order data with user context
     const salesOrderData = {
       ...data,
+      salesCaseId, // Use the created or existing sales case ID
       requestedDate: data.requestedDate ? new Date(data.requestedDate) : undefined,
       promisedDate: data.promisedDate ? new Date(data.promisedDate) : undefined,
       createdBy: session.user.id
