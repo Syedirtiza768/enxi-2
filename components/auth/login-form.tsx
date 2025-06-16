@@ -11,8 +11,7 @@ import {
   CardFooter,
   Heading,
   Text,
-  VStack,
-  Badge
+  VStack
 } from '@/components/design-system'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 
@@ -78,11 +77,6 @@ export function LoginForm(): React.JSX.Element {
           <Text color="secondary" size="sm" className="text-center max-w-xs">
             Enter your credentials to access the ERP system
           </Text>
-          {process.env.NODE_ENV === 'development' && (
-            <Badge variant="info" size="sm" className="mt-1">
-              Dev: admin / admin123
-            </Badge>
-          )}
         </VStack>
       </CardHeader>
       
