@@ -771,7 +771,7 @@ async function seedInitialInventory() {
           await prisma.stockMovement.create({
             data: {
               movementNumber: `MOV-OPENING-${item.code}`,
-              movementType: 'IN',
+              movementType: 'OPENING',
               movementDate: new Date(),
               itemId: item.id,
               locationId: mainLocation.id,
