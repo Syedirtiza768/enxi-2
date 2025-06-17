@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -12,28 +9,24 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Sales team hierarchy
-  managerId    String?
-  manager      User?   @relation("SalesTeamHierarchy", fields: [managerId], references: [id])
-  managedUsers User[]  @relation("SalesTeamHierarchy")
-
-  // Relations
+  id                String           @id @default(cuid())
+  username          String           @unique
+  email             String           @unique
+  password          String
+  role              String           @default("USER")
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  managerId         String?
   auditLogs         AuditLog[]
+  assignedCustomers Customer[]       @relation("CustomerAssignment")
   leads             Lead[]
+  salesTeamMember   SalesTeamMember?
+  manager           User?            @relation("SalesTeamHierarchy", fields: [managerId], references: [id])
+  managedUsers      User[]           @relation("SalesTeamHierarchy")
+  userPermissions   UserPermission[]
   profile           UserProfile?
   sessions          UserSession[]
-  userPermissions   UserPermission[]
-  assignedCustomers Customer[]       @relation("CustomerAssignment")
-  salesTeamMember   SalesTeamMember?
 
   @@index([username])
   @@index([email])
@@ -43,18 +36,16 @@ model User {
 model AuditLog {
   id         String   @id @default(cuid())
   userId     String
-  action     String // CREATE, READ, UPDATE, DELETE, etc.
-  entityType String // User, Lead, SalesCase, etc.
+  action     String
+  entityType String
   entityId   String
-  metadata   Json? // Additional context
-  beforeData Json? // State before change
-  afterData  Json? // State after change
+  metadata   Json?
+  beforeData Json?
+  afterData  Json?
   ipAddress  String?
   userAgent  String?
   timestamp  DateTime @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([entityType, entityId])
@@ -63,26 +54,22 @@ model AuditLog {
 }
 
 model Lead {
-  id        String     @id @default(cuid())
+  id        String    @id @default(cuid())
   firstName String
   lastName  String
   email     String
   phone     String?
   company   String?
   jobTitle  String?
-  source    LeadSource @default(WEBSITE)
-  status    LeadStatus @default(NEW)
+  source    String    @default("WEBSITE")
+  status    String    @default("NEW")
   notes     String?
-
-  // Audit fields
   createdBy String
   updatedBy String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  creator  User      @relation(fields: [createdBy], references: [id])
-  customer Customer? // When lead is converted
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  customer  Customer?
+  creator   User      @relation(fields: [createdBy], references: [id])
 
   @@index([email])
   @@index([status])
@@ -91,149 +78,127 @@ model Lead {
   @@index([createdAt])
 }
 
-// Customer model - converted from Lead
 model Customer {
-  id             String  @id @default(cuid())
-  customerNumber String  @unique
-  name           String
-  email          String  @unique
-  phone          String?
-  industry       String?
-  website        String?
-  address        String?
-  taxId          String?
-  currency       String  @default("USD")
-  creditLimit    Float   @default(0)
-  paymentTerms   Int     @default(30) // Days
-
-  // Link to original lead
-  leadId String? @unique
-  lead   Lead?   @relation(fields: [leadId], references: [id])
-
-  // Sales team assignment
+  id              String       @id @default(cuid())
+  customerNumber  String       @unique
+  name            String
+  email           String       @unique
+  phone           String?
+  industry        String?
+  website         String?
+  address         String?
+  taxId           String?
+  currency        String       @default("USD")
+  creditLimit     Float        @default(0)
+  paymentTerms    Int          @default(30)
+  leadId          String?      @unique
   assignedToId    String?
-  assignedTo      User?     @relation("CustomerAssignment", fields: [assignedToId], references: [id])
   assignedAt      DateTime?
   assignedBy      String?
   assignmentNotes String?
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  salesCases  SalesCase[]
-  invoices    Invoice[]
-  payments    Payment[]
-  customerPOs CustomerPO[]
-  accountId   String?      @unique // Link to AR account
-  account     Account?     @relation(fields: [accountId], references: [id])
+  createdBy       String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  accountId       String?      @unique
+  account         Account?     @relation(fields: [accountId], references: [id])
+  assignedTo      User?        @relation("CustomerAssignment", fields: [assignedToId], references: [id])
+  lead            Lead?        @relation(fields: [leadId], references: [id])
+  customerPOs     CustomerPO[]
+  invoices        Invoice[]
+  payments        Payment[]
+  salesCases      SalesCase[]
 
   @@index([email])
   @@index([createdAt])
   @@index([assignedToId])
+  @@index([name])
+  @@index([customerNumber])
+  @@index([currency])
+  @@index([industry])
+  @@index([updatedAt])
+  @@index([accountId])
+  @@index([currency, createdAt])
+  @@index([industry, createdAt])
 }
 
-// Sales Case model
 model SalesCase {
-  id          String          @id @default(cuid())
-  caseNumber  String          @unique
-  customerId  String
-  customer    Customer        @relation(fields: [customerId], references: [id])
-  title       String
-  description String?
-  status      SalesCaseStatus @default(OPEN)
-
-  // Financial tracking
-  estimatedValue Float @default(0)
-  actualValue    Float @default(0)
-  cost           Float @default(0)
-  profitMargin   Float @default(0)
-
-  // Audit fields
-  createdBy  String
-  assignedTo String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  closedAt   DateTime?
-
-  // Relations
-  quotations  Quotation[]
-  salesOrders SalesOrder[]
-  expenses    CaseExpense[]
-  customerPOs CustomerPO[]
+  id             String        @id @default(cuid())
+  caseNumber     String        @unique
+  customerId     String
+  title          String
+  description    String?
+  status         String        @default("OPEN")
+  estimatedValue Float         @default(0)
+  actualValue    Float         @default(0)
+  cost           Float         @default(0)
+  profitMargin   Float         @default(0)
+  createdBy      String
+  assignedTo     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  closedAt       DateTime?
+  expenses       CaseExpense[]
+  customerPOs    CustomerPO[]
+  quotations     Quotation[]
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  salesOrders    SalesOrder[]
 
   @@index([customerId])
   @@index([status])
   @@index([createdAt])
 }
 
-// Chart of Accounts
 model Account {
-  id          String      @id @default(cuid())
-  code        String      @unique
-  name        String
-  type        AccountType
-  currency    String      @default("USD")
-  description String?
-  parentId    String?
-  parent      Account?    @relation("AccountHierarchy", fields: [parentId], references: [id])
-  children    Account[]   @relation("AccountHierarchy")
-
-  // Balance tracking
-  balance Float @default(0)
-
-  // System flags
-  status          AccountStatus @default(ACTIVE)
-  isSystemAccount Boolean       @default(false)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  journalLines      JournalLine[]
-  customer          Customer?
-  supplier          Supplier?     @relation("SupplierAccount")
-  itemsInventory    Item[]        @relation("ItemInventoryAccount")
-  itemsCogs         Item[]        @relation("ItemCogsAccount")
-  itemsSales        Item[]        @relation("ItemSalesAccount")
+  id                String        @id @default(cuid())
+  code              String        @unique
+  name              String
+  type              String
+  currency          String        @default("USD")
+  description       String?
+  parentId          String?
+  balance           Float         @default(0)
+  status            String        @default("ACTIVE")
+  isSystemAccount   Boolean       @default(false)
+  createdBy         String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  parent            Account?      @relation("AccountHierarchy", fields: [parentId], references: [id])
+  children          Account[]     @relation("AccountHierarchy")
   caseExpenses      CaseExpense[]
+  customer          Customer?
+  itemsSales        Item[]        @relation("ItemSalesAccount")
+  itemsCogs         Item[]        @relation("ItemCogsAccount")
+  itemsInventory    Item[]        @relation("ItemInventoryAccount")
+  journalLines      JournalLine[]
   locations         Location[]    @relation("LocationInventoryAccount")
-  taxRatesCollected TaxRate[]     @relation("TaxCollectedAccount")
+  supplier          Supplier?     @relation("SupplierAccount")
   taxRatesPaid      TaxRate[]     @relation("TaxPaidAccount")
+  taxRatesCollected TaxRate[]     @relation("TaxCollectedAccount")
 
   @@index([code])
   @@index([type])
   @@index([parentId])
+  @@index([balance])
+  @@index([type, balance])
 }
 
-// Journal Entries
 model JournalEntry {
-  id           String   @id @default(cuid())
-  entryNumber  String   @unique
-  date         DateTime
-  description  String
-  reference    String? // External reference (invoice#, PO#, etc.)
-  currency     String   @default("USD")
-  exchangeRate Float    @default(1.0)
-
-  // Status tracking
-  status JournalStatus @default(DRAFT)
-
-  // Audit fields
-  createdBy String
-  postedBy  String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  postedAt  DateTime?
-
-  // Relations
+  id               String            @id @default(cuid())
+  entryNumber      String            @unique
+  date             DateTime
+  description      String
+  reference        String?
+  currency         String            @default("USD")
+  exchangeRate     Float             @default(1.0)
+  status           String            @default("DRAFT")
+  createdBy        String
+  postedBy         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  postedAt         DateTime?
+  caseExpenses     CaseExpense[]
   lines            JournalLine[]
   stockMovements   StockMovement[]
-  caseExpenses     CaseExpense[]
   supplierInvoices SupplierInvoice[]
   supplierPayments SupplierPayment[]
 
@@ -242,233 +207,170 @@ model JournalEntry {
   @@index([reference])
 }
 
-// Journal Entry Lines
 model JournalLine {
-  id             String       @id @default(cuid())
-  journalEntryId String
-  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
-
-  accountId String
-  account   Account @relation(fields: [accountId], references: [id])
-
-  description  String?
-  debitAmount  Float   @default(0)
-  creditAmount Float   @default(0)
-
-  // Multi-currency support
-  currency         String @default("USD")
-  exchangeRate     Float  @default(1.0)
-  baseDebitAmount  Float  @default(0) // Amount in base currency
-  baseCreditAmount Float  @default(0) // Amount in base currency
+  id               String       @id @default(cuid())
+  journalEntryId   String
+  accountId        String
+  description      String?
+  debitAmount      Float        @default(0)
+  creditAmount     Float        @default(0)
+  currency         String       @default("USD")
+  exchangeRate     Float        @default(1.0)
+  baseDebitAmount  Float        @default(0)
+  baseCreditAmount Float        @default(0)
+  account          Account      @relation(fields: [accountId], references: [id])
+  journalEntry     JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
 
   @@index([journalEntryId])
   @@index([accountId])
 }
 
-// Quotation model
 model Quotation {
-  id              String    @id @default(cuid())
-  quotationNumber String    @unique
+  id              String          @id @default(cuid())
+  quotationNumber String          @unique
   salesCaseId     String
-  salesCase       SalesCase @relation(fields: [salesCaseId], references: [id])
-
-  version    Int             @default(1)
-  status     QuotationStatus @default(DRAFT)
-  validUntil DateTime
-
-  // Pricing
-  subtotal       Float @default(0)
-  taxAmount      Float @default(0)
-  discountAmount Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Terms
-  paymentTerms  String?
-  deliveryTerms String?
-  notes         String?
-  internalNotes String? // Internal notes not visible to clients
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items       QuotationItem[]
-  salesOrders SalesOrder[]
-  customerPOs CustomerPO[]
+  version         Int             @default(1)
+  status          String          @default("DRAFT")
+  validUntil      DateTime
+  subtotal        Float           @default(0)
+  taxAmount       Float           @default(0)
+  discountAmount  Float           @default(0)
+  totalAmount     Float           @default(0)
+  paymentTerms    String?
+  deliveryTerms   String?
+  notes           String?
+  createdBy       String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  internalNotes   String?
+  customerPOs     CustomerPO[]
+  salesCase       SalesCase       @relation(fields: [salesCaseId], references: [id])
+  items           QuotationItem[]
+  salesOrders     SalesOrder[]
 
   @@index([salesCaseId])
   @@index([status])
   @@index([createdAt])
 }
 
-// Quotation templates for reusable quotation structures
 model QuotationTemplate {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  isActive    Boolean @default(true)
-  
-  // Template content
-  paymentTerms  String?
-  deliveryTerms String?
-  notes         String?
-  footerNotes   String?
-  
-  // Validity settings
-  defaultValidityDays Int @default(30)
-  
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  items QuotationTemplateItem[]
-  
+  id                  String                  @id @default(cuid())
+  name                String
+  description         String?
+  isActive            Boolean                 @default(true)
+  paymentTerms        String?
+  deliveryTerms       String?
+  notes               String?
+  footerNotes         String?
+  defaultValidityDays Int                     @default(30)
+  createdBy           String
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  items               QuotationTemplateItem[]
+
   @@index([isActive])
   @@index([name])
 }
 
-// Template line items
 model QuotationTemplateItem {
-  id         String            @id @default(cuid())
-  templateId String
-  template   QuotationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  
-  // Line grouping
-  lineNumber      Int     @default(1)
-  lineDescription String?
-  isLineHeader    Boolean @default(false)
-  
-  // Item details
-  itemType            ItemType @default(PRODUCT)
-  itemId              String? // Optional link to Item master
-  item                Item?    @relation("TemplateItemProduct", fields: [itemId], references: [id])
+  id                  String            @id @default(cuid())
+  templateId          String
+  lineNumber          Int               @default(1)
+  lineDescription     String?
+  isLineHeader        Boolean           @default(false)
+  itemType            String            @default("PRODUCT")
+  itemId              String?
   itemCode            String
   description         String
   internalDescription String?
-  defaultQuantity     Float    @default(1)
-  defaultUnitPrice    Float    @default(0)
+  defaultQuantity     Float             @default(1)
+  defaultUnitPrice    Float             @default(0)
   unitOfMeasureId     String?
-  unitOfMeasure       UnitOfMeasure? @relation("TemplateItemUoM", fields: [unitOfMeasureId], references: [id])
-  
-  // Default rates
-  defaultDiscount Float @default(0)
-  defaultTaxRate  Float @default(0)
-  taxRateId       String?
-  taxRateConfig   TaxRate? @relation("TemplateItemTaxRate", fields: [taxRateId], references: [id])
-  
-  // Sort order
-  sortOrder Int @default(0)
-  
+  defaultDiscount     Float             @default(0)
+  defaultTaxRate      Float             @default(0)
+  taxRateId           String?
+  sortOrder           Int               @default(0)
+  taxRateConfig       TaxRate?          @relation("TemplateItemTaxRate", fields: [taxRateId], references: [id])
+  unitOfMeasure       UnitOfMeasure?    @relation("TemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  item                Item?             @relation("TemplateItemProduct", fields: [itemId], references: [id])
+  template            QuotationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
   @@index([templateId])
   @@index([itemId])
 }
 
-// Quotation line items
 model QuotationItem {
-  id          String    @id @default(cuid())
-  quotationId String
-  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-
-  // Line grouping
-  lineNumber      Int     @default(1) // Groups items into lines
-  lineDescription String? // Description for the line (shown to client)
-  isLineHeader    Boolean @default(false) // First item in each line
-
-  // Item type
-  itemType ItemType @default(PRODUCT) // PRODUCT or SERVICE
-
-  // Item details (can be linked item or free-form)
-  itemId              String? // Optional link to Item master
-  item                Item?    @relation("QuotationItemProduct", fields: [itemId], references: [id])
-  itemCode            String // For display and free-form items
+  id                  String         @id @default(cuid())
+  quotationId         String
+  lineNumber          Int            @default(1)
+  lineDescription     String?
+  isLineHeader        Boolean        @default(false)
+  itemType            String         @default("PRODUCT")
+  itemId              String?
+  itemCode            String
   description         String
-  internalDescription String? // Internal description not visible to clients
-  quantity            Float    @default(1)
-  unitPrice           Float    @default(0)
-  cost                Float?   @default(0) // Cost per unit for margin calculation
-  discount            Float    @default(0) // Percentage
-  taxRate             Float    @default(0) // Percentage
-  taxRateId           String? // Link to tax configuration
-  taxRateConfig       TaxRate? @relation("QuotationItemTaxRate", fields: [taxRateId], references: [id])
-
-  // Unit of measure
-  unitOfMeasureId String?
-  unitOfMeasure   UnitOfMeasure? @relation("QuotationItemUoM", fields: [unitOfMeasureId], references: [id])
-
-  // Calculated amounts
-  subtotal       Float @default(0)
-  discountAmount Float @default(0)
-  taxAmount      Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Inventory availability (calculated at quotation time)
-  availabilityStatus String? // IN_STOCK, INSUFFICIENT_STOCK, OUT_OF_STOCK
-  availableQuantity  Float? // Available quantity at quotation time
-
-  // Sort order
-  sortOrder Int @default(0)
+  internalDescription String?
+  quantity            Float          @default(1)
+  unitPrice           Float          @default(0)
+  cost                Float?         @default(0)
+  discount            Float          @default(0)
+  taxRate             Float          @default(0)
+  taxRateId           String?
+  unitOfMeasureId     String?
+  subtotal            Float          @default(0)
+  discountAmount      Float          @default(0)
+  taxAmount           Float          @default(0)
+  totalAmount         Float          @default(0)
+  availabilityStatus  String?
+  availableQuantity   Float?
+  sortOrder           Int            @default(0)
+  unitOfMeasure       UnitOfMeasure? @relation("QuotationItemUoM", fields: [unitOfMeasureId], references: [id])
+  taxRateConfig       TaxRate?       @relation("QuotationItemTaxRate", fields: [taxRateId], references: [id])
+  item                Item?          @relation("QuotationItemProduct", fields: [itemId], references: [id])
+  quotation           Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
 
   @@index([quotationId])
   @@index([itemId])
 }
 
-// Sales Order - Converted from accepted quotations
 model SalesOrder {
-  id          String     @id @default(cuid())
-  orderNumber String     @unique
-  quotationId String? // Link to original quotation
-  quotation   Quotation? @relation(fields: [quotationId], references: [id])
-  salesCaseId String
-  salesCase   SalesCase  @relation(fields: [salesCaseId], references: [id])
-
-  // Order details
-  status        OrderStatus @default(PENDING)
-  orderDate     DateTime    @default(now())
-  requestedDate DateTime? // Customer requested delivery date
-  promisedDate  DateTime? // Company promised delivery date
-
-  // Financial totals
-  subtotal       Float @default(0)
-  taxAmount      Float @default(0)
-  discountAmount Float @default(0)
-  shippingAmount Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Payment and shipping terms
-  paymentTerms    String?
-  shippingTerms   String?
-  shippingAddress String?
-  billingAddress  String?
-
-  // Internal notes and references
-  customerPO String? // Customer's purchase order number
-  notes      String?
-
-  // Order fulfillment tracking
-  fulfilledAmount Float @default(0)
-  shippedAmount   Float @default(0)
-  invoicedAmount  Float @default(0)
-
-  // Audit fields
-  createdBy          String
-  approvedBy         String?
-  approvedAt         DateTime?
-  cancelledBy        String?
-  cancelledAt        DateTime?
-  cancellationReason String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  // Relations
+  id                    String             @id @default(cuid())
+  orderNumber           String             @unique
+  quotationId           String?
+  salesCaseId           String
+  status                String             @default("PENDING")
+  orderDate             DateTime           @default(now())
+  requestedDate         DateTime?
+  promisedDate          DateTime?
+  subtotal              Float              @default(0)
+  taxAmount             Float              @default(0)
+  discountAmount        Float              @default(0)
+  shippingAmount        Float              @default(0)
+  totalAmount           Float              @default(0)
+  paymentTerms          String?
+  shippingTerms         String?
+  shippingAddress       String?
+  billingAddress        String?
+  customerPO            String?
+  notes                 String?
+  fulfilledAmount       Float              @default(0)
+  shippedAmount         Float              @default(0)
+  invoicedAmount        Float              @default(0)
+  createdBy             String
+  approvedBy            String?
+  approvedAt            DateTime?
+  cancelledBy           String?
+  cancelledAt           DateTime?
+  cancellationReason    String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  customerPurchaseOrder CustomerPO?
+  invoices              Invoice[]
+  salesCase             SalesCase          @relation(fields: [salesCaseId], references: [id])
+  quotation             Quotation?         @relation(fields: [quotationId], references: [id])
   items                 SalesOrderItem[]
   shipments             Shipment[]
-  invoices              Invoice[]
   stockReservations     StockReservation[] @relation("OrderStockReservations")
-  customerPurchaseOrder CustomerPO?
 
   @@index([salesCaseId])
   @@index([status])
@@ -476,217 +378,159 @@ model SalesOrder {
   @@index([quotationId])
 }
 
-// Sales Order line items
 model SalesOrderItem {
-  id           String     @id @default(cuid())
-  salesOrderId String
-  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
-
-  // Line grouping
-  lineNumber      Int     @default(1) // Groups items into lines
-  lineDescription String? // Description for the line (shown to customer)
-  isLineHeader    Boolean @default(false) // First item in each line
-
-  // Item type
-  itemType ItemType @default(PRODUCT) // PRODUCT or SERVICE
-
-  // Item details
-  itemId              String? // Optional link to Item master
-  item                Item?    @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
+  id                  String             @id @default(cuid())
+  salesOrderId        String
+  lineNumber          Int                @default(1)
+  lineDescription     String?
+  isLineHeader        Boolean            @default(false)
+  itemType            String             @default("PRODUCT")
+  itemId              String?
   itemCode            String
   description         String
-  internalDescription String? // Internal description not visible to customers
-  quantity            Float    @default(1)
-  unitPrice           Float    @default(0)
-  cost                Float?   @default(0) // Cost per unit for margin calculation
-  discount            Float    @default(0) // Percentage
-  taxRate             Float    @default(0) // Percentage
-  taxRateId           String? // Link to tax configuration
-  taxRateConfig       TaxRate? @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
-
-  // Unit of measure
-  unitOfMeasureId String?
-  unitOfMeasure   UnitOfMeasure? @relation("SalesOrderItemUoM", fields: [unitOfMeasureId], references: [id])
-
-  // Calculated amounts
-  subtotal       Float @default(0)
-  discountAmount Float @default(0)
-  taxAmount      Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Fulfillment tracking
-  quantityReserved Float @default(0)
-  quantityShipped  Float @default(0)
-  quantityInvoiced Float @default(0)
-
-  // Sort order
-  sortOrder Int @default(0)
-
-  // Relations
-  stockReservations StockReservation[] @relation("OrderItemStockReservations")
+  internalDescription String?
+  quantity            Float              @default(1)
+  unitPrice           Float              @default(0)
+  cost                Float?             @default(0)
+  discount            Float              @default(0)
+  taxRate             Float              @default(0)
+  taxRateId           String?
+  unitOfMeasureId     String?
+  subtotal            Float              @default(0)
+  discountAmount      Float              @default(0)
+  taxAmount           Float              @default(0)
+  totalAmount         Float              @default(0)
+  quantityReserved    Float              @default(0)
+  quantityShipped     Float              @default(0)
+  quantityInvoiced    Float              @default(0)
+  sortOrder           Int                @default(0)
+  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderItemUoM", fields: [unitOfMeasureId], references: [id])
+  taxRateConfig       TaxRate?           @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
+  item                Item?              @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
+  salesOrder          SalesOrder         @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  stockReservations   StockReservation[] @relation("OrderItemStockReservations")
 
   @@index([salesOrderId])
   @@index([itemId])
 }
 
-// Sales Order Template for reusable order configurations
 model SalesOrderTemplate {
-  id          String  @id @default(cuid())
-  name        String
-  description String?
-  isActive    Boolean @default(true)
-  
-  // Template content
+  id              String                   @id @default(cuid())
+  name            String
+  description     String?
+  isActive        Boolean                  @default(true)
   paymentTerms    String?
   shippingTerms   String?
   shippingAddress String?
   billingAddress  String?
   notes           String?
-  
-  // Default delivery settings
-  defaultLeadDays Int @default(7) // Default days to add for promised delivery
-  
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
-  items SalesOrderTemplateItem[]
-  
+  defaultLeadDays Int                      @default(7)
+  createdBy       String
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  items           SalesOrderTemplateItem[]
+
   @@index([isActive])
   @@index([name])
 }
 
-// Template line items
 model SalesOrderTemplateItem {
-  id         String             @id @default(cuid())
-  templateId String
-  template   SalesOrderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  
-  // Line grouping
-  lineNumber      Int     @default(1)
-  lineDescription String?
-  isLineHeader    Boolean @default(false)
-  
-  // Item details
-  itemType            ItemType @default(PRODUCT)
-  itemId              String? // Optional link to Item master
-  item                Item?    @relation("SalesOrderTemplateItemProduct", fields: [itemId], references: [id])
+  id                  String             @id @default(cuid())
+  templateId          String
+  lineNumber          Int                @default(1)
+  lineDescription     String?
+  isLineHeader        Boolean            @default(false)
+  itemType            String             @default("PRODUCT")
+  itemId              String?
   itemCode            String
   description         String
   internalDescription String?
-  defaultQuantity     Float    @default(1)
-  defaultUnitPrice    Float    @default(0)
+  defaultQuantity     Float              @default(1)
+  defaultUnitPrice    Float              @default(0)
   unitOfMeasureId     String?
-  unitOfMeasure       UnitOfMeasure? @relation("SalesOrderTemplateItemUoM", fields: [unitOfMeasureId], references: [id])
-  
-  // Default rates
-  defaultDiscount Float @default(0)
-  defaultTaxRate  Float @default(0)
-  taxRateId       String?
-  taxRateConfig   TaxRate? @relation("SalesOrderTemplateItemTaxRate", fields: [taxRateId], references: [id])
-  
-  // Sort order
-  sortOrder Int @default(0)
-  
+  defaultDiscount     Float              @default(0)
+  defaultTaxRate      Float              @default(0)
+  taxRateId           String?
+  sortOrder           Int                @default(0)
+  taxRateConfig       TaxRate?           @relation("SalesOrderTemplateItemTaxRate", fields: [taxRateId], references: [id])
+  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderTemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  item                Item?              @relation("SalesOrderTemplateItemProduct", fields: [itemId], references: [id])
+  template            SalesOrderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
   @@index([templateId])
   @@index([itemId])
 }
 
-// Shipments for tracking deliveries
 model Shipment {
-  id             String     @id @default(cuid())
-  shipmentNumber String     @unique
-  salesOrderId   String
-  salesOrder     SalesOrder @relation(fields: [salesOrderId], references: [id])
-
-  // Shipment details
-  status         ShipmentStatus @default(PREPARING)
-  shipmentDate   DateTime?
-  trackingNumber String?
-  carrier        String?
-  shippingMethod String?
-  shippingCost   Float          @default(0)
-
-  // Addresses
+  id              String         @id @default(cuid())
+  shipmentNumber  String         @unique
+  salesOrderId    String
+  status          String         @default("PREPARING")
+  shipmentDate    DateTime?
+  trackingNumber  String?
+  carrier         String?
+  shippingMethod  String?
+  shippingCost    Float          @default(0)
   shipToAddress   String
   shipFromAddress String?
-
-  // Audit fields
-  createdBy   String
-  shippedBy   String?
-  deliveredBy String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  shippedAt   DateTime?
-  deliveredAt DateTime?
-
-  // Relations
-  items ShipmentItem[]
+  createdBy       String
+  shippedBy       String?
+  deliveredBy     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  salesOrder      SalesOrder     @relation(fields: [salesOrderId], references: [id])
+  items           ShipmentItem[]
 
   @@index([salesOrderId])
   @@index([status])
   @@index([shipmentDate])
 }
 
-// Shipment line items
 model ShipmentItem {
   id               String   @id @default(cuid())
   shipmentId       String
-  shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   salesOrderItemId String
-
-  // Item details
-  itemId          String
-  item            Item   @relation("ShipmentItemProduct", fields: [itemId], references: [id])
-  itemCode        String
-  description     String
-  quantityShipped Float
+  itemId           String
+  itemCode         String
+  description      String
+  quantityShipped  Float
+  item             Item     @relation("ShipmentItemProduct", fields: [itemId], references: [id])
+  shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([shipmentId])
   @@index([salesOrderItemId])
 }
 
-// Invoice model
 model Invoice {
-  id            String      @id @default(cuid())
-  invoiceNumber String      @unique
-  salesOrderId  String?
-  salesOrder    SalesOrder? @relation(fields: [salesOrderId], references: [id])
-  customerId    String
-  customer      Customer    @relation(fields: [customerId], references: [id])
-
-  // Invoice details
-  type        InvoiceType   @default(SALES)
-  status      InvoiceStatus @default(DRAFT)
-  invoiceDate DateTime      @default(now())
-  dueDate     DateTime
-
-  // Financial totals
-  subtotal       Float @default(0)
-  taxAmount      Float @default(0)
-  discountAmount Float @default(0)
-  totalAmount    Float @default(0)
-  paidAmount     Float @default(0)
-  balanceAmount  Float @default(0)
-
-  // Terms and addresses
+  id             String        @id @default(cuid())
+  invoiceNumber  String        @unique
+  salesOrderId   String?
+  customerId     String
+  type           String        @default("SALES")
+  status         String        @default("DRAFT")
+  invoiceDate    DateTime      @default(now())
+  dueDate        DateTime
+  subtotal       Float         @default(0)
+  taxAmount      Float         @default(0)
+  discountAmount Float         @default(0)
+  totalAmount    Float         @default(0)
+  paidAmount     Float         @default(0)
+  balanceAmount  Float         @default(0)
   paymentTerms   String?
   billingAddress String?
   notes          String?
-
-  // Audit fields
-  createdBy String
-  sentBy    String?
-  sentAt    DateTime?
-  paidAt    DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  // Relations
-  items    InvoiceItem[]
-  payments Payment[]
+  createdBy      String
+  sentBy         String?
+  sentAt         DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  salesOrder     SalesOrder?   @relation(fields: [salesOrderId], references: [id])
+  items          InvoiceItem[]
+  payments       Payment[]
 
   @@index([customerId])
   @@index([status])
@@ -694,407 +538,202 @@ model Invoice {
   @@index([dueDate])
 }
 
-// Invoice line items
 model InvoiceItem {
-  id        String  @id @default(cuid())
-  invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  // Item details
-  itemId        String?
-  item          Item?    @relation("InvoiceItemProduct", fields: [itemId], references: [id])
-  itemCode      String
-  description   String
-  quantity      Float    @default(1)
-  unitPrice     Float    @default(0)
-  discount      Float    @default(0)
-  taxRate       Float    @default(0)
-  taxRateId     String? // Link to tax configuration
-  taxRateConfig TaxRate? @relation("InvoiceItemTaxRate", fields: [taxRateId], references: [id])
-
-  // Calculated amounts
-  subtotal       Float @default(0)
-  discountAmount Float @default(0)
-  taxAmount      Float @default(0)
-  totalAmount    Float @default(0)
+  id             String   @id @default(cuid())
+  invoiceId      String
+  itemId         String?
+  itemCode       String
+  description    String
+  quantity       Float    @default(1)
+  unitPrice      Float    @default(0)
+  discount       Float    @default(0)
+  taxRate        Float    @default(0)
+  taxRateId      String?
+  subtotal       Float    @default(0)
+  discountAmount Float    @default(0)
+  taxAmount      Float    @default(0)
+  totalAmount    Float    @default(0)
+  taxRateConfig  TaxRate? @relation("InvoiceItemTaxRate", fields: [taxRateId], references: [id])
+  item           Item?    @relation("InvoiceItemProduct", fields: [itemId], references: [id])
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
   @@index([itemId])
 }
 
-// Payment tracking
 model Payment {
   id            String   @id @default(cuid())
   paymentNumber String   @unique
   invoiceId     String
-  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
   customerId    String
-  customer      Customer @relation(fields: [customerId], references: [id])
-
-  // Payment details
   amount        Float
-  paymentDate   DateTime      @default(now())
-  paymentMethod PaymentMethod @default(BANK_TRANSFER)
-  reference     String? // Check number, transaction ID, etc.
+  paymentDate   DateTime @default(now())
+  paymentMethod String   @default("BANK_TRANSFER")
+  reference     String?
   notes         String?
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  customer      Customer @relation(fields: [customerId], references: [id])
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
 
   @@index([invoiceId])
   @@index([customerId])
   @@index([paymentDate])
 }
 
-enum Role {
-  SUPER_ADMIN // Full system access
-  ADMIN // Admin access (can manage users)
-  MANAGER // Can manage teams and approve
-  SALES_REP // Sales operations
-  ACCOUNTANT // Financial operations
-  WAREHOUSE // Inventory operations
-  VIEWER // Read-only access
-  USER // Basic user (deprecated - for backward compatibility)
-}
-
-enum LeadSource {
-  WEBSITE
-  REFERRAL
-  SOCIAL_MEDIA
-  EMAIL_CAMPAIGN
-  PHONE_CALL
-  TRADE_SHOW
-  ADVERTISING
-  OTHER
-}
-
-enum LeadStatus {
-  NEW
-  CONTACTED
-  QUALIFIED
-  PROPOSAL_SENT
-  NEGOTIATING
-  CONVERTED
-  LOST
-  DISQUALIFIED
-}
-
-enum AccountType {
-  ASSET
-  LIABILITY
-  EQUITY
-  INCOME
-  EXPENSE
-}
-
-enum AccountStatus {
-  ACTIVE
-  INACTIVE
-  SYSTEM
-}
-
-enum JournalStatus {
-  DRAFT
-  POSTED
-  CANCELLED
-}
-
-enum SalesCaseStatus {
-  OPEN
-  IN_PROGRESS
-  WON
-  LOST
-  CANCELLED
-}
-
-enum QuotationStatus {
-  DRAFT
-  SENT
-  ACCEPTED
-  REJECTED
-  EXPIRED
-  CANCELLED
-}
-
-enum OrderStatus {
-  PENDING // Order created, awaiting approval
-  APPROVED // Order approved, ready for fulfillment
-  PROCESSING // Order being processed/manufactured
-  SHIPPED // Order shipped (partially or fully)
-  DELIVERED // Order delivered to customer
-  INVOICED // Order fully invoiced
-  COMPLETED // Order completed successfully
-  CANCELLED // Order cancelled
-  ON_HOLD // Order temporarily on hold
-}
-
-enum ShipmentStatus {
-  PREPARING // Shipment being prepared
-  READY // Ready to ship
-  SHIPPED // Shipped to customer
-  IN_TRANSIT // In transit
-  DELIVERED // Delivered to customer
-  RETURNED // Returned by customer
-  CANCELLED // Shipment cancelled
-}
-
-enum InvoiceType {
-  SALES // Sales invoice
-  CREDIT_NOTE // Credit note/refund
-  DEBIT_NOTE // Debit note/additional charge
-  PROFORMA // Proforma invoice
-}
-
-enum InvoiceStatus {
-  DRAFT // Invoice being prepared
-  SENT // Invoice sent to customer
-  VIEWED // Customer viewed invoice
-  PARTIAL // Partially paid
-  PAID // Fully paid
-  OVERDUE // Payment overdue
-  CANCELLED // Invoice cancelled
-  REFUNDED // Invoice refunded
-}
-
-enum PaymentMethod {
-  CASH
-  CHECK
-  BANK_TRANSFER
-  CREDIT_CARD
-  DEBIT_CARD
-  WIRE_TRANSFER
-  ONLINE
-  OTHER
-}
-
-enum ExpenseStatus {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-  PAID
-  CANCELLED
-}
-
-// Inventory Management Models
-
-// Item Categories - Hierarchical structure
 model Category {
   id          String     @id @default(cuid())
   code        String     @unique
   name        String
   description String?
   parentId    String?
+  isActive    Boolean    @default(true)
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryHierarchy")
-
-  // System flags
-  isActive Boolean @default(true)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items Item[]
+  items       Item[]
 
   @@index([code])
   @@index([parentId])
 }
 
-// Units of Measure
 model UnitOfMeasure {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-  symbol      String? // Display symbol (kg, m, pcs, etc.)
-
-  // Base unit conversion
-  baseUnitId       String?
-  baseUnit         UnitOfMeasure?  @relation("UoMConversion", fields: [baseUnitId], references: [id])
-  derivedUnits     UnitOfMeasure[] @relation("UoMConversion")
-  conversionFactor Float           @default(1.0) // Factor to convert to base unit
-
-  // System flags
-  isActive   Boolean @default(true)
-  isBaseUnit Boolean @default(false)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items              Item[]
-  stockMovements     StockMovement[]
-  quotationItems     QuotationItem[]     @relation("QuotationItemUoM")
-  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemUoM")
-  salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemUoM")
+  id                      String                   @id @default(cuid())
+  code                    String                   @unique
+  name                    String
+  description             String?
+  symbol                  String?
+  baseUnitId              String?
+  conversionFactor        Float                    @default(1.0)
+  isActive                Boolean                  @default(true)
+  isBaseUnit              Boolean                  @default(false)
+  createdBy               String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  items                   Item[]
+  purchaseOrderItems      PurchaseOrderItem[]      @relation("POItemUoM")
+  quotationItems          QuotationItem[]          @relation("QuotationItemUoM")
+  quotationTemplateItems  QuotationTemplateItem[]  @relation("TemplateItemUoM")
+  salesOrderItems         SalesOrderItem[]         @relation("SalesOrderItemUoM")
   salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemUoM")
-  purchaseOrderItems PurchaseOrderItem[] @relation("POItemUoM")
+  stockMovements          StockMovement[]
+  baseUnit                UnitOfMeasure?           @relation("UoMConversion", fields: [baseUnitId], references: [id])
+  derivedUnits            UnitOfMeasure[]          @relation("UoMConversion")
 
   @@index([code])
 }
 
-// Item Master (Products and Services)
 model Item {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-
-  // Classification
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-  type       ItemType @default(PRODUCT)
-
-  // Specifications
-  unitOfMeasureId String
-  unitOfMeasure   UnitOfMeasure @relation(fields: [unitOfMeasureId], references: [id])
-
-  // Inventory tracking
-  trackInventory Boolean @default(true) // False for services
-  minStockLevel  Float   @default(0)
-  maxStockLevel  Float   @default(0)
-  reorderPoint   Float   @default(0)
-
-  // Pricing
-  standardCost Float @default(0) // Standard cost for costing
-  listPrice    Float @default(0) // Default selling price
-
-  // GL Integration
-  inventoryAccountId String? // Asset account for inventory
-  inventoryAccount   Account? @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id])
-  cogsAccountId      String? // Cost of Goods Sold account
-  cogsAccount        Account? @relation("ItemCogsAccount", fields: [cogsAccountId], references: [id])
-  salesAccountId     String? // Revenue account
-  salesAccount       Account? @relation("ItemSalesAccount", fields: [salesAccountId], references: [id])
-
-  // System flags
-  isActive       Boolean @default(true)
-  isSaleable     Boolean @default(true)
-  isPurchaseable Boolean @default(true)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  stockMovements     StockMovement[]
-  stockLots          StockLot[]
-  stockReservations  StockReservation[]  @relation("ItemStockReservations")
-  quotationItems     QuotationItem[]     @relation("QuotationItemProduct")
-  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemProduct")
-  salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemProduct")
+  id                      String                   @id @default(cuid())
+  code                    String                   @unique
+  name                    String
+  description             String?
+  categoryId              String
+  type                    String                   @default("PRODUCT")
+  unitOfMeasureId         String
+  trackInventory          Boolean                  @default(true)
+  minStockLevel           Float                    @default(0)
+  maxStockLevel           Float                    @default(0)
+  reorderPoint            Float                    @default(0)
+  standardCost            Float                    @default(0)
+  listPrice               Float                    @default(0)
+  inventoryAccountId      String?
+  cogsAccountId           String?
+  salesAccountId          String?
+  isActive                Boolean                  @default(true)
+  isSaleable              Boolean                  @default(true)
+  isPurchaseable          Boolean                  @default(true)
+  createdBy               String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  goodsReceiptItems       GoodsReceiptItem[]       @relation("ReceiptItemProduct")
+  inventoryBalances       InventoryBalance[]       @relation("ItemLocationBalances")
+  invoiceItems            InvoiceItem[]            @relation("InvoiceItemProduct")
+  salesAccount            Account?                 @relation("ItemSalesAccount", fields: [salesAccountId], references: [id])
+  cogsAccount             Account?                 @relation("ItemCogsAccount", fields: [cogsAccountId], references: [id])
+  inventoryAccount        Account?                 @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id])
+  unitOfMeasure           UnitOfMeasure            @relation(fields: [unitOfMeasureId], references: [id])
+  category                Category                 @relation(fields: [categoryId], references: [id])
+  physicalCountItems      PhysicalCountItem[]      @relation("ItemPhysicalCounts")
+  purchaseOrderItems      PurchaseOrderItem[]      @relation("POItemProduct")
+  quotationItems          QuotationItem[]          @relation("QuotationItemProduct")
+  quotationTemplateItems  QuotationTemplateItem[]  @relation("TemplateItemProduct")
+  salesOrderItems         SalesOrderItem[]         @relation("SalesOrderItemProduct")
   salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemProduct")
-  shipmentItems      ShipmentItem[]      @relation("ShipmentItemProduct")
-  invoiceItems       InvoiceItem[]       @relation("InvoiceItemProduct")
-  purchaseOrderItems PurchaseOrderItem[] @relation("POItemProduct")
-  goodsReceiptItems  GoodsReceiptItem[]  @relation("ReceiptItemProduct")
-  inventoryBalances  InventoryBalance[]  @relation("ItemLocationBalances")
-  stockTransferItems StockTransferItem[] @relation("ItemStockTransfers")
-  physicalCountItems PhysicalCountItem[] @relation("ItemPhysicalCounts")
+  shipmentItems           ShipmentItem[]           @relation("ShipmentItemProduct")
+  stockLots               StockLot[]
+  stockMovements          StockMovement[]
+  stockReservations       StockReservation[]       @relation("ItemStockReservations")
+  stockTransferItems      StockTransferItem[]      @relation("ItemStockTransfers")
 
   @@index([code])
   @@index([categoryId])
   @@index([type])
 }
 
-// Stock Lots for FIFO tracking
 model StockLot {
-  id        String @id @default(cuid())
-  lotNumber String @unique
-  itemId    String
-  item      Item   @relation(fields: [itemId], references: [id])
-
-  // Lot details
-  receivedDate DateTime
-  expiryDate   DateTime?
-  supplierName String? // Supplier reference
-  supplierId   String? // Supplier ID reference
-  purchaseRef  String? // Purchase order/invoice reference
-
-  // Quantities
-  receivedQty  Float
-  availableQty Float // Current available quantity
-  reservedQty  Float @default(0) // Reserved for sales orders
-
-  // Costing
-  unitCost  Float // Cost per unit for this lot
-  totalCost Float // Total cost of this lot
-
-  // System flags
-  isActive Boolean @default(true)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  stockMovements     StockMovement[]
-  supplier           Supplier?           @relation("SupplierStockLots", fields: [supplierId], references: [id])
+  id                 String              @id @default(cuid())
+  lotNumber          String              @unique
+  itemId             String
+  receivedDate       DateTime
+  expiryDate         DateTime?
+  supplierName       String?
+  supplierId         String?
+  purchaseRef        String?
+  receivedQty        Float
+  availableQty       Float
+  reservedQty        Float               @default(0)
+  unitCost           Float
+  totalCost          Float
+  isActive           Boolean             @default(true)
+  createdBy          String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   locationStockLots  LocationStockLot[]  @relation("LotLocationStock")
-  stockTransferItems StockTransferItem[] @relation("LotStockTransfers")
   physicalCountItems PhysicalCountItem[] @relation("LotPhysicalCounts")
+  supplier           Supplier?           @relation("SupplierStockLots", fields: [supplierId], references: [id])
+  item               Item                @relation(fields: [itemId], references: [id])
+  stockMovements     StockMovement[]
+  stockTransferItems StockTransferItem[] @relation("LotStockTransfers")
 
   @@index([itemId])
   @@index([receivedDate])
   @@index([availableQty])
 }
 
-// Stock Movements - All inventory transactions
 model StockMovement {
-  id             String @id @default(cuid())
-  movementNumber String @unique
-
-  // Item and lot
-  itemId     String
-  item       Item      @relation(fields: [itemId], references: [id])
-  stockLotId String?
-  stockLot   StockLot? @relation(fields: [stockLotId], references: [id])
-
-  // Movement details
-  movementType MovementType
-  movementDate DateTime
-  quantity     Float // Positive for IN, Negative for OUT
-  unitCost     Float        @default(0)
-  totalCost    Float        @default(0)
-
-  // Units
+  id              String        @id @default(cuid())
+  movementNumber  String        @unique
+  itemId          String
+  stockLotId      String?
+  movementType    String
+  movementDate    DateTime
+  quantity        Float
+  unitCost        Float         @default(0)
+  totalCost       Float         @default(0)
   unitOfMeasureId String
+  referenceType   String?
+  referenceId     String?
+  referenceNumber String?
+  locationId      String?
+  locationName    String?
+  journalEntryId  String?
+  goodsReceiptId  String?
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  goodsReceipt    GoodsReceipt? @relation("ReceiptStockMovements", fields: [goodsReceiptId], references: [id])
+  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  location        Location?     @relation("LocationStockMovements", fields: [locationId], references: [id])
   unitOfMeasure   UnitOfMeasure @relation(fields: [unitOfMeasureId], references: [id])
-
-  // Reference information
-  referenceType   String? // 'PURCHASE', 'SALE', 'ADJUSTMENT', 'TRANSFER'
-  referenceId     String? // ID of source document
-  referenceNumber String? // Human readable reference
-
-  // Location tracking
-  locationId   String?
-  location     Location? @relation("LocationStockMovements", fields: [locationId], references: [id])
-  locationName String? // Location description for legacy support
-
-  // GL Integration
-  journalEntryId String?
-  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
-  goodsReceiptId String?
-  goodsReceipt   GoodsReceipt? @relation("ReceiptStockMovements", fields: [goodsReceiptId], references: [id])
-
-  // Notes and approval
-  notes      String?
-  approvedBy String?
-  approvedAt DateTime?
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  stockLot        StockLot?     @relation(fields: [stockLotId], references: [id])
+  item            Item          @relation(fields: [itemId], references: [id])
 
   @@index([itemId])
   @@index([movementType])
@@ -1102,42 +741,22 @@ model StockMovement {
   @@index([referenceType, referenceId])
 }
 
-// Enums for Inventory
-enum ItemType {
-  PRODUCT // Physical goods
-  SERVICE // Services
-  ASSEMBLY // Bill of materials (future)
-}
-
-enum MovementType {
-  STOCK_IN // Purchase, production, adjustment in
-  STOCK_OUT // Sale, consumption, adjustment out
-  TRANSFER // Location transfer (future)
-  ADJUSTMENT // Stock adjustments
-  OPENING // Opening balance
-}
-
-// Stock Reservation model for sales order allocation
 model StockReservation {
   id               String          @id @default(cuid())
   itemId           String
-  item             Item            @relation("ItemStockReservations", fields: [itemId], references: [id])
   salesOrderId     String
-  salesOrder       SalesOrder      @relation("OrderStockReservations", fields: [salesOrderId], references: [id])
   salesOrderItemId String?
-  salesOrderItem   SalesOrderItem? @relation("OrderItemStockReservations", fields: [salesOrderItemId], references: [id])
-
-  // Reservation details
   quantityReserved Float
-  status           ReservationStatus @default(ACTIVE)
-
-  // Audit fields
-  reservedBy String
-  reservedAt DateTime  @default(now())
-  releasedBy String?
-  releasedAt DateTime?
-  expiresAt  DateTime?
-  notes      String?
+  status           String          @default("ACTIVE")
+  reservedBy       String
+  reservedAt       DateTime        @default(now())
+  releasedBy       String?
+  releasedAt       DateTime?
+  expiresAt        DateTime?
+  notes            String?
+  salesOrderItem   SalesOrderItem? @relation("OrderItemStockReservations", fields: [salesOrderItemId], references: [id])
+  salesOrder       SalesOrder      @relation("OrderStockReservations", fields: [salesOrderId], references: [id])
+  item             Item            @relation("ItemStockReservations", fields: [itemId], references: [id])
 
   @@index([itemId])
   @@index([salesOrderId])
@@ -1145,28 +764,17 @@ model StockReservation {
   @@index([reservedAt])
 }
 
-enum ReservationStatus {
-  ACTIVE
-  RELEASED
-  EXPIRED
-  CONSUMED
-  CANCELLED
-}
-
-// Exchange Rates for multi-currency support
 model ExchangeRate {
   id           String   @id @default(cuid())
-  fromCurrency String // Source currency (e.g., "EUR")
-  toCurrency   String // Target currency (e.g., "USD")
-  rate         Float // Exchange rate (1 fromCurrency = rate * toCurrency)
-  rateDate     DateTime // Date the rate is effective
-  source       String   @default("manual") // "manual", "api", "bank", etc.
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  rateDate     DateTime
+  source       String   @default("manual")
   isActive     Boolean  @default(true)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdBy    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([fromCurrency, toCurrency, rateDate])
   @@index([fromCurrency, toCurrency])
@@ -1174,42 +782,29 @@ model ExchangeRate {
   @@index([isActive])
 }
 
-// Customer Purchase Order model - Track customer POs against quotations
 model CustomerPO {
-  id          String    @id @default(cuid())
-  poNumber    String    @unique
-  customerId  String
-  customer    Customer  @relation(fields: [customerId], references: [id])
-  quotationId String
-  quotation   Quotation @relation(fields: [quotationId], references: [id])
-  salesCaseId String
-  salesCase   SalesCase @relation(fields: [salesCaseId], references: [id])
-
-  // PO details
-  poDate       DateTime
-  poAmount     Float
-  currency     String   @default("USD")
-  exchangeRate Float    @default(1.0)
-
-  // Documents
+  id            String      @id @default(cuid())
+  poNumber      String      @unique
+  customerId    String
+  quotationId   String
+  salesCaseId   String
+  poDate        DateTime
+  poAmount      Float
+  currency      String      @default("USD")
+  exchangeRate  Float       @default(1.0)
   attachmentUrl String?
-
-  // Status tracking
-  isAccepted Boolean   @default(false)
-  acceptedAt DateTime?
-  acceptedBy String?
-
-  // Linked sales order
-  salesOrderId String?     @unique
-  salesOrder   SalesOrder? @relation(fields: [salesOrderId], references: [id])
-
-  // Notes
-  notes String?
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isAccepted    Boolean     @default(false)
+  acceptedAt    DateTime?
+  acceptedBy    String?
+  salesOrderId  String?     @unique
+  notes         String?
+  createdBy     String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  salesOrder    SalesOrder? @relation(fields: [salesOrderId], references: [id])
+  salesCase     SalesCase   @relation(fields: [salesCaseId], references: [id])
+  quotation     Quotation   @relation(fields: [quotationId], references: [id])
+  customer      Customer    @relation(fields: [customerId], references: [id])
 
   @@index([customerId])
   @@index([quotationId])
@@ -1217,44 +812,33 @@ model CustomerPO {
   @@index([poDate])
 }
 
-// Case Expense model - Track expenses per sales case
 model CaseExpense {
-  id          String    @id @default(cuid())
-  salesCaseId String
-  salesCase   SalesCase @relation(fields: [salesCaseId], references: [id])
-
-  // Expense details
-  expenseDate  DateTime
-  category     String // Travel, Materials, Labor, etc.
-  description  String
-  amount       Float
-  currency     String   @default("USD")
-  exchangeRate Float    @default(1.0)
-  baseAmount   Float // Amount in base currency
-
-  // Documentation
-  attachmentUrl String?
-  receiptNumber String?
-  vendor        String?
-
-  // Approval workflow
-  status          ExpenseStatus @default(DRAFT)
+  id              String        @id @default(cuid())
+  salesCaseId     String
+  expenseDate     DateTime
+  category        String
+  description     String
+  amount          Float
+  currency        String        @default("USD")
+  exchangeRate    Float         @default(1.0)
+  baseAmount      Float
+  attachmentUrl   String?
+  receiptNumber   String?
+  vendor          String?
+  status          String        @default("DRAFT")
   approvedBy      String?
   approvedAt      DateTime?
   rejectedBy      String?
   rejectedAt      DateTime?
   rejectionReason String?
-
-  // GL Integration
-  accountId      String? // Expense account
-  account        Account?      @relation(fields: [accountId], references: [id])
-  journalEntryId String? // Link to journal entry
-  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  accountId       String?
+  journalEntryId  String?
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  account         Account?      @relation(fields: [accountId], references: [id])
+  salesCase       SalesCase     @relation(fields: [salesCaseId], references: [id])
 
   @@index([salesCaseId])
   @@index([expenseDate])
@@ -1262,112 +846,76 @@ model CaseExpense {
   @@index([status])
 }
 
-// ============================================
-// PURCHASE ORDER MANAGEMENT MODELS
-// ============================================
-
-// Supplier/Vendor Master Data
 model Supplier {
-  id             String  @id @default(cuid())
-  supplierNumber String  @unique
-  name           String
-  email          String? @unique
-  phone          String?
-  website        String?
-  address        String?
-  taxId          String? // Tax identification number
-  currency       String  @default("USD")
-
-  // Financial terms
-  paymentTerms Int   @default(30) // Days
-  creditLimit  Float @default(0)
-  discount     Float @default(0) // Default discount percentage
-
-  // Bank details
-  bankName      String?
-  bankAccount   String?
-  routingNumber String?
-
-  // Contact information
-  contactPerson String?
-  contactEmail  String?
-  contactPhone  String?
-
-  // GL Integration
-  accountId String?  @unique // Link to AP account
-  account   Account? @relation("SupplierAccount", fields: [accountId], references: [id])
-
-  // System flags
-  isActive    Boolean @default(true)
-  isPreferred Boolean @default(false)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
+  id               String            @id @default(cuid())
+  supplierNumber   String            @unique
+  name             String
+  email            String?           @unique
+  phone            String?
+  website          String?
+  address          String?
+  taxId            String?
+  currency         String            @default("USD")
+  paymentTerms     Int               @default(30)
+  creditLimit      Float             @default(0)
+  discount         Float             @default(0)
+  bankName         String?
+  bankAccount      String?
+  routingNumber    String?
+  contactPerson    String?
+  contactEmail     String?
+  contactPhone     String?
+  accountId        String?           @unique
+  isActive         Boolean           @default(true)
+  isPreferred      Boolean           @default(false)
+  createdBy        String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   purchaseOrders   PurchaseOrder[]
+  stockLots        StockLot[]        @relation("SupplierStockLots")
+  account          Account?          @relation("SupplierAccount", fields: [accountId], references: [id])
   supplierInvoices SupplierInvoice[]
   supplierPayments SupplierPayment[]
-  stockLots        StockLot[]        @relation("SupplierStockLots")
 
   @@index([supplierNumber])
   @@index([name])
   @@index([isActive])
 }
 
-// Purchase Order Header
 model PurchaseOrder {
-  id         String   @id @default(cuid())
-  poNumber   String   @unique
-  supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
-
-  // Order details
-  status       POStatus  @default(DRAFT)
-  orderDate    DateTime  @default(now())
-  expectedDate DateTime? // Expected delivery date
-  requestedBy  String? // Who requested this PO
-
-  // Financial totals
-  subtotal       Float @default(0)
-  taxAmount      Float @default(0)
-  discountAmount Float @default(0)
-  shippingAmount Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Received and invoiced tracking
-  receivedAmount Float @default(0)
-  invoicedAmount Float @default(0)
-  paidAmount     Float @default(0)
-
-  // Terms and conditions
-  paymentTerms    String?
-  deliveryTerms   String?
-  shippingAddress String?
-  billingAddress  String?
-  notes           String?
-  internalNotes   String?
-
-  // Approval workflow
-  approvedBy     String?
-  approvedAt     DateTime?
-  sentToSupplier Boolean   @default(false)
-  sentAt         DateTime?
-
-  // Currency support
-  currency     String @default("USD")
-  exchangeRate Float  @default(1.0)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items            PurchaseOrderItem[]
+  id               String              @id @default(cuid())
+  poNumber         String              @unique
+  supplierId       String
+  status           String              @default("DRAFT")
+  orderDate        DateTime            @default(now())
+  expectedDate     DateTime?
+  requestedBy      String?
+  subtotal         Float               @default(0)
+  taxAmount        Float               @default(0)
+  discountAmount   Float               @default(0)
+  shippingAmount   Float               @default(0)
+  totalAmount      Float               @default(0)
+  receivedAmount   Float               @default(0)
+  invoicedAmount   Float               @default(0)
+  paidAmount       Float               @default(0)
+  paymentTerms     String?
+  deliveryTerms    String?
+  shippingAddress  String?
+  billingAddress   String?
+  notes            String?
+  internalNotes    String?
+  approvedBy       String?
+  approvedAt       DateTime?
+  sentToSupplier   Boolean             @default(false)
+  sentAt           DateTime?
+  currency         String              @default("USD")
+  exchangeRate     Float               @default(1.0)
+  createdBy        String
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   receipts         GoodsReceipt[]
+  supplier         Supplier            @relation(fields: [supplierId], references: [id])
+  items            PurchaseOrderItem[]
   supplierInvoices SupplierInvoice[]
 
   @@index([supplierId])
@@ -1376,149 +924,105 @@ model PurchaseOrder {
   @@index([poNumber])
 }
 
-// Purchase Order Line Items
 model PurchaseOrderItem {
-  id              String        @id @default(cuid())
-  purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-
-  // Item details
-  itemId        String? // Optional link to Item master
-  item          Item?    @relation("POItemProduct", fields: [itemId], references: [id])
-  itemCode      String
-  description   String
-  quantity      Float    @default(1)
-  unitPrice     Float    @default(0)
-  discount      Float    @default(0) // Percentage
-  taxRate       Float    @default(0) // Percentage
-  taxRateId     String? // Link to tax configuration
-  taxRateConfig TaxRate? @relation("POItemTaxRate", fields: [taxRateId], references: [id])
-
-  // Unit of measure
-  unitOfMeasureId String?
-  unitOfMeasure   UnitOfMeasure? @relation("POItemUoM", fields: [unitOfMeasureId], references: [id])
-
-  // Calculated amounts
-  subtotal       Float @default(0)
-  discountAmount Float @default(0)
-  taxAmount      Float @default(0)
-  totalAmount    Float @default(0)
-
-  // Receiving tracking
-  quantityReceived Float @default(0)
-  quantityInvoiced Float @default(0)
-
-  // Sort order
-  sortOrder Int @default(0)
-
-  // Relations
-  receiptItems GoodsReceiptItem[]
+  id               String             @id @default(cuid())
+  purchaseOrderId  String
+  itemId           String?
+  itemCode         String
+  description      String
+  quantity         Float              @default(1)
+  unitPrice        Float              @default(0)
+  discount         Float              @default(0)
+  taxRate          Float              @default(0)
+  taxRateId        String?
+  unitOfMeasureId  String?
+  subtotal         Float              @default(0)
+  discountAmount   Float              @default(0)
+  taxAmount        Float              @default(0)
+  totalAmount      Float              @default(0)
+  quantityReceived Float              @default(0)
+  quantityInvoiced Float              @default(0)
+  sortOrder        Int                @default(0)
+  receiptItems     GoodsReceiptItem[]
+  unitOfMeasure    UnitOfMeasure?     @relation("POItemUoM", fields: [unitOfMeasureId], references: [id])
+  taxRateConfig    TaxRate?           @relation("POItemTaxRate", fields: [taxRateId], references: [id])
+  item             Item?              @relation("POItemProduct", fields: [itemId], references: [id])
+  purchaseOrder    PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
   @@index([purchaseOrderId])
   @@index([itemId])
 }
 
-// Goods Receipt for PO receiving
 model GoodsReceipt {
-  id              String        @id @default(cuid())
-  receiptNumber   String        @unique
+  id              String             @id @default(cuid())
+  receiptNumber   String             @unique
   purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
-
-  // Receipt details
-  receiptDate  DateTime @default(now())
-  deliveryNote String? // Supplier delivery note number
-  receivedBy   String
-
-  // Quality and condition
-  condition String? // "Good", "Damaged", "Incomplete"
-  notes     String?
-
-  // Status
-  status ReceiptStatus @default(PENDING)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items          GoodsReceiptItem[]
-  stockMovements StockMovement[]    @relation("ReceiptStockMovements")
+  receiptDate     DateTime           @default(now())
+  deliveryNote    String?
+  receivedBy      String
+  condition       String?
+  notes           String?
+  status          String             @default("PENDING")
+  createdBy       String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  purchaseOrder   PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
+  items           GoodsReceiptItem[]
+  stockMovements  StockMovement[]    @relation("ReceiptStockMovements")
 
   @@index([purchaseOrderId])
   @@index([receiptDate])
   @@index([status])
 }
 
-// Goods Receipt Line Items
 model GoodsReceiptItem {
   id                  String            @id @default(cuid())
   goodsReceiptId      String
-  goodsReceipt        GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
   purchaseOrderItemId String
+  itemId              String
+  itemCode            String
+  description         String
+  quantityOrdered     Float
+  quantityReceived    Float
+  unitCost            Float
+  condition           String?
+  notes               String?
+  item                Item              @relation("ReceiptItemProduct", fields: [itemId], references: [id])
   purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
-
-  // Item details
-  itemId           String
-  item             Item   @relation("ReceiptItemProduct", fields: [itemId], references: [id])
-  itemCode         String
-  description      String
-  quantityOrdered  Float // From PO
-  quantityReceived Float // Actually received
-  unitCost         Float // Cost per unit
-
-  // Quality notes
-  condition String? // Item condition
-  notes     String?
+  goodsReceipt        GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
 
   @@index([goodsReceiptId])
   @@index([purchaseOrderItemId])
   @@index([itemId])
 }
 
-// Supplier Invoice (AP Invoice)
 model SupplierInvoice {
-  id              String         @id @default(cuid())
-  invoiceNumber   String         @unique
+  id              String            @id @default(cuid())
+  invoiceNumber   String            @unique
   supplierId      String
-  supplier        Supplier       @relation(fields: [supplierId], references: [id])
-  purchaseOrderId String? // Optional link to PO
-  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
-
-  // Invoice details
-  invoiceDate  DateTime
-  dueDate      DateTime
-  paymentTerms String?
-
-  // Financial totals
-  subtotal       Float @default(0)
-  taxAmount      Float @default(0)
-  discountAmount Float @default(0)
-  totalAmount    Float @default(0)
-  paidAmount     Float @default(0)
-
-  // Status and approval
-  status         SupplierInvoiceStatus @default(RECEIVED)
-  matchingStatus String? // "MATCHED", "DISCREPANCY", "PENDING"
-  approvedBy     String?
-  approvedAt     DateTime?
-
-  // Currency support
-  currency     String @default("USD")
-  exchangeRate Float  @default(1.0)
-
-  // GL Integration
-  journalEntryId String?
-  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  payments SupplierPayment[]
+  purchaseOrderId String?
+  invoiceDate     DateTime
+  dueDate         DateTime
+  paymentTerms    String?
+  subtotal        Float             @default(0)
+  taxAmount       Float             @default(0)
+  discountAmount  Float             @default(0)
+  totalAmount     Float             @default(0)
+  paidAmount      Float             @default(0)
+  status          String            @default("RECEIVED")
+  matchingStatus  String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  currency        String            @default("USD")
+  exchangeRate    Float             @default(1.0)
+  journalEntryId  String?
+  createdBy       String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  journalEntry    JournalEntry?     @relation(fields: [journalEntryId], references: [id])
+  purchaseOrder   PurchaseOrder?    @relation(fields: [purchaseOrderId], references: [id])
+  supplier        Supplier          @relation(fields: [supplierId], references: [id])
+  payments        SupplierPayment[]
 
   @@index([supplierId])
   @@index([purchaseOrderId])
@@ -1527,35 +1031,26 @@ model SupplierInvoice {
   @@index([dueDate])
 }
 
-// Supplier Payments (AP Payments)
 model SupplierPayment {
   id                String           @id @default(cuid())
   paymentNumber     String           @unique
   supplierId        String
-  supplier          Supplier         @relation(fields: [supplierId], references: [id])
   supplierInvoiceId String?
+  paymentDate       DateTime         @default(now())
+  paymentMethod     String
+  amount            Float
+  reference         String?
+  notes             String?
+  currency          String           @default("USD")
+  exchangeRate      Float            @default(1.0)
+  baseAmount        Float
+  journalEntryId    String?
+  createdBy         String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  journalEntry      JournalEntry?    @relation(fields: [journalEntryId], references: [id])
   supplierInvoice   SupplierInvoice? @relation(fields: [supplierInvoiceId], references: [id])
-
-  // Payment details
-  paymentDate   DateTime      @default(now())
-  paymentMethod PaymentMethod
-  amount        Float
-  reference     String? // Check number, wire reference, etc.
-  notes         String?
-
-  // Currency support
-  currency     String @default("USD")
-  exchangeRate Float  @default(1.0)
-  baseAmount   Float // Amount in base currency
-
-  // GL Integration
-  journalEntryId String?
-  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  supplier          Supplier         @relation(fields: [supplierId], references: [id])
 
   @@index([supplierId])
   @@index([supplierInvoiceId])
@@ -1563,109 +1058,51 @@ model SupplierPayment {
   @@index([paymentMethod])
 }
 
-// Purchase Order Status Enum
-enum POStatus {
-  DRAFT // PO being created
-  SUBMITTED // PO submitted for approval
-  APPROVED // PO approved, ready to send
-  ORDERED // PO sent to supplier
-  PARTIAL_RECEIVED // Some items received
-  RECEIVED // All items received
-  PARTIAL_INVOICED // Some items invoiced
-  INVOICED // All items invoiced
-  COMPLETED // Fully received, invoiced, and paid
-  CANCELLED // PO cancelled
-  ON_HOLD // PO temporarily on hold
-}
-
-// Goods Receipt Status Enum
-enum ReceiptStatus {
-  PENDING // Receipt created, pending processing
-  COMPLETED // Receipt processed and posted to inventory
-  REJECTED // Receipt rejected due to quality issues
-}
-
-// Supplier Invoice Status Enum
-enum SupplierInvoiceStatus {
-  RECEIVED // Invoice received
-  MATCHED // Matched to PO/Receipt
-  APPROVED // Approved for payment
-  PAID // Fully paid
-  DISPUTED // Invoice disputed
-  CANCELLED // Invoice cancelled
-}
-
-// ============================================
-// TAX CONFIGURATION MODELS
-// ============================================
-
-// Tax Categories - for grouping tax rates
 model TaxCategory {
-  id          String  @id @default(cuid())
-  code        String  @unique
+  id          String    @id @default(cuid())
+  code        String    @unique
   name        String
   description String?
-
-  // System flags
-  isActive  Boolean @default(true)
-  isDefault Boolean @default(false)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  taxRates TaxRate[]
+  isActive    Boolean   @default(true)
+  isDefault   Boolean   @default(false)
+  createdBy   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  taxRates    TaxRate[]
 
   @@index([code])
   @@index([isActive])
 }
 
-// Tax Rates - actual tax percentages and rules
 model TaxRate {
-  id          String  @id @default(cuid())
-  code        String  @unique
-  name        String
-  description String?
-
-  // Tax configuration
-  rate       Float // Tax percentage (e.g., 5 for 5%)
-  categoryId String
-  category   TaxCategory @relation(fields: [categoryId], references: [id])
-
-  // Applicability
-  taxType   TaxType @default(SALES)
-  appliesTo String  @default("ALL") // ALL, PRODUCTS, SERVICES
-
-  // Effective dates
-  effectiveFrom DateTime  @default(now())
-  effectiveTo   DateTime?
-
-  // System flags
-  isActive   Boolean @default(true)
-  isDefault  Boolean @default(false)
-  isCompound Boolean @default(false) // Tax on tax
-
-  // GL Integration
-  collectedAccountId String? // Tax collected account (liability)
-  collectedAccount   Account? @relation("TaxCollectedAccount", fields: [collectedAccountId], references: [id])
-  paidAccountId      String? // Tax paid account (asset)
-  paidAccount        Account? @relation("TaxPaidAccount", fields: [paidAccountId], references: [id])
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  quotationItems     QuotationItem[]     @relation("QuotationItemTaxRate")
-  quotationTemplateItems QuotationTemplateItem[] @relation("TemplateItemTaxRate")
-  salesOrderItems    SalesOrderItem[]    @relation("SalesOrderItemTaxRate")
+  id                      String                   @id @default(cuid())
+  code                    String                   @unique
+  name                    String
+  description             String?
+  rate                    Float
+  categoryId              String
+  taxType                 String                   @default("SALES")
+  appliesTo               String                   @default("ALL")
+  effectiveFrom           DateTime                 @default(now())
+  effectiveTo             DateTime?
+  isActive                Boolean                  @default(true)
+  isDefault               Boolean                  @default(false)
+  isCompound              Boolean                  @default(false)
+  collectedAccountId      String?
+  paidAccountId           String?
+  createdBy               String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  invoiceItems            InvoiceItem[]            @relation("InvoiceItemTaxRate")
+  purchaseOrderItems      PurchaseOrderItem[]      @relation("POItemTaxRate")
+  quotationItems          QuotationItem[]          @relation("QuotationItemTaxRate")
+  quotationTemplateItems  QuotationTemplateItem[]  @relation("TemplateItemTaxRate")
+  salesOrderItems         SalesOrderItem[]         @relation("SalesOrderItemTaxRate")
   salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemTaxRate")
-  invoiceItems       InvoiceItem[]       @relation("InvoiceItemTaxRate")
-  purchaseOrderItems PurchaseOrderItem[] @relation("POItemTaxRate")
-  taxExemptions      TaxExemption[]
+  taxExemptions           TaxExemption[]
+  paidAccount             Account?                 @relation("TaxPaidAccount", fields: [paidAccountId], references: [id])
+  collectedAccount        Account?                 @relation("TaxCollectedAccount", fields: [collectedAccountId], references: [id])
+  category                TaxCategory              @relation(fields: [categoryId], references: [id])
 
   @@index([code])
   @@index([categoryId])
@@ -1674,34 +1111,21 @@ model TaxRate {
   @@index([effectiveFrom, effectiveTo])
 }
 
-// Tax exemptions for specific customers/suppliers
 model TaxExemption {
-  id String @id @default(cuid())
-
-  // Entity reference
-  entityType String // CUSTOMER or SUPPLIER
-  entityId   String // Customer or Supplier ID
-
-  // Exemption details
-  taxRateId       String? // Specific tax rate exempted (null = all taxes)
-  taxRate         TaxRate? @relation(fields: [taxRateId], references: [id])
-  exemptionNumber String? // Government-issued exemption number
+  id              String    @id @default(cuid())
+  entityType      String
+  entityId        String
+  taxRateId       String?
+  exemptionNumber String?
   reason          String?
-
-  // Validity period
-  effectiveFrom DateTime  @default(now())
-  effectiveTo   DateTime?
-
-  // Documentation
-  attachmentUrl String?
-
-  // System flags
-  isActive Boolean @default(true)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  effectiveFrom   DateTime  @default(now())
+  effectiveTo     DateTime?
+  attachmentUrl   String?
+  isActive        Boolean   @default(true)
+  createdBy       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  taxRate         TaxRate?  @relation(fields: [taxRateId], references: [id])
 
   @@index([entityType, entityId])
   @@index([taxRateId])
@@ -1709,84 +1133,50 @@ model TaxExemption {
   @@index([effectiveFrom, effectiveTo])
 }
 
-// Enum for Tax Types
-enum TaxType {
-  SALES // Sales tax/VAT on sales
-  PURCHASE // Tax on purchases
-  WITHHOLDING // Withholding tax
-  EXCISE // Excise duty
-  CUSTOMS // Customs duty
-  SERVICE // Service tax
-  OTHER // Other tax types
-}
-
-// ============================================
-// COMPANY SETTINGS MODEL
-// ============================================
-
 model CompanySettings {
-  id          String  @id @default(cuid())
-  companyName String  @default("EnXi ERP")
-  address     String?
-  phone       String?
-  email       String?
-  website     String?
-  logoUrl     String? // Company logo URL
-
-  // Currency settings
-  defaultCurrency String @default("USD")
-
-  // Tax settings
-  defaultTaxRateId      String? // Default tax rate for new transactions
-  taxRegistrationNumber String? // Company's tax registration number
-
-  // Quotation settings
-  quotationTermsAndConditions String? // Default T&C for quotations
-  quotationFooterNotes        String? // Default footer notes
-  quotationValidityDays       Int     @default(30) // Default validity period in days
-  quotationPrefix             String  @default("QUOT") // Prefix for quotation numbers
-  quotationNumberFormat       String  @default("PREFIX-YYYY-NNNN") // Number format pattern
-  
-  // Sales Order settings
-  orderPrefix                String  @default("SO") // Prefix for sales order numbers
-  orderNumberFormat          String  @default("PREFIX-YYYY-NNNN") // Number format pattern
-  defaultOrderPaymentTerms   String? // Default payment terms for orders
-  defaultOrderShippingTerms  String? // Default shipping terms
-  defaultShippingMethod      String? // Default shipping method
-  autoReserveInventory       Boolean @default(true) // Auto-reserve inventory on order approval
-  requireCustomerPO          Boolean @default(false) // Require customer PO for orders
-  orderApprovalThreshold     Float?  // Orders above this amount require approval
-  orderConfirmationTemplate  String? // Template for order confirmation emails
-  
-  // Display settings
-  showCompanyLogoOnQuotations Boolean @default(true)
-  showCompanyLogoOnOrders     Boolean @default(true)
-  showTaxBreakdown            Boolean @default(true)
-  
-  // System flags
-  isActive Boolean @default(true)
-
-  // Audit fields
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  updatedBy String?
+  id                          String   @id @default(cuid())
+  companyName                 String   @default("EnXi ERP")
+  address                     String?
+  phone                       String?
+  email                       String?
+  website                     String?
+  logoUrl                     String?
+  defaultCurrency             String   @default("USD")
+  defaultTaxRateId            String?
+  taxRegistrationNumber       String?
+  quotationTermsAndConditions String?
+  quotationFooterNotes        String?
+  quotationValidityDays       Int      @default(30)
+  quotationPrefix             String   @default("QUOT")
+  quotationNumberFormat       String   @default("PREFIX-YYYY-NNNN")
+  orderPrefix                 String   @default("SO")
+  orderNumberFormat           String   @default("PREFIX-YYYY-NNNN")
+  defaultOrderPaymentTerms    String?
+  defaultOrderShippingTerms   String?
+  defaultShippingMethod       String?
+  autoReserveInventory        Boolean  @default(true)
+  requireCustomerPO           Boolean  @default(false)
+  orderApprovalThreshold      Float?
+  orderConfirmationTemplate   String?
+  showCompanyLogoOnQuotations Boolean  @default(true)
+  showCompanyLogoOnOrders     Boolean  @default(true)
+  showTaxBreakdown            Boolean  @default(true)
+  isActive                    Boolean  @default(true)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  updatedBy                   String?
 
   @@index([isActive])
 }
 
-// ============================================
-// USER MANAGEMENT & RBAC MODELS
-// ============================================
-
 model Permission {
-  id          String   @id @default(cuid())
-  code        String   @unique // e.g., "sales.create", "inventory.update"
-  name        String
-  description String?
-  module      String // sales, inventory, accounting, etc.
-  action      String // create, read, update, delete, approve, etc.
-  createdAt   DateTime @default(now())
-
+  id              String           @id @default(cuid())
+  code            String           @unique
+  name            String
+  description     String?
+  module          String
+  action          String
+  createdAt       DateTime         @default(now())
   rolePermissions RolePermission[]
   userPermissions UserPermission[]
 
@@ -1796,10 +1186,10 @@ model Permission {
 
 model RolePermission {
   id           String     @id @default(cuid())
-  role         Role
+  role         String
   permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id])
   createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id])
 
   @@unique([role, permissionId])
   @@index([role])
@@ -1808,12 +1198,12 @@ model RolePermission {
 model UserPermission {
   id           String     @id @default(cuid())
   userId       String
-  user         User       @relation(fields: [userId], references: [id])
   permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  granted      Boolean    @default(true) // Can revoke specific permissions
-  expiresAt    DateTime? // Temporary permissions
+  granted      Boolean    @default(true)
+  expiresAt    DateTime?
   createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
 
   @@unique([userId, permissionId])
   @@index([userId])
@@ -1823,7 +1213,6 @@ model UserPermission {
 model UserProfile {
   id                  String    @id @default(cuid())
   userId              String    @unique
-  user                User      @relation(fields: [userId], references: [id])
   firstName           String?
   lastName            String?
   phone               String?
@@ -1838,6 +1227,7 @@ model UserProfile {
   lockedUntil         DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -1845,133 +1235,91 @@ model UserProfile {
 model UserSession {
   id           String   @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id])
   token        String   @unique
   ipAddress    String?
   userAgent    String?
   lastActivity DateTime @default(now())
   expiresAt    DateTime
   createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([token])
   @@index([expiresAt])
 }
 
-// ============================================
-// SALES TEAM MANAGEMENT MODELS
-// ============================================
-
 model SalesTeamMember {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
-
-  // Sales team details
-  salesTarget    Float   @default(0) // Monthly sales target
-  commission     Float   @default(0) // Commission percentage
-  territory      String? // Sales territory/region
-  specialization String? // Product line or industry focus
-
-  // Performance tracking
-  currentMonthSales Float @default(0)
-  yearToDateSales   Float @default(0)
-
-  // Team assignment
-  teamName   String?
-  isTeamLead Boolean @default(false)
-
-  // Audit fields
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  salesTarget       Float    @default(0)
+  commission        Float    @default(0)
+  territory         String?
+  specialization    String?
+  currentMonthSales Float    @default(0)
+  yearToDateSales   Float    @default(0)
+  teamName          String?
+  isTeamLead        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
 
-// ============================================
-// MULTI-LOCATION SUPPORT MODELS
-// ============================================
-
-// Location/Warehouse Master Data
 model Location {
-  id           String       @id @default(cuid())
-  locationCode String       @unique
-  name         String
-  type         LocationType @default(WAREHOUSE)
-  description  String?
-
-  // Address information
-  address    String?
-  city       String?
-  state      String?
-  country    String  @default("US")
-  postalCode String?
-
-  // Contact information
-  contactPerson String?
-  phone         String?
-  email         String?
-
-  // Operational details
-  isActive           Boolean @default(true)
-  isDefault          Boolean @default(false)
-  allowNegativeStock Boolean @default(false)
-
-  // Capacity and constraints
-  maxCapacity        Float? // Maximum storage capacity
-  currentUtilization Float  @default(0) // Current utilization percentage
-
-  // GL Integration
-  inventoryAccountId String? // Default inventory account for this location
-  inventoryAccount   Account? @relation("LocationInventoryAccount", fields: [inventoryAccountId], references: [id])
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  stockMovements     StockMovement[]    @relation("LocationStockMovements")
-  stockLots          LocationStockLot[]
-  stockTransfersFrom StockTransfer[]    @relation("TransferFromLocation")
-  stockTransfersTo   StockTransfer[]    @relation("TransferToLocation")
+  id                 String             @id @default(cuid())
+  locationCode       String             @unique
+  name               String
+  type               String             @default("WAREHOUSE")
+  description        String?
+  address            String?
+  city               String?
+  state              String?
+  country            String             @default("US")
+  postalCode         String?
+  contactPerson      String?
+  phone              String?
+  email              String?
+  isActive           Boolean            @default(true)
+  isDefault          Boolean            @default(false)
+  allowNegativeStock Boolean            @default(false)
+  maxCapacity        Float?
+  currentUtilization Float              @default(0)
+  inventoryAccountId String?
+  createdBy          String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   inventoryBalances  InventoryBalance[]
+  inventoryAccount   Account?           @relation("LocationInventoryAccount", fields: [inventoryAccountId], references: [id])
+  stockLots          LocationStockLot[]
   physicalCounts     PhysicalCount[]
+  stockMovements     StockMovement[]    @relation("LocationStockMovements")
+  stockTransfersTo   StockTransfer[]    @relation("TransferToLocation")
+  stockTransfersFrom StockTransfer[]    @relation("TransferFromLocation")
 
   @@index([locationCode])
   @@index([type])
   @@index([isActive])
 }
 
-// Location-based Stock Balances
 model InventoryBalance {
-  id         String   @id @default(cuid())
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id])
-  itemId     String
-  item       Item     @relation("ItemLocationBalances", fields: [itemId], references: [id])
-
-  // Balance information
-  availableQuantity Float @default(0)
-  reservedQuantity  Float @default(0) // Reserved for sales orders
-  onOrderQuantity   Float @default(0) // Incoming from purchase orders
-  totalQuantity     Float @default(0) // Total physical quantity
-
-  // Costing
-  averageCost Float @default(0)
-  totalValue  Float @default(0)
-
-  // Stock level management
-  minStockLevel Float? // Location-specific minimum
-  maxStockLevel Float? // Location-specific maximum
-  reorderPoint  Float? // Location-specific reorder point
-
-  // Last updated
-  lastMovementDate DateTime?
-  lastCountDate    DateTime?
-
-  // Audit fields
-  updatedAt DateTime @updatedAt
+  id                String    @id @default(cuid())
+  locationId        String
+  itemId            String
+  availableQuantity Float     @default(0)
+  reservedQuantity  Float     @default(0)
+  onOrderQuantity   Float     @default(0)
+  totalQuantity     Float     @default(0)
+  averageCost       Float     @default(0)
+  totalValue        Float     @default(0)
+  minStockLevel     Float?
+  maxStockLevel     Float?
+  reorderPoint      Float?
+  lastMovementDate  DateTime?
+  lastCountDate     DateTime?
+  updatedAt         DateTime  @updatedAt
+  item              Item      @relation("ItemLocationBalances", fields: [itemId], references: [id])
+  location          Location  @relation(fields: [locationId], references: [id])
 
   @@unique([locationId, itemId])
   @@index([locationId])
@@ -1979,26 +1327,19 @@ model InventoryBalance {
   @@index([availableQuantity])
 }
 
-// Location-specific Stock Lots
 model LocationStockLot {
-  id         String   @id @default(cuid())
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id])
-  stockLotId String
-  stockLot   StockLot @relation("LotLocationStock", fields: [stockLotId], references: [id])
-
-  // Location-specific quantities
-  availableQty Float @default(0)
-  reservedQty  Float @default(0)
-
-  // Storage details
-  zone  String? // Storage zone within location
-  aisle String? // Aisle reference
-  shelf String? // Shelf reference
-  bin   String? // Bin reference
-
-  // Last updated
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  locationId   String
+  stockLotId   String
+  availableQty Float    @default(0)
+  reservedQty  Float    @default(0)
+  zone         String?
+  aisle        String?
+  shelf        String?
+  bin          String?
+  updatedAt    DateTime @updatedAt
+  stockLot     StockLot @relation("LotLocationStock", fields: [stockLotId], references: [id])
+  location     Location @relation(fields: [locationId], references: [id])
 
   @@unique([locationId, stockLotId])
   @@index([locationId])
@@ -2006,47 +1347,32 @@ model LocationStockLot {
   @@index([availableQty])
 }
 
-// Stock Transfers between locations
 model StockTransfer {
-  id             String @id @default(cuid())
-  transferNumber String @unique
-
-  // Transfer locations
+  id             String              @id @default(cuid())
+  transferNumber String              @unique
   fromLocationId String
-  fromLocation   Location @relation("TransferFromLocation", fields: [fromLocationId], references: [id])
   toLocationId   String
-  toLocation     Location @relation("TransferToLocation", fields: [toLocationId], references: [id])
-
-  // Transfer details
-  transferDate DateTime       @default(now())
-  expectedDate DateTime?
-  status       TransferStatus @default(PENDING)
-
-  // Reason and documentation
-  reason        String?
-  notes         String?
-  attachmentUrl String?
-
-  // Approval workflow
-  requestedBy String
-  approvedBy  String?
-  approvedAt  DateTime?
-  shippedBy   String?
-  shippedAt   DateTime?
-  receivedBy  String?
-  receivedAt  DateTime?
-
-  // Totals
-  totalQuantity Float @default(0)
-  totalValue    Float @default(0)
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items StockTransferItem[]
+  transferDate   DateTime            @default(now())
+  expectedDate   DateTime?
+  status         String              @default("PENDING")
+  reason         String?
+  notes          String?
+  attachmentUrl  String?
+  requestedBy    String
+  approvedBy     String?
+  approvedAt     DateTime?
+  shippedBy      String?
+  shippedAt      DateTime?
+  receivedBy     String?
+  receivedAt     DateTime?
+  totalQuantity  Float               @default(0)
+  totalValue     Float               @default(0)
+  createdBy      String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  toLocation     Location            @relation("TransferToLocation", fields: [toLocationId], references: [id])
+  fromLocation   Location            @relation("TransferFromLocation", fields: [fromLocationId], references: [id])
+  items          StockTransferItem[]
 
   @@index([fromLocationId])
   @@index([toLocationId])
@@ -2054,154 +1380,79 @@ model StockTransfer {
   @@index([transferDate])
 }
 
-// Stock Transfer Line Items
 model StockTransferItem {
-  id              String        @id @default(cuid())
-  stockTransferId String
-  stockTransfer   StockTransfer @relation(fields: [stockTransferId], references: [id], onDelete: Cascade)
-
-  // Item details
-  itemId     String
-  item       Item      @relation("ItemStockTransfers", fields: [itemId], references: [id])
-  stockLotId String?
-  stockLot   StockLot? @relation("LotStockTransfers", fields: [stockLotId], references: [id])
-
-  // Transfer quantities
+  id                String        @id @default(cuid())
+  stockTransferId   String
+  itemId            String
+  stockLotId        String?
   requestedQuantity Float
-  shippedQuantity   Float @default(0)
-  receivedQuantity  Float @default(0)
-
-  // Costing
-  unitCost  Float @default(0)
-  totalCost Float @default(0)
-
-  // Quality and condition
-  condition String? // Condition on receipt
-  notes     String?
-
-  // Sort order
-  sortOrder Int @default(0)
+  shippedQuantity   Float         @default(0)
+  receivedQuantity  Float         @default(0)
+  unitCost          Float         @default(0)
+  totalCost         Float         @default(0)
+  condition         String?
+  notes             String?
+  sortOrder         Int           @default(0)
+  stockLot          StockLot?     @relation("LotStockTransfers", fields: [stockLotId], references: [id])
+  item              Item          @relation("ItemStockTransfers", fields: [itemId], references: [id])
+  stockTransfer     StockTransfer @relation(fields: [stockTransferId], references: [id], onDelete: Cascade)
 
   @@index([stockTransferId])
   @@index([itemId])
 }
 
-// Physical Inventory Counts
 model PhysicalCount {
-  id          String   @id @default(cuid())
-  countNumber String   @unique
-  locationId  String
-  location    Location @relation(fields: [locationId], references: [id])
-
-  // Count details
-  countDate DateTime    @default(now())
-  countType CountType   @default(FULL)
-  status    CountStatus @default(PLANNED)
-
-  // Count scope
-  categoryFilter String? // Specific category to count
-  itemFilter     String? // Specific item to count
-  zoneFilter     String? // Specific zone to count
-
-  // Count team
-  countedBy  String
-  reviewedBy String?
-  reviewedAt DateTime?
-  approvedBy String?
-  approvedAt DateTime?
-
-  // Results summary
-  itemsCounted       Int   @default(0)
-  adjustmentsFound   Int   @default(0)
-  totalVarianceValue Float @default(0)
-
-  // Documentation
-  notes         String?
-  attachmentUrl String?
-
-  // Audit fields
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items PhysicalCountItem[]
+  id                 String              @id @default(cuid())
+  countNumber        String              @unique
+  locationId         String
+  countDate          DateTime            @default(now())
+  countType          String              @default("FULL")
+  status             String              @default("PLANNED")
+  categoryFilter     String?
+  itemFilter         String?
+  zoneFilter         String?
+  countedBy          String
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  approvedBy         String?
+  approvedAt         DateTime?
+  itemsCounted       Int                 @default(0)
+  adjustmentsFound   Int                 @default(0)
+  totalVarianceValue Float               @default(0)
+  notes              String?
+  attachmentUrl      String?
+  createdBy          String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  location           Location            @relation(fields: [locationId], references: [id])
+  items              PhysicalCountItem[]
 
   @@index([locationId])
   @@index([countDate])
   @@index([status])
 }
 
-// Physical Count Line Items
 model PhysicalCountItem {
-  id              String        @id @default(cuid())
-  physicalCountId String
-  physicalCount   PhysicalCount @relation(fields: [physicalCountId], references: [id], onDelete: Cascade)
-
-  // Item being counted
-  itemId     String
-  item       Item      @relation("ItemPhysicalCounts", fields: [itemId], references: [id])
-  stockLotId String?
-  stockLot   StockLot? @relation("LotPhysicalCounts", fields: [stockLotId], references: [id])
-
-  // Count details
-  systemQuantity  Float // Quantity per system
-  countedQuantity Float // Physically counted quantity
-  variance        Float @default(0) // Difference
-  variancePercent Float @default(0) // Percentage variance
-
-  // Costing
-  unitCost      Float @default(0)
-  varianceValue Float @default(0) // Financial impact of variance
-
-  // Count quality
-  confidence      String? // High, Medium, Low
-  recountRequired Boolean @default(false)
-  notes           String?
-
-  // Adjustment processing
-  adjustmentCreated Boolean @default(false)
-  adjustmentId      String? // Link to stock movement adjustment
+  id                String        @id @default(cuid())
+  physicalCountId   String
+  itemId            String
+  stockLotId        String?
+  systemQuantity    Float
+  countedQuantity   Float
+  variance          Float         @default(0)
+  variancePercent   Float         @default(0)
+  unitCost          Float         @default(0)
+  varianceValue     Float         @default(0)
+  confidence        String?
+  recountRequired   Boolean       @default(false)
+  notes             String?
+  adjustmentCreated Boolean       @default(false)
+  adjustmentId      String?
+  stockLot          StockLot?     @relation("LotPhysicalCounts", fields: [stockLotId], references: [id])
+  item              Item          @relation("ItemPhysicalCounts", fields: [itemId], references: [id])
+  physicalCount     PhysicalCount @relation(fields: [physicalCountId], references: [id], onDelete: Cascade)
 
   @@index([physicalCountId])
   @@index([itemId])
   @@index([variance])
-}
-
-// Enums for Multi-Location Support
-enum LocationType {
-  WAREHOUSE // Main warehouse
-  STORE // Retail store
-  FACTORY // Manufacturing facility
-  OFFICE // Office location
-  SUPPLIER // Supplier location (for drop shipping)
-  CUSTOMER // Customer location (for consignment)
-  VIRTUAL // Virtual location (for special purposes)
-}
-
-enum TransferStatus {
-  PENDING // Transfer requested, awaiting approval
-  APPROVED // Transfer approved, ready to ship
-  IN_TRANSIT // Items shipped, in transit
-  RECEIVED // Items received at destination
-  COMPLETED // Transfer completed successfully
-  CANCELLED // Transfer cancelled
-  REJECTED // Transfer request rejected
-}
-
-enum CountType {
-  FULL // Full location count
-  CYCLE // Cycle count (subset of items)
-  SPOT // Spot check (random items)
-  CATEGORY // Category-specific count
-  ITEM // Single item count
-}
-
-enum CountStatus {
-  PLANNED // Count scheduled
-  IN_PROGRESS // Count in progress
-  COMPLETED // Count completed, pending review
-  REVIEWED // Count reviewed, pending approval
-  APPROVED // Count approved, adjustments can be made
-  CANCELLED // Count cancelled
 }

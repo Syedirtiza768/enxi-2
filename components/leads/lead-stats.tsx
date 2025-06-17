@@ -18,7 +18,7 @@ interface LeadStatsProps {
 }
 
 export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
-  if (!stats) {
+  if (!stats || typeof stats !== 'object' || stats === null) {
     return (
       <Grid cols={4} gap="md">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -94,7 +94,7 @@ export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
     },
   ]
 
-  const totalLeads = Object.values(stats).reduce((sum, value) => sum + value, 0)
+  const totalLeads = stats && typeof stats === 'object' ? Object.values(stats).reduce((sum, value) => sum + value, 0) : 0
 
   return (
     <VStack gap="lg">

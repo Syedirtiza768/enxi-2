@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeft, Package, FileText, CheckCircle, XCircle, 
-  Truck, Edit, Calendar, MapPin, CreditCard, Clock, History
+  Truck, Edit, Calendar, MapPin, CreditCard, Clock, History,
+  Eye, EyeOff, Download
 } from 'lucide-react'
 import { OrderTimeline } from '@/components/sales-orders/order-timeline'
 import { useCurrency } from '@/lib/contexts/currency-context'
@@ -13,6 +14,7 @@ interface SalesOrderItem {
   id: string
   itemCode: string
   description: string
+  internalDescription?: string
   quantity: number
   unitPrice: number
   discount: number
@@ -21,6 +23,8 @@ interface SalesOrderItem {
   discountAmount: number
   taxAmount: number
   totalAmount: number
+  cost?: number
+  margin?: number
 }
 
 interface SalesOrder {
@@ -51,6 +55,8 @@ interface SalesOrder {
   shippingAddress?: string
   billingAddress?: string
   notes?: string
+  internalNotes?: string
+  version: number
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -77,6 +83,7 @@ export default function SalesOrderDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [timeline, setTimeline] = useState<any[]>([])
   const [showTimeline, setShowTimeline] = useState(false)
+  const [viewMode, setViewMode] = useState<'internal' | 'client'>('internal')
 
   // Fetch sales order details
   useEffect(() => {
@@ -421,6 +428,9 @@ export default function SalesOrderDetailPage() {
             </button>
             <span>/</span>
             <span className="text-gray-900">{order.orderNumber}</span>
+            {order.version > 1 && (
+              <span className="text-sm text-gray-500 ml-2">(Version {order.version})</span>
+            )}
           </div>
 
           {/* Title */}
@@ -444,6 +454,25 @@ export default function SalesOrderDetailPage() {
 
         {/* Actions */}
         <div className="flex items-center space-x-3">
+          {/* View Mode Toggle */}
+          <button
+            onClick={() => setViewMode(viewMode === 'internal' ? 'client' : 'internal')}
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          >
+            {viewMode === 'internal' ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+            {viewMode === 'internal' ? 'Internal View' : 'Client View'}
+          </button>
+          
+          {/* PDF Download */}
+          <a
+            href={`/api/sales-orders/${orderId}/pdf?view=${viewMode}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF
+          </a>
           {/* Timeline Button */}
           <button
             onClick={() => setShowTimeline(!showTimeline)}
@@ -640,12 +669,25 @@ export default function SalesOrderDetailPage() {
                       <td className="px-3 py-4">
                         <div className="text-sm font-medium text-gray-900">{item.itemCode}</div>
                         <div className="text-sm text-gray-500">{item.description}</div>
+                        {viewMode === 'internal' && item.internalDescription && (
+                          <div className="text-xs text-gray-400 italic mt-1">{item.internalDescription}</div>
+                        )}
                       </td>
                       <td className="px-3 py-4 text-right text-sm text-gray-900">
                         {item.quantity}
                       </td>
                       <td className="px-3 py-4 text-right text-sm text-gray-900">
                         {formatCurrency(item.unitPrice)}
+                        {viewMode === 'internal' && item.cost && (
+                          <div className="text-xs text-gray-400">
+                            Cost: {formatCurrency(item.cost)}
+                            {item.margin !== undefined && (
+                              <span className={`ml-1 ${item.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ({item.margin.toFixed(1)}%)
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-4 text-right text-sm text-gray-900">
                         {item.discount > 0 ? `${item.discount}%` : '-'}
@@ -849,8 +891,16 @@ export default function SalesOrderDetailPage() {
           {/* Notes */}
           {order.notes && (
             <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Notes</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Customer Notes</h2>
               <p className="text-sm text-gray-900 whitespace-pre-line">{order.notes}</p>
+            </div>
+          )}
+          
+          {/* Internal Notes (only in internal view) */}
+          {viewMode === 'internal' && order.internalNotes && (
+            <div className="bg-white shadow rounded-lg p-6 border-l-4 border-yellow-400">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Internal Notes</h2>
+              <p className="text-sm text-gray-900 whitespace-pre-line">{order.internalNotes}</p>
             </div>
           )}
         </div>

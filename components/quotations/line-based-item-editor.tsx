@@ -84,9 +84,9 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
     
     setLoading(true);
     try {
-      const response = await apiClient<{ data: any }>(`/api/inventory/items?search=${searchQuery}`);
+      const response = await apiClient<{ data: any[]; total: number }>(`/api/inventory/items?search=${searchQuery}`);
       if (response.ok && response?.data) {
-        const items = Array.isArray(response.data) ? response.data : (response.data.items || []);
+        const items = response.data || [];
         setInventoryItems(items);
       }
     } catch (error) {
@@ -154,12 +154,12 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
       description: item.description || '',
       internalDescription: '',
       quantity: 1,
-      unitPrice: item.sellingPrice || 0,
+      unitPrice: item.listPrice || 0,
       cost: item.cost || 0,
       discount: 0,
       taxRateId: '',
-      subtotal: item.sellingPrice || 0,
-      total: item.sellingPrice || 0
+      subtotal: item.listPrice || 0,
+      total: item.listPrice || 0
     };
 
     const newLines = lines.map(line => 
@@ -542,7 +542,7 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
                           <Label>Tax Rate</Label>
                           <TaxRateSelector
                             value={manualItem.taxRateId}
-                            onChange={(taxRateId) => setManualItem(prev => ({ ...prev, taxRateId }))}
+                            onChange={(taxRateId, _taxRate) => setManualItem(prev => ({ ...prev, taxRateId: taxRateId || '' }))}
                           />
                         </div>
                       </div>
@@ -572,8 +572,10 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="font-medium">{formatCurrency(item.sellingPrice)}</div>
-                            <div className="text-sm text-gray-500">Stock: {item.currentStock}</div>
+                            <div className="font-medium">{formatCurrency(item.listPrice || 0)}</div>
+                            {item.trackInventory && (
+                              <div className="text-sm text-gray-500">Stock: {item.currentStock || 0}</div>
+                            )}
                           </div>
                         </div>
                       </Card>
@@ -641,9 +643,9 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
                 <Label>Tax Rate</Label>
                 <TaxRateSelector
                   value={editingItem.item.taxRateId}
-                  onChange={(taxRateId) => setEditingItem({
+                  onChange={(taxRateId, _taxRate) => setEditingItem({
                     ...editingItem,
-                    item: { ...editingItem.item, taxRateId }
+                    item: { ...editingItem.item, taxRateId: taxRateId || '' }
                   })}
                 />
               </div>

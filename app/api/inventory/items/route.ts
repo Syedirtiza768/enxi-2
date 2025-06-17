@@ -8,6 +8,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
+    // Temporarily using hardcoded session for development
+    const user = session.user
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -58,6 +60,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
+    // Temporarily using hardcoded session for development
+    const user = session.user
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

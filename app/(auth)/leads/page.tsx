@@ -114,7 +114,7 @@ export default function LeadsPage(): React.JSX.Element {
     }
   }
 
-  const getStatusBadgeColor = (status: LeadStatus): void => {
+  const getStatusBadgeColor = (status: LeadStatus): string => {
     const colors = {
       NEW: 'bg-blue-100 text-blue-800',
       CONTACTED: 'bg-yellow-100 text-yellow-800',
@@ -232,7 +232,7 @@ export default function LeadsPage(): React.JSX.Element {
                 <div className="text-center py-8 text-red-600">
                   Error loading leads: {error instanceof Error ? error.message : String(error)}
                 </div>
-              ) : leads.data.length === 0 ? (
+              ) : leads?.data?.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   No leads found. Create your first lead to get started.
                 </div>

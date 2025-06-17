@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api/client'
 import { Button } from '@/components/ui/button'
@@ -48,13 +48,15 @@ interface UnassignedCustomer {
 }
 
 export default function SalesTeamPage(): React.JSX.Element {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const [hierarchy, setHierarchy] = useState<TeamHierarchy>({ manager: null, teamMembers: [] })
   const [unassignedCustomers, setUnassignedCustomers] = useState<UnassignedCustomer[]>([])
   const [loading, setLoading] = useState(true)
-  const [_error, _setError] = useState<string | null>(null)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [searchUnassigned, setSearchUnassigned] = useState('')
   const [selectedTab, setSelectedTab] = useState<'team' | 'unassigned'>('team')
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -62,22 +64,39 @@ export default function SalesTeamPage(): React.JSX.Element {
 
   useEffect(() => {
     if (selectedTab === 'unassigned') {
-      fetchUnassignedCustomers()
+      // Clear any existing timeout
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+
+      // Set a new timeout for debounced search
+      searchTimeoutRef.current = setTimeout(() => {
+        fetchUnassignedCustomers()
+      }, 300) // 300ms debounce delay
+
+      // Cleanup function
+      return () => {
+        if (searchTimeoutRef.current) {
+          clearTimeout(searchTimeoutRef.current)
+        }
+      }
     }
   }, [selectedTab, searchUnassigned]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchData = async (): Promise<void> => {
     try {
       setLoading(true)
-      _setError(null)
+      setError(null)
 
       const response = await apiClient('/api/sales-team')
       if (response.ok && response?.data) {
         setHierarchy(response?.data)
+      } else {
+        setError('Failed to load sales team data')
       }
     } catch (err) {
-      console.error('Error fetching team data:', { method: 'POST', body: JSON.stringify(err) })
-      _setError('Failed to load sales team data')
+      console.error('Error fetching team data:', err)
+      setError('Failed to load sales team data')
     } finally {
       setLoading(false)
     }
@@ -85,6 +104,7 @@ export default function SalesTeamPage(): React.JSX.Element {
 
   const fetchUnassignedCustomers = async (): Promise<void> => {
     try {
+      setSearchLoading(true)
       const params = new URLSearchParams()
       if (searchUnassigned) params.append('search', searchUnassigned)
       params.append('view', 'unassigned')
@@ -94,11 +114,14 @@ export default function SalesTeamPage(): React.JSX.Element {
         setUnassignedCustomers(response?.data.customers || [])
       }
     } catch (err) {
-      console.error('Error fetching unassigned customers:', { method: 'POST', body: JSON.stringify(err) })
+      console.error('Error fetching unassigned customers:', err)
+      setError('Failed to load unassigned customers')
+    } finally {
+      setSearchLoading(false)
     }
   }
 
-  const formatCurrency = (amount: number): void => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -106,7 +129,7 @@ export default function SalesTeamPage(): React.JSX.Element {
     }).format(amount)
   }
 
-  const calculateAchievement = (current: number, target: number): void => {
+  const calculateAchievement = (current: number, target: number): number => {
     if (target === 0) return 0
     return Math.round((current / target) * 100)
   }
@@ -140,6 +163,13 @@ export default function SalesTeamPage(): React.JSX.Element {
           <span>Manage Assignments</span>
         </Button>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Tab Selection */}
       <div className="flex space-x-4 border-b">
@@ -297,11 +327,23 @@ export default function SalesTeamPage(): React.JSX.Element {
               placeholder="Search unassigned customers..."
               value={searchUnassigned}
               onChange={(e): void => setSearchUnassigned(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
             />
+            {searchLoading && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              </div>
+            )}
           </div>
 
-          {unassignedCustomers.length > 0 ? (
+          {searchLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-gray-600">Searching customers...</p>
+              </div>
+            </div>
+          ) : unassignedCustomers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {unassignedCustomers.map((customer) => (
                 <Card key={customer.id} className="hover:shadow-md transition-shadow">

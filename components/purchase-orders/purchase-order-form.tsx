@@ -12,7 +12,6 @@ import { apiClient } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
-import { TaxType } from '@/lib/types/shared-enums'
 import { 
   MAX_CODE_LENGTH, 
   MAX_ADDRESS_LENGTH, 
@@ -80,7 +79,7 @@ interface PurchaseOrderFormProps {
 export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFormProps) {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const { formatCurrency } = useCurrency()
-  const { defaultRate } = useDefaultTaxRate({ taxType: TaxType.PURCHASE })
+  const { defaultRate } = useDefaultTaxRate({ taxType: 'PURCHASE' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -1248,7 +1247,7 @@ export function PurchaseOrderForm({ purchaseOrder, onSuccess }: PurchaseOrderFor
                               updateItem(index, 'taxRateId', taxRateId || '')
                               updateItem(index, 'taxRate', taxRate)
                             }}
-                            taxType={TaxType.PURCHASE}
+                            taxType={'PURCHASE'}
                             className="w-full"
                             placeholder="Tax"
                           />

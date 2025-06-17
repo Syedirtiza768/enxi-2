@@ -53,10 +53,10 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     
     setLoading(true);
     try {
-      const response = await apiClient<{ data: any[] }>(`/api/inventory/items?search=${searchQuery}`);
+      const response = await apiClient<{ data: any[]; total: number }>(`/api/inventory/items?search=${searchQuery}`);
       
       if (response.ok && response.data) {
-        setInventoryItems(response.data);
+        setInventoryItems(response.data.data);
       } else {
         setInventoryItems([]);
       }
@@ -337,7 +337,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
                           <Label>Tax Rate</Label>
                           <TaxRateSelector
                             value={manualItem.taxRateId}
-                            onChange={(taxRateId) => setManualItem(prev => ({ ...prev, taxRateId }))}
+                            onChange={(taxRateId, _taxRate) => setManualItem(prev => ({ ...prev, taxRateId: taxRateId || '' }))}
                           />
                         </div>
                       </div>
@@ -429,7 +429,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
                 <Label>Tax Rate</Label>
                 <TaxRateSelector
                   value={editingItem.taxRateId}
-                  onChange={(taxRateId) => setEditingItem({ ...editingItem, taxRateId })}
+                  onChange={(taxRateId, _taxRate) => setEditingItem({ ...editingItem, taxRateId: taxRateId || '' })}
                 />
               </div>
               <div>

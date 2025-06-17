@@ -530,9 +530,15 @@ export class SalesOrderService extends BaseService {
 
       // Convert quotation items to sales order items
       const items: CreateSalesOrderItemInput[] = quotation.items.map(item => ({
+        lineNumber: item.lineNumber,
+        lineDescription: item.lineDescription,
+        isLineHeader: item.isLineHeader,
+        sortOrder: item.sortOrder,
+        itemType: item.itemType,
         itemId: item.itemId,
         itemCode: item.itemCode,
         description: item.description,
+        internalDescription: item.internalDescription,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         discount: item.discount,

@@ -334,16 +334,28 @@ export class CustomerService extends BaseService {
         }
       }
 
-      // Get customers with pagination
+      // Get customers with pagination - optimize includes
       const [customers, totalCount] = await Promise.all([
         prisma.customer.findMany({
           where,
           include: {
-            account: true,
-            lead: true,
+            account: {
+              select: {
+                id: true,
+                balance: true
+              }
+            },
+            assignedTo: {
+              select: {
+                id: true,
+                username: true,
+                email: true
+              }
+            },
             _count: {
               select: {
-                salesCases: true
+                salesCases: true,
+                invoices: true
               }
             }
           },
@@ -354,8 +366,16 @@ export class CustomerService extends BaseService {
         prisma.customer.count({ where })
       ])
 
-      // Calculate stats
-      const stats = await this.getCustomerStats()
+      // Calculate stats only if needed (skip on subsequent pages)
+      const stats = page === 1 
+        ? await this.getCustomerStats()
+        : {
+            total: totalCount,
+            active: totalCount,
+            inactive: 0,
+            totalCreditLimit: 0,
+            totalOutstanding: 0
+          }
 
       // Pagination info
       const totalPages = Math.ceil(totalCount / limit)
@@ -383,31 +403,29 @@ export class CustomerService extends BaseService {
     totalOutstanding: number
   }> {
     return this.withLogging('getCustomerStats', async () => {
-      const [
-        totalCount,
-        activeCount,
-        totalCreditLimit,
-        totalOutstanding
-      ] = await Promise.all([
-        prisma.customer.count(),
-        prisma.customer.count(),
-        prisma.customer.aggregate({
-          _sum: { creditLimit: true },
-          where: {}
-        }),
-        prisma.account.aggregate({
-          _sum: { balance: true },
-          where: {
-            customer: {}
+      // Single aggregation query for customer stats
+      const customerStats = await prisma.customer.aggregate({
+        _count: true,
+        _sum: {
+          creditLimit: true
+        }
+      })
+
+      // Get outstanding balance from accounts
+      const totalOutstanding = await prisma.account.aggregate({
+        _sum: { balance: true },
+        where: {
+          customer: {
+            isNot: null
           }
-        })
-      ])
+        }
+      })
 
       return {
-        total: totalCount,
-        active: totalCount,
+        total: customerStats._count,
+        active: customerStats._count, // All customers are active since no isActive field
         inactive: 0,
-        totalCreditLimit: totalCreditLimit._sum.creditLimit || 0,
+        totalCreditLimit: customerStats._sum.creditLimit || 0,
         totalOutstanding: totalOutstanding._sum.balance || 0
       }
     })

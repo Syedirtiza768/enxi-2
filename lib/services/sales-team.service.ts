@@ -468,6 +468,80 @@ export class SalesTeamService extends BaseService {
     })
   }
 
+  /**
+   * Unassign a customer from a salesperson
+   */
+  async unassignCustomer(
+    customerId: string,
+    unassignedBy: string,
+    reason?: string
+  ) {
+    return this.withLogging('unassignCustomer', async () => {
+      // Validate customer
+      const customer = await prisma.customer.findUnique({
+        where: { id: customerId },
+        select: { id: true, assignedToId: true, name: true },
+      })
+
+      if (!customer) {
+        throw new Error('Customer not found')
+      }
+
+      if (!customer.assignedToId) {
+        throw new Error('Customer is not currently assigned to anyone')
+      }
+
+      // Check permissions - user must be able to update this customer
+      const user = await prisma.user.findUnique({
+        where: { id: unassignedBy },
+        include: {
+          managedUsers: {
+            select: { id: true },
+          },
+        },
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      // Check if user has permission to unassign this customer
+      const canUnassign = await this.canAccessCustomer(unassignedBy, customerId)
+      
+      if (!canUnassign && user.role !== Role.ADMIN && user.role !== Role.SUPER_ADMIN) {
+        throw new Error('You do not have permission to unassign this customer')
+      }
+
+      const previousAssignee = customer.assignedToId
+
+      // Update customer assignment
+      const updated = await prisma.customer.update({
+        where: { id: customerId },
+        data: {
+          assignedToId: null,
+          assignedAt: null,
+          assignedBy: null,
+          assignmentNotes: null,
+        },
+      })
+
+      // Audit log
+      await this.createAuditLog({
+        userId: unassignedBy,
+        action: 'UNASSIGN_CUSTOMER',
+        entityType: 'Customer',
+        entityId: customerId,
+        metadata: {
+          previousAssignee,
+          reason,
+          customerName: customer.name,
+        },
+      })
+
+      return updated
+    })
+  }
+
   private async createAuditLog(data: {
     userId: string
     action: string

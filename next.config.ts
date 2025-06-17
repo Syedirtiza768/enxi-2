@@ -6,6 +6,7 @@ const bundleAnalyzer = withBundleAnalyzer({
 })
 
 const nextConfig: NextConfig = {
+  // output: 'standalone', // Temporarily disabled
   reactStrictMode: true,
   poweredByHeader: false,
   typescript: {

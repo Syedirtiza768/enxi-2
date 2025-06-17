@@ -24,7 +24,20 @@ import {
 import { apiClient } from '@/lib/api/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { TaxCategory, TaxRate, TaxType } from '@/lib/types/shared-enums'
+import { TaxCategory, TaxRate } from '@/lib/types/shared-enums'
+
+// Define TaxType constants since it's not an enum in the schema
+const TaxType = {
+  SALES: 'SALES',
+  PURCHASE: 'PURCHASE',
+  WITHHOLDING: 'WITHHOLDING',
+  EXCISE: 'EXCISE',
+  CUSTOMS: 'CUSTOMS',
+  SERVICE: 'SERVICE',
+  OTHER: 'OTHER'
+} as const
+
+type TaxType = typeof TaxType[keyof typeof TaxType]
 
 interface TaxCategoryWithRates extends TaxCategory {
   taxRates: TaxRate[]
@@ -536,7 +549,7 @@ export default function TaxConfigurationPage() {
                 <select
                   id="rate-type"
                   value={rateForm.taxType}
-                  onChange={(e) => setRateForm({ ...rateForm, taxType: e.target.value as TaxType })}
+                  onChange={(e) => setRateForm({ ...rateForm, taxType: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value={TaxType.SALES}>Sales</option>

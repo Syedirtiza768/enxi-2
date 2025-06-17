@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import { SalesOrderLineEditor } from './sales-order-line-editor'
+import { apiClient } from '@/lib/api/client'
 import {
   validateRequired,
   checkMaxLength,
@@ -459,159 +461,8 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
     return { error: null, warning: null }
   }
 
-  const handleItemChange = (index: number, field: keyof SalesOrderItem, value: string | number) => {
-    const updatedItems = [...formData.items]
-    const item = { ...updatedItems[index] }
-    
-    let error: string | null = null
-    
-    if (field === 'quantity' || field === 'unitPrice' || field === 'discount' || field === 'taxRate') {
-      const numValue = typeof value === 'string' ? parseFloat(value) || 0 : value
-      
-      // Validation for numeric fields
-      switch (field) {
-        case 'quantity':
-          if (numValue <= 0) {
-            error = 'Quantity must be greater than 0'
-          } else if (!Number.isInteger(numValue)) {
-            error = 'Quantity must be a whole number'
-          }
-          break
-        
-        case 'unitPrice':
-          error = validateCurrencyAmount(numValue)
-          if (!error && numValue < 0) {
-            error = 'Unit price cannot be negative'
-          }
-          break
-        
-        case 'discount':
-          error = validatePercentage(numValue)
-          break
-        
-        case 'taxRate':
-          error = validatePercentage(numValue)
-          break
-      }
-      
-      if (error) {
-        setErrors(prev => ({ 
-          ...prev, 
-          [`item_${index}_${field}`]: error 
-        }))
-        setFieldStatus(prev => ({ ...prev, [`item_${index}_${field}`]: 'error' }))
-        return
-      } else {
-        setFieldStatus(prev => ({ ...prev, [`item_${index}_${field}`]: 'valid' }))
-      }
-      
-      item[field] = numValue
-    } else {
-      // String field validation
-      switch (field) {
-        case 'itemCode':
-          error = validateRequired(value as string, 'Item code')
-          if (!error) {
-            error = checkMaxLength(value as string, MAX_CODE_LENGTH, 'Item code')
-          }
-          break
-        
-        case 'description':
-          error = validateRequired(value as string, 'Description')
-          if (!error) {
-            error = checkMaxLength(value as string, 255, 'Description')
-          }
-          break
-      }
-      
-      if (error) {
-        setErrors(prev => ({ 
-          ...prev, 
-          [`item_${index}_${field}`]: error 
-        }))
-        setFieldStatus(prev => ({ ...prev, [`item_${index}_${field}`]: 'error' }))
-      } else {
-        setFieldStatus(prev => ({ ...prev, [`item_${index}_${field}`]: 'valid' }))
-      }
-      
-      item[field] = value as string
-    }
-
-    // Clear field-specific errors
-    setErrors(prev => {
-      const newErrors = { ...prev }
-      delete newErrors[`item_${index}_${field}`]
-      return newErrors
-    })
-
-    // Recalculate totals for this item
-    const quantity = item.quantity
-    const unitPrice = item.unitPrice
-    const discountPercent = item.discount
-    const taxPercent = item.taxRate
-
-    const subtotal = quantity * unitPrice
-    const discountAmount = subtotal * (discountPercent / 100)
-    const afterDiscount = subtotal - discountAmount
-    const taxAmount = afterDiscount * (taxPercent / 100)
-    const totalAmount = afterDiscount + taxAmount
-
-    item.subtotal = subtotal
-    item.discountAmount = discountAmount
-    item.taxAmount = taxAmount
-    item.totalAmount = totalAmount
-
-    updatedItems[index] = item
-    setFormData(prev => ({ ...prev, items: updatedItems }))
-  }
-
-  const addItem = () => {
-    const newItem: SalesOrderItem = {
-      itemCode: '',
-      description: '',
-      quantity: 1,
-      unitPrice: 0,
-      discount: 0,
-      taxRate: 0,
-      subtotal: 0,
-      discountAmount: 0,
-      taxAmount: 0,
-      totalAmount: 0
-    }
-    setFormData(prev => ({ ...prev, items: [...prev.items, newItem] }))
-  }
-
-  const removeItem = (index: number) => {
-    if (formData.items.length <= 1) {
-      setErrors(prev => ({ ...prev, items: 'At least one item is required' }))
-      return
-    }
-    
-    const updatedItems = formData.items.filter((_, i) => i !== index)
-    setFormData(prev => ({ ...prev, items: updatedItems }))
-    
-    // Clear item-specific errors and warnings
-    setErrors(prev => {
-      const newErrors = { ...prev }
-      Object.keys(newErrors).forEach(key => {
-        if (key.startsWith(`item_${index}_`)) {
-          delete newErrors[key]
-        }
-      })
-      delete newErrors.items
-      return newErrors
-    })
-    
-    setWarnings(prev => {
-      const newWarnings = { ...prev }
-      Object.keys(newWarnings).forEach(key => {
-        if (key.startsWith(`item_${index}_`)) {
-          delete newWarnings[key]
-        }
-      })
-      return newWarnings
-    })
-  }
+  // The line editor handles item changes internally, so we don't need these methods anymore
+  // The validation will be simplified to work with the overall items array
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -687,47 +538,10 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
       newErrors.items = 'At least one item is required'
     }
 
-    // Validate each item
+    // Basic validation for items - the line editor handles detailed validation
     formData.items.forEach((item, index) => {
-      // Item code
-      const itemCodeError = validateRequired(item.itemCode, 'Item code') || 
-                           checkMaxLength(item.itemCode, MAX_CODE_LENGTH, 'Item code')
-      if (itemCodeError) {
-        newErrors[`item_${index}_itemCode`] = itemCodeError
-      }
-      
-      // Description
-      const descError = validateRequired(item.description, 'Description') ||
-                       checkMaxLength(item.description, 255, 'Description')
-      if (descError) {
-        newErrors[`item_${index}_description`] = descError
-      }
-      
-      // Quantity
-      if (item.quantity <= 0) {
-        newErrors[`item_${index}_quantity`] = 'Quantity must be greater than 0'
-      } else if (!Number.isInteger(item.quantity)) {
-        newErrors[`item_${index}_quantity`] = 'Quantity must be a whole number'
-      }
-      
-      // Unit price
-      const priceError = validateCurrencyAmount(item.unitPrice)
-      if (priceError) {
-        newErrors[`item_${index}_unitPrice`] = priceError
-      } else if (item.unitPrice < 0) {
-        newErrors[`item_${index}_unitPrice`] = 'Unit price cannot be negative'
-      }
-      
-      // Discount
-      const discountError = validatePercentage(item.discount)
-      if (discountError) {
-        newErrors[`item_${index}_discount`] = discountError
-      }
-      
-      // Tax rate
-      const taxError = validatePercentage(item.taxRate)
-      if (taxError) {
-        newErrors[`item_${index}_taxRate`] = taxError
+      if (!item.itemCode || !item.description || item.quantity <= 0 || item.unitPrice < 0) {
+        newErrors.items = 'Please ensure all items have valid item codes, descriptions, quantities, and prices'
       }
     })
 
@@ -1111,20 +925,8 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
 
           {/* Order Items */}
           <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Order Items</h2>
-              {!isViewMode && (
-                <button
-                  type="button"
-                  onClick={addItem}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-600 bg-blue-100 hover:bg-blue-200"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Item
-                </button>
-              )}
-            </div>
-
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Order Items</h2>
+            
             {errors.items && (
               <p className="mb-4 text-sm text-red-600">{errors.items}</p>
             )}
@@ -1138,165 +940,17 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
               </div>
             )}
 
-            <div className="space-y-4">
-              {formData.items.map((item, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-sm font-medium text-gray-900">Item {index + 1}</h3>
-                    {!isViewMode && (
-                      <button
-                        type="button"
-                        onClick={() => removeItem(index)}
-                        className="text-red-600 hover:text-red-800"
-                        aria-label="Remove item"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
-                    <div className="sm:col-span-1">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Item Code <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={item.itemCode}
-                        onChange={(e) => handleItemChange(index, 'itemCode', e.target.value)}
-                        disabled={isViewMode}
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_itemCode`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                        placeholder="ITEM001"
-                      />
-                      {errors[`item_${index}_itemCode`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_itemCode`]}</p>
-                      )}
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Description <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={item.description}
-                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        disabled={isViewMode}
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_description`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                        placeholder="Item description"
-                      />
-                      {errors[`item_${index}_description`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_description`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Quantity <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        disabled={isViewMode}
-                        min="0"
-                        step="1"
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_quantity`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                      />
-                      {errors[`item_${index}_quantity`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_quantity`]}</p>
-                      )}
-                      {item.availableQuantity !== undefined && (
-                        <p className={`mt-1 text-xs ${
-                          item.quantity > item.availableQuantity ? 'text-orange-600' : 'text-gray-500'
-                        }`}>
-                          Available: {item.availableQuantity}
-                        </p>
-                      )}
-                      {warnings[`item_${index}_stock`] && (
-                        <p className="mt-1 text-xs text-orange-600 flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {warnings[`item_${index}_stock`]}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Unit Price <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={item.unitPrice}
-                        onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
-                        disabled={isViewMode}
-                        min="0"
-                        step="0.01"
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_unitPrice`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                      />
-                      {errors[`item_${index}_unitPrice`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_unitPrice`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Total</label>
-                      <div className="mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm text-gray-900">
-                        {formatCurrency(item.totalAmount)}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Discount (%)</label>
-                      <input
-                        type="number"
-                        value={item.discount}
-                        onChange={(e) => handleItemChange(index, 'discount', e.target.value)}
-                        disabled={isViewMode}
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_discount`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                      />
-                      {errors[`item_${index}_discount`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_discount`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Tax Rate (%)</label>
-                      <input
-                        type="number"
-                        value={item.taxRate}
-                        onChange={(e) => handleItemChange(index, 'taxRate', e.target.value)}
-                        disabled={isViewMode}
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
-                          errors[`item_${index}_taxRate`] ? 'border-red-300' : ''
-                        } ${isViewMode ? 'bg-gray-50' : ''}`}
-                      />
-                      {errors[`item_${index}_taxRate`] && (
-                        <p className="mt-1 text-xs text-red-600">{errors[`item_${index}_taxRate`]}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <SalesOrderLineEditor
+              items={formData.items}
+              onChange={(items) => {
+                setFormData(prev => ({ ...prev, items }));
+                // Check inventory for new items
+                if (items.length > 0) {
+                  checkInventoryAvailability();
+                }
+              }}
+              disabled={isViewMode}
+            />
           </div>
         </div>
 

@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-chart-of-accounts
+  namespace: enxi-erp
+spec:
+  template:
+    metadata:
+      name: setup-coa
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: setup-coa
+        image: your-registry/enxi-erp:latest
+        command: ["npm", "run", "seed:production-coa"]
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: enxi-erp-secrets
+              key: database-url
+        - name: COMPANY_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: enxi-erp-config
+              key: company-name
+        - name: COMPANY_CODE
+          valueFrom:
+            configMapKeyRef:
+              name: enxi-erp-config
+              key: company-code
+        - name: DEFAULT_CURRENCY
+          valueFrom:
+            configMapKeyRef:
+              name: enxi-erp-config
+              key: default-currency
+              optional: true
+        - name: DEFAULT_TAX_RATE
+          valueFrom:
+            configMapKeyRef:
+              name: enxi-erp-config
+              key: default-tax-rate
+              optional: true
+        - name: FORCE_RESEED
+          value: "false"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enxi-erp-config
+  namespace: enxi-erp
+data:
+  company-name: "Your Company Name"
+  company-code: "YOURCO"
+  default-currency: "USD"
+  default-tax-rate: "10"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: enxi-erp-secrets
+  namespace: enxi-erp
+type: Opaque
+stringData:
+  database-url: "postgresql://user:password@postgres-service:5432/enxi_erp"

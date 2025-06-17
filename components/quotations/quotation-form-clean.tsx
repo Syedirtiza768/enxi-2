@@ -85,8 +85,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
       const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
       if (response.ok && response?.data) {
         // The API returns { success: true, data: salesCases[], ... }
-        // So we need to access response.data.data for the actual sales cases array
-        const salesCasesList = response.data?.data || [];
+        const salesCasesList = response.data || [];
         setSalesCases(salesCasesList);
         if (salesCasesList.length === 1) {
           setSelectedSalesCase(salesCasesList[0].id);

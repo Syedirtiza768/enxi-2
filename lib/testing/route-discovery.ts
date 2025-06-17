@@ -87,34 +87,33 @@ export class RouteDiscovery {
 
   private async processApiRoute(filePath: string, currentPath: string): Promise<RouteInfo | null> {
     try {
-      // Note: Dynamic imports can cause webpack warnings in production builds
-      // This is acceptable for testing utilities
-      // Skip dynamic imports in production build
-      if (process.env.NODE_ENV === 'production') {
-        return {
-          path: '/api' + currentPath,
-          type: 'api',
-          methods: ['GET'], // Default assumption
-          filePath,
-          requiresAuth: await this.checkAuthRequirement(filePath),
-          hasParams: this.extractParameters(currentPath).length > 0,
-          parameters: this.extractParameters(currentPath),
-          description: this.generateApiDescription('/api' + currentPath, ['GET'])
-        };
-      }
-      const content = await import(filePath);
+      const apiPath = '/api' + currentPath;
+      const parameters = this.extractParameters(currentPath);
+      
+      // Read file content to detect HTTP methods
+      const content = await readFile(filePath, 'utf8');
       const methods: string[] = [];
       
-      // Check for exported HTTP methods
+      // Check for exported HTTP methods by looking for export declarations
       const httpMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
       httpMethods.forEach(method => {
-        if (content[method]) {
+        // Look for patterns like "export async function GET" or "export const GET"
+        const patterns = [
+          `export async function ${method}`,
+          `export function ${method}`,
+          `export const ${method}`,
+          `export { ${method}`
+        ];
+        
+        if (patterns.some(pattern => content.includes(pattern))) {
           methods.push(method);
         }
       });
-
-      const apiPath = '/api' + currentPath;
-      const parameters = this.extractParameters(currentPath);
+      
+      // If no methods found, assume GET for safety
+      if (methods.length === 0) {
+        methods.push('GET');
+      }
       
       return {
         path: apiPath,

@@ -78,3 +78,8 @@ cookies.txt
 
 # generated files
 /lib/generated/
+
+# SQLite database files
+prisma/prisma/dev.db
+prisma/prisma/dev.db-shm
+prisma/prisma/dev.db-wal
