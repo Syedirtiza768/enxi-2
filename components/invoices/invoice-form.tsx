@@ -418,13 +418,13 @@ export function InvoiceForm({
   }
 
   // Format currency
-  const formatCurrency = (amount: number): void => {
+  const formatCurrency = (amount: number): string => {
     const multiplier = formData.type === 'CREDIT_NOTE' ? -1 : 1
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: defaultCurrency || 'USD' }).format(amount * multiplier)
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount * multiplier)
   }
 
   // Get form title
-  const getFormTitle = (): void => {
+  const getFormTitle = (): string => {
     const typeLabels = {
       SALES: 'Invoice',
       CREDIT_NOTE: 'Credit Note',

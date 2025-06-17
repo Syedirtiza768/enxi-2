@@ -1,14 +1,14 @@
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { Item, ItemType, Prisma } from '@/lib/generated/prisma'
+import { Item, Prisma } from '@/lib/generated/prisma'
 
 export interface CreateItemInput {
   code: string
   name: string
   description?: string
   categoryId: string
-  type?: ItemType
+  type?: string
   unitOfMeasureId?: string
   unitPrice?: number
   reorderLevel?: number
@@ -33,7 +33,7 @@ export interface UpdateItemInput {
   name?: string
   description?: string
   categoryId?: string
-  type?: ItemType
+  type?: string
   unitOfMeasureId?: string
   unitPrice?: number
   trackInventory?: boolean
@@ -219,13 +219,13 @@ export class ItemService {
     }
 
     // Set defaults and map fields appropriately
-    const isService = data.isService || data.type === ItemType.SERVICE
+    const isService = data.isService || data.type === 'SERVICE'
     const itemData = {
       code: data.code,
       name: data.name,
       description: data.description,
       categoryId: data.categoryId,
-      type: isService ? ItemType.SERVICE : (data.type || ItemType.PRODUCT),
+      type: isService ? 'SERVICE' : (data.type || 'PRODUCT'),
       unitOfMeasureId: unitOfMeasureId,
       trackInventory: data.trackInventory ?? data.trackStock ?? !isService,
       minStockLevel: data.minStockLevel || 0,
@@ -304,7 +304,7 @@ export class ItemService {
       ...item,
       unitPrice: item.listPrice,
       reorderLevel: item.reorderPoint,
-      isService: item.type === ItemType.SERVICE,
+      isService: item.type === 'SERVICE',
       trackStock: item.trackInventory
     }
   }
@@ -484,7 +484,7 @@ export class ItemService {
       ...updatedItem,
       unitPrice: updatedItem.listPrice,
       reorderLevel: updatedItem.reorderPoint,
-      isService: updatedItem.type === ItemType.SERVICE,
+      isService: updatedItem.type === 'SERVICE',
       trackStock: updatedItem.trackInventory
     }
   }
@@ -613,7 +613,7 @@ export class ItemService {
 
   async getAllItems(options?: {
     categoryId?: string
-    type?: ItemType
+    type?: string
     isActive?: boolean
     isSaleable?: boolean
     isPurchaseable?: boolean

@@ -162,7 +162,7 @@ export class StockMovementService {
               itemId: data.itemId,
               receivedDate: data.movementDate,
               expiryDate: data.expiryDate,
-              supplier: data.supplier,
+              supplierName: data.supplier,
               purchaseRef: data.purchaseRef,
               receivedQty: adjustedQuantity,
               availableQty: adjustedQuantity,
@@ -204,7 +204,7 @@ export class StockMovementService {
           referenceId: data.referenceId,
           referenceNumber: data.referenceNumber,
           locationId: data.locationId,
-          location: data.location,
+          locationName: data.location,
           notes: data.notes,
           createdBy: data.createdBy
         },
@@ -238,6 +238,17 @@ export class StockMovementService {
           where: { id: stockMovement.id },
           data: { journalEntryId: journalEntry.id }
         })
+      }
+
+      // Update inventory balance
+      if (data.locationId) {
+        await this.updateInventoryBalance(
+          data.itemId,
+          data.locationId,
+          stockMovement.quantity,
+          unitCost,
+          tx
+        )
       }
 
       return stockMovement
@@ -877,5 +888,65 @@ export class StockMovementService {
       outbound: Number(row.outbound),
       net: Number(row.net)
     }))
+  }
+
+  private async updateInventoryBalance(
+    itemId: string,
+    locationId: string,
+    quantityChange: number,
+    unitCost: number,
+    tx: Prisma.TransactionClient
+  ): Promise<void> {
+    // Find existing balance or create new one
+    const existingBalance = await tx.inventoryBalance.findUnique({
+      where: {
+        locationId_itemId: {
+          locationId,
+          itemId
+        }
+      }
+    })
+
+    if (existingBalance) {
+      // Update existing balance
+      const newTotalQuantity = existingBalance.totalQuantity + quantityChange
+      const newAvailableQuantity = existingBalance.availableQuantity + quantityChange
+      
+      // Calculate new average cost for inbound movements
+      let newAverageCost = existingBalance.averageCost
+      if (quantityChange > 0) {
+        // Weighted average cost calculation for inbound movements
+        const totalValue = (existingBalance.totalQuantity * existingBalance.averageCost) + (quantityChange * unitCost)
+        newAverageCost = newTotalQuantity > 0 ? totalValue / newTotalQuantity : 0
+      }
+      
+      const newTotalValue = newTotalQuantity * newAverageCost
+
+      await tx.inventoryBalance.update({
+        where: {
+          id: existingBalance.id
+        },
+        data: {
+          totalQuantity: newTotalQuantity,
+          availableQuantity: newAvailableQuantity,
+          averageCost: newAverageCost,
+          totalValue: newTotalValue,
+          lastMovementDate: new Date()
+        }
+      })
+    } else {
+      // Create new balance record
+      await tx.inventoryBalance.create({
+        data: {
+          locationId,
+          itemId,
+          totalQuantity: quantityChange,
+          availableQuantity: quantityChange,
+          averageCost: unitCost,
+          totalValue: quantityChange * unitCost,
+          lastMovementDate: new Date()
+        }
+      })
+    }
   }
 }

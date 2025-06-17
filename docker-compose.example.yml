@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  enxi:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./prisma/prod.db
+    volumes:
+      # Mount persistent database directory
+      - enxi-db:/app/prisma
+      # Or use host directory for persistence
+      # - /var/lib/enxi/database:/app/prisma
+    restart: unless-stopped
+
+volumes:
+  enxi-db:
+    driver: local

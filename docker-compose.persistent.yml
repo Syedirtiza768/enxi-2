@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  enxi:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./prisma/prod.db
+      - NODE_ENV=production
+    volumes:
+      # Named volume for database persistence
+      - enxi-database:/app/prisma
+      # Alternative: Use host directory for direct access
+      # - ./data/database:/app/prisma
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  enxi-database:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/database

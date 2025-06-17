@@ -117,7 +117,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
           shippingMethod: data.shippingMethod || '',
         })
       } else {
-        throw new Error(response.error || 'Failed to fetch shipment')
+        throw new Error('Failed to fetch shipment')
       }
     } catch (err) {
       console.error('Error fetching shipment:', err)
@@ -131,7 +131,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     fetchShipment()
   }, [shipmentId, fetchShipment])
 
-  const handleConfirmShipment = async (): Promise<void> => {
+  const handleConfirmShipment = async () => {
     if (!user) return
 
     try {
@@ -153,7 +153,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const handleDeliverShipment = async (): Promise<unknown> => {
+  const handleDeliverShipment = async () => {
     if (!user) return
 
     try {
@@ -179,7 +179,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const handleCancelShipment = async (): Promise<unknown> => {
+  const handleCancelShipment = async () => {
     if (!user || !cancelReason.trim()) return
 
     try {
@@ -203,10 +203,10 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const handleUpdateTracking: () => Promise<void>= async(): void => {
+  const handleUpdateTracking = async () => {
     try {
       setActionLoading(true)
-      const response = await apiClient(`/api/shipments/${shipmentId}`, { method: 'POST', body: JSON.stringify(trackingData) })
+      const response = await apiClient(`/api/shipments/${shipmentId}`, { method: 'PUT', body: JSON.stringify(trackingData) })
       if (response.ok && response?.data) {
         setShipment(response?.data)
       } else {
@@ -221,7 +221,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const getStatusIcon = (status: string): void => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'PREPARING':
         return <Clock className="w-5 h-5" />
@@ -239,7 +239,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const getStatusColor = (status: string): void => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'PREPARING':
         return 'bg-yellow-100 text-yellow-800'
@@ -257,7 +257,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     }
   }
 
-  const formatDate = (dateString: string): void => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -307,7 +307,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
         <div className="flex items-center space-x-4">
           <Button
             variant="outline"
-            onClick={(): void => router.back()}
+            onClick={() => router.back()}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -345,7 +345,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Input
                       id="carrier"
                       value={trackingData.carrier}
-                      onChange={(e): void => setTrackingData(prev => ({
+                      onChange={(e) => setTrackingData(prev => ({
                         ...prev,
                         carrier: e.target.value
                       }))}
@@ -357,7 +357,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Input
                       id="trackingNumber"
                       value={trackingData.trackingNumber}
-                      onChange={(e): void => setTrackingData(prev => ({
+                      onChange={(e) => setTrackingData(prev => ({
                         ...prev,
                         trackingNumber: e.target.value
                       }))}
@@ -369,7 +369,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Input
                       id="shippingMethod"
                       value={trackingData.shippingMethod}
-                      onChange={(e): void => setTrackingData(prev => ({
+                      onChange={(e) => setTrackingData(prev => ({
                         ...prev,
                         shippingMethod: e.target.value
                       }))}
@@ -379,7 +379,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={(): void => setShowEditTrackingDialog(false)}
+                      onClick={() => setShowEditTrackingDialog(false)}
                       disabled={actionLoading}
                     >
                       Cancel
@@ -417,7 +417,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                 <div className="flex justify-end space-x-2 mt-4">
                   <Button 
                     variant="outline" 
-                    onClick={(): void => setShowConfirmDialog(false)}
+                    onClick={() => setShowConfirmDialog(false)}
                     disabled={actionLoading}
                   >
                     Cancel
@@ -451,7 +451,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Input
                       id="recipientName"
                       value={recipientName}
-                      onChange={(e): void => setRecipientName(e.target.value)}
+                      onChange={(e) => setRecipientName(e.target.value)}
                       placeholder="Who received the package?"
                     />
                   </div>
@@ -460,7 +460,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Textarea
                       id="deliveryNotes"
                       value={deliveryNotes}
-                      onChange={(e): void => setDeliveryNotes(e.target.value)}
+                      onChange={(e) => setDeliveryNotes(e.target.value)}
                       placeholder="Left at front door, signed by John, etc."
                       rows={3}
                     />
@@ -468,7 +468,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={(): void => setShowDeliverDialog(false)}
+                      onClick={() => setShowDeliverDialog(false)}
                       disabled={actionLoading}
                     >
                       Cancel
@@ -503,7 +503,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                     <Textarea
                       id="cancelReason"
                       value={cancelReason}
-                      onChange={(e): void => setCancelReason(e.target.value)}
+                      onChange={(e) => setCancelReason(e.target.value)}
                       placeholder="Please provide a reason for cancellation..."
                       rows={3}
                       required
@@ -512,7 +512,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                   <div className="flex justify-end space-x-2">
                     <Button 
                       variant="outline" 
-                      onClick={(): void => setShowCancelDialog(false)}
+                      onClick={() => setShowCancelDialog(false)}
                       disabled={actionLoading}
                     >
                       Keep Shipment
@@ -580,10 +580,10 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                       <TableCell>{item.description}</TableCell>
                       <TableCell className="text-right">{item.quantityShipped}</TableCell>
                       <TableCell className="text-right">
-                        ${formatCurrency(item.item.unitPrice)}
+                        ${item.item.unitPrice.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${formatCurrency((item.quantityShipped * item.item.unitPrice))}
+                        ${(item.quantityShipped * item.item.unitPrice).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}

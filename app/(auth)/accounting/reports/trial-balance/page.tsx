@@ -14,6 +14,7 @@ export default function TrialBalancePage() {
   const [error, setError] = useState('')
   const [asOfDate, setAsOfDate] = useState(new Date().toISOString().split('T')[0])
   const [currency, setCurrency] = useState('USD')
+  const [defaultCurrency, setDefaultCurrency] = useState('USD')
 
   const fetchTrialBalance = async (): Promise<void> => {
     setLoading(true)
@@ -34,14 +35,33 @@ export default function TrialBalancePage() {
       const data = await response.json()
       setTrialBalance(data.data)
 } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch trial balance')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchTrialBalance()
+    // Fetch company settings to get default currency
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.data?.defaultCurrency) {
+            setDefaultCurrency(data.data.defaultCurrency)
+            setCurrency(data.data.defaultCurrency)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching company settings:', error)
+      }
+    }
+    
+    fetchSettings().then(() => {
+      fetchTrialBalance()
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -88,6 +108,7 @@ export default function TrialBalancePage() {
               onChange={(e) => setCurrency(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
+              <option value="AED">AED</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
               <option value="GBP">GBP</option>

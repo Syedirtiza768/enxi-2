@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.service'
-import { ItemType } from '@/lib/generated/prisma'
+// import { ItemType } from '@/lib/generated/prisma'
 
 // GET /api/inventory/items - Get all items with filters
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const searchParams = request.nextUrl.searchParams
     const categoryId = searchParams.get('categoryId')
-    const type = searchParams.get('type') as ItemType | null
+    const type = searchParams.get('type') as string | null
     const isActive = searchParams.get('isActive')
     const isSaleable = searchParams.get('isSaleable')
     const isPurchaseable = searchParams.get('isPurchaseable')
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       name,
       description,
       categoryId,
-      type: type || ItemType.PRODUCT,
+      type: type || 'PRODUCT',
       unitOfMeasureId,
       trackInventory: trackInventory ?? true,
       minStockLevel: minStockLevel || 0,

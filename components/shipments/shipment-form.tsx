@@ -106,16 +106,16 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     fetchSalesOrder()
   }, [fetchSalesOrder])
 
-  const getAvailableQuantity = (item: SalesOrderItem): void => {
+  const getAvailableQuantity = (item: SalesOrderItem) => {
     return item.quantity - item.quantityShipped
   }
 
-  const getShippableItems = (): void => {
+  const getShippableItems = () => {
     if (!salesOrder) return []
     return salesOrder.items.filter(item => getAvailableQuantity(item) > 0)
   }
 
-  const handleItemSelection = (itemId: string, selected: boolean): void => {
+  const handleItemSelection = (itemId: string, selected: boolean) => {
     if (selected) {
       const item = salesOrder?.items.find(i => i.id === itemId)
       if (item) {
@@ -146,7 +146,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     }
   }
 
-  const handleQuantityChange = (itemId: string, quantity: number): void => {
+  const handleQuantityChange = (itemId: string, quantity: number) => {
     const item = salesOrder?.items.find(i => i.id === itemId)
     if (!item) return
 
@@ -180,7 +180,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     }))
   }
 
-  const validateForm = (): void => {
+  const validateForm = () => {
     const errors: Record<string, string> = {}
 
     // Check if at least one item is selected
@@ -232,11 +232,10 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
         createdBy: user.id,
       }
 
-      const response = await apiClient('/api/shipments', { method: 'POST', body: JSON.stringify(shipmentData) })
-      if (!response.ok) {
-        throw new Error(response.error || 'Failed to create shipment')
-      }
-      const shipment = response?.data
+      const shipment = await apiClient('/api/shipments', { 
+        method: 'POST', 
+        body: JSON.stringify(shipmentData) 
+      })
       
       if (onSuccess) {
         onSuccess(shipment)
@@ -379,7 +378,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                           <input
                             type="checkbox"
                             checked={!!isSelected}
-                            onChange={(e): void => handleItemSelection(item.id, e.target.checked)}
+                            onChange={(e) => handleItemSelection(item.id, e.target.checked)}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                             aria-label={`Select ${item.itemCode}`}
                           />
@@ -400,7 +399,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                                 min="1"
                                 max={availableQty}
                                 value={isSelected.quantity}
-                                onChange={(e): void => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
+                                onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
                                 className={`w-20 text-right ${hasError ? 'border-red-300' : ''}`}
                                 aria-label={`Quantity for ${item.itemCode}`}
                               />
@@ -432,7 +431,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                   <Input
                     id="carrier"
                     value={carrier}
-                    onChange={(e): void => setCarrier(e.target.value)}
+                    onChange={(e) => setCarrier(e.target.value)}
                     placeholder="FedEx, UPS, DHL, etc."
                   />
                 </div>
@@ -441,7 +440,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                   <Input
                     id="trackingNumber"
                     value={trackingNumber}
-                    onChange={(e): void => setTrackingNumber(e.target.value)}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
                     placeholder="Enter tracking number"
                   />
                 </div>
@@ -453,7 +452,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                   <Input
                     id="shippingMethod"
                     value={shippingMethod}
-                    onChange={(e): void => setShippingMethod(e.target.value)}
+                    onChange={(e) => setShippingMethod(e.target.value)}
                     placeholder="Ground, Express, Overnight, etc."
                   />
                 </div>
@@ -462,7 +461,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                   <Input
                     id="shipFromAddress"
                     value={shipFromAddress}
-                    onChange={(e): void => setShipFromAddress(e.target.value)}
+                    onChange={(e) => setShipFromAddress(e.target.value)}
                     placeholder="Warehouse or shipping location"
                   />
                 </div>
@@ -473,7 +472,7 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
                 <Textarea
                   id="notes"
                   value={notes}
-                  onChange={(e): void => setNotes(e.target.value)}
+                  onChange={(e) => setNotes(e.target.value)}
                   placeholder="Additional notes about this shipment..."
                   rows={3}
                 />

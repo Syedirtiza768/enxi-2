@@ -34,7 +34,8 @@ export default function BalanceSheetPage() {
       const data = await response.json()
       setBalanceSheet(data.data)
 } catch (error) {
-      console.error('Error:', error);
+      console.error('Error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to fetch balance sheet')
     } finally {
       setLoading(false)
     }

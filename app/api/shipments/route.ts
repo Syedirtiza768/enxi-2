@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { ShipmentService } from '@/lib/services/shipment.service'
 import { z } from 'zod'
 
@@ -37,71 +38,80 @@ const querySchema = z.object({
   endDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
 })
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  try {
-    const { searchParams } = new URL(request.url)
-    const params = Object.fromEntries(searchParams.entries())
-    
-    const validatedParams = querySchema.parse(params)
-    const { page, limit, ...filters } = validatedParams
-    
-    const shipmentService = new ShipmentService()
-    
-    // If customerId is provided, use customer-specific method
-    if (filters.customerId) {
-      const result = await shipmentService.getShipmentsByCustomer(filters.customerId, {
-        status: filters.status as keyof ShipmentStatus,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
+export const GET = createProtectedHandler(
+  async (request: NextRequest) => {
+    try {
+      const { searchParams } = new URL(request.url)
+      const params = Object.fromEntries(searchParams.entries())
+      
+      const validatedParams = querySchema.parse(params)
+      const { page, limit, ...filters } = validatedParams
+      
+      const shipmentService = new ShipmentService()
+      
+      // If customerId is provided, use customer-specific method
+      if (filters.customerId) {
+        const result = await shipmentService.getShipmentsByCustomer(filters.customerId, {
+          status: filters.status as keyof ShipmentStatus,
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          page,
+          limit,
+        })
+        return NextResponse.json(result)
+      }
+      
+      // Otherwise, get all shipments with filters
+      const result = await shipmentService.getShipments({
         page,
         limit,
+        filters,
       })
+      
       return NextResponse.json(result)
-    }
-    
-    // Otherwise, get all shipments with filters
-    const result = await shipmentService.getShipments({
-      page,
-      limit,
-      filters,
-    })
-    
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error('Error fetching shipments:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  try {
-    const body = await request.json()
-    const validatedData = createShipmentSchema.parse(body)
-    
-    const shipmentService = new ShipmentService()
-    const shipment = await shipmentService.createShipmentFromOrder(
-      validatedData.salesOrderId,
-      validatedData
-    )
-    
-    return NextResponse.json(shipment, { status: 201 })
-  } catch (error) {
-    console.error('Error creating shipment:', error)
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    
-    if (errorMessage.includes('Order must be approved') || errorMessage.includes('Cannot ship more than')) {
+    } catch (error) {
+      console.error('Error fetching shipments:', error)
       return NextResponse.json(
-        { error: errorMessage },
-        { status: 400 }
+        { error: 'Internal server error' },
+        { status: 500 }
       )
     }
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
+  },
+  { permissions: ['shipments.view'] }
+)
+
+export const POST = createProtectedHandler(
+  async (request: NextRequest) => {
+    try {
+      const body = await request.json()
+      const validatedData = createShipmentSchema.parse(body)
+      
+      const shipmentService = new ShipmentService()
+      const shipment = await shipmentService.createShipmentFromOrder(
+        validatedData.salesOrderId,
+        {
+          ...validatedData,
+          createdBy: request.user!.id
+        }
+      )
+      
+      return NextResponse.json(shipment, { status: 201 })
+    } catch (error) {
+      console.error('Error creating shipment:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      
+      if (errorMessage.includes('Order must be approved') || errorMessage.includes('Cannot ship more than')) {
+        return NextResponse.json(
+          { error: errorMessage },
+          { status: 400 }
+        )
+      }
+      
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
+    }
+  },
+  { permissions: ['shipments.create'] }
+)

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
+    if (!session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -80,13 +80,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
+    if (!session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await request.json()
     const {
       itemId,
+      itemCode, // Support both itemId and itemCode
       movementType,
       movementDate,
       quantity,
@@ -105,15 +106,31 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       purchaseRef
     } = body
 
-    if (!itemId || !movementType || !quantity) {
+    if ((!itemId && !itemCode) || !movementType || !quantity) {
       return NextResponse.json(
-        { error: 'Item ID, movement type, and quantity are required' },
+        { error: 'Item ID or code, movement type, and quantity are required' },
         { status: 400 }
       )
     }
 
+    // If itemCode is provided, look up the item to get its ID
+    let actualItemId = itemId
+    if (!itemId && itemCode) {
+      const { prisma } = await import('@/lib/db/prisma')
+      const item = await prisma.item.findUnique({
+        where: { code: itemCode }
+      })
+      if (!item) {
+        return NextResponse.json(
+          { error: `Item with code ${itemCode} not found` },
+          { status: 404 }
+        )
+      }
+      actualItemId = item.id
+    }
+
     const movementData: CreateStockMovementInput & { createdBy: string } = {
-      itemId,
+      itemId: actualItemId,
       movementType,
       movementDate: movementDate ? new Date(movementDate) : new Date(),
       quantity,

@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Manual curl commands to test Stock-In with GL integration
+# Run these commands individually to test each step
+
+echo "📝 Manual Stock-In Testing Commands"
+echo "=================================="
+echo ""
+echo "These are individual curl commands you can run to test the stock-in flow manually."
+echo ""
+
+# Base configuration
+echo "# Configuration"
+echo "BASE_URL=\"http://localhost:3000/api\""
+echo ""
+
+echo "# 1. Check initial inventory balance for LAPTOP-001"
+echo "curl -s \"http://localhost:3000/api/inventory/balances?itemCode=LAPTOP-001&location=WAREHOUSE-A\" | jq '.'"
+echo ""
+
+echo "# 2. Create a stock-in transaction for LAPTOP-001"
+echo "curl -X POST http://localhost:3000/api/stock-movements \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -d '{"
+echo "    \"type\": \"IN\","
+echo "    \"itemCode\": \"LAPTOP-001\","
+echo "    \"quantity\": 5,"
+echo "    \"unitCost\": 1500.00,"
+echo "    \"location\": \"WAREHOUSE-A\","
+echo "    \"reference\": \"PO-2024-001\","
+echo "    \"notes\": \"Purchase order received - 5 laptops\""
+echo "  }' | jq '.'"
+echo ""
+
+echo "# 3. Check updated inventory balance"
+echo "curl -s \"http://localhost:3000/api/inventory/balances?itemCode=LAPTOP-001&location=WAREHOUSE-A\" | jq '.'"
+echo ""
+
+echo "# 4. List recent journal entries (should show the stock-in entry)"
+echo "curl -s \"http://localhost:3000/api/journal-entries?limit=5\" | jq '.'"
+echo ""
+
+echo "# 5. Get journal entry by reference (use the movement ID from step 2)"
+echo "# Replace MOVEMENT_ID with the actual ID returned from step 2"
+echo "curl -s \"http://localhost:3000/api/journal-entries?reference=STOCK-IN-MOVEMENT_ID\" | jq '.'"
+echo ""
+
+echo "# 6. Test with PAPER-A4"
+echo "curl -X POST http://localhost:3000/api/stock-movements \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -d '{"
+echo "    \"type\": \"IN\","
+echo "    \"itemCode\": \"PAPER-A4\","
+echo "    \"quantity\": 100,"
+echo "    \"unitCost\": 5.00,"
+echo "    \"location\": \"WAREHOUSE-A\","
+echo "    \"reference\": \"SUPPLY-2024-001\","
+echo "    \"notes\": \"Office supplies restocked\""
+echo "  }' | jq '.'"
+echo ""
+
+echo "# 7. Check GL account balances (inventory account)"
+echo "curl -s \"http://localhost:3000/api/accounts/1300/balance\" | jq '.'"
+echo ""
+
+echo "# 8. Check GL account balances (accounts payable)"
+echo "curl -s \"http://localhost:3000/api/accounts/2100/balance\" | jq '.'"
+echo ""
+
+echo "# Additional test scenarios:"
+echo ""
+
+echo "# Test with different locations"
+echo "curl -X POST http://localhost:3000/api/stock-movements \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -d '{"
+echo "    \"type\": \"IN\","
+echo "    \"itemCode\": \"LAPTOP-001\","
+echo "    \"quantity\": 3,"
+echo "    \"unitCost\": 1500.00,"
+echo "    \"location\": \"WAREHOUSE-B\","
+echo "    \"reference\": \"TRANSFER-2024-001\","
+echo "    \"notes\": \"Stock transfer from supplier\""
+echo "  }' | jq '.'"
+echo ""
+
+echo "# Test with fractional quantities"
+echo "curl -X POST http://localhost:3000/api/stock-movements \\"
+echo "  -H \"Content-Type: application/json\" \\"
+echo "  -d '{"
+echo "    \"type\": \"IN\","
+echo "    \"itemCode\": \"PAPER-A4\","
+echo "    \"quantity\": 50.5,"
+echo "    \"unitCost\": 4.99,"
+echo "    \"location\": \"WAREHOUSE-A\","
+echo "    \"reference\": \"PARTIAL-2024-001\","
+echo "    \"notes\": \"Partial shipment received\""
+echo "  }' | jq '.'"
+echo ""
+
+echo "# Query stock movements by type"
+echo "curl -s \"http://localhost:3000/api/stock-movements?type=IN&limit=10\" | jq '.'"
+echo ""
+
+echo "# Query journal entries by date range (today)"
+echo "curl -s \"http://localhost:3000/api/journal-entries?startDate=$(date -u +%Y-%m-%d)&endDate=$(date -u +%Y-%m-%d)\" | jq '.'"

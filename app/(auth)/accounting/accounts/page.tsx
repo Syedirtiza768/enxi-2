@@ -42,7 +42,9 @@ export default function AccountsPage(): React.JSX.Element {
       const response = await apiClient<Account[]>('/api/accounting/accounts', { method: 'GET' })
       
       if (response.ok && response?.data) {
-        setAccounts(Array.isArray(response?.data) ? response?.data : [])
+        // API returns { success: true, data: accounts }
+        const accountsData = response.data.data || response.data
+        setAccounts(Array.isArray(accountsData) ? accountsData : [])
       } else {
         console.error('Failed to load accounts:', response.error)
         setAccounts([])

@@ -20,56 +20,34 @@ async function seedCompanySettings() {
     await prisma.companySettings.create({
       data: {
         companyName: process.env.COMPANY_NAME || 'Enxi ERP Demo Company',
-        companyEmail: process.env.COMPANY_EMAIL || 'info@enxierp.com',
-        companyPhone: process.env.COMPANY_PHONE || '+1234567890',
-        companyWebsite: process.env.COMPANY_WEBSITE || 'https://enxierp.com',
-        companyAddress: process.env.COMPANY_ADDRESS || '123 Business Street',
-        companyCity: process.env.COMPANY_CITY || 'Dubai',
-        companyCountry: process.env.COMPANY_COUNTRY || 'UAE',
-        companyPostalCode: process.env.COMPANY_POSTAL_CODE || '00000',
+        email: process.env.COMPANY_EMAIL || 'info@enxierp.com',
+        phone: process.env.COMPANY_PHONE || '+1234567890',
+        website: process.env.COMPANY_WEBSITE || 'https://enxierp.com',
+        address: process.env.COMPANY_ADDRESS || '123 Business Street, Dubai, UAE 00000',
         logoUrl: process.env.COMPANY_LOGO_URL || '/logo.png',
-        currency: process.env.DEFAULT_CURRENCY || 'AED',
-        taxRate: parseFloat(process.env.DEFAULT_TAX_RATE || '5'),
-        taxNumber: process.env.COMPANY_TAX_NUMBER || 'TRN123456789',
+        defaultCurrency: process.env.DEFAULT_CURRENCY || 'AED',
+        taxRegistrationNumber: process.env.COMPANY_TAX_NUMBER || 'TRN123456789',
         
         // Quotation settings
         quotationPrefix: 'QT',
-        quotationStartNumber: 1001,
-        quotationNumberPadding: 5,
-        quotationFooterText: 'Thank you for your business!',
-        quotationTerms: 'Payment due within 30 days. Prices are subject to change.',
+        quotationNumberFormat: 'PREFIX-YYYY-NNNN',
+        quotationTermsAndConditions: 'Payment due within 30 days. Prices are subject to change.',
+        quotationFooterNotes: 'Thank you for your business!',
         quotationValidityDays: 30,
-        quotationBankDetails: 'Bank: Example Bank\nAccount: 1234567890\nIBAN: AE123456789012345678901234',
         
         // Sales order settings
-        salesOrderPrefix: 'SO',
-        salesOrderStartNumber: 1001,
-        salesOrderNumberPadding: 5,
-        salesOrderFooterText: 'Thank you for your order!',
-        salesOrderTerms: 'Payment due upon delivery.',
+        orderPrefix: 'SO',
+        orderNumberFormat: 'PREFIX-YYYY-NNNN',
+        defaultOrderPaymentTerms: 'Payment due upon delivery.',
+        defaultOrderShippingTerms: 'FOB Destination',
         
-        // Invoice settings
-        invoicePrefix: 'INV',
-        invoiceStartNumber: 1001,
-        invoiceNumberPadding: 5,
-        invoiceFooterText: 'Thank you for your business!',
-        invoiceTerms: 'Payment due within 30 days.',
-        
-        // Purchase order settings
-        purchaseOrderPrefix: 'PO',
-        purchaseOrderStartNumber: 1001,
-        purchaseOrderNumberPadding: 5,
-        
-        // General settings
-        dateFormat: 'DD/MM/YYYY',
-        timeFormat: '24h',
-        decimalPlaces: 2,
-        thousandsSeparator: ',',
-        decimalSeparator: '.',
-        defaultPaymentTerms: 30,
-        fiscalYearStart: new Date(new Date().getFullYear(), 0, 1),
-        enableMultiCurrency: true,
-        baseCurrency: process.env.BASE_CURRENCY || 'AED',
+        // Other settings from schema
+        showCompanyLogoOnQuotations: true,
+        showCompanyLogoOnOrders: true,
+        showTaxBreakdown: true,
+        autoReserveInventory: true,
+        requireCustomerPO: false,
+        isActive: true,
         
         createdAt: new Date(),
         updatedAt: new Date()
@@ -793,7 +771,6 @@ async function seedInitialInventory() {
           await prisma.stockMovement.create({
             data: {
               movementNumber: `MOV-OPENING-${item.code}`,
-              type: 'OPENING',
               movementType: 'IN',
               movementDate: new Date(),
               itemId: item.id,
@@ -802,7 +779,8 @@ async function seedInitialInventory() {
               quantity: 100,
               unitCost: item.standardCost || 0,
               totalCost: (item.standardCost || 0) * 100,
-              reference: 'OPENING-BALANCE',
+              referenceType: 'OPENING',
+              referenceNumber: 'OPENING-BALANCE',
               stockLotId: lot.id,
               createdBy: 'system',
               notes: 'Opening balance'
@@ -861,21 +839,15 @@ async function seedDemoTransactions(options: SeedOptions) {
     const quotation = await prisma.quotation.create({
       data: {
         quotationNumber: 'QT-2024-00001',
-        customerId: customer.id,
         salesCaseId: salesCase.id,
         status: 'ACCEPTED',
-        issueDate: new Date(),
         validUntil: new Date(new Date().setDate(new Date().getDate() + 30)),
-        customerPONumber: 'PO-DEMO-001',
         paymentTerms: customer.paymentTerms.toString(),
         notes: 'Demo quotation',
         internalNotes: 'Created as demo data',
-        subTotal: 0,
-        discountType: 'PERCENTAGE',
-        discountValue: 10,
+        subtotal: 0,
         discountAmount: 0,
         taxAmount: 0,
-        shippingAmount: 50,
         totalAmount: 0,
         createdBy: salesUser.id
       }
@@ -889,17 +861,16 @@ async function seedDemoTransactions(options: SeedOptions) {
           quotationId: quotation.id,
           itemId: item.id,
           itemCode: item.code,
-          itemName: item.name,
-          description: item.description || '',
+          description: item.name + ' - ' + (item.description || ''),
           quantity: 5,
           unitPrice: item.listPrice || 0,
-          discountType: 'AMOUNT',
-          discountValue: 10,
+          discount: 10,  // This is the discount percentage or amount
           discountAmount: 10,
           taxRateId: standardTax.id,
+          taxRate: standardTax.rate,
           taxAmount: ((item.listPrice || 0) * 5 - 10) * 0.05,
-          totalAmount: ((item.listPrice || 0) * 5 - 10) * 1.05,
-          notes: 'Demo item'
+          subtotal: (item.listPrice || 0) * 5,
+          totalAmount: ((item.listPrice || 0) * 5 - 10) * 1.05
         }
       });
       subTotal += (item.listPrice || 0) * 5;
@@ -913,7 +884,7 @@ async function seedDemoTransactions(options: SeedOptions) {
     await prisma.quotation.update({
       where: { id: quotation.id },
       data: {
-        subTotal,
+        subtotal: subTotal,
         discountAmount,
         taxAmount,
         totalAmount
@@ -925,21 +896,17 @@ async function seedDemoTransactions(options: SeedOptions) {
       data: {
         orderNumber: 'SO-2024-00001',
         quotationId: quotation.id,
-        customerId: customer.id,
         salesCaseId: salesCase.id,
         status: 'PENDING',
         orderDate: new Date(),
-        deliveryDate: new Date(new Date().setDate(new Date().getDate() + 7)),
+        requestedDate: new Date(new Date().setDate(new Date().getDate() + 7)),
         paymentTerms: customer.paymentTerms.toString(),
-        customerPONumber: 'PO-123456',
+        customerPO: 'PO-123456',
         notes: 'Demo sales order',
-        internalNotes: 'Created from demo quotation',
-        subTotal: quotation.subTotal,
-        discountType: quotation.discountType,
-        discountValue: quotation.discountValue,
+        subtotal: quotation.subtotal,
         discountAmount: quotation.discountAmount,
         taxAmount: quotation.taxAmount,
-        shippingAmount: quotation.shippingAmount,
+        shippingAmount: 50,  // Adding shipping amount directly
         totalAmount: quotation.totalAmount,
         createdBy: salesUser.id
       }
@@ -956,18 +923,17 @@ async function seedDemoTransactions(options: SeedOptions) {
           salesOrderId: salesOrder.id,
           itemId: qItem.itemId,
           itemCode: qItem.itemCode,
-          itemName: qItem.itemName,
           description: qItem.description,
           quantity: qItem.quantity,
           unitPrice: qItem.unitPrice,
-          discountType: qItem.discountType,
-          discountValue: qItem.discountValue,
+          discount: qItem.discount,
           discountAmount: qItem.discountAmount,
           taxRateId: qItem.taxRateId,
+          taxRate: qItem.taxRate,
           taxAmount: qItem.taxAmount,
+          subtotal: qItem.subtotal,
           totalAmount: qItem.totalAmount,
-          deliveredQuantity: 0,
-          notes: qItem.notes
+          quantityShipped: 0
         }
       });
     }

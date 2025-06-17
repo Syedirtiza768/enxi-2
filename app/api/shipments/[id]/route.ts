@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { ShipmentService } from '@/lib/services/shipment.service'
 import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
@@ -11,8 +12,9 @@ const updateShipmentSchema = z.object({
   notes: z.string().optional(),
 })
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
-  try {
+export const GET = createProtectedHandler(
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    try {
     const resolvedParams = await params
     const shipment = await prisma.shipment.findUnique({
       where: { id: resolvedParams.id },
@@ -48,11 +50,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       { error: 'Internal server error' },
       { status: 500 }
     )
-  }
-}
+    }
+  },
+  { permissions: ['shipments.view'] }
+)
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
-  try {
+export const PUT = createProtectedHandler(
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    try {
     const resolvedParams = await params
     const body = await request.json()
     const validatedData = updateShipmentSchema.parse(body)
@@ -67,5 +72,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       { error: 'Internal server error' },
       { status: 500 }
     )
-  }
-}
+    }
+  },
+  { permissions: ['shipments.update'] }
+)

@@ -681,7 +681,7 @@ export class CustomerService extends BaseService {
             customerId
           },
           status: {
-            in: [OrderStatus.PENDING, OrderStatus.APPROVED, OrderStatus.PROCESSING]
+            in: ['PENDING', 'APPROVED', 'PROCESSING']
           }
         }
       })
@@ -695,7 +695,7 @@ export class CustomerService extends BaseService {
         where: {
           customerId,
           status: {
-            in: [InvoiceStatus.DRAFT, InvoiceStatus.SENT, InvoiceStatus.PARTIAL]
+            in: ['DRAFT', 'SENT', 'PARTIAL']
           }
         }
       })

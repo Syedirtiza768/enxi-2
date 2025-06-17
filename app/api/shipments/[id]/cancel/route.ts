@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { ShipmentService } from '@/lib/services/shipment.service'
 import { z } from 'zod'
 
@@ -7,14 +8,18 @@ const cancelShipmentSchema = z.object({
   reason: z.string().min(1, 'Cancellation reason is required'),
 })
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
-  try {
+export const POST = createProtectedHandler(
+  async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    try {
     const resolvedParams = await params
     const body = await request.json()
     const validatedData = cancelShipmentSchema.parse(body)
     
     const shipmentService = new ShipmentService()
-    const shipment = await shipmentService.cancelShipment(resolvedParams.id, validatedData)
+    const shipment = await shipmentService.cancelShipment(resolvedParams.id, {
+      ...validatedData,
+      cancelledBy: request.user!.id
+    })
     
     return NextResponse.json(shipment)
   } catch (error) {
@@ -39,5 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       { error: 'Internal server error' },
       { status: 500 }
     )
-  }
-}
+    }
+  },
+  { permissions: ['shipments.cancel'] }
+)

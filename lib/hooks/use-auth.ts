@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }): unknown {
   const login = (token: string, userData: UserResponse): void => {
     // The server already sets the httpOnly cookie, so we just need to:
     // 1. Store token in localStorage for API client (if needed)
-    localStorage.setItem('token', token)
+    localStorage.setItem('auth-token', token)
     // 2. Update user state
     setUser(userData)
     // No need to manually set cookie - server handles it
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }): unknown {
     }
     
     // Clear client state
-    localStorage.removeItem('token')
+    localStorage.removeItem('auth-token')
     setUser(null)
     router.push('/login')
   }

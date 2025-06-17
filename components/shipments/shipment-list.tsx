@@ -108,7 +108,7 @@ export function ShipmentList(): React.JSX.Element {
     fetchShipments()
   }, [fetchShipments])
 
-  const getStatusIcon = (status: string): void => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'PREPARING':
         return <Clock className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function ShipmentList(): React.JSX.Element {
     }
   }
 
-  const getStatusColor = (status: string): void => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'PREPARING':
         return 'bg-yellow-100 text-yellow-800'
@@ -144,7 +144,7 @@ export function ShipmentList(): React.JSX.Element {
     }
   }
 
-  const formatDate = (dateString: string): void => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -154,11 +154,11 @@ export function ShipmentList(): React.JSX.Element {
     })
   }
 
-  const handleRowClick = (shipmentId: string): void => {
+  const handleRowClick = (shipmentId: string) => {
     router.push(`/shipments/${shipmentId}`)
   }
 
-  const handleCreateShipment = (): void => {
+  const handleCreateShipment = () => {
     router.push('/shipments/new')
   }
 
@@ -203,7 +203,7 @@ export function ShipmentList(): React.JSX.Element {
                 <Input
                   placeholder="Search by shipment number, order number, or customer..."
                   value={searchTerm}
-                  onChange={(e): void => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -268,7 +268,7 @@ export function ShipmentList(): React.JSX.Element {
                   {shipments.map((shipment) => (
                     <TableRow
                       key={shipment.id}
-                      onClick={(): void => handleRowClick(shipment.id)}
+                      onClick={() => handleRowClick(shipment.id)}
                       className="cursor-pointer hover:bg-gray-50"
                     >
                       <TableCell className="font-medium">
@@ -318,7 +318,7 @@ export function ShipmentList(): React.JSX.Element {
                 <div className="flex items-center justify-between mt-4">
                   <Button
                     variant="outline"
-                    onClick={(): void => setPage(p => Math.max(1, p - 1))}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
                     <ChevronLeft className="w-4 h-4 mr-2" />
@@ -331,7 +331,7 @@ export function ShipmentList(): React.JSX.Element {
                   
                   <Button
                     variant="outline"
-                    onClick={(): void => setPage(p => p + 1)}
+                    onClick={() => setPage(p => p + 1)}
                     disabled={page >= totalPages}
                   >
                     Next

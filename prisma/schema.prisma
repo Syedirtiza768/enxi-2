@@ -8,6 +8,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum MovementType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+  TRANSFER
+  OPENING
+  PRODUCTION_IN
+  PRODUCTION_OUT
+  RETURN_IN
+  RETURN_OUT
+  DAMAGE
+  EXPIRY
+  COUNT_ADJUSTMENT
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  VOIDED
+}
+
 model User {
   id                String           @id @default(cuid())
   username          String           @unique
@@ -190,7 +211,7 @@ model JournalEntry {
   reference        String?
   currency         String            @default("USD")
   exchangeRate     Float             @default(1.0)
-  status           String            @default("DRAFT")
+  status           JournalStatus     @default(DRAFT)
   createdBy        String
   postedBy         String?
   createdAt        DateTime          @default(now())
@@ -709,7 +730,7 @@ model StockMovement {
   movementNumber  String        @unique
   itemId          String
   stockLotId      String?
-  movementType    String
+  movementType    MovementType
   movementDate    DateTime
   quantity        Float
   unitCost        Float         @default(0)

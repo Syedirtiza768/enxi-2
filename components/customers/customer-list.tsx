@@ -74,7 +74,6 @@ interface Customer {
   currency: string
   creditLimit: number
   paymentTerms: number
-  isActive: boolean
   account?: {
     id: string
     balance: number
@@ -330,37 +329,12 @@ export function CustomerList(): JSX.Element {
     }
   }
 
-  // Bulk status change
-  const handleBulkStatusChange = async (status: boolean) => {
-    try {
-      setLoading(true)
-      
-      const customerIds = Array.from(selectedCustomers)
-      
-      for (const id of customerIds) {
-        await apiClient(`/api/customers/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ isActive: status })
-        })
-      }
-      
-      toast({
-        title: 'Success',
-        description: `${customerIds.length} customer(s) ${status ? 'activated' : 'deactivated'} successfully`
-      })
-      
-      setSelectedCustomers(new Set())
-      await loadCustomers()
-    } catch (error) {
-      console.error('Error updating customer status:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to update customer status. Please try again.',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
+  // Bulk credit limit change (placeholder for future implementation)
+  const handleBulkCreditLimitChange = async () => {
+    toast({
+      title: 'Feature Coming Soon',
+      description: 'Bulk credit limit updates will be available in a future update.'
+    })
   }
 
   // Export customers
@@ -416,10 +390,6 @@ export function CustomerList(): JSX.Element {
 
   // Get status badge
   const getStatusBadge = (customer: Customer) => {
-    if (!customer.isActive) {
-      return <Badge variant="secondary">Inactive</Badge>
-    }
-    
     const hasOutstanding = customer.account && customer.account.balance > 0
     const overLimit = customer.account && customer.account.balance > customer.creditLimit
     
@@ -510,20 +480,22 @@ export function CustomerList(): JSX.Element {
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.active} active, {stats.inactive} inactive
+              All customers in database
             </p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium">With Outstanding</CardTitle>
+            <DollarSign className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {customers.filter(c => c.account && c.account.balance > 0).length}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% of total
+              Customers with pending payments
             </p>
           </CardContent>
         </Card>
@@ -547,7 +519,7 @@ export function CustomerList(): JSX.Element {
             <DollarSign className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats.totalOutstanding)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalOutstanding)}</div>
             <p className="text-xs text-muted-foreground">
               Pending payments
             </p>
@@ -561,7 +533,7 @@ export function CustomerList(): JSX.Element {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(stats.active > 0 ? stats.totalCreditLimit / stats.active : 0)}
+              {formatCurrency(stats.total > 0 ? stats.totalCreditLimit / stats.total : 0)
             </div>
             <p className="text-xs text-muted-foreground">
               Per active customer
@@ -630,9 +602,9 @@ export function CustomerList(): JSX.Element {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active Only</SelectItem>
-                  <SelectItem value="inactive">Inactive Only</SelectItem>
+                  <SelectItem value="all">All Customers</SelectItem>
+                  <SelectItem value="active">With Outstanding</SelectItem>
+                  <SelectItem value="inactive">No Outstanding</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -705,16 +677,9 @@ export function CustomerList(): JSX.Element {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleBulkStatusChange(true)}
+                  onClick={() => handleBulkCreditLimitChange()}
                 >
-                  Activate
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleBulkStatusChange(false)}
-                >
-                  Deactivate
+                  Update Credit Limits
                 </Button>
                 <Button
                   variant="outline"
