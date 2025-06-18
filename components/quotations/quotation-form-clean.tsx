@@ -196,30 +196,68 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
       // - formData.customer_id: The customer's ID
       // - formData.customer: The full customer object with name, email, phone, address, etc.
       
+      // Get items based on editor type
+      let items = [];
+      if (formData.useLineBasedEditor && formData.lines) {
+        // Convert lines to items
+        formData.lines.forEach((line, lineIndex) => {
+          if (line.items && line.items.length > 0) {
+            line.items.forEach((item, itemIndex) => {
+              items.push({
+                ...item,
+                lineNumber: lineIndex + 1,
+                lineDescription: line.description || '',
+                isLineHeader: itemIndex === 0,
+                sortOrder: lineIndex * 100 + itemIndex
+              });
+            });
+          }
+        });
+      } else {
+        items = formData.items || [];
+      }
+
+      // Validate items
+      const validItems = items.filter(item => 
+        (item.name || item.description || item.itemCode) && 
+        (item.quantity > 0 || item.quantity === undefined) &&
+        (item.unitPrice >= 0 || item.price >= 0 || item.unitPrice === undefined)
+      );
+
+      if (validItems.length === 0) {
+        toast({
+          title: 'Error',
+          description: 'Please add at least one valid item with a name/description and quantity',
+          variant: 'destructive'
+        });
+        setLoading(false);
+        return;
+      }
+
       const quotationData = {
         salesCaseId: selectedSalesCase,
         validUntil: expiryDate.toISOString(),
-        paymentTerms: formData.paymentTerms,
-        deliveryTerms: formData.deliveryTerms,
-        notes: formData.specialInstructions,
-        internalNotes: formData.internalNotes,
-        items: formData.items.filter(item => item.name || item.description).map(item => ({
+        paymentTerms: formData.paymentTerms || '',
+        deliveryTerms: formData.deliveryTerms || '',
+        notes: formData.specialInstructions || '',
+        internalNotes: formData.internalNotes || '',
+        items: validItems.map((item, index) => ({
           lineNumber: item.lineNumber || 1,
           lineDescription: item.lineDescription || '',
-          isLineHeader: item.isLineHeader || false,
+          isLineHeader: item.isLineHeader !== undefined ? item.isLineHeader : false,
           itemType: item.itemType || 'PRODUCT',
-          itemId: item.inventoryItemId || item.itemId,
-          itemCode: item.code || item.itemCode || '',
-          description: item.description || item.name || '',
+          itemId: item.inventoryItemId || item.itemId || undefined,
+          itemCode: item.code || item.itemCode || item.name || `ITEM-${index + 1}`,
+          description: item.description || item.name || 'Item',
           internalDescription: item.internalDescription || '',
           quantity: Number(item.quantity) || 1,
-          unitPrice: item.unitPrice || item.price || 0,
-          discount: item.discount || 0,
-          taxRate: item.taxRate || 0,
-          taxRateId: item.taxRateId,
-          unitOfMeasureId: item.unitOfMeasureId,
-          cost: item.cost || 0,
-          sortOrder: item.sortOrder
+          unitPrice: Number(item.unitPrice || item.price) || 0,
+          discount: Number(item.discount) || 0,
+          taxRate: Number(item.taxRate) || 0,
+          taxRateId: item.taxRateId || undefined,
+          unitOfMeasureId: item.unitOfMeasureId || undefined,
+          cost: Number(item.cost) || undefined,
+          sortOrder: item.sortOrder || index
         }))
       };
 
@@ -238,12 +276,23 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
       if (!response.ok) {
         console.error('Quotation creation failed - Full response:', response);
         
-        // Try to get the actual response body if available
+        // Try to get the actual error message
         let errorMsg = 'Failed to create quotation';
+        let errorDetails = '';
+        
         if (response.error) {
           errorMsg = response.error;
         } else if (response.message) {
           errorMsg = response.message;
+        }
+        
+        // Check for validation errors
+        if (response.details && Array.isArray(response.details)) {
+          errorDetails = response.details.map((d: any) => 
+            `${d.path?.join('.')}: ${d.message}`
+          ).join(', ');
+        } else if (response.details && typeof response.details === 'string') {
+          errorDetails = response.details;
         }
         
         // Check if there's additional error information
@@ -254,7 +303,8 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
           }
         }
         
-        throw new Error(errorMsg);
+        const finalError = errorDetails ? `${errorMsg}: ${errorDetails}` : errorMsg;
+        throw new Error(finalError);
       }
 
       console.log('API Response:', response);
@@ -291,9 +341,23 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
 
       router.push(`/quotations/${result.id}`);
     } catch (error) {
+      console.error('Error creating quotation:', error);
+      
+      let errorMessage = 'Failed to save quotation';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Show more detailed error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Full error object:', error);
+      }
+      
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save quotation',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

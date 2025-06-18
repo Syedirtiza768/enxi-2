@@ -9,16 +9,16 @@ import { z } from 'zod'
 // Schema for creating quotations
 const createQuotationSchema = z.object({
   salesCaseId: z.string(),
-  validUntil: z.string().datetime(),
+  validUntil: z.string().datetime().optional(),
   paymentTerms: z.string().optional(),
   deliveryTerms: z.string().optional(),
   notes: z.string().optional(),
   internalNotes: z.string().optional(),
   items: z.array(z.object({
-    lineNumber: z.number().int().positive().optional(),
+    lineNumber: z.number().int().positive().optional().default(1),
     lineDescription: z.string().optional(),
-    isLineHeader: z.boolean().optional(),
-    itemType: z.enum(['PRODUCT', 'SERVICE']).optional(),
+    isLineHeader: z.boolean().optional().default(false),
+    itemType: z.enum(['PRODUCT', 'SERVICE']).optional().default('PRODUCT'),
     itemId: z.string().optional(),
     itemCode: z.string(),
     description: z.string(),
@@ -120,6 +120,15 @@ const getHandler = async (request: NextRequest): Promise<NextResponse> => {
 
 // POST /api/quotations - Create new quotation
 const postHandler = async (request: NextRequest): Promise<NextResponse> => {
+  const debugMode = request.headers.get('x-debug') === 'true' || process.env.NODE_ENV === 'development'
+  
+  if (debugMode) {
+    console.log('=== QUOTATION CREATE DEBUG MODE ===')
+    console.log('Request URL:', request.url)
+    console.log('Request method:', request.method)
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+  }
+  
   try {
     // Authenticate user
     const session = { user: { id: 'system' } }
@@ -132,13 +141,17 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     let body;
     try {
       body = await request.json();
+      if (debugMode) {
+        console.log('Request body:', JSON.stringify(body, null, 2))
+      }
     } catch (parseError) {
       console.error('Failed to parse request body:', parseError);
       return NextResponse.json(
         { 
           error: 'Invalid request body',
           code: 'INVALID_JSON',
-          message: 'The request body is not valid JSON'
+          message: 'The request body is not valid JSON',
+          details: parseError instanceof Error ? parseError.message : String(parseError)
         },
         { status: 400 }
       );
@@ -168,13 +181,14 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     // Prepare quotation data with user context
     const quotationData = {
       ...data,
-      validUntil: new Date(data.validUntil),
+      validUntil: data.validUntil ? new Date(data.validUntil) : undefined,
       createdBy: session.user.id
     }
     
-    // Log only in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Creating quotation with data:', JSON.stringify(quotationData, null, 2))
+    // Log in debug mode
+    if (debugMode) {
+      console.log('Creating quotation with processed data:', JSON.stringify(quotationData, null, 2))
+      console.log('Validation passed, calling service...')
     }
     
     const quotation = await quotationService.createQuotation(quotationData)
@@ -186,7 +200,10 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
   } catch (error) {
     console.error('Error creating quotation:', error)
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
-    if (process.env.NODE_ENV === 'development') {
+    console.error('Error type:', error?.constructor?.name)
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
+    
+    if (process.env.NODE_ENV === 'development' && typeof body !== 'undefined') {
       console.error('Request body received:', body)
     }
     
@@ -238,12 +255,38 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
   }
 }
 
-// Export audit-wrapped handlers
+// Export audit-wrapped handlers with error handling
 export const GET = withCrudAudit(getHandler, EntityType.QUOTATION, 'GET', {
   metadata: { operation: 'list_quotations' }
 })
 
-export const POST = withCrudAudit(postHandler, EntityType.QUOTATION, 'POST', {
-  entityIdField: 'id',
-  metadata: { operation: 'create_quotation' }
-})
+// Wrap POST handler with additional error handling
+export const POST = async (request: NextRequest) => {
+  try {
+    const handler = withCrudAudit(postHandler, EntityType.QUOTATION, 'POST', {
+      entityIdField: 'id',
+      metadata: { operation: 'create_quotation' }
+    })
+    return await handler(request)
+  } catch (error) {
+    console.error('Error in POST handler wrapper:', error)
+    console.error('Error details:', {
+      name: error?.constructor?.name,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
+    
+    return NextResponse.json(
+      { 
+        error: 'Internal server error',
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred while processing your request.',
+        details: process.env.NODE_ENV === 'development' ? {
+          error: error instanceof Error ? error.message : String(error),
+          type: error?.constructor?.name
+        } : undefined
+      },
+      { status: 500 }
+    )
+  }
+}

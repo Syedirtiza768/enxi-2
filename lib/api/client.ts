@@ -149,6 +149,9 @@ export async function apiClient<T = unknown>(
         error: errorData.error || errorData.message || `Request failed: ${response.statusText}`,
         status: response.status,
         ok: false,
+        message: errorData.message || errorData.error,
+        code: errorData.code,
+        details: errorData.details, // Include validation details
         errorDetails: {
           code: errorData.code || `HTTP_${response.status}`,
           message: errorData.message || errorData.error || response.statusText,

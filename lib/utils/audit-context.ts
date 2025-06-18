@@ -52,20 +52,25 @@ export async function withAudit<T>(
   } catch (error) {
     console.error('Error in audit context:', error);
     
-    if (context.auditService) {
-      try {
-        await context.auditService.logAction({
-          userId: context.userId,
-          action: context.action,
-          entityType: context.entityType,
-          entityId: context.entityId || 'unknown',
-          ipAddress: context.ipAddress,
-          userAgent: context.userAgent,
-        })
-      } catch (auditError) {
-        console.error('Error logging audit action:', auditError);
-      }
+    // Log failed operation
+    try {
+      await auditService.logAction({
+        userId: context.userId,
+        action,
+        entityType,
+        entityId: entityId || 'unknown',
+        metadata: {
+          ...options?.metadata,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          failed: true
+        },
+        ipAddress: context.ipAddress,
+        userAgent: context.userAgent,
+      })
+    } catch (auditError) {
+      console.error('Error logging audit action:', auditError);
     }
+    
     throw error
   }
 }
