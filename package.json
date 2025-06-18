@@ -26,6 +26,7 @@
     "seed": "node prisma/seed.js",
     "seed:uae": "node prisma/seed-uae-diesel.js",
     "seed:marine": "tsx prisma/seed-uae-marine-comprehensive-fixed.ts",
+    "seed:diesel": "tsx prisma/seed-diesel-comprehensive.ts",
     "seed:admin": "tsx scripts/seed/seed-admin.ts",
     "seed:accounting": "tsx prisma/seed-accounting.ts",
     "seed:production": "tsx scripts/seed-production.ts",
