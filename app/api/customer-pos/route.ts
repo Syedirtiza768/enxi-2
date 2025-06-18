@@ -5,7 +5,7 @@ import { z } from 'zod'
 const createCustomerPOSchema = z.object({
   poNumber: z.string(),
   customerId: z.string(),
-  quotationId: z.string(),
+  quotationId: z.string().optional(),
   poDate: z.string().datetime(),
   poAmount: z.number().positive(),
   currency: z.string().optional(),

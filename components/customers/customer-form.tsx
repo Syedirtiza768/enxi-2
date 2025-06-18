@@ -226,7 +226,7 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
       const validatedData = createCustomerSchema.parse(formData)
       
       // Submit to API
-      const response = await apiClient<{ data: { id: string; name: string; email: string } }>('/api/customers', {
+      const response = await apiClient<{ success: boolean; data: { id: string; name: string; email: string } }>('/api/customers', {
         method: 'POST',
         body: JSON.stringify(validatedData)
       })
@@ -235,11 +235,16 @@ export function CustomerForm({ leadData, onSuccess, onCancel }: CustomerFormProp
         throw new Error(response.error || 'Failed to create customer')
       }
 
-      // Success
+      // Success - response.data contains the API response object { success: true, data: customer }
+      const customer = response.data?.data
+      if (!customer || !customer.id) {
+        throw new Error('Invalid response from server - missing customer data')
+      }
+
       if (onSuccess) {
-        onSuccess(response?.data)
+        onSuccess(customer)
       } else {
-        router.push(`/customers/${response?.data?.id}`)
+        router.push(`/customers/${customer.id}`)
       }
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error) {

@@ -55,7 +55,8 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     try {
       const response = await apiClient<{ data: any[]; total: number }>(`/api/inventory/items?search=${searchQuery}`);
       
-      if (response.ok && response.data) {
+      if (response.ok && response.data?.data) {
+        // The API returns { data: [...], total: number }
         setInventoryItems(response.data.data);
       } else {
         setInventoryItems([]);

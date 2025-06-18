@@ -14,7 +14,7 @@ import {
   Input,
   Select
 } from '@/components/design-system'
-import { Save, Building, DollarSign, Upload, X } from 'lucide-react'
+import { Save, Building, Globe, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 import { apiClient } from '@/lib/api/client'
 
@@ -350,7 +350,7 @@ export default function CompanySettingsPage() {
           <CardHeader border>
             <HStack gap="md" align="center">
               <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-[var(--radius-lg)]">
-                <DollarSign className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
+                <Globe className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
               </div>
               <VStack gap="xs">
                 <Heading as="h2">Currency Settings</Heading>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Customer List</title>
+</head>
+<body>
+    <h1>Customer List Debug</h1>
+    <div id="results"></div>
+
+    <script>
+        async function debugCustomerList() {
+            const results = document.getElementById('results');
+            
+            // Check localStorage
+            const localToken = localStorage.getItem('auth-token');
+            results.innerHTML += `<p><strong>LocalStorage Token:</strong> ${localToken ? 'Present' : 'Not found'}</p>`;
+            
+            // Check cookies
+            const cookies = document.cookie;
+            results.innerHTML += `<p><strong>Cookies:</strong> ${cookies || 'None'}</p>`;
+            
+            // Set token from file if not present
+            const fileToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtYzEzaGJqNDAwMDB2Mnd1OXZwam1oYmQiLCJ1c2VybmFtZSI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBtYXJpbmVwb3dlcnVhZS5jb20iLCJyb2xlIjoiU1VQRVJfQURNSU4iLCJpYXQiOjE3NTAyMDQzMjMsImV4cCI6MTc1MDgwOTEyM30.K6Fb36zPpCRWYjkGFqBfD4h6kUinjTR4lw5Z10nxysI';
+            
+            if (!localToken) {
+                localStorage.setItem('auth-token', fileToken);
+                results.innerHTML += `<p><strong>Set token in localStorage</strong></p>`;
+            }
+            
+            // Test API call
+            try {
+                results.innerHTML += `<p><strong>Testing API call...</strong></p>`;
+                
+                const response = await fetch('/api/customers', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localToken || fileToken}`
+                    },
+                    credentials: 'include'
+                });
+                
+                results.innerHTML += `<p><strong>Response Status:</strong> ${response.status}</p>`;
+                
+                const data = await response.json();
+                results.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                // Check for specific errors
+                if (data.customers) {
+                    results.innerHTML += `<p><strong>✓ Success!</strong> Found ${data.customers.length} customers</p>`;
+                } else if (data.error) {
+                    results.innerHTML += `<p><strong>✗ Error:</strong> ${data.error}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p><strong>✗ Fetch Error:</strong> ${error.message}</p>`;
+            }
+        }
+        
+        // Run debug on page load
+        window.addEventListener('load', debugCustomerList);
+    </script>
+</body>
+</html>

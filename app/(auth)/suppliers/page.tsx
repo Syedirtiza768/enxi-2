@@ -22,7 +22,7 @@ import {
   Phone, 
   Mail, 
   MapPin,
-  DollarSign,
+  TrendingUp,
   Calendar,
   Edit,
   Trash2,
@@ -239,7 +239,7 @@ export default function SuppliersPage(): React.JSX.Element {
                     </Text>
                   </VStack>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
                   </div>
                 </HStack>
               </CardContent>

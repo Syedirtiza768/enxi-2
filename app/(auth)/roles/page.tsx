@@ -1,5 +1,6 @@
-import type { Permission } from '@/lib/generated/prisma'
 'use client'
+
+import type { Permission } from '@/lib/generated/prisma'
 
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api/client'

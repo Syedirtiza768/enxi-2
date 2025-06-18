@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { apiClient } from '@/lib/api/client'
 import { PaymentForm } from './payment-form'
+import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
 
 interface CustomerLedgerProps {
   customerId: string
@@ -35,6 +36,7 @@ interface Transaction {
 }
 
 export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.Element {
+  const { format: formatCurrency } = useCurrencyFormatter()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,12 +74,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.E
     loadCustomerData()
   }, [customerId, loadCustomerData])
 
-  const formatCurrency = (amount: number): void => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+  // Currency formatting is now handled by useCurrencyFormatter hook
 
   const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {

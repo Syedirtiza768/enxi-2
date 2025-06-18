@@ -49,7 +49,7 @@ export class CompanySettingsService extends BaseService {
         settings = await prisma.companySettings.create({
           data: {
             companyName: 'EnXi ERP',
-            defaultCurrency: 'USD',
+            defaultCurrency: 'AED',
             quotationValidityDays: 30,
             quotationPrefix: 'QUOT',
             quotationNumberFormat: 'PREFIX-YYYY-NNNN',

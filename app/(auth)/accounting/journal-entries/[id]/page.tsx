@@ -92,37 +92,47 @@ export default function JournalEntryDetailPage({ params }: JournalEntryDetailPag
 
     try {
       setProcessing(true)
-      const response = await apiClient<{ data: any }>(`/api/accounting/journal-entries/${resolvedParams.id}/post`, {
+      setError(null)
+      const response = await apiClient<{ data: any; error?: string }>(`/api/accounting/journal-entries/${resolvedParams.id}/post`, {
         method: 'POST'
       })
 
       if (response.ok) {
         await loadJournalEntry() // Reload to get updated status
       } else {
-        setError('Failed to post journal entry')
+        const errorMessage = response.data?.error || 'Failed to post journal entry'
+        setError(errorMessage)
+        console.error('Post journal entry failed:', errorMessage)
       }
-} catch (error) {
-      console.error('Error:', error);
+    } catch (error) {
+      console.error('Error posting journal entry:', error)
+      setError('An unexpected error occurred while posting the journal entry')
+    } finally {
       setProcessing(false)
     }
   }
 
-  const handleCancel = async (): Promise<unknown> => {
+  const handleCancel = async (): Promise<void> => {
     if (!journalEntry || journalEntry.status !== 'DRAFT') return
 
     try {
       setProcessing(true)
-      const response = await apiClient<{ data: any }>(`/api/accounting/journal-entries/${resolvedParams.id}/cancel`, {
+      setError(null)
+      const response = await apiClient<{ data: any; error?: string }>(`/api/accounting/journal-entries/${resolvedParams.id}/cancel`, {
         method: 'POST'
       })
 
       if (response.ok) {
         await loadJournalEntry() // Reload to get updated status
       } else {
-        setError('Failed to cancel journal entry')
+        const errorMessage = response.data?.error || 'Failed to cancel journal entry'
+        setError(errorMessage)
+        console.error('Cancel journal entry failed:', errorMessage)
       }
-} catch (error) {
-      console.error('Error:', error);
+    } catch (error) {
+      console.error('Error cancelling journal entry:', error)
+      setError('An unexpected error occurred while cancelling the journal entry')
+    } finally {
       setProcessing(false)
     }
   }

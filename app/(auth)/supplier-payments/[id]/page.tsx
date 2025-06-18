@@ -18,10 +18,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   ArrowLeft,
   Edit,
-  DollarSign,
+  CreditCard,
   Calendar,
   Building2,
-  CreditCard,
   FileText,
   Receipt,
   Banknote,
@@ -142,7 +141,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     return (
       <PageLayout>
         <VStack gap="lg" align="center" className="py-12">
-          <DollarSign className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
+          <CreditCard className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
           <Text color="secondary">Loading supplier payment...</Text>
         </VStack>
       </PageLayout>
@@ -153,7 +152,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     return (
       <PageLayout>
         <VStack gap="lg" align="center" className="py-12">
-          <DollarSign className="h-12 w-12 text-[var(--color-semantic-error-600)]" />
+          <AlertTriangle className="h-12 w-12 text-[var(--color-semantic-error-600)]" />
           <VStack gap="sm" align="center">
             <Text size="lg" weight="semibold">Error loading supplier payment</Text>
             <Text color="secondary">{error || 'Supplier payment not found'}</Text>
@@ -212,7 +211,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
-                  <DollarSign className="h-5 w-5 text-[var(--color-brand-primary-600)]" />
+                  <CreditCard className="h-5 w-5 text-[var(--color-brand-primary-600)]" />
                   <Text size="sm" weight="medium" color="secondary">Payment Amount</Text>
                 </HStack>
                 <Text size="xl" weight="bold">

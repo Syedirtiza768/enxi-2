@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -27,11 +27,20 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const loadedCustomerRef = useRef<string | null>(null)
 
   // Load customers on mount
   useEffect(() => {
     loadCustomers()
   }, [])
+
+  // If value is provided but customer is not in the list, try to load it
+  useEffect(() => {
+    if (value && value !== loadedCustomerRef.current && customers.length > 0 && !customers.find(c => c.id === value)) {
+      loadedCustomerRef.current = value
+      loadSingleCustomer(value)
+    }
+  }, [value, customers])
 
   const loadCustomers = async (): Promise<void> => {
     setLoading(true)
@@ -46,6 +55,20 @@ export function CustomerSearch({ value, onChange, disabled, error, required }: C
       console.error('Error loading customers:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadSingleCustomer = async (customerId: string): Promise<void> => {
+    try {
+      const response = await apiClient<{ data: Customer } | Customer>(`/api/customers/${customerId}`, { method: 'GET' })
+      if (response.ok && response?.data) {
+        const customer = 'data' in response ? response.data : response
+        if (customer && !customers.find(c => c.id === customer.id)) {
+          setCustomers(prev => [...prev, customer])
+        }
+      }
+    } catch (error) {
+      console.error('Error loading single customer:', error)
     }
   }
 

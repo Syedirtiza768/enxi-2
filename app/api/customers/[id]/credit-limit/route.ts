@@ -9,8 +9,14 @@ interface RouteParams {
 // PUT /api/customers/[id]/credit-limit - Update customer credit limit
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const body = await request.json()
     
@@ -27,7 +33,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const customer = await customerService.updateCreditLimit(
       id,
       creditLimit,
-      session.user.id
+      user.id
     )
 
     return NextResponse.json({

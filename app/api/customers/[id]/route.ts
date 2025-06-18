@@ -8,8 +8,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Proper authentication
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const customerService = new CustomerService()
     const customer = await customerService.getCustomer(id)
@@ -25,8 +32,8 @@ export async function GET(
       success: true,
       data: customer
     })
-} catch (error) {
-    console.error('Error:', error);
+  } catch (error) {
+    console.error('Error fetching customer:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -40,8 +47,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Proper authentication
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const body = await request.json()
     
@@ -49,7 +63,7 @@ export async function PUT(
     const customer = await customerService.updateCustomer(
       id,
       body,
-      session.user.id
+      user.id
     )
 
     return NextResponse.json({
@@ -86,8 +100,15 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Proper authentication
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const body = await request.json()
     
@@ -95,7 +116,7 @@ export async function PATCH(
     const customer = await customerService.updateCustomer(
       id,
       body,
-      session.user.id
+      user.id
     )
 
     return NextResponse.json({
@@ -132,8 +153,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Proper authentication
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     
     const customerService = new CustomerService()
@@ -157,7 +185,7 @@ export async function DELETE(
     }
     
     // Perform soft delete by setting isActive to false
-    await customerService.softDeleteCustomer(id, session.user.id)
+    await customerService.softDeleteCustomer(id, user.id)
     
     return NextResponse.json({
       success: true,

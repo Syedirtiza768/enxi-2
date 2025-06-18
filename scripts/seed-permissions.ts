@@ -85,6 +85,7 @@ const permissions = [
   { code: 'shipments.delete', name: 'Delete Shipments', module: 'shipments', action: 'delete', description: 'Delete shipments' },
   { code: 'shipments.confirm', name: 'Confirm Shipments', module: 'shipments', action: 'confirm', description: 'Confirm shipments' },
   { code: 'shipments.deliver', name: 'Mark as Delivered', module: 'shipments', action: 'deliver', description: 'Mark shipments as delivered' },
+  { code: 'shipments.cancel', name: 'Cancel Shipments', module: 'shipments', action: 'cancel', description: 'Cancel shipments' },
   { code: 'shipments.view_all', name: 'View All Shipments', module: 'shipments', action: 'view_all', description: 'View all shipments across organization' },
   
   // Accounting
@@ -137,6 +138,9 @@ const permissions = [
   { code: 'reports.customer', name: 'View Customer Reports', module: 'reports', action: 'customer', description: 'View customer analytics' },
   { code: 'reports.export', name: 'Export Reports', module: 'reports', action: 'export', description: 'Export reports to various formats' },
   { code: 'reports.custom', name: 'Create Custom Reports', module: 'reports', action: 'custom', description: 'Create and manage custom reports' },
+  
+  // Roles
+  { code: 'roles.permissions', name: 'Manage Role Permissions', module: 'roles', action: 'permissions', description: 'Manage permissions for roles' },
 ];
 
 // Define role-permission mappings

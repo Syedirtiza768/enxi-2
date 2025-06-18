@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Edit, Trash2, Package, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Package, TrendingUp, AlertTriangle } from 'lucide-react'
 import { Item } from '@/components/inventory/item-list'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
@@ -237,7 +237,7 @@ const params = useParams()
                 </p>
                 <p className="text-xs text-gray-500">At cost</p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
           </div>
         </div>

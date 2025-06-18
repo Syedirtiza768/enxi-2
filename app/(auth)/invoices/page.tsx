@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit, DollarSign } from 'lucide-react'
+import { Plus, Search, RefreshCw, Download, FileText, Send, Eye, Edit, Receipt } from 'lucide-react'
 import { PageLayout, PageHeader, PageSection, VStack, Grid, Card } from '@/components/design-system'
 import { apiClient } from '@/lib/api/client'
 import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
@@ -40,7 +40,7 @@ interface Customer {
 
 
 export default function InvoicesPage() {
-  const { format: format } = useCurrencyFormatter()
+  const { format } = useCurrencyFormatter()
   
   // State management
   const [invoices, setInvoices] = useState<Invoice[]>([])
@@ -586,7 +586,7 @@ export default function InvoicesPage() {
                                   aria-label="Record payment"
                                   className="text-blue-600 hover:text-blue-900"
                                 >
-                                  <DollarSign className="h-4 w-4" />
+                                  <Receipt className="h-4 w-4" />
                                 </button>
                               )}
                             </div>

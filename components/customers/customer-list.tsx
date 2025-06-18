@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -17,7 +17,7 @@ import {
   Building2, 
   CreditCard, 
   Calendar, 
-  DollarSign, 
+  
   ChevronLeft, 
   ChevronRight, 
   ChevronsLeft, 
@@ -37,7 +37,7 @@ import {
   X,
   RefreshCw
 } from 'lucide-react'
-import { format } from 'date-fns'
+import { format as formatDate } from 'date-fns'
 import { useToast } from '@/components/ui/use-toast'
 import { apiClient } from '@/lib/api/client'
 import { useDebounce } from '@/lib/hooks/use-debounce'
@@ -168,9 +168,21 @@ export function CustomerList(): JSX.Element {
 
   // Debounced search
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
+  
+  // Track loading state to prevent duplicate calls
+  const isLoadingRef = useRef(false)
+
+  // Create a stable toast reference
+  const toastRef = useRef(toast)
+  useEffect(() => {
+    toastRef.current = toast
+  }, [toast])
 
   // Load customers with filters
   const loadCustomers = useCallback(async (showLoading = true) => {
+    if (isLoadingRef.current) return
+    isLoadingRef.current = true
+    
     if (showLoading) setLoading(true)
     else setRefreshing(true)
     
@@ -210,12 +222,18 @@ export function CustomerList(): JSX.Element {
       queryParams.append('page', pagination.page.toString())
       queryParams.append('limit', pagination.limit.toString())
 
-      const response = await apiClient<{ data: any }>(`/api/customers?${queryParams.toString()}`)
+      const response = await apiClient<any>(`/api/customers?${queryParams.toString()}`)
       
-      if (response.ok && response?.data) {
-        const data = response?.data
+      if (response.ok && response.data) {
+        const data = response.data
         setCustomers(data.customers || data.data || [])
-        setStats(data.stats || stats)
+        setStats(data.stats || {
+          total: 0,
+          active: 0,
+          inactive: 0,
+          totalCreditLimit: 0,
+          totalOutstanding: 0
+        })
         setPagination(prev => ({
           ...prev,
           total: data.total || data.pagination?.total || 0
@@ -232,7 +250,7 @@ export function CustomerList(): JSX.Element {
       }
     } catch (error) {
       console.error('Error loading customers:', error)
-      toast({
+      toastRef.current({
         title: 'Error',
         description: 'Failed to load customers. Please try again.',
         variant: 'destructive'
@@ -240,8 +258,9 @@ export function CustomerList(): JSX.Element {
     } finally {
       setLoading(false)
       setRefreshing(false)
+      isLoadingRef.current = false
     }
-  }, [debouncedSearchTerm, filters, sort, pagination.page, pagination.limit, stats])
+  }, [debouncedSearchTerm, filters, sort, pagination.page, pagination.limit])
 
   // Load customers when dependencies change
   useEffect(() => {
@@ -361,7 +380,7 @@ export function CustomerList(): JSX.Element {
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `customers-${format(new Date(), 'yyyy-MM-dd')}.${format === 'csv' ? 'csv' : 'xlsx'}`
+        a.download = `customers-${formatDate(new Date(), 'yyyy-MM-dd')}.${format === 'csv' ? 'csv' : 'xlsx'}`
         a.click()
         window.URL.revokeObjectURL(url)
         
@@ -488,7 +507,7 @@ export function CustomerList(): JSX.Element {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">With Outstanding</CardTitle>
-            <DollarSign className="h-4 w-4 text-yellow-500" />
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
@@ -516,7 +535,7 @@ export function CustomerList(): JSX.Element {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Outstanding</CardTitle>
-            <DollarSign className="h-4 w-4 text-yellow-500" />
+            <TrendingUp className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalOutstanding)}</div>
@@ -533,7 +552,7 @@ export function CustomerList(): JSX.Element {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(stats.total > 0 ? stats.totalCreditLimit / stats.total : 0)
+              {formatCurrency(stats.total > 0 ? stats.totalCreditLimit / stats.total : 0)}
             </div>
             <p className="text-xs text-muted-foreground">
               Per active customer
@@ -943,7 +962,7 @@ export function CustomerList(): JSX.Element {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-gray-900">
-                            {format(new Date(customer.createdAt), 'MMM dd, yyyy')}
+                            {formatDate(new Date(customer.createdAt), 'MMM dd, yyyy')}
                           </div>
                           <div className="text-xs text-gray-500">
                             {customer.paymentTerms} day terms
@@ -1148,7 +1167,7 @@ export function CustomerList(): JSX.Element {
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {format(new Date(customer.createdAt), 'MMM dd, yyyy')}
+                            {formatDate(new Date(customer.createdAt), 'MMM dd, yyyy')}
                           </div>
                           {customer.industry && (
                             <Badge variant="outline" className="text-xs">

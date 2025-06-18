@@ -70,6 +70,7 @@ interface SalesOrder {
   shippingAddress?: string
   billingAddress?: string
   notes?: string
+  internalNotes?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
@@ -88,6 +89,7 @@ interface FormData {
   shippingAddress: string
   billingAddress: string
   notes: string
+  internalNotes: string
   items: SalesOrderItem[]
 }
 
@@ -146,6 +148,7 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
     shippingAddress: order.shippingAddress || order.salesCase.customer.shippingAddress || '',
     billingAddress: order.billingAddress || order.salesCase.customer.billingAddress || '',
     notes: order.notes || '',
+    internalNotes: order.internalNotes || '',
     items: order.items || []
   })
 
@@ -377,6 +380,12 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
           error = checkMaxLength(value, MAX_NOTES_LENGTH, 'Notes')
         }
         break
+      
+      case 'internalNotes':
+        if (value) {
+          error = checkMaxLength(value, MAX_NOTES_LENGTH, 'Internal Notes')
+        }
+        break
     }
     
     // Update errors
@@ -530,6 +539,13 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
       const notesError = checkMaxLength(formData.notes, MAX_NOTES_LENGTH, 'Notes')
       if (notesError) {
         newErrors.notes = notesError
+      }
+    }
+
+    if (formData.internalNotes) {
+      const internalNotesError = checkMaxLength(formData.internalNotes, MAX_NOTES_LENGTH, 'Internal Notes')
+      if (internalNotesError) {
+        newErrors.internalNotes = internalNotesError
       }
     }
 
@@ -918,6 +934,44 @@ export function SalesOrderForm({ order, onSubmit, onCancel, mode = 'edit' }: Sal
                 </div>
                 <span className="text-xs text-gray-500">
                   {formData.notes?.length || 0}/{MAX_NOTES_LENGTH}
+                </span>
+              </div>
+            </div>
+
+            {/* Internal Notes */}
+            <div className="mt-6 relative">
+              <label htmlFor="internalNotes" className="block text-sm font-medium text-gray-700">
+                Internal Notes <span className="text-xs text-gray-500">(Not visible to customer)</span>
+              </label>
+              <div className="relative">
+                <textarea
+                  id="internalNotes"
+                  name="internalNotes"
+                  value={formData.internalNotes}
+                  onChange={handleInputChange}
+                  disabled={isViewMode}
+                  rows={3}
+                  className={`mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm pr-10 ${
+                    errors.internalNotes ? 'border-red-300' : ''
+                  } ${isViewMode ? 'bg-gray-50' : ''}`}
+                  placeholder="Internal notes for staff only..."
+                  maxLength={MAX_NOTES_LENGTH}
+                />
+                {fieldStatus.internalNotes === 'valid' && formData.internalNotes && (
+                  <CheckCircle2 className="absolute right-2 top-8 h-5 w-5 text-green-500" />
+                )}
+              </div>
+              <div className="flex justify-between mt-1">
+                <div>
+                  {errors.internalNotes && (
+                    <p className="text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.internalNotes}
+                    </p>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500">
+                  {formData.internalNotes?.length || 0}/{MAX_NOTES_LENGTH}
                 </span>
               </div>
             </div>

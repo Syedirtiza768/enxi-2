@@ -7,7 +7,7 @@ import {
   TrendingUp, 
   TrendingDown, 
   AlertTriangle,
-  DollarSign,
+  Package as InventoryValueIcon,
   BarChart3,
   ArrowRight,
   Grid3X3
@@ -128,7 +128,7 @@ export default function InventoryPage(): React.JSX.Element {
                 ${stats.totalValue.toLocaleString()}
               </p>
             </div>
-            <DollarSign className="h-8 w-8 text-green-600" />
+            <InventoryValueIcon className="h-8 w-8 text-green-600" />
           </div>
         </div>
 

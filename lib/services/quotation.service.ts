@@ -9,9 +9,9 @@ import { QuotationTemplateService } from './quotation-template.service'
 import { 
   Quotation,
   QuotationItem,
-  QuotationStatus,
   Prisma
 } from '@/lib/generated/prisma'
+import { QuotationStatus } from '@/lib/constants/quotation.constants'
 import { SalesCaseStatus } from '@/lib/types/shared-enums'
 
 export interface CreateQuotationInput {
@@ -86,8 +86,13 @@ export class QuotationService extends BaseService {
     data: CreateQuotationInput & { createdBy: string }
   ): Promise<QuotationWithDetails> {
     return this.withLogging('createQuotation', async () => {
-      // Get quotation settings
-      const settings = await this.settingsService.getQuotationSettings()
+      // Get quotation settings with fallback
+      let settings: any = { validityDays: 30 }
+      try {
+        settings = await this.settingsService.getQuotationSettings()
+      } catch (error) {
+        console.warn('Failed to load quotation settings, using defaults:', error)
+      }
 
       // If template is specified, load template data
       if (data.templateId) {
@@ -182,7 +187,9 @@ export class QuotationService extends BaseService {
         console.log('Generated quotation number:', quotationNumber)
       } catch (error) {
         console.error('Failed to generate quotation number:', error)
-        throw error
+        // Fallback to timestamp-based number
+        quotationNumber = `QUOT-${Date.now()}`
+        console.log('Using fallback quotation number:', quotationNumber)
       }
 
       // Calculate totals
@@ -198,11 +205,17 @@ export class QuotationService extends BaseService {
         throw error
       }
 
+      // Ensure customer exists before transaction
+      if (!salesCase.customer) {
+        throw new Error('Sales case must have a customer to create a quotation')
+      }
+      const customerId = salesCase.customer.id
+
       // Create quotation with items in a transaction
       const result = await prisma.$transaction(async (tx) => {
         // Pre-calculate item totals for all items
         const itemTotalsArray = await Promise.all(
-          itemsWithAvailability.map(item => this.calculateItemTotals(item, salesCase.customer.id))
+          itemsWithAvailability.map(item => this.calculateItemTotals(item, customerId))
         )
         
         const quotation = await tx.quotation.create({
@@ -225,6 +238,13 @@ export class QuotationService extends BaseService {
               create: itemsWithAvailability.map((item, index) => ({
                 ...item,
                 ...itemTotalsArray[index],
+                lineNumber: item.lineNumber ?? 1,
+                isLineHeader: item.isLineHeader ?? false,
+                itemType: item.itemType ?? 'PRODUCT',
+                quantity: item.quantity ?? 1,
+                unitPrice: item.unitPrice ?? 0,
+                discount: item.discount ?? 0,
+                taxRate: item.taxRate ?? 0,
                 sortOrder: item.sortOrder ?? index
               }))
             }
@@ -302,8 +322,20 @@ export class QuotationService extends BaseService {
       sortOrder: item.sortOrder
     }))
 
+    // Get customer ID for tax calculations
+    const salesCase = await this.salesCaseService.getSalesCase(existingQuotation.salesCaseId)
+    if (!salesCase || !salesCase.customer) {
+      throw new Error('Sales case or customer not found')
+    }
+    const customerId = salesCase.customer.id
+
     // Calculate totals
-    const calculations = this.calculateTotals(items)
+    const calculations = await this.calculateTotals(items, customerId)
+
+    // Pre-calculate item totals for all items
+    const itemTotalsArray = await Promise.all(
+      items.map(item => this.calculateItemTotals(item, customerId))
+    )
 
     // Create new version
     const newQuotation = await prisma.quotation.create({
@@ -324,7 +356,7 @@ export class QuotationService extends BaseService {
         items: {
           create: items.map((item, index) => ({
             ...item,
-            ...this.calculateItemTotals(item),
+            ...itemTotalsArray[index],
             sortOrder: item.sortOrder ?? index
           }))
         }
@@ -390,7 +422,10 @@ export class QuotationService extends BaseService {
 
     // Get customer ID for tax calculations
     const salesCase = await this.salesCaseService.getSalesCase(existingQuotation.salesCaseId)
-    const customerId = salesCase?.customer.id
+    if (!salesCase || !salesCase.customer) {
+      throw new Error('Sales case or customer not found')
+    }
+    const customerId = salesCase.customer.id
 
     // Calculate new totals if items are being updated
     let calculations = null
@@ -741,7 +776,7 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-      if (quotation.status !== QuotationStatus.DRAFT) {
+      if (quotation.status !== 'DRAFT') {
         throw new Error('Only draft quotations can be sent')
       }
 
@@ -845,7 +880,11 @@ export class QuotationService extends BaseService {
     taxAmount: number
     totalAmount: number
   }> {
-    const subtotal = item.quantity * item.unitPrice
+    // Ensure we have valid quantity and unitPrice with defaults
+    const quantity = item.quantity ?? 1
+    const unitPrice = item.unitPrice ?? 0
+    
+    const subtotal = quantity * unitPrice
     const discountAmount = subtotal * (item.discount || 0) / 100
     const discountedAmount = subtotal - discountAmount
     
@@ -1119,23 +1158,25 @@ export class QuotationService extends BaseService {
       }
 
       // Validate business rules
-      if (!item.quantity || item.quantity <= 0) {
+      const quantity = item.quantity ?? 1
+      if (quantity <= 0) {
         throw new Error(`${lineContext}: Quantity must be greater than 0`)
       }
-      if (item.quantity > 999999) {
+      if (quantity > 999999) {
         throw new Error(`${lineContext}: Quantity must be less than 1,000,000`)
       }
-      if (!Number.isFinite(item.quantity)) {
+      if (!Number.isFinite(quantity)) {
         throw new Error(`${lineContext}: Quantity must be a valid number`)
       }
 
-      if (item.unitPrice < 0) {
+      const unitPrice = item.unitPrice ?? 0
+      if (unitPrice < 0) {
         throw new Error(`${lineContext}: Unit price cannot be negative`)
       }
-      if (item.unitPrice > 9999999.99) {
+      if (unitPrice > 9999999.99) {
         throw new Error(`${lineContext}: Unit price must be less than 10,000,000`)
       }
-      if (!Number.isFinite(item.unitPrice)) {
+      if (!Number.isFinite(unitPrice)) {
         throw new Error(`${lineContext}: Unit price must be a valid number`)
       }
 

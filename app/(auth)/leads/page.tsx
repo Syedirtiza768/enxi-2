@@ -254,7 +254,7 @@ export default function LeadsPage(): React.JSX.Element {
                     <TableBody>
                       {leads?.data.map((lead) => (
                         <TableRow key={lead.id}>
-                          <TableCell className="font-medium">{lead.name}</TableCell>
+                          <TableCell className="font-medium">{`${lead.firstName} ${lead.lastName}`}</TableCell>
                           <TableCell>{lead.company || '-'}</TableCell>
                           <TableCell>{lead.email}</TableCell>
                           <TableCell>{lead.phone || '-'}</TableCell>
@@ -377,7 +377,7 @@ export default function LeadsPage(): React.JSX.Element {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium">Name</label>
-                    <p className="text-sm text-gray-600">{selectedLead.name}</p>
+                    <p className="text-sm text-gray-600">{`${selectedLead.firstName} ${selectedLead.lastName}`}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium">Company</label>

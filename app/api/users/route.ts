@@ -2,16 +2,27 @@ import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { z } from 'zod'
-import { Role } from '@/lib/generated/prisma'
 
 const userService = new UserService()
+
+// Valid roles
+const validRoles = [
+  'SUPER_ADMIN',
+  'ADMIN',
+  'MANAGER',
+  'SALES_REP',
+  'ACCOUNTANT',
+  'WAREHOUSE',
+  'VIEWER',
+  'USER',
+] as const
 
 // Validation schemas
 const createUserSchema = z.object({
   username: z.string().min(3).max(50),
   email: z.string().email(),
   password: z.string().min(8),
-  role: z.nativeEnum(Role),
+  role: z.enum(validRoles),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   phone: z.string().optional(),
@@ -23,7 +34,7 @@ const listUsersSchema = z.object({
   page: z.number().int().positive().optional(),
   limit: z.number().int().positive().max(100).optional(),
   search: z.string().optional(),
-  role: z.nativeEnum(Role).optional(),
+  role: z.enum(validRoles).optional(),
   isActive: z.boolean().optional(),
   department: z.string().optional(),
 })
@@ -40,7 +51,7 @@ export const GET = createProtectedHandler(
         page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : undefined,
         limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
         search: searchParams.get('search') || undefined,
-        role: searchParams.get('role') as Role || undefined,
+        role: searchParams.get('role') || undefined,
         isActive: searchParams.get('isActive') ? searchParams.get('isActive') === 'true' : undefined,
         department: searchParams.get('department') || undefined,
       })

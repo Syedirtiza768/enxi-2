@@ -44,5 +44,5 @@ export const GET = createProtectedHandler(
     )
   }
   },
-  { permissions: ['sales.read'] }
+  { permissions: ['sales_team.read'] }
 )

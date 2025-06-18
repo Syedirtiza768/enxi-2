@@ -33,7 +33,7 @@ import {
   Receipt,
   TrendingUp,
   UserCheck,
-  DollarSign,
+  Wallet,
   Archive,
   AlertCircle,
   FolderOpen,

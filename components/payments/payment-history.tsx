@@ -11,7 +11,7 @@ import {
   Download, 
   RotateCcw, 
   Calendar, 
-  DollarSign, 
+  Wallet, 
   CreditCard, 
   Building2, 
   Banknote,
@@ -103,7 +103,7 @@ export function PaymentHistory({
       case 'CREDIT_CARD': return CreditCard
       case 'DEBIT_CARD': return CreditCard
       case 'ONLINE': return Laptop
-      default: return DollarSign
+      default: return Wallet
     }
   }
 

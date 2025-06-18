@@ -30,6 +30,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(!!initialSalesCaseId);
   const [showInternalNotes, setShowInternalNotes] = useState(false);
   const [salesCases, setSalesCases] = useState<any[]>([]);
   const [selectedSalesCase, setSelectedSalesCase] = useState<string>(initialSalesCaseId || '');
@@ -65,31 +66,86 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
 
   const fetchSalesCaseDetails = async (salesCaseId: string) => {
     try {
+      console.log('Fetching sales case details for:', salesCaseId);
       const response = await apiClient(`/api/sales-cases/${salesCaseId}`);
-      if (response.ok && response?.data) {
-        const salesCase = response?.data;
+      console.log('Full API response:', response);
+      
+      // Check if the request was successful
+      if (!response.ok) {
+        console.error('API request failed:', response);
+        throw new Error(response.error || 'Failed to fetch sales case');
+      }
+      
+      // The apiClient returns { data, status, ok }
+      // But the API itself returns { success: true, data: {...} }
+      let salesCase = response.data;
+      
+      // Check if we have the nested structure
+      if (salesCase && salesCase.success && salesCase.data) {
+        salesCase = salesCase.data;
+      }
+      
+      console.log('Sales case data:', salesCase);
+      
+      // Check if salesCase has the expected structure
+      if (!salesCase || typeof salesCase !== 'object' || !salesCase.id) {
+        console.error('Invalid sales case data:', salesCase);
+        throw new Error('Invalid sales case data received');
+      }
+      
+      if (salesCase.customerId && salesCase.customer) {
         setFormData(prev => ({ 
           ...prev, 
           customer_id: salesCase.customerId,
           customer: salesCase.customer
         }));
-        setSalesCases([salesCase]);
+        setSelectedSalesCase(salesCaseId);
+        
+        // Also fetch all sales cases for this customer to populate the dropdown
+        if (salesCase.customerId) {
+          fetchSalesCases(salesCase.customerId);
+        }
+      } else {
+        console.error('Sales case missing customer data:', salesCase);
+        toast({
+          title: 'Error',
+          description: 'Sales case is missing customer information',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Error fetching sales case:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load sales case details',
+        variant: 'destructive'
+      });
+    } finally {
+      setInitialLoading(false);
     }
   };
 
   const fetchSalesCases = async (customerId: string) => {
     try {
       const response = await apiClient(`/api/sales-cases?customerId=${customerId}&status=OPEN`);
-      if (response.ok && response?.data) {
-        // The API returns { success: true, data: salesCases[], ... }
-        const salesCasesList = response.data || [];
+      console.log('Sales cases response:', response);
+      
+      if (response && response.ok && response.data) {
+        // Handle nested response structure
+        let salesCasesList = [];
+        if (response.data.success && Array.isArray(response.data.data)) {
+          salesCasesList = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          salesCasesList = response.data;
+        }
+        
         setSalesCases(salesCasesList);
-        if (salesCasesList.length === 1) {
+        if (salesCasesList.length === 1 && !selectedSalesCase) {
           setSelectedSalesCase(salesCasesList[0].id);
         }
+      } else {
+        // If response is not ok or data is missing, ensure salesCases is an empty array
+        setSalesCases([]);
       }
     } catch (error) {
       console.error('Error fetching sales cases:', error);
@@ -136,6 +192,10 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
     setLoading(true);
     try {
       
+      // Customer data is available throughout the form via:
+      // - formData.customer_id: The customer's ID
+      // - formData.customer: The full customer object with name, email, phone, address, etc.
+      
       const quotationData = {
         salesCaseId: selectedSalesCase,
         validUntil: expiryDate.toISOString(),
@@ -163,20 +223,58 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
         }))
       };
 
+      console.log('Sending quotation data:', quotationData);
+      console.log('Items being sent:', quotationData.items);
+
+      // Use the main quotation endpoint
       const response = await apiClient<{ data: { id: string; quotationNumber: string } }>('/api/quotations', {
         method: 'POST',
-        body: JSON.stringify(quotationData)
+        body: JSON.stringify(quotationData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {
-        const errorMsg = response.message || response.error || 'Failed to create quotation';
-        const errorDetails = response.details ? ` Details: ${response.details}` : '';
-        throw new Error(errorMsg + errorDetails);
+        console.error('Quotation creation failed - Full response:', response);
+        
+        // Try to get the actual response body if available
+        let errorMsg = 'Failed to create quotation';
+        if (response.error) {
+          errorMsg = response.error;
+        } else if (response.message) {
+          errorMsg = response.message;
+        }
+        
+        // Check if there's additional error information
+        if (response.errorDetails) {
+          console.error('Error details:', response.errorDetails);
+          if (response.errorDetails.message) {
+            errorMsg = response.errorDetails.message;
+          }
+        }
+        
+        throw new Error(errorMsg);
       }
 
-      const result = response?.data;
+      console.log('API Response:', response);
+      
+      // The apiClient returns { data: {...}, ok: true, status: 200 }
+      // The main API returns { success: true, data: {...} }
+      let result = response?.data;
+      
+      // Check if we have the nested structure
+      if (result && result.success && result.data) {
+        result = result.data;
+      } else if (result && result.data) {
+        // Handle case where result might already be the quotation
+        result = result.data;
+      }
+      
+      console.log('Quotation result:', result);
 
       if (!result || !result.id) {
+        console.error('Invalid result structure:', result);
         throw new Error('Invalid response from server - no quotation ID received');
       }
 
@@ -203,6 +301,17 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
     }
   };
 
+  if (initialLoading) {
+    return (
+      <div className="max-w-5xl mx-auto flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading sales case details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Customer & Sales Case Section */}
@@ -220,6 +329,40 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
               />
             </div>
 
+            {formData.customer_id && formData.customer && (
+              <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-900">{formData.customer.name}</p>
+                    {formData.customer.email && (
+                      <p className="text-sm text-gray-600">{formData.customer.email}</p>
+                    )}
+                    {formData.customer.phone && (
+                      <p className="text-sm text-gray-600">{formData.customer.phone}</p>
+                    )}
+                    {formData.customer.billingAddress && (
+                      <div className="text-sm text-gray-600 mt-2">
+                        <p className="font-medium text-gray-700">Billing Address:</p>
+                        <p>{formData.customer.billingAddress}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 items-end">
+                    {formData.customer.customerCode && (
+                      <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">
+                        Code: {formData.customer.customerCode}
+                      </span>
+                    )}
+                    {formData.customer.creditLimit && (
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        Credit: {formatCurrency(formData.customer.creditLimit)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {formData.customer_id && (
               <>
                 {salesCases.length === 0 ? (
@@ -235,7 +378,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
                         <SelectValue placeholder="Select sales case" />
                       </SelectTrigger>
                       <SelectContent>
-                        {salesCases.map((sc) => (
+                        {Array.isArray(salesCases) && salesCases.map((sc) => (
                           <SelectItem key={sc.id} value={sc.id}>
                             {sc.caseNumber} - {sc.title || 'Untitled'}
                           </SelectItem>

@@ -819,11 +819,14 @@ export class InventoryService extends BaseService {
 
       // Credit side depends on movement type
       if (movement.movementType === MovementType.STOCK_IN) {
-        // Credit Accounts Payable or similar
-        const apAccountId = await this.getAccountByCode('2000') // Accounts Payable
+        // Import account codes
+        const { ACCOUNT_CODES } = await import('@/lib/constants/default-accounts')
+        
+        // Credit Inventory Adjustments for opening stock
+        const adjustmentAccountId = await this.getAccountByCode(ACCOUNT_CODES.INVENTORY_ADJUSTMENTS)
         lines.push({
-          accountId: apAccountId,
-          description: `Stock received - ${movement.movementNumber}`,
+          accountId: adjustmentAccountId,
+          description: `Stock adjustment - ${movement.movementNumber}`,
           debitAmount: 0,
           creditAmount: movement.totalCost
         })

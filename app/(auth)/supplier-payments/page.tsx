@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Plus, 
   Search, 
-  DollarSign, 
+  CreditCard, 
   Calendar, 
   TrendingUp,
   Eye,
@@ -190,7 +190,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     return (
       <PageLayout>
         <VStack gap="lg" align="center" className="py-12">
-          <DollarSign className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
+          <CreditCard className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
           <Text color="secondary">Loading supplier payments...</Text>
         </VStack>
       </PageLayout>
@@ -201,7 +201,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     return (
       <PageLayout>
         <VStack gap="lg" align="center" className="py-12">
-          <DollarSign className="h-12 w-12 text-[var(--color-semantic-error-600)]" />
+          <CreditCard className="h-12 w-12 text-[var(--color-semantic-error-600)]" />
           <VStack gap="sm" align="center">
             <Text size="lg" weight="semibold">Error loading supplier payments</Text>
             <Text color="secondary">{error}</Text>
@@ -244,7 +244,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                     <Text size="xl" weight="bold">{stats.totalPayments}</Text>
                   </VStack>
                   <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-lg">
-                    <DollarSign className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
+                    <CreditCard className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
                   </div>
                 </HStack>
               </CardContent>
@@ -290,7 +290,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
                     </Text>
                   </VStack>
                   <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                    <DollarSign className="h-6 w-6 text-purple-600" />
+                    <TrendingUp className="h-6 w-6 text-purple-600" />
                   </div>
                 </HStack>
               </CardContent>
@@ -350,7 +350,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             {filteredPayments.length === 0 ? (
               <CardContent className="py-12">
                 <VStack gap="lg" align="center">
-                  <DollarSign className="h-12 w-12 text-[var(--color-neutral-400)]" />
+                  <CreditCard className="h-12 w-12 text-[var(--color-neutral-400)]" />
                   <VStack gap="sm" align="center">
                     <Text size="lg" weight="semibold">No supplier payments found</Text>
                     <Text color="secondary">

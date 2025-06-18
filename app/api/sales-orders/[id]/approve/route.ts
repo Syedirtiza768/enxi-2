@@ -56,5 +56,5 @@ export const POST = createProtectedHandler(
       )
     }
   },
-  { permissions: ['sales.approve'] }
+  { permissions: ['sales_orders.approve'] }
 )

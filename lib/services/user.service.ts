@@ -1,7 +1,6 @@
 import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
 import { 
-  Role, 
   Prisma, 
   User, 
   UserProfile, 
@@ -16,7 +15,7 @@ interface CreateUserDto {
   username: string
   email: string
   password: string
-  role: Role
+  role: string
   firstName?: string
   lastName?: string
   phone?: string
@@ -27,7 +26,7 @@ interface CreateUserDto {
 interface UpdateUserDto {
   username?: string
   email?: string
-  role?: Role
+  role?: string
   isActive?: boolean
   firstName?: string
   lastName?: string
@@ -47,7 +46,7 @@ interface UserListParams {
   page?: number
   limit?: number
   search?: string
-  role?: Role
+  role?: string
   isActive?: boolean
   department?: string
 }
@@ -747,7 +746,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async getPermissionsForRole(role: Role): Promise<string[]> {
+  async getPermissionsForRole(role: string): Promise<string[]> {
     return this.withLogging('getPermissionsForRole', async () => {
       const rolePermissions = await prisma.rolePermission.findMany({
         where: { role },
@@ -758,7 +757,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async assignRolePermission(role: Role, permissionCode: string, assignedBy: string): Promise<RolePermission> {
+  async assignRolePermission(role: string, permissionCode: string, assignedBy: string): Promise<RolePermission> {
     return this.withLogging('assignRolePermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },
@@ -802,7 +801,7 @@ export class UserService extends BaseService {
     })
   }
 
-  async revokeRolePermission(role: Role, permissionCode: string, revokedBy: string): Promise<void> {
+  async revokeRolePermission(role: string, permissionCode: string, revokedBy: string): Promise<void> {
     return this.withLogging('revokeRolePermission', async () => {
       const permission = await prisma.permission.findFirst({
         where: { code: permissionCode },

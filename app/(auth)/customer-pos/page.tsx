@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Plus, Search, FileText, CheckCircle, Clock, 
-  XCircle, ChevronRight, Package, DollarSign
+  XCircle, ChevronRight, Package, TrendingUp
 } from 'lucide-react'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
@@ -232,7 +232,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <DollarSign className="h-6 w-6 text-blue-400" />
+                <TrendingUp className="h-6 w-6 text-blue-400" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>

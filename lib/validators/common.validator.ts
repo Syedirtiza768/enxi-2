@@ -143,9 +143,11 @@ export const leadStatusValidator = z.enum([
   'NEW',
   'CONTACTED',
   'QUALIFIED',
-  'NEGOTIATION',
+  'PROPOSAL_SENT',
+  'NEGOTIATING',
   'CONVERTED',
-  'LOST']);
+  'LOST',
+  'DISQUALIFIED']);
 
 export const paymentMethodValidator = z.enum([
   'CASH',

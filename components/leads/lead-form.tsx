@@ -394,7 +394,6 @@ export function LeadForm({ initialData, onSubmit, isEdit = false }: LeadFormProp
                 { value: LeadSource.EMAIL_CAMPAIGN, label: 'Email Campaign' },
                 { value: LeadSource.PHONE_CALL, label: 'Phone Call' },
                 { value: LeadSource.TRADE_SHOW, label: 'Trade Show' },
-                { value: LeadSource.ADVERTISING, label: 'Advertising' },
                 { value: LeadSource.OTHER, label: 'Other' },
               ]}
               fullWidth

@@ -192,7 +192,7 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Sales order has been approved!')
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }
@@ -217,7 +217,7 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order processing has started!')
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }
@@ -248,7 +248,7 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order has been marked as shipped!')
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }
@@ -273,7 +273,7 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Order has been marked as delivered!')
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }
@@ -304,7 +304,7 @@ export default function SalesOrderDetailPage() {
       const updatedOrder = await response.json()
       setOrder(updatedOrder)
       alert('Sales order has been cancelled.')
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }
@@ -329,7 +329,7 @@ export default function SalesOrderDetailPage() {
       const invoice = await response.json()
       alert(`Invoice ${invoice.invoiceNumber} has been created!`)
       router.push(`/invoices/${invoice.id}`)
-} catch (error) {
+    } catch (error) {
       console.error('Error:', error);
       setActionLoading(null)
     }

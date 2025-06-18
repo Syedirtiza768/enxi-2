@@ -1,4 +1,4 @@
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+import { LeadSource, LeadStatus } from '@/lib/types/shared-enums'
 
 export interface CreateLeadData {
   firstName: string

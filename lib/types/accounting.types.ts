@@ -1,5 +1,5 @@
-// Import enums from Prisma client
-import { AccountType, AccountStatus, JournalStatus } from '@/lib/generated/prisma'
+// Import enums from shared-enums since they're not in Prisma schema
+import { AccountType, AccountStatus, JournalStatus } from '@/lib/types/shared-enums'
 export { AccountType, AccountStatus, JournalStatus }
 
 export enum TransactionType {
@@ -78,6 +78,7 @@ export interface CreateJournalEntryInput {
   currency: string
   exchangeRate?: number
   lines: CreateJournalLineInput[]
+  status?: JournalStatus // Optional status for direct creation as POSTED
 }
 
 export interface CreateJournalLineInput {

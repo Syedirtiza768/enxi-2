@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma'
 import { AuditService } from './audit.service'
 import { QuotationService } from './quotation.service'
 import { SalesOrderService, SalesOrderWithDetails } from './sales-order.service'
+import { CompanySettingsService } from './company-settings.service'
 import { 
   CustomerPO
 } from '@prisma/client'
@@ -9,7 +10,7 @@ import {
 export interface CreateCustomerPOInput {
   poNumber: string
   customerId: string
-  quotationId: string
+  quotationId?: string
   poDate: Date
   poAmount: number
   currency?: string
@@ -51,28 +52,37 @@ export class CustomerPOService {
   private auditService: AuditService
   private quotationService: QuotationService
   private salesOrderService: SalesOrderService
+  private companySettingsService: CompanySettingsService
 
   constructor() {
     this.auditService = new AuditService()
     this.quotationService = new QuotationService()
     this.salesOrderService = new SalesOrderService()
+    this.companySettingsService = new CompanySettingsService()
   }
 
   async createCustomerPO(
     data: CreateCustomerPOInput & { createdBy: string }
   ): Promise<CustomerPOWithDetails> {
-    // Validate quotation exists and belongs to customer
-    const quotation = await this.quotationService.getQuotation(data.quotationId)
-    if (!quotation) {
-      throw new Error('Quotation not found')
-    }
+    let quotation = null
+    let salesCaseId = null
 
-    if (quotation.salesCase.customer.id !== data.customerId) {
-      throw new Error('Quotation does not belong to this customer')
-    }
+    // If quotationId provided, validate it
+    if (data.quotationId) {
+      quotation = await this.quotationService.getQuotation(data.quotationId)
+      if (!quotation) {
+        throw new Error('Quotation not found')
+      }
 
-    if (quotation.status !== 'SENT' && quotation.status !== 'ACCEPTED') {
-      throw new Error('Quotation must be sent to customer before receiving PO')
+      if (quotation.salesCase.customer.id !== data.customerId) {
+        throw new Error('Quotation does not belong to this customer')
+      }
+
+      if (quotation.status !== 'SENT' && quotation.status !== 'ACCEPTED') {
+        throw new Error('Quotation must be sent to customer before receiving PO')
+      }
+
+      salesCaseId = quotation.salesCaseId
     }
 
     // Check if PO number already exists
@@ -84,18 +94,22 @@ export class CustomerPOService {
       throw new Error('PO number already exists')
     }
 
+    // Get company settings for default currency
+    const companySettings = await this.companySettingsService.getSettings()
+    const defaultCurrency = companySettings.defaultCurrency
+
     // Calculate exchange rate if needed
-    const exchangeRate = data.currency && data.currency !== 'USD' ? 1.0 : 1.0 // TODO: Get actual rate
+    const exchangeRate = data.currency && data.currency !== defaultCurrency ? 1.0 : 1.0 // TODO: Get actual rate
 
     const customerPO = await prisma.customerPO.create({
       data: {
         poNumber: data.poNumber,
         customerId: data.customerId,
         quotationId: data.quotationId,
-        salesCaseId: quotation.salesCaseId,
+        salesCaseId: salesCaseId,
         poDate: data.poDate,
         poAmount: data.poAmount,
-        currency: data.currency || 'USD',
+        currency: data.currency || defaultCurrency,
         exchangeRate,
         attachmentUrl: data.attachmentUrl,
         notes: data.notes,

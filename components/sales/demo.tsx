@@ -19,7 +19,7 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts'
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Target } from 'lucide-react'
+import { TrendingUp, TrendingDown, Wallet, ShoppingCart, Users, Target } from 'lucide-react'
 
 // Mock data for demonstration
 const mockSalesData = [
@@ -77,7 +77,7 @@ export default function SalesChartsDemo() {
             </div>
           </div>
           <div className="flex items-center mt-2">
-            <DollarSign className="w-4 h-4 text-blue-600 mr-2" />
+            <Wallet className="w-4 h-4 text-blue-600 mr-2" />
             <span className="text-xs text-gray-600">vs last period</span>
           </div>
         </Card>

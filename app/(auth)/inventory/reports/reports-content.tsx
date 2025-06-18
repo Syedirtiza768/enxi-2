@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Download, 
   Package, 
-  DollarSign,
+  TrendingUp as ValuationIcon,
   TrendingUp,
   AlertTriangle,
   Clock,
@@ -217,7 +217,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
   const getReportIcon = () => {
     const icons = {
       summary: <Package className="h-5 w-5" />,
-      valuation: <DollarSign className="h-5 w-5" />,
+      valuation: <ValuationIcon className="h-5 w-5" />,
       expiring: <AlertTriangle className="h-5 w-5" />,
       lowstock: <TrendingUp className="h-5 w-5" />,
       movement: <BarChart3 className="h-5 w-5" />,
@@ -412,7 +412,7 @@ const [reportType, setReportType] = useState<ReportType>('summary')
           <Grid cols={3} gap="lg">
             {[
               { type: 'summary' as ReportType, title: 'Stock Summary', icon: <Package />, color: 'blue' },
-              { type: 'valuation' as ReportType, title: 'Stock Valuation', icon: <DollarSign />, color: 'green' },
+              { type: 'valuation' as ReportType, title: 'Stock Valuation', icon: <ValuationIcon />, color: 'green' },
               { type: 'expiring' as ReportType, title: 'Expiring Items', icon: <AlertTriangle />, color: 'yellow' },
               { type: 'lowstock' as ReportType, title: 'Low Stock', icon: <TrendingUp />, color: 'red' },
               { type: 'movement' as ReportType, title: 'Movement Summary', icon: <BarChart3 />, color: 'purple' },

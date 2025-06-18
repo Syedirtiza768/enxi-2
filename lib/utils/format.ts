@@ -1,10 +1,11 @@
 export function formatCurrency(amount: number, currency: string = 'AED'): string {
-  return new Intl.NumberFormat('en-AE', {
-    style: 'currency',
-    currency: currency,
+  // Format with English literal: CURRENCY_CODE AMOUNT
+  const formattedAmount = new Intl.NumberFormat('en-AE', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+  
+  return `${currency} ${formattedAmount}`;
 }
 
 export function formatNumber(value: number, decimals: number = 2): string {

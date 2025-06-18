@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { apiClient } from '@/lib/api/client'
 
 interface Account {
   id: string
@@ -54,10 +55,12 @@ export default function JournalEntriesPage(): React.JSX.Element {
 
   const fetchEntries = async (): Promise<void> => {
     try {
-      const response = await fetch('/api/accounting/journal-entries')
-      if (!response.ok) throw new Error('Failed to fetch entries')
-      const data = await response.json()
-      setEntries(data.data || [])
+      const response = await apiClient<{ data: JournalEntry[] }>('/api/accounting/journal-entries')
+      if (response.ok && response.data) {
+        setEntries(response.data.data || [])
+      } else {
+        console.error('Failed to fetch entries:', response.error)
+      }
     } catch (error) {
       console.error('Failed to fetch entries:', error)
     } finally {
@@ -67,10 +70,12 @@ export default function JournalEntriesPage(): React.JSX.Element {
 
   const fetchAccounts = async (): Promise<void> => {
     try {
-      const response = await fetch('/api/accounting/accounts')
-      if (!response.ok) throw new Error('Failed to fetch accounts')
-      const data = await response.json()
-      setAccounts(data.data || [])
+      const response = await apiClient<{ data: Account[] }>('/api/accounting/accounts')
+      if (response.ok && response.data) {
+        setAccounts(response.data.data || [])
+      } else {
+        console.error('Failed to fetch accounts:', response.error)
+      }
     } catch (error) {
       console.error('Failed to fetch accounts:', error)
     }
@@ -92,7 +97,7 @@ export default function JournalEntriesPage(): React.JSX.Element {
     setLines(updatedLines)
   }
 
-  const calculateTotals = (): void => {
+  const calculateTotals = (): { totalDebit: number; totalCredit: number; isBalanced: boolean } => {
     const totalDebit = lines.reduce((sum, line) => sum + (line.debitAmount || 0), 0)
     const totalCredit = lines.reduce((sum, line) => sum + (line.creditAmount || 0), 0)
     return { totalDebit, totalCredit, isBalanced: Math.abs(totalDebit - totalCredit) < 0.01 }
@@ -111,9 +116,8 @@ export default function JournalEntriesPage(): React.JSX.Element {
     }
 
     try {
-      const response = await fetch('/api/accounting/journal-entries', {
+      const response = await apiClient<{ success: boolean; data: JournalEntry }>('/api/accounting/journal-entries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date,
           description,
@@ -124,8 +128,7 @@ export default function JournalEntriesPage(): React.JSX.Element {
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create journal entry')
+        throw new Error(response.error || 'Failed to create journal entry')
       }
 
       setShowForm(false)
@@ -151,10 +154,12 @@ export default function JournalEntriesPage(): React.JSX.Element {
 
   const postEntry = async (entryId: string): void => {
     try {
-      const response = await fetch(`/api/accounting/journal-entries/${entryId}/post`, {
+      const response = await apiClient<{ success: boolean }>(`/api/accounting/journal-entries/${entryId}/post`, {
         method: 'POST'
       })
-      if (!response.ok) throw new Error('Failed to post entry')
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to post entry')
+      }
       fetchEntries()
     } catch (error) {
       console.error('Failed to post entry:', error)

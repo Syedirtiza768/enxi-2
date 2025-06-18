@@ -45,6 +45,7 @@ export interface CreateSalesOrderInput {
   billingAddress?: string
   customerPO?: string
   notes?: string
+  internalNotes?: string
   items: CreateSalesOrderItemInput[]
 }
 
@@ -75,6 +76,7 @@ export interface UpdateSalesOrderInput {
   billingAddress?: string
   customerPO?: string
   notes?: string
+  internalNotes?: string
   items?: CreateSalesOrderItemInput[]
 }
 
@@ -150,6 +152,7 @@ export class SalesOrderService extends BaseService {
             billingAddress: data.billingAddress,
             customerPO: data.customerPO,
             notes: data.notes,
+            internalNotes: data.internalNotes,
             createdBy: data.createdBy
           }
         })
@@ -348,6 +351,7 @@ export class SalesOrderService extends BaseService {
         billingAddress: data.billingAddress,
         customerPO: data.customerPO,
         notes: data.notes,
+        internalNotes: data.internalNotes,
         updatedAt: new Date()
       }
 
@@ -552,6 +556,7 @@ export class SalesOrderService extends BaseService {
         salesCaseId: quotation.salesCaseId,
         paymentTerms: quotation.paymentTerms,
         notes: quotation.notes,
+        internalNotes: quotation.internalNotes,
         items,
         ...additionalData
       }
@@ -746,9 +751,52 @@ export class SalesOrderService extends BaseService {
         billingAddress: existingOrder.billingAddress || undefined,
         customerPO: existingOrder.customerPO ? `${existingOrder.customerPO} (Clone)` : undefined,
         notes: existingOrder.notes || undefined,
+        internalNotes: existingOrder.internalNotes || undefined,
         items,
         createdBy: data.createdBy
       })
+    })
+  }
+
+  async sendSalesOrder(
+    id: string,
+    userId: string
+  ): Promise<SalesOrderWithDetails> {
+    return this.withLogging('sendSalesOrder', async () => {
+
+      const salesOrder = await this.getSalesOrder(id)
+      if (!salesOrder) {
+        throw new Error('Sales order not found')
+      }
+
+      if (salesOrder.status !== OrderStatus.APPROVED) {
+        throw new Error('Only approved sales orders can be sent')
+      }
+
+      const _updatedOrder = await prisma.salesOrder.update({
+        where: { id },
+        data: {
+          status: OrderStatus.PROCESSING,
+          sentAt: new Date(),
+          sentBy: userId
+        }
+      })
+
+      // Audit log
+      await this.auditService.logAction({
+        userId,
+        action: AuditAction.UPDATE,
+        entityType: EntityType.SALES_ORDER,
+        entityId: id,
+        metadata: {
+          orderNumber: salesOrder.orderNumber,
+          previousStatus: OrderStatus.APPROVED,
+          newStatus: OrderStatus.PROCESSING,
+          action: 'sent'
+        }
+      })
+
+      return this.getSalesOrder(id)
     })
   }
 }

@@ -6,7 +6,6 @@ import { ChartOfAccountsService } from './accounting/chart-of-accounts.service'
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 import { 
   Customer,
-  AccountType,
   LeadStatus,
   Prisma
 } from '@/lib/generated/prisma'
@@ -62,7 +61,6 @@ export class CustomerService extends BaseService {
     data: CreateCustomerInput & { createdBy: string }
   ): Promise<Customer> {
     return this.withLogging('createCustomer', async () => {
-
       // Check if email already exists
       const existingCustomer = await prisma.customer.findUnique({
         where: { email: data.email }
@@ -87,7 +85,7 @@ export class CustomerService extends BaseService {
           data: {
             code: accountCode,
             name: `AR - ${data.name}`,
-            type: AccountType.ASSET,
+            type: 'ASSET',
             currency: data.currency || 'AED',
             description: `Accounts Receivable for ${data.name}`,
             parentId: parentAccountId || undefined,
@@ -101,7 +99,7 @@ export class CustomerService extends BaseService {
           data: {
             code: fallbackCode,
             name: `AR - ${data.name}`,
-            type: AccountType.ASSET,
+            type: 'ASSET',
             currency: data.currency || 'AED',
             description: `Accounts Receivable for ${data.name}`,
             createdBy: data.createdBy
@@ -621,7 +619,7 @@ export class CustomerService extends BaseService {
         let parentAccount = await prisma.account.findFirst({
           where: {
             code: '1200',
-            type: AccountType.ASSET
+            type: 'ASSET'
           }
         })
 
@@ -632,7 +630,7 @@ export class CustomerService extends BaseService {
               data: {
                 code: '1200',
                 name: 'Accounts Receivable',
-                type: AccountType.ASSET,
+                type: 'ASSET',
                 currency: 'USD',
                 description: 'Customer accounts receivable',
                 createdBy: userId
@@ -643,7 +641,7 @@ export class CustomerService extends BaseService {
             parentAccount = await prisma.account.findFirst({
               where: {
                 code: '1200',
-                type: AccountType.ASSET
+                type: 'ASSET'
               }
             })
             
@@ -653,7 +651,7 @@ export class CustomerService extends BaseService {
                 data: {
                   code: `1200-AR-${Date.now()}`,
                   name: 'Accounts Receivable',
-                  type: AccountType.ASSET,
+                  type: 'ASSET',
                   currency: 'USD',
                   description: 'Customer accounts receivable',
                   createdBy: userId

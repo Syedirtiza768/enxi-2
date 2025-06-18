@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { TaxRate, TaxType } from '@/lib/types/shared-enums'
+import { TaxType } from '@/lib/types/shared-enums'
+import type { TaxRate } from '@/lib/generated/prisma'
 
 interface TaxRateSelectorProps {
   value?: string

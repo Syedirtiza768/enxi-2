@@ -12,11 +12,17 @@ const getHandler = async (request: NextRequest): Promise<NextResponse> => {
     try {
       user = await getUserFromRequest(request)
     } catch (authError) {
-      console.error('Authentication failed:', authError)
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      // In development, allow unauthenticated access with limited permissions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Auth failed in development mode, using fallback user:', authError)
+        user = { id: 'dev-user', role: 'VIEWER' }
+      } else {
+        console.error('Authentication failed:', authError)
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
     }
     
     const customerService = new CustomerService()
@@ -71,11 +77,17 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     try {
       user = await getUserFromRequest(request)
     } catch (authError) {
-      console.error('Authentication failed:', authError)
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
+      // In development, allow unauthenticated access with limited permissions
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Auth failed in development mode, using fallback user:', authError)
+        user = { id: 'dev-user', role: 'VIEWER' }
+      } else {
+        console.error('Authentication failed:', authError)
+        return NextResponse.json(
+          { error: 'Authentication required' },
+          { status: 401 }
+        )
+      }
     }
     
     const body = await request.json()

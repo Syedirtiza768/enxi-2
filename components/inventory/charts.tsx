@@ -8,7 +8,7 @@ import {
 } from 'recharts'
 import { 
   Calendar, Download, Filter, RefreshCw, TrendingUp, TrendingDown,
-  Package, AlertTriangle, DollarSign, Activity, ChevronDown,
+  Package, AlertTriangle, Activity, ChevronDown,
   BarChart3, PieChart as PieChartIcon, LineChart as LineChartIcon,
   Loader2, Eye, EyeOff
 } from 'lucide-react'
@@ -654,7 +654,7 @@ export function InventoryCharts({ className }: InventoryChartsProps) {
                   {formatCurrency(businessMetrics.totalInventoryValue)}
                 </p>
               </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
           </Card>
           

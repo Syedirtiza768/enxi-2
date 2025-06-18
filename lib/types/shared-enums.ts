@@ -1,31 +1,105 @@
 // Shared enums that are used across the application
 // These are re-exported from Prisma generated types to provide a stable import path
 
-export { 
-  Role,
-  LeadSource,
-  LeadStatus,
-  TaxType,
-  AccountType,
-  AccountStatus,
-  JournalStatus,
-  QuotationStatus,
-  OrderStatus,
-  ShipmentStatus,
-  InvoiceType,
-  InvoiceStatus,
-  PaymentMethod,
-  ItemType,
-  MovementType,
-  ReservationStatus,
-  POStatus,
-  ReceiptStatus,
-  SupplierInvoiceStatus,
-  LocationType,
-  TransferStatus,
-  CountType,
-  CountStatus
-} from '@/lib/generated/prisma'
+// Define AccountType as a constant since it's not an enum in the schema
+export const AccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  INCOME: 'INCOME',
+  EXPENSE: 'EXPENSE'
+} as const
+
+export type AccountType = typeof AccountType[keyof typeof AccountType]
+
+// Define AccountStatus as a constant since it's not an enum in the schema
+export const AccountStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type AccountStatus = typeof AccountStatus[keyof typeof AccountStatus]
+
+// Define JournalStatus as a constant since it's not an enum in the schema
+export const JournalStatus = {
+  DRAFT: 'DRAFT',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type JournalStatus = typeof JournalStatus[keyof typeof JournalStatus]
+
+// These will be imported from Prisma when they are properly defined as enums in the schema
+// For now, we'll comment them out to avoid import errors
+// export {
+//   QuotationStatus,
+//   OrderStatus,
+//   ShipmentStatus,
+//   InvoiceType,
+//   InvoiceStatus,
+//   PaymentMethod,
+//   ItemType,
+//   MovementType,
+//   ReservationStatus,
+//   POStatus,
+//   ReceiptStatus,
+//   SupplierInvoiceStatus,
+//   LocationType,
+//   TransferStatus,
+//   CountType,
+//   CountStatus
+// } from '@/lib/generated/prisma'
+
+// Define TaxType as a constant since it's not an enum in the schema
+export const TaxType = {
+  SALES: 'SALES',
+  PURCHASE: 'PURCHASE',
+  BOTH: 'BOTH'
+} as const
+
+export type TaxType = typeof TaxType[keyof typeof TaxType]
+
+// Define Role as a constant since it's not an enum in the schema
+export const Role = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  SALES_REP: 'SALES_REP',
+  ACCOUNTANT: 'ACCOUNTANT',
+  WAREHOUSE: 'WAREHOUSE',
+  VIEWER: 'VIEWER',
+  USER: 'USER'
+} as const
+
+export type Role = typeof Role[keyof typeof Role]
+
+// Define LeadSource and LeadStatus as constants since they're not enums in the schema
+export const LeadSource = {
+  WEBSITE: 'WEBSITE',
+  REFERRAL: 'REFERRAL',
+  SOCIAL_MEDIA: 'SOCIAL_MEDIA',
+  EMAIL_CAMPAIGN: 'EMAIL_CAMPAIGN',
+  PHONE_CALL: 'PHONE_CALL',
+  TRADE_SHOW: 'TRADE_SHOW',
+  PARTNER: 'PARTNER',
+  OTHER: 'OTHER'
+} as const
+
+export type LeadSource = typeof LeadSource[keyof typeof LeadSource]
+
+export const LeadStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  QUALIFIED: 'QUALIFIED',
+  PROPOSAL_SENT: 'PROPOSAL_SENT',
+  NEGOTIATING: 'NEGOTIATING',
+  CONVERTED: 'CONVERTED',
+  LOST: 'LOST',
+  DISQUALIFIED: 'DISQUALIFIED'
+} as const
+
+export type LeadStatus = typeof LeadStatus[keyof typeof LeadStatus]
 
 // Define SalesCaseStatus and ExpenseStatus as constants since they're not enums in the schema
 export const SalesCaseStatus = {
@@ -46,31 +120,15 @@ export const ExpenseStatus = {
 
 export type ExpenseStatus = typeof ExpenseStatus[keyof typeof ExpenseStatus]
 
-// Re-export type aliases for consistency
-export type {
-  Role as RoleType,
-  LeadSource as LeadSourceType,
-  LeadStatus as LeadStatusType,
-  TaxType as TaxTypeEnum,
-  AccountType as AccountTypeEnum,
-  AccountStatus as AccountStatusEnum,
-  JournalStatus as JournalStatusEnum,
-  SalesCaseStatus as SalesCaseStatusEnum,
-  QuotationStatus as QuotationStatusEnum,
-  OrderStatus as OrderStatusEnum,
-  ShipmentStatus as ShipmentStatusEnum,
-  InvoiceType as InvoiceTypeEnum,
-  InvoiceStatus as InvoiceStatusEnum,
-  PaymentMethod as PaymentMethodEnum,
-  ExpenseStatus as ExpenseStatusEnum,
-  ItemType as ItemTypeEnum,
-  MovementType as MovementTypeEnum,
-  ReservationStatus as ReservationStatusEnum,
-  POStatus as POStatusEnum,
-  ReceiptStatus as ReceiptStatusEnum,
-  SupplierInvoiceStatus as SupplierInvoiceStatusEnum,
-  LocationType as LocationTypeEnum,
-  TransferStatus as TransferStatusEnum,
-  CountType as CountTypeEnum,
-  CountStatus as CountStatusEnum
-} from '@/lib/generated/prisma'
+// Type aliases for locally defined enums
+export type AccountTypeEnum = AccountType
+export type AccountStatusEnum = AccountStatus
+export type JournalStatusEnum = JournalStatus
+
+// Type aliases for locally defined enums
+export type TaxTypeEnum = TaxType
+export type RoleType = Role
+export type LeadSourceType = LeadSource
+export type LeadStatusType = LeadStatus
+export type SalesCaseStatusEnum = SalesCaseStatus
+export type ExpenseStatusEnum = ExpenseStatus

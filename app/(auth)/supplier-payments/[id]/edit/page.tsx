@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { PageLayout, PageHeader, VStack, Text, Button } from '@/components/design-system'
 import { SupplierPaymentForm } from '@/components/supplier-payments/supplier-payment-form'
-import { ArrowLeft, DollarSign, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, CreditCard, AlertTriangle } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
 interface SupplierPaymentFormData {
@@ -86,7 +86,7 @@ export default function EditSupplierPaymentPage() {
     return (
       <PageLayout>
         <VStack gap="lg" align="center" className="py-12">
-          <DollarSign className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
+          <CreditCard className="h-8 w-8 animate-pulse text-[var(--color-brand-primary-600)]" />
           <Text color="secondary">Loading supplier payment...</Text>
         </VStack>
       </PageLayout>

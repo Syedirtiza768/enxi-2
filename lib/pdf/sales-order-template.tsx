@@ -331,10 +331,13 @@ export const SalesOrderPDF: React.FC<SalesOrderPDFProps> = ({
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: salesOrder.currency || 'USD',
+    // Use English literal format: CURRENCY_CODE AMOUNT
+    const currency = salesOrder.currency || 'USD'
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount)
+    return `${currency} ${formattedAmount}`
   }
 
   const getStatusColor = (status: string) => {

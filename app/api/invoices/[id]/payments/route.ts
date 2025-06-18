@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoiceService } from '@/lib/services/invoice.service'
-import { PaymentMethod } from '@/lib/generated/prisma'
 import { z } from 'zod'
 
 const createPaymentSchema = z.object({
   amount: z.number().positive(),
   paymentDate: z.string().datetime().optional(),
-  paymentMethod: z.nativeEnum(PaymentMethod),
+  paymentMethod: z.enum(['BANK_TRANSFER', 'CHECK', 'CASH', 'CREDIT_CARD', 'WIRE_TRANSFER', 'ONLINE']),
   reference: z.string().optional(),
   notes: z.string().optional()
 })
@@ -17,17 +16,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // TODO: Add proper authentication
     const userId = 'system' // Replace with actual user authentication
     
-    const body = await request.json()
+    let body
+    try {
+      const text = await request.text()
+      console.log('Raw request body:', text)
+      body = text ? JSON.parse(text) : {}
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError)
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
     console.log('Payment API received body:', body)
     
     // Validate with Zod
     const validationResult = createPaymentSchema.safeParse(body)
     if (!validationResult.success) {
       console.error('Payment validation error:', validationResult.error)
+      console.error('Validation error details:', JSON.stringify(validationResult.error.format(), null, 2))
+      console.error('Received body:', JSON.stringify(body, null, 2))
       return NextResponse.json(
         { 
           error: 'Validation failed',
-          details: validationResult.error.format()
+          details: validationResult.error.format(),
+          receivedData: body
         },
         { status: 400 }
       )

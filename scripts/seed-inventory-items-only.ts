@@ -13,7 +13,12 @@ async function main(): Promise<void> {
   try {
     // Get admin user
     const adminUser = await prisma.user.findFirst({
-      where: { role: 'ADMIN' }
+      where: { 
+        OR: [
+          { role: 'ADMIN' },
+          { role: 'SUPER_ADMIN' }
+        ]
+      }
     })
 
     if (!adminUser) {
@@ -40,8 +45,10 @@ async function main(): Promise<void> {
     // Create categories
     console.warn('\n📁 Creating categories...')
     
-    const electronics = await prisma.category.create({
-      data: {
+    const electronics = await prisma.category.upsert({
+      where: { code: 'ELEC' },
+      update: {},
+      create: {
         code: 'ELEC',
         name: 'Electronics',
         description: 'Electronic components and devices',
@@ -49,8 +56,10 @@ async function main(): Promise<void> {
       }
     })
 
-    const rawMaterials = await prisma.category.create({
-      data: {
+    const rawMaterials = await prisma.category.upsert({
+      where: { code: 'RAW' },
+      update: {},
+      create: {
         code: 'RAW',
         name: 'Raw Materials',
         description: 'Raw materials for production',
@@ -58,8 +67,10 @@ async function main(): Promise<void> {
       }
     })
 
-    const packaging = await prisma.category.create({
-      data: {
+    const packaging = await prisma.category.upsert({
+      where: { code: 'PACK' },
+      update: {},
+      create: {
         code: 'PACK',
         name: 'Packaging',
         description: 'Packaging materials',
@@ -106,6 +117,14 @@ async function main(): Promise<void> {
     console.warn('\n📦 Creating inventory items...')
     
     const items = []
+
+    // Check if any items already exist
+    const existingItemsCount = await prisma.item.count()
+    if (existingItemsCount > 0) {
+      console.warn(`⚠️  Found ${existingItemsCount} existing items. Skipping item creation to avoid duplicates.`)
+      console.warn('✅ Inventory items seeding completed (items already exist)!')
+      return
+    }
 
     // Electronics items
     const laptop = await prisma.item.create({

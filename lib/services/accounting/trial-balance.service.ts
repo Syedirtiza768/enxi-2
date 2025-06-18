@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
-import { AccountType } from '@/lib/generated/prisma'
 import { 
+  AccountType,
   TrialBalance,
   TrialBalanceAccount,
   getNormalBalance,

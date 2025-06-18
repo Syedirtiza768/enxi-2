@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Edit, Send, FileText, Trash2, DollarSign, Download } from 'lucide-react'
+import { ArrowLeft, Edit, Send, FileText, Trash2, Receipt, Download } from 'lucide-react'
 import { InvoiceForm } from '@/components/invoices/invoice-form'
 import { PaymentForm } from '@/components/payments/payment-form'
 import { apiClient } from '@/lib/api/client'
@@ -349,7 +349,7 @@ const params = useParams()
               onClick={handleRecordPayment}
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
-              <DollarSign className="h-4 w-4 mr-2" />
+              <Receipt className="h-4 w-4 mr-2" />
               Record Payment
             </button>
           )}

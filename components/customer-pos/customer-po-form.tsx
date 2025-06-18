@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Upload, X, Calendar, DollarSign, FileText, AlertTriangle } from 'lucide-react'
+import { Upload, X, Calendar, FileText, AlertTriangle, Search } from 'lucide-react'
 import { useCurrency } from '@/lib/contexts/currency-context'
+import { apiClient } from '@/lib/api/client'
+import { SUPPORTED_CURRENCIES } from '@/lib/validators/common.validator'
 
 interface Quotation {
   id: string
@@ -18,6 +20,12 @@ interface Quotation {
   }
   totalAmount: number
   currency: string
+}
+
+interface Customer {
+  id: string
+  name: string
+  email: string
 }
 
 interface CustomerPOFormData {
@@ -38,14 +46,14 @@ interface CustomerPOFormProps {
 }
 
 export default function CustomerPOForm({ quotation, onSubmit, onCancel }: CustomerPOFormProps): React.JSX.Element {
-  const { formatCurrency } = useCurrency()
+  const { formatCurrency, defaultCurrency } = useCurrency()
   const [formData, setFormData] = useState<CustomerPOFormData>({
     poNumber: '',
     customerId: quotation?.salesCase?.customer?.id || '',
     quotationId: quotation?.id,
     poDate: new Date().toISOString().split('T')[0],
     poAmount: quotation?.totalAmount || 0,
-    currency: quotation?.currency || 'USD',
+    currency: quotation?.currency || defaultCurrency || 'USD',
     attachmentUrl: undefined,
     notes: ''
   })
@@ -55,6 +63,11 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState<string>('')
   const [amountWarning, setAmountWarning] = useState<string>('')
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [loadingCustomers, setLoadingCustomers] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    quotation?.salesCase?.customer || null
+  )
 
   // Update customer info when quotation changes
   useEffect(() => {
@@ -66,8 +79,49 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
         poAmount: quotation.totalAmount,
         currency: quotation.currency
       }))
+      setSelectedCustomer(quotation.salesCase.customer)
     }
   }, [quotation])
+
+  // Load customers if no quotation
+  useEffect(() => {
+    if (!quotation) {
+      loadCustomers()
+    }
+  }, [quotation])
+
+  const loadCustomers = async (): Promise<void> => {
+    try {
+      setLoadingCustomers(true)
+      
+      // Use fetch directly with credentials for better compatibility
+      const response = await fetch('/api/customers', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      if (!response.ok) {
+        console.error('Failed to load customers:', response.status, response.statusText)
+        return
+      }
+      
+      const data = await response.json()
+      const customerList = data?.customers || data?.data || []
+      
+      if (Array.isArray(customerList)) {
+        setCustomers(customerList)
+      } else {
+        setCustomers([])
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error)
+    } finally {
+      setLoadingCustomers(false)
+    }
+  }
 
   // Validate PO amount against quotation
   useEffect(() => {
@@ -288,14 +342,50 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
             <label htmlFor="customer" className="block text-sm font-medium text-gray-700">
               Customer
             </label>
-            <input
-              type="text"
-              id="customer"
-              value={quotation?.salesCase?.customer?.name || ''}
-              readOnly
-              className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 sm:text-sm"
-              placeholder="Select customer"
-            />
+            {quotation ? (
+              <input
+                type="text"
+                id="customer"
+                value={quotation.salesCase.customer.name}
+                readOnly
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 sm:text-sm"
+              />
+            ) : (
+              <div className="mt-1 relative">
+                <select
+                  id="customer"
+                  name="customerId"
+                  value={formData.customerId}
+                  onChange={(e) => {
+                    const customerId = e.target.value
+                    setFormData(prev => ({ ...prev, customerId }))
+                    const customer = customers.find(c => c.id === customerId)
+                    setSelectedCustomer(customer || null)
+                    if (errors.customerId) {
+                      setErrors(prev => ({ ...prev, customerId: '' }))
+                    }
+                  }}
+                  className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm pr-10"
+                  disabled={loadingCustomers}
+                >
+                  <option value="">
+                    {loadingCustomers ? 'Loading customers...' : 
+                     customers.length === 0 ? 'No customers available' : 
+                     'Select a customer'}
+                  </option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name} {customer.email ? `(${customer.email})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {loadingCustomers && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400 animate-pulse" />
+                  </div>
+                )}
+              </div>
+            )}
             {errors.customerId && (
               <p className="mt-1 text-sm text-red-600">{errors.customerId}</p>
             )}
@@ -339,7 +429,9 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
                 className="block w-full rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 placeholder="0.00"
               />
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
+                {getCurrencySymbol(formData.currency)}
+              </span>
             </div>
             {errors.poAmount && (
               <p className="mt-1 text-sm text-red-600">{errors.poAmount}</p>
@@ -364,10 +456,11 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             >
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="CAD">CAD - Canadian Dollar</option>
+              {SUPPORTED_CURRENCIES.map((currency) => (
+                <option key={currency} value={currency}>
+                  {currency} - {getCurrencyName(currency)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -466,4 +559,34 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
       </div>
     </div>
   )
+}
+
+function getCurrencyName(code: string): string {
+  const currencyNames: Record<string, string> = {
+    AED: 'UAE Dirham',
+    USD: 'US Dollar',
+    EUR: 'Euro',
+    GBP: 'British Pound',
+    SAR: 'Saudi Riyal',
+    QAR: 'Qatari Riyal',
+    OMR: 'Omani Rial',
+    KWD: 'Kuwaiti Dinar',
+    BHD: 'Bahraini Dinar'
+  }
+  return currencyNames[code] || code
+}
+
+function getCurrencySymbol(code: string): string {
+  const currencySymbols: Record<string, string> = {
+    AED: 'AED',
+    USD: 'USD',
+    EUR: 'EUR',
+    GBP: 'GBP',
+    SAR: 'SAR',
+    QAR: 'QAR',
+    OMR: 'OMR',
+    KWD: 'KWD',
+    BHD: 'BHD'
+  }
+  return currencySymbols[code] || code
 }

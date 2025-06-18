@@ -85,45 +85,27 @@ function SalesTeamAssignContent() {
 
       // Process users response
       if (usersResponse.ok && usersResponse.data) {
-        const users = usersResponse.data?.data || usersResponse.data || []
-        console.log('Users API response:', {
-          data: usersResponse.data,
-          dataType: typeof usersResponse.data,
-          hasData: !!usersResponse.data?.data,
-          directArray: Array.isArray(usersResponse.data),
-          extractedUsers: users
-        })
+        // Check if data is wrapped in a 'data' property or directly an array
+        const users = Array.isArray(usersResponse.data) 
+          ? usersResponse.data 
+          : (usersResponse.data.data || [])
+        
         setSalespeople(users.filter((u: User) => u.role === Role.SALES_REP || u.role === Role.MANAGER))
         setManagers(users.filter((u: User) => u.role === Role.MANAGER))
       } else {
-        console.error('Failed to fetch users:', {
-          error: usersResponse.error,
-          status: usersResponse.status,
-          errorDetails: usersResponse.errorDetails
-        })
+        console.error('Failed to fetch users:', usersResponse.error)
       }
 
       // Process customers response
       if (customersResponse.ok && customersResponse.data) {
-        // The API returns { data: customers[], customers: customers[], ... }
-        // Extract the customers array properly
-        const customersData = customersResponse.data.data || customersResponse.data.customers || []
-        console.log('Customers API response:', {
-          data: customersResponse.data,
-          dataType: typeof customersResponse.data,
-          hasData: !!customersResponse.data?.data,
-          hasCustomers: !!customersResponse.data?.customers,
-          directArray: Array.isArray(customersResponse.data),
-          extractedCustomers: customersData,
-          customersCount: customersData.length
-        })
+        // Check if data is wrapped in a response object or directly an array
+        const customersData = Array.isArray(customersResponse.data) 
+          ? customersResponse.data 
+          : (customersResponse.data.data || customersResponse.data.customers || [])
+        
         setCustomers(customersData)
       } else {
-        console.error('Failed to fetch customers:', {
-          error: customersResponse.error,
-          status: customersResponse.status,
-          errorDetails: customersResponse.errorDetails
-        })
+        console.error('Failed to fetch customers:', customersResponse.error)
       }
     } catch (err) {
       console.error('Error fetching data:', err)

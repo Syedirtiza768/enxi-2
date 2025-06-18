@@ -84,7 +84,14 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
       try {
         const response = await apiClient<{ data: InventoryItem[] }>('/api/inventory/items?isSaleable=true&isActive=true');
         if (response.ok && response.data) {
-          setInventoryItems(response.data.data || []);
+          // Handle nested response structure
+          let items = [];
+          if (response.data.data) {
+            items = response.data.data;
+          } else if (Array.isArray(response.data)) {
+            items = response.data;
+          }
+          setInventoryItems(items);
         }
       } catch (error) {
         console.error('Failed to load inventory:', error);
@@ -95,7 +102,28 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
 
   // Search inventory
   const searchInventory = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      // If search is empty, load all items
+      setLoading(true);
+      try {
+        const response = await apiClient<{ data: InventoryItem[] }>('/api/inventory/items?isSaleable=true&isActive=true');
+        if (response.ok && response.data) {
+          // Handle nested response structure
+          let items = [];
+          if (response.data.data) {
+            items = response.data.data;
+          } else if (Array.isArray(response.data)) {
+            items = response.data;
+          }
+          setInventoryItems(items);
+        }
+      } catch (error) {
+        console.error('Failed to load inventory:', error);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
     
     setLoading(true);
     try {
@@ -103,8 +131,18 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
         `/api/inventory/items?search=${encodeURIComponent(searchQuery)}&isSaleable=true&isActive=true`
       );
       
+      console.log('Inventory search response:', response);
+      
       if (response.ok && response.data) {
-        setInventoryItems(response.data.data || []);
+        // Handle nested response structure
+        let items = [];
+        if (response.data.data) {
+          items = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          items = response.data;
+        }
+        console.log('Inventory items found:', items);
+        setInventoryItems(items);
       }
     } catch (error) {
       console.error('Search failed:', error);
@@ -113,11 +151,25 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
     }
   };
 
+
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery.length > 1) {
         searchInventory();
+      } else if (searchQuery.length === 0) {
+        // Reload all items when search is cleared
+        const loadAll = async () => {
+          try {
+            const response = await apiClient<{ data: InventoryItem[] }>('/api/inventory/items?isSaleable=true&isActive=true');
+            if (response.ok && response.data) {
+              setInventoryItems(response.data.data || []);
+            }
+          } catch (error) {
+            console.error('Failed to load inventory:', error);
+          }
+        };
+        loadAll();
       }
     }, 300);
     return () => clearTimeout(timer);
@@ -469,8 +521,25 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
                 {loading ? (
                   <div className="text-center py-4 text-muted-foreground">Searching...</div>
                 ) : inventoryItems.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    {searchQuery ? 'No items found' : 'Start typing to search'}
+                  <div className="text-center py-4 space-y-4">
+                    <div className="text-muted-foreground">
+                      {searchQuery ? `No items found matching "${searchQuery}"` : 'No saleable items available'}
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {searchQuery ? 'Item not found? Create a new one:' : 'Get started by creating your first item:'}
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          window.open('/inventory/items/new', '_blank');
+                        }}
+                        className="inline-flex items-center"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Item
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   inventoryItems.map((item) => (

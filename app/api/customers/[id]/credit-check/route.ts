@@ -9,8 +9,14 @@ interface RouteParams {
 // GET /api/customers/[id]/credit-check - Perform credit check for customer
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const customerService = new CustomerService()
     

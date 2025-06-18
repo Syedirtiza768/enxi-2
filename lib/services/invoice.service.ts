@@ -8,12 +8,9 @@ import { taxService } from './tax.service'
 import { 
   Invoice,
   InvoiceItem,
-  InvoiceType,
-  InvoiceStatus,
   Payment,
-  PaymentMethod,
-  OrderStatus,
-  Prisma
+  Prisma,
+  OrderStatus
 } from '@/lib/generated/prisma'
 
 export interface InvoiceWithDetails extends Invoice {
@@ -35,7 +32,7 @@ export interface InvoiceWithDetails extends Invoice {
 export interface CreateInvoiceInput {
   salesOrderId?: string
   customerId: string
-  type?: InvoiceType
+  type?: 'SALES' | 'CREDIT_NOTE' | 'DEBIT_NOTE' | 'PROFORMA'
   dueDate: Date
   paymentTerms?: string
   billingAddress?: string
@@ -65,7 +62,7 @@ export interface UpdateInvoiceInput {
 export interface CreatePaymentInput {
   amount: number
   paymentDate?: Date
-  paymentMethod: PaymentMethod
+  paymentMethod: 'BANK_TRANSFER' | 'CHECK' | 'CASH' | 'CREDIT_CARD' | 'WIRE_TRANSFER' | 'ONLINE'
   reference?: string
   notes?: string
 }
@@ -89,7 +86,7 @@ export class InvoiceService extends BaseService {
 
       const result = await prisma.$transaction(async (tx) => {
         // Generate unique invoice number
-        const invoiceNumber = await this.generateInvoiceNumber(data.type || InvoiceType.SALES, tx)
+        const invoiceNumber = await this.generateInvoiceNumber(data.type || 'SALES', tx)
 
         // Validate sales order if provided
         let salesOrder = null
@@ -113,8 +110,8 @@ export class InvoiceService extends BaseService {
             invoiceNumber,
             salesOrderId: data.salesOrderId,
             customerId: data.customerId,
-            type: data.type || InvoiceType.SALES,
-            status: InvoiceStatus.DRAFT,
+            type: data.type || 'SALES' as const,
+            status: 'DRAFT' as const,
             invoiceDate: new Date(),
             dueDate: data.dueDate,
             subtotal,
@@ -234,8 +231,8 @@ export class InvoiceService extends BaseService {
   }
 
   async getAllInvoices(filters: {
-    status?: InvoiceStatus
-    type?: InvoiceType
+    status?: 'DRAFT' | 'SENT' | 'VIEWED' | 'PARTIAL' | 'PAID' | 'OVERDUE' | 'CANCELLED' | 'REFUNDED'
+    type?: 'SALES' | 'CREDIT_NOTE' | 'DEBIT_NOTE' | 'PROFORMA'
     customerId?: string
     dateFrom?: Date
     dateTo?: Date
@@ -311,7 +308,7 @@ export class InvoiceService extends BaseService {
         throw new Error('Invoice not found')
       }
 
-    if (existingInvoice.status !== InvoiceStatus.DRAFT) {
+    if (existingInvoice.status !== 'DRAFT') {
       throw new Error('Only draft invoices can be updated')
     }
 
@@ -402,19 +399,21 @@ export class InvoiceService extends BaseService {
         throw new Error('Invoice not found')
       }
 
-      if (invoice.status !== InvoiceStatus.DRAFT) {
+      if (invoice.status !== 'DRAFT') {
         throw new Error('Only draft invoices can be sent')
       }
 
-      // Create accounting entry for sales invoice
-      if (invoice.type === InvoiceType.SALES) {
+      // Create accounting entry based on invoice type
+      if (invoice.type === 'SALES') {
         await this.createSalesInvoiceJournalEntry(invoice, userId)
+      } else if (invoice.type === 'CREDIT_NOTE') {
+        await this.createCreditNoteJournalEntry(invoice, userId)
       }
 
       const _updatedInvoice = await prisma.invoice.update({
         where: { id },
         data: {
-          status: InvoiceStatus.SENT,
+          status: 'SENT' as const,
           sentBy: userId,
           sentAt: new Date()
         }
@@ -428,8 +427,8 @@ export class InvoiceService extends BaseService {
         entityId: id,
         metadata: {
           invoiceNumber: invoice.invoiceNumber,
-          previousStatus: InvoiceStatus.DRAFT,
-          newStatus: InvoiceStatus.SENT
+          previousStatus: 'DRAFT',
+          newStatus: 'SENT'
         }
       })
 
@@ -453,7 +452,7 @@ export class InvoiceService extends BaseService {
         throw new Error('Invoice not found')
       }
 
-      if (invoice.status === InvoiceStatus.CANCELLED) {
+      if (invoice.status === 'CANCELLED') {
         throw new Error('Cannot record payment for cancelled invoice')
       }
 
@@ -490,9 +489,9 @@ export class InvoiceService extends BaseService {
         
         let newStatus = invoice.status
         if (newBalanceAmount === 0) {
-          newStatus = InvoiceStatus.PAID
-        } else if (newPaidAmount > 0 && newStatus === InvoiceStatus.SENT) {
-          newStatus = InvoiceStatus.PARTIAL
+          newStatus = 'PAID'
+        } else if (newPaidAmount > 0 && newStatus === 'SENT') {
+          newStatus = 'PARTIAL'
         }
 
 
@@ -636,11 +635,11 @@ export class InvoiceService extends BaseService {
     return { subtotal, discountAmount, taxAmount, totalAmount, effectiveTaxRate }
   }
 
-  private async generateInvoiceNumber(type: InvoiceType, tx?: Prisma.TransactionClient): Promise<string> {
+  private async generateInvoiceNumber(type: string, tx?: Prisma.TransactionClient): Promise<string> {
     const year = new Date().getFullYear()
-    const prefix = type === InvoiceType.SALES ? `INV${year}` : 
-                   type === InvoiceType.CREDIT_NOTE ? `CN${year}` :
-                   type === InvoiceType.DEBIT_NOTE ? `DN${year}` : `PRO${year}`
+    const prefix = type === 'SALES' ? `INV${year}` : 
+                   type === 'CREDIT_NOTE' ? `CN${year}` :
+                   type === 'DEBIT_NOTE' ? `DN${year}` : `PRO${year}`
     
     const client = tx || prisma
     
@@ -697,15 +696,18 @@ export class InvoiceService extends BaseService {
   ): Promise<void> {
     return this.withLogging('createSalesInvoiceJournalEntry', async () => {
       // Debit: Accounts Receivable, Credit: Sales Revenue & Sales Tax
+      // Import account codes
+      const { TRANSACTION_ACCOUNTS } = await import('@/lib/constants/default-accounts')
+      
       const lines = [
       {
-        accountId: await this.getAccountByCode('1200'), // Accounts Receivable
+        accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.receivable), // Accounts Receivable
         description: `Sales invoice ${invoice.invoiceNumber}`,
         debitAmount: invoice.totalAmount,
         creditAmount: 0
       },
       {
-        accountId: await this.getAccountByCode('4000'), // Sales Revenue
+        accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.revenue), // Sales Revenue
         description: `Sales revenue ${invoice.invoiceNumber}`,
         debitAmount: 0,
         creditAmount: invoice.subtotal - invoice.discountAmount
@@ -714,7 +716,7 @@ export class InvoiceService extends BaseService {
 
     if (invoice.taxAmount > 0) {
       lines.push({
-        accountId: await this.getAccountByCode('2200'), // Sales Tax Payable
+        accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.tax), // Sales Tax Payable
         description: `Sales tax ${invoice.invoiceNumber}`,
         debitAmount: 0,
         creditAmount: invoice.taxAmount
@@ -727,6 +729,52 @@ export class InvoiceService extends BaseService {
         reference: invoice.invoiceNumber,
         currency: 'USD',
         lines,
+        status: 'POSTED' as const, // Create as posted when invoice is sent
+        createdBy: userId
+      })
+    })
+  }
+
+  private async createCreditNoteJournalEntry(
+    invoice: InvoiceWithDetails,
+    userId: string
+  ): Promise<void> {
+    return this.withLogging('createCreditNoteJournalEntry', async () => {
+      // Credit Note reverses the original invoice
+      // Credit: Accounts Receivable, Debit: Sales Revenue & Sales Tax
+      const { TRANSACTION_ACCOUNTS } = await import('@/lib/constants/default-accounts')
+      
+      const lines = [
+        {
+          accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.receivable), // Accounts Receivable
+          description: `Credit note ${invoice.invoiceNumber}`,
+          debitAmount: 0,
+          creditAmount: invoice.totalAmount
+        },
+        {
+          accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.revenue), // Sales Revenue
+          description: `Sales return ${invoice.invoiceNumber}`,
+          debitAmount: invoice.subtotal - invoice.discountAmount,
+          creditAmount: 0
+        }
+      ]
+
+      if (invoice.taxAmount > 0) {
+        lines.push({
+          accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.SALES_INVOICE.tax), // Sales Tax Payable
+          description: `Tax return ${invoice.invoiceNumber}`,
+          debitAmount: invoice.taxAmount,
+          creditAmount: 0
+        })
+      }
+
+      await this.journalEntryService.createJournalEntry({
+        date: invoice.invoiceDate,
+        description: `Credit note ${invoice.invoiceNumber}`,
+        reference: invoice.invoiceNumber,
+        currency: 'USD',
+        lines,
+        status: 'POSTED' as const, // Create as posted when credit note is sent
         createdBy: userId
       })
     })
@@ -739,10 +787,13 @@ export class InvoiceService extends BaseService {
     tx: Prisma.TransactionClient
   ): Promise<void> {
     return this.withLogging('createPaymentJournalEntry', async () => {
+      // Import account codes
+      const { TRANSACTION_ACCOUNTS } = await import('@/lib/constants/default-accounts')
+      
       // Debit: Cash/Bank, Credit: Accounts Receivable
-      const cashAccountId = payment.paymentMethod === PaymentMethod.CASH 
-        ? await this.getAccountByCode('1110', tx) // Cash on Hand (updated code)
-        : await this.getAccountByCode('1010', tx) // Bank
+      const cashAccountId = payment.paymentMethod === 'CASH' 
+        ? await this.getAccountByCode(TRANSACTION_ACCOUNTS.CUSTOMER_PAYMENT.cash, tx) // Cash on Hand
+        : await this.getAccountByCode(TRANSACTION_ACCOUNTS.CUSTOMER_PAYMENT.bank, tx) // Bank
 
     const lines = [
       {
@@ -752,7 +803,7 @@ export class InvoiceService extends BaseService {
         creditAmount: 0
       },
       {
-        accountId: await this.getAccountByCode('1200', tx), // Accounts Receivable
+        accountId: await this.getAccountByCode(TRANSACTION_ACCOUNTS.CUSTOMER_PAYMENT.receivable, tx), // Accounts Receivable
         description: `Payment for invoice ${invoice.invoiceNumber}`,
         debitAmount: 0,
         creditAmount: payment.amount
@@ -765,6 +816,7 @@ export class InvoiceService extends BaseService {
         reference: payment.paymentNumber,
         currency: 'USD',
         lines,
+        status: 'POSTED' as const, // Create as posted since payment is confirmed
         createdBy: userId
       }, tx)
     })

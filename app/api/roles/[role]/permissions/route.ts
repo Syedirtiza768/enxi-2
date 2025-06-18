@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { UserService } from '@/lib/services/user.service'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from '@/lib/types/shared-enums'
 import { z } from 'zod'
 
 const userService = new UserService()

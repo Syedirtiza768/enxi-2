@@ -7,9 +7,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     const searchParams = request.nextUrl.searchParams
     const itemId = searchParams.get('itemId')

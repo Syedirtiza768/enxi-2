@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CustomerLedger } from '@/components/payments/customer-ledger'
 import { CustomerBusinessHistory } from '@/components/payments/customer-business-history'
-import { ArrowLeft, DollarSign, Receipt } from 'lucide-react'
+import { ArrowLeft, CreditCard, Receipt } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 
 interface Customer {
@@ -114,7 +114,7 @@ export default function CustomerPaymentsPage() {
           </Button>
           <Button asChild>
             <Link href="/payments">
-              <DollarSign className="w-4 h-4 mr-2" />
+              <CreditCard className="w-4 h-4 mr-2" />
               All Payments
             </Link>
           </Button>

@@ -89,8 +89,8 @@ export default function SalesTeamPage(): React.JSX.Element {
       setError(null)
 
       const response = await apiClient('/api/sales-team')
-      if (response.ok && response?.data) {
-        setHierarchy(response?.data)
+      if (response.ok && response.data) {
+        setHierarchy(response.data)
       } else {
         setError('Failed to load sales team data')
       }
@@ -110,8 +110,8 @@ export default function SalesTeamPage(): React.JSX.Element {
       params.append('view', 'unassigned')
 
       const response = await apiClient(`/api/sales-team?${params}`)
-      if (response.ok && response?.data) {
-        setUnassignedCustomers(response?.data.customers || [])
+      if (response.ok && response.data) {
+        setUnassignedCustomers(response.data.customers || [])
       }
     } catch (err) {
       console.error('Error fetching unassigned customers:', err)

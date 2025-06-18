@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { apiClient } from '@/lib/api/client'
-import { DollarSign, Search, Eye, Receipt } from 'lucide-react'
+import { Search, Eye, Receipt, TrendingUp, Calculator, Users } from 'lucide-react'
+import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
 
 interface Payment {
   id: string
@@ -37,6 +38,7 @@ interface Customer {
 }
 
 export default function PaymentsPage(): React.JSX.Element {
+  const { format: formatCurrency } = useCurrencyFormatter()
   const [payments, setPayments] = useState<Payment[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,12 +82,7 @@ export default function PaymentsPage(): React.JSX.Element {
     }
   }
 
-  const formatCurrency = (amount: number): void => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+  // Currency formatting is now handled by useCurrencyFormatter hook
 
   const formatDate = (dateString: string): void => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -186,7 +183,7 @@ export default function PaymentsPage(): React.JSX.Element {
                 <p className="text-sm font-medium text-gray-600">Total Amount</p>
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(totalPayments)}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-green-600" />
+              <TrendingUp className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -198,7 +195,7 @@ export default function PaymentsPage(): React.JSX.Element {
                 <p className="text-sm font-medium text-gray-600">Average Payment</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalPayments / (filteredPayments.length || 1))}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
+              <Calculator className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -210,7 +207,7 @@ export default function PaymentsPage(): React.JSX.Element {
                 <p className="text-sm font-medium text-gray-600">Unique Customers</p>
                 <p className="text-2xl font-bold">{new Set(filteredPayments.map(p => p.invoice?.customer.id)).size}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-purple-600" />
+              <Users className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>

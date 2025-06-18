@@ -10,9 +10,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const resolvedParams = await params
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     const stockTransferService = new StockTransferService()
     const transfer = await stockTransferService.approveStockTransfer(

@@ -9,12 +9,19 @@ interface RouteParams {
 // POST /api/accounting/journal-entries/[id]/post - Post a journal entry
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    // Get authenticated user
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const { id } = await params
     const journalEntryService = new JournalEntryService()
     
-    const journalEntry = await journalEntryService.postJournalEntry(id, session.user.id)
+    const journalEntry = await journalEntryService.postJournalEntry(id, user.id)
 
     return NextResponse.json({
       success: true,
@@ -24,22 +31,34 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (error: unknown) {
     console.error('Error posting journal entry:', error)
     
-    if (error instanceof Error ? error.message : String(error)?.includes('not found')) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    
+    if (errorMessage.includes('not found')) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       )
     }
 
-    if (error instanceof Error ? error.message : String(error)?.includes('Only draft journal entries can be posted')) {
+    if (errorMessage.includes('Only draft journal entries can be posted')) {
       return NextResponse.json(
         { error: 'Only draft journal entries can be posted' },
         { status: 400 }
       )
     }
 
+    // Include more detailed error information in development
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const responseError = isDevelopment 
+      ? { 
+          error: 'Failed to post journal entry',
+          details: errorMessage,
+          stack: error instanceof Error ? error.stack : undefined
+        }
+      : { error: 'Failed to post journal entry' }
+
     return NextResponse.json(
-      { error: 'Failed to post journal entry' },
+      responseError,
       { status: 500 }
     )
   }

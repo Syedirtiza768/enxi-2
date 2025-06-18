@@ -399,6 +399,11 @@ export function PaymentForm({
         throw new Error('Invalid payment amount')
       }
 
+      // Ensure payment method is selected
+      if (!formData.paymentMethod) {
+        throw new Error('Payment method is required')
+      }
+
       // Format payment date to ISO string with time
       let paymentDateTime: string
       if (formData.paymentDate) {
@@ -411,7 +416,7 @@ export function PaymentForm({
       }
 
       const requestBody = {
-        amount: formData.amount,
+        amount: formData.amount!,  // We've already validated it's not null above
         paymentMethod: formData.paymentMethod,
         paymentDate: paymentDateTime,
         reference: reference || undefined,
@@ -419,16 +424,27 @@ export function PaymentForm({
       }
 
       console.log('Sending payment request:', requestBody)
+      console.log('Request body JSON:', JSON.stringify(requestBody))
 
       const response = await apiClient<{ data?: { id: string }; success?: boolean; paymentId?: string }>(`/api/invoices/${invoiceId}/payments`, {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
 
       if (!response.ok) {
         console.error('Payment API error:', response)
+        console.error('Response structure:', {
+          ok: response.ok,
+          error: response.error,
+          errorDetails: response.errorDetails,
+          status: response.status,
+          data: response.data
+        })
         const errorMessage = response.error || 
-          (response.errorDetails?.message) || 
+          (response.errorDetails && response.errorDetails.message) || 
           'Payment failed'
         throw new Error(errorMessage)
       }

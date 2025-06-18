@@ -91,7 +91,7 @@ export function SalesCaseForm({ customerId, customerName, onSuccess, onCancel }:
       if (onSuccess) {
         onSuccess(response?.data)
       } else {
-        router.push(`/sales-cases/${response?.data.data.id}`)
+        router.push(`/sales-cases/${response?.data.id}`)
       }
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error) {

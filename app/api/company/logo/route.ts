@@ -7,7 +7,8 @@ import { cwd } from 'process';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = { user: { id: 'system' } }
+    // Temporarily using system user for authentication
+    const user = { id: 'system', role: 'SUPER_ADMIN' }
     // const user = await getUserFromRequest(request);
     
     if (!user) {

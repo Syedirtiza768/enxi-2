@@ -344,10 +344,13 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
   viewType = 'client'
 }) => {
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: quotation.currency || 'USD',
+    // Use English literal format: CURRENCY_CODE AMOUNT
+    const currency = quotation.currency || 'USD'
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount)
+    return `${currency} ${formattedAmount}`
   }
 
   const formatDate = (date: Date | string) => {

@@ -24,7 +24,7 @@ import {
   Calendar,
   Building2,
   Package,
-  DollarSign
+  Receipt
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 import { useCurrency } from '@/lib/contexts/currency-context'
@@ -294,7 +294,7 @@ const params = useParams()
 
                   <VStack gap="sm">
                     <HStack gap="sm" align="center">
-                      <DollarSign className="h-4 w-4 text-[var(--text-secondary)]" />
+                      <Receipt className="h-4 w-4 text-[var(--text-secondary)]" />
                       <Text size="sm" color="secondary">Total Amount</Text>
                     </HStack>
                     <Text size="lg" weight="bold" className="text-[var(--color-brand-primary-600)]">

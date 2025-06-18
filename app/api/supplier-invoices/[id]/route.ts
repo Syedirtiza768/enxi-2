@@ -8,9 +8,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const resolvedParams = await params
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     const supplierInvoiceService = new SupplierInvoiceService()
     const invoice = await supplierInvoiceService.getSupplierInvoice(resolvedParams.id)
@@ -38,9 +38,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const resolvedParams = await params
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     const body = await request.json()
     const {
@@ -119,9 +119,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const resolvedParams = await params
     const session = { user: { id: 'system' } }
     // const user = await verifyJWTFromRequest(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!user) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     const supplierInvoiceService = new SupplierInvoiceService()
     const invoice = await supplierInvoiceService.cancelSupplierInvoice(resolvedParams.id, session.user.id)

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { apiClient } from '@/lib/api/client'
+import { useCurrencyFormatter } from '@/lib/contexts/currency-context'
 
 interface CustomerBusinessHistoryProps {
   customerId: string
@@ -67,6 +68,7 @@ export function CustomerBusinessHistory({
   onRecordPayment,
   onCreateInvoice,
 }: CustomerBusinessHistoryProps): React.JSX.Element {
+  const { format: formatCurrency } = useCurrencyFormatter()
   const [customer, setCustomer] = useState<Customer | null>(null)
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null)
   const [activityTimeline, setActivityTimeline] = useState<ActivityEvent[]>([])
@@ -107,12 +109,7 @@ export function CustomerBusinessHistory({
     loadCustomerBusinessData()
   }, [loadCustomerBusinessData])
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+  // Currency formatting is now handled by useCurrencyFormatter hook
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('en-US', {

@@ -33,14 +33,13 @@ import {
   AlertCircle,
   CheckCircle2,
   Calendar,
-  DollarSign,
+  FileCheck,
   BarChart3,
   Shield,
   Zap,
   Eye,
   ThumbsUp,
   ThumbsDown,
-  FileCheck,
   FileX,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
@@ -706,7 +705,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
               <VStack gap="xs">
                 <HStack gap="sm" align="center">
                   <div className="p-2 bg-purple-50 rounded-lg">
-                    <DollarSign className="h-4 w-4 text-purple-600" />
+                    <FileCheck className="h-4 w-4 text-purple-600" />
                   </div>
                   <Text size="sm" weight="medium" color="secondary">Total Amount</Text>
                 </HStack>
@@ -1219,7 +1218,7 @@ export function ThreeWayMatchingDetail({ purchaseOrderId }: ThreeWayMatchingDeta
                                   {formatCurrency(invoice.totalAmount)}
                                 </Text>
                               </VStack>
-                              <DollarSign className="h-6 w-6 text-blue-600" />
+                              <FileCheck className="h-6 w-6 text-blue-600" />
                             </HStack>
                           </Card>
 

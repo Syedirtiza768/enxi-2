@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { IncomeStatement } from '@/lib/types/accounting.types'
+import { CURRENCY_OPTIONS } from '@/lib/constants/currencies'
 
 export default function IncomeStatementPage() {
   const [incomeStatement, setIncomeStatement] = useState<IncomeStatement | null>(null)
@@ -102,9 +103,11 @@ export default function IncomeStatementPage() {
               onChange={(e) => setCurrency(e.target.value)}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
+              {CURRENCY_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-end">

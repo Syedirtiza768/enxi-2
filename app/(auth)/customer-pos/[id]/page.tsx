@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { 
   ArrowLeft, FileText, CheckCircle, Clock, Edit, Download,
-  Calendar, DollarSign, Building, Package, User, ExternalLink
+  Calendar, Receipt, Building, Package, User, ExternalLink
 } from 'lucide-react'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
@@ -281,7 +281,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
               </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500 flex items-center">
-                  <DollarSign className="h-4 w-4 mr-1" />
+                  <Receipt className="h-4 w-4 mr-1" />
                   PO Amount
                 </dt>
                 <dd className="mt-1 text-sm font-gray-900">{formatCurrency(po.poAmount)}</dd>

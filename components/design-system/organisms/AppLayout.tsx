@@ -35,7 +35,7 @@ import {
   Receipt,
   TrendingUp,
   UserCheck,
-  DollarSign,
+  Wallet,
   Archive,
   AlertCircle,
   FolderOpen,
@@ -106,7 +106,7 @@ const navigation: NavItem[] = [
       { title: 'Purchase Orders', href: '/purchase-orders', icon: <FileText className="h-4 w-4" /> },
       { title: 'Goods Receipts', href: '/goods-receipts', icon: <Package className="h-4 w-4" /> },
       { title: 'Supplier Invoices', href: '/supplier-invoices', icon: <Receipt className="h-4 w-4" /> },
-      { title: 'Supplier Payments', href: '/supplier-payments', icon: <DollarSign className="h-4 w-4" /> },
+      { title: 'Supplier Payments', href: '/supplier-payments', icon: <Wallet className="h-4 w-4" /> },
       { title: 'Three-Way Matching', href: '/three-way-matching', icon: <BarChart3 className="h-4 w-4" /> },
     ]
   },
@@ -124,7 +124,7 @@ const navigation: NavItem[] = [
     icon: <Calculator className="h-5 w-5" />,
     children: [
       { title: 'Invoices', href: '/invoices', icon: <FileText className="h-4 w-4" /> },
-      { title: 'Payments', href: '/payments', icon: <DollarSign className="h-4 w-4" /> },
+      { title: 'Payments', href: '/payments', icon: <Wallet className="h-4 w-4" /> },
       { title: 'Tax Configuration', href: '/tax-configuration', icon: <Receipt className="h-4 w-4" /> },
       { title: 'Chart of Accounts', href: '/accounting/accounts', icon: <Layers className="h-4 w-4" /> },
       { title: 'Journal Entries', href: '/accounting/journal-entries', icon: <FileText className="h-4 w-4" /> },

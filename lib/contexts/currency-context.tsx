@@ -14,7 +14,7 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
-  const [defaultCurrency, setDefaultCurrency] = useState<string>('USD')
+  const [defaultCurrency, setDefaultCurrency] = useState<string>('AED')
   const [supportedCurrencies, setSupportedCurrencies] = useState<Array<{ code: string; name: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
 

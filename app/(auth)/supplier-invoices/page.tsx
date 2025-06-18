@@ -21,7 +21,7 @@ import {
   Search, 
   FileText, 
   Calendar, 
-  DollarSign,
+  Receipt,
   CheckCircle,
   AlertTriangle,
   Clock,
@@ -286,7 +286,7 @@ export default function SupplierInvoicesPage() {
                     </Text>
                   </VStack>
                   <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
+                    <Receipt className="h-6 w-6 text-blue-600" />
                   </div>
                 </HStack>
               </CardContent>

@@ -5,7 +5,6 @@ import { AuditAction } from '@/lib/validators/audit.validator'
 import { ChartOfAccountsService } from './chart-of-accounts.service'
 import { CurrencyService } from './currency.service'
 import { 
-  JournalStatus,
   JournalEntry,
   JournalLine,
   Prisma
@@ -83,8 +82,10 @@ export class JournalEntryService extends BaseService {
         reference: data.reference,
         currency: data.currency,
         exchangeRate,
-        status: JournalStatus.DRAFT,
+        status: data.status || 'DRAFT' as const,
         createdBy: data.createdBy,
+        postedAt: data.status === 'POSTED' ? new Date() : undefined,
+        postedBy: data.status === 'POSTED' ? data.createdBy : undefined,
       }
     })
 
@@ -108,6 +109,28 @@ export class JournalEntryService extends BaseService {
       })
     )
 
+    // If the entry is being created as POSTED, update account balances
+    if (data.status === 'POSTED') {
+      for (const line of lines) {
+        if (line.debitAmount > 0) {
+          await this.chartOfAccountsService.updateBalance(
+            line.accountId,
+            line.baseDebitAmount,
+            'debit',
+            tx
+          )
+        }
+        if (line.creditAmount > 0) {
+          await this.chartOfAccountsService.updateBalance(
+            line.accountId,
+            line.baseCreditAmount,
+            'credit',
+            tx
+          )
+        }
+      }
+    }
+
     return { ...journalEntry, lines }
   }
 
@@ -121,7 +144,7 @@ export class JournalEntryService extends BaseService {
         throw new Error('Journal entry not found')
       }
 
-      if (entry.status !== JournalStatus.DRAFT) {
+      if (entry.status !== 'DRAFT') {
         throw new Error('Only draft journal entries can be posted')
       }
 
@@ -131,7 +154,7 @@ export class JournalEntryService extends BaseService {
         const postedEntry = await tx.journalEntry.update({
           where: { id: entryId },
           data: {
-            status: JournalStatus.POSTED,
+            status: 'POSTED' as const,
             postedBy: userId,
             postedAt: new Date(),
           },
@@ -146,19 +169,28 @@ export class JournalEntryService extends BaseService {
 
         // Update account balances
         for (const line of postedEntry.lines) {
-          if (line.debitAmount > 0) {
-            await this.chartOfAccountsService.updateBalance(
-              line.accountId,
-              line.baseDebitAmount,
-              'debit'
-            )
-          }
-          if (line.creditAmount > 0) {
-            await this.chartOfAccountsService.updateBalance(
-              line.accountId,
-              line.baseCreditAmount,
-              'credit'
-            )
+          try {
+            if (line.debitAmount > 0) {
+              console.log(`Updating balance for account ${line.accountId}: debit ${line.baseDebitAmount}`)
+              await this.chartOfAccountsService.updateBalance(
+                line.accountId,
+                line.baseDebitAmount,
+                'debit',
+                tx
+              )
+            }
+            if (line.creditAmount > 0) {
+              console.log(`Updating balance for account ${line.accountId}: credit ${line.baseCreditAmount}`)
+              await this.chartOfAccountsService.updateBalance(
+                line.accountId,
+                line.baseCreditAmount,
+                'credit',
+                tx
+              )
+            }
+          } catch (updateError) {
+            console.error(`Failed to update balance for account ${line.accountId}:`, updateError)
+            throw new Error(`Failed to update balance for account ${line.account?.code || line.accountId}: ${updateError instanceof Error ? updateError.message : String(updateError)}`)
           }
         }
 
@@ -174,8 +206,8 @@ export class JournalEntryService extends BaseService {
         action: AuditAction.UPDATE,
         entityType: 'JournalEntry',
         entityId: entryId,
-        beforeData: { status: JournalStatus.DRAFT },
-        afterData: { status: JournalStatus.POSTED, postedBy: userId, postedAt: result.postedAt },
+        beforeData: { status: 'DRAFT' },
+        afterData: { status: 'POSTED', postedBy: userId, postedAt: result.postedAt },
       })
 
       return result
@@ -265,27 +297,29 @@ export class JournalEntryService extends BaseService {
         throw new Error('Journal entry not found')
       }
 
-      if (entry.status === JournalStatus.CANCELLED) {
+      if (entry.status === 'CANCELLED') {
         throw new Error('Journal entry is already cancelled')
       }
 
       // For POSTED entries, reverse the account balance changes
-      if (entry.status === JournalStatus.POSTED) {
-        await prisma.$transaction(async (_tx) => {
+      if (entry.status === 'POSTED') {
+        await prisma.$transaction(async (tx) => {
           // Reverse account balances
           for (const line of entry.lines) {
             if (line.debitAmount > 0) {
               await this.chartOfAccountsService.updateBalance(
                 line.accountId,
                 line.baseDebitAmount,
-                'credit' // Reverse the debit
+                'credit', // Reverse the debit
+                tx
               )
             }
             if (line.creditAmount > 0) {
               await this.chartOfAccountsService.updateBalance(
                 line.accountId,
                 line.baseCreditAmount,
-                'debit' // Reverse the credit
+                'debit', // Reverse the credit
+                tx
               )
             }
           }
@@ -296,7 +330,7 @@ export class JournalEntryService extends BaseService {
       const cancelledEntry = await prisma.journalEntry.update({
         where: { id: entryId },
         data: {
-          status: JournalStatus.CANCELLED,
+          status: 'CANCELLED' as const,
         }
       })
 
@@ -307,7 +341,7 @@ export class JournalEntryService extends BaseService {
         entityType: 'JournalEntry',
         entityId: entryId,
         beforeData: { status: entry.status },
-        afterData: { status: JournalStatus.CANCELLED },
+        afterData: { status: 'CANCELLED' },
       })
 
       return cancelledEntry

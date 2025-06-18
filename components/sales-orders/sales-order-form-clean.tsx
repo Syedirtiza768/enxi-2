@@ -157,10 +157,11 @@ export function SalesOrderFormClean({
     }
   };
 
-  const handleCustomerSelect = (customer: any) => {
+  const handleCustomerSelect = (customerId: string, customer?: any) => {
+    if (!customer) return;
     setFormData(prev => ({ 
       ...prev, 
-      customer_id: customer.id, 
+      customer_id: customerId, 
       customer,
       billingAddress: customer.billingAddress || '',
       shippingAddress: customer.shippingAddress || customer.billingAddress || ''
@@ -296,8 +297,8 @@ export function SalesOrderFormClean({
             <div className="space-y-2">
               <Label>Customer</Label>
               <CustomerSearch
-                value={formData.customer}
-                onSelect={handleCustomerSelect}
+                value={formData.customer_id}
+                onChange={handleCustomerSelect}
                 disabled={!!initialSalesCaseId || loading}
               />
             </div>
@@ -471,9 +472,8 @@ export function SalesOrderFormClean({
           
           {formData.useLineBasedEditor ? (
             <LineBasedItemEditor
-              items={formData.lines}
-              onChange={handleItemsChange}
-              disabled={loading}
+              lines={formData.lines}
+              onLinesChange={handleItemsChange}
               viewMode={viewMode}
             />
           ) : (

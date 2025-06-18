@@ -16,7 +16,7 @@ const accountTypes = [
   { value: 'ASSET', label: 'Asset' },
   { value: 'LIABILITY', label: 'Liability' },
   { value: 'EQUITY', label: 'Equity' },
-  { value: 'REVENUE', label: 'Revenue' },
+  { value: 'INCOME', label: 'Revenue' },
   { value: 'EXPENSE', label: 'Expense' }
 ]
 

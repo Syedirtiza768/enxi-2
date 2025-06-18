@@ -88,5 +88,5 @@ export const POST = createProtectedHandler(
       )
     }
   },
-  { permissions: ['users.permissions'] }
+  { permissions: ['users.manage_permissions'] }
 )

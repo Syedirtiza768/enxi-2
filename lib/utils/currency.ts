@@ -9,7 +9,7 @@ export interface CurrencyFormatOptions {
 }
 
 // Default company currency - this should be loaded from CompanySettings
-let defaultCurrency = 'USD'
+let defaultCurrency = 'AED'
 
 // Set the default currency (called from server-side when settings are loaded)
 export function setDefaultCurrency(currency: string): void {
@@ -33,34 +33,19 @@ export function formatCurrency(
     maximumFractionDigits = 2
   } = options
 
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits,
-      maximumFractionDigits
-    }).format(amount)
-  } catch (error) {
-    // Fallback for unsupported currencies
-    return `${currency} ${amount.toFixed(maximumFractionDigits)}`
-  }
+  // Always use English literal format: CURRENCY_CODE AMOUNT
+  const formattedAmount = amount.toLocaleString(locale, {
+    minimumFractionDigits,
+    maximumFractionDigits
+  })
+  
+  return `${currency} ${formattedAmount}`
 }
 
-// Get currency symbol
+// Get currency symbol - returns currency code for English literal display
 export function getCurrencySymbol(currency: string = defaultCurrency): string {
-  try {
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    })
-    
-    return formatter.format(0).replace(/[0-9]/g, '').trim()
-  } catch {
-    // Return currency code if symbol can't be determined
-    return currency
-  }
+  // Always return the currency code for English literal display
+  return currency
 }
 
 // Parse amount from formatted currency string
@@ -75,18 +60,18 @@ export function parseCurrencyAmount(formattedAmount: string): number {
 
 // Currency metadata
 export const SUPPORTED_CURRENCIES = [
-  { code: 'USD', name: 'US Dollar', symbol: '$' },
-  { code: 'EUR', name: 'Euro', symbol: '€' },
-  { code: 'GBP', name: 'British Pound', symbol: '£' },
-  { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ' },
-  { code: 'PKR', name: 'Pakistani Rupee', symbol: 'Rs' },
-  { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-  { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-  { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+  { code: 'USD', name: 'US Dollar', symbol: 'USD' },
+  { code: 'EUR', name: 'Euro', symbol: 'EUR' },
+  { code: 'GBP', name: 'British Pound', symbol: 'GBP' },
+  { code: 'AED', name: 'UAE Dirham', symbol: 'AED' },
+  { code: 'PKR', name: 'Pakistani Rupee', symbol: 'PKR' },
+  { code: 'CAD', name: 'Canadian Dollar', symbol: 'CAD' },
+  { code: 'AUD', name: 'Australian Dollar', symbol: 'AUD' },
+  { code: 'JPY', name: 'Japanese Yen', symbol: 'JPY' },
   { code: 'CHF', name: 'Swiss Franc', symbol: 'CHF' },
-  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
-  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' }
+  { code: 'CNY', name: 'Chinese Yuan', symbol: 'CNY' },
+  { code: 'INR', name: 'Indian Rupee', symbol: 'INR' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZD' }
 ]
 
 // Get currency info

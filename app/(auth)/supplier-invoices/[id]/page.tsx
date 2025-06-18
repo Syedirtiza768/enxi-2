@@ -19,7 +19,7 @@ import {
   Edit,
   FileText,
   Calendar,
-  DollarSign,
+  Receipt,
   Building2,
   CheckCircle,
   AlertTriangle,
@@ -364,7 +364,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
             <CardContent className="p-6">
               <VStack gap="sm">
                 <HStack gap="sm" align="center">
-                  <DollarSign className="h-5 w-5 text-[var(--color-brand-primary-600)]" />
+                  <Receipt className="h-5 w-5 text-[var(--color-brand-primary-600)]" />
                   <Text size="sm" weight="medium" color="secondary">Total Amount</Text>
                 </HStack>
                 <Text size="xl" weight="bold">

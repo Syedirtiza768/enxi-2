@@ -20,7 +20,7 @@ import {
   Search, 
   FileText, 
   Calendar, 
-  DollarSign,
+  TrendingUp,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -294,7 +294,7 @@ export default function PurchaseOrdersPage() {
                     </Text>
                   </VStack>
                   <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <DollarSign className="h-6 w-6 text-green-600" />
+                    <TrendingUp className="h-6 w-6 text-green-600" />
                   </div>
                 </HStack>
               </CardContent>

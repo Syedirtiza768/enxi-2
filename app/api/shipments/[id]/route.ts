@@ -52,7 +52,7 @@ export const GET = createProtectedHandler(
     )
     }
   },
-  { permissions: ['shipments.view'] }
+  { permissions: ['shipments.read'] }
 )
 
 export const PUT = createProtectedHandler(

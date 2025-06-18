@@ -111,22 +111,48 @@ export class SalesCaseService {
       throw new Error('Customer not found')
     }
 
-    // Generate case number
-    const caseNumber = await this.generateCaseNumber()
+    // Retry logic for handling concurrent case number generation
+    let salesCase: SalesCaseWithDetails | null = null
+    let retries = 0
+    const maxRetries = 5
 
-    const salesCase = await prisma.salesCase.create({
-      data: {
-        caseNumber,
-        customerId: data.customerId,
-        title: data.title,
-        description: data.description,
-        estimatedValue: data.estimatedValue || 0,
-        status: SalesCaseStatus.OPEN,
-        createdBy: data.createdBy,
-        assignedTo: data.assignedTo || data.createdBy
-      },
-      include: this.getDetailedInclude()
-    })
+    while (!salesCase && retries < maxRetries) {
+      try {
+        // Generate case number
+        const caseNumber = await this.generateCaseNumber()
+
+        salesCase = await prisma.salesCase.create({
+          data: {
+            caseNumber,
+            customerId: data.customerId,
+            title: data.title,
+            description: data.description,
+            estimatedValue: data.estimatedValue || 0,
+            status: SalesCaseStatus.OPEN,
+            createdBy: data.createdBy,
+            assignedTo: data.assignedTo || data.createdBy
+          },
+          include: this.getDetailedInclude()
+        })
+      } catch (error: any) {
+        // Check if it's a unique constraint violation on caseNumber
+        if (error?.code === 'P2002' && error?.meta?.target?.includes('caseNumber')) {
+          retries++
+          if (retries >= maxRetries) {
+            throw new Error('Failed to generate unique case number after multiple attempts')
+          }
+          // Wait a bit before retrying to reduce collision likelihood
+          await new Promise(resolve => setTimeout(resolve, 50 * retries))
+        } else {
+          // Re-throw if it's a different error
+          throw error
+        }
+      }
+    }
+
+    if (!salesCase) {
+      throw new Error('Failed to create sales case')
+    }
 
     // Audit log
     await this.auditService.logAction({
@@ -676,16 +702,70 @@ export class SalesCaseService {
   }
 
   private async generateCaseNumber(): Promise<string> {
+    try {
+      // Try to use the sequence table for atomic increments
+      const sequence = await prisma.$executeRaw`
+        UPDATE "Sequence" 
+        SET "value" = "value" + 1, "updatedAt" = CURRENT_TIMESTAMP 
+        WHERE "name" = 'sales_case_number'
+        RETURNING "value"
+      `
+      
+      // If sequence exists and was updated, get the new value
+      if (sequence > 0) {
+        const updatedSeq = await prisma.sequence.findUnique({
+          where: { name: 'sales_case_number' }
+        })
+        
+        if (updatedSeq) {
+          return `CASE-${updatedSeq.value.toString().padStart(4, '0')}`
+        }
+      }
+    } catch (error) {
+      // Sequence table might not exist yet, fall back to traditional method
+      console.warn('Sequence table not available, using fallback method')
+    }
+
+    // Fallback: Get the highest case number by sorting
     const lastCase = await prisma.salesCase.findFirst({
-      orderBy: { caseNumber: 'desc' }
+      orderBy: { caseNumber: 'desc' },
+      select: { caseNumber: true }
     })
 
     if (!lastCase) {
+      // Initialize sequence if it doesn't exist
+      try {
+        await prisma.sequence.create({
+          data: { name: 'sales_case_number', value: 1 }
+        })
+      } catch (error) {
+        // Ignore if sequence already exists
+      }
       return 'CASE-0001'
     }
 
-    const lastNumber = parseInt(lastCase.caseNumber.split('-')[1])
+    const match = lastCase.caseNumber.match(/CASE-(\d+)/)
+    
+    if (!match) {
+      // Fallback if format doesn't match
+      const count = await prisma.salesCase.count()
+      return `CASE-${(count + 1).toString().padStart(4, '0')}`
+    }
+
+    const lastNumber = parseInt(match[1])
     const newNumber = lastNumber + 1
+    
+    // Try to update sequence to keep it in sync
+    try {
+      await prisma.sequence.upsert({
+        where: { name: 'sales_case_number' },
+        update: { value: newNumber },
+        create: { name: 'sales_case_number', value: newNumber }
+      })
+    } catch (error) {
+      // Ignore sequence sync errors
+    }
+    
     return `CASE-${newNumber.toString().padStart(4, '0')}`
   }
 

@@ -8,27 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum MovementType {
-  STOCK_IN
-  STOCK_OUT
-  ADJUSTMENT
-  TRANSFER
-  OPENING
-  PRODUCTION_IN
-  PRODUCTION_OUT
-  RETURN_IN
-  RETURN_OUT
-  DAMAGE
-  EXPIRY
-  COUNT_ADJUSTMENT
-}
-
-enum JournalStatus {
-  DRAFT
-  POSTED
-  VOIDED
-}
-
 model User {
   id                String           @id @default(cuid())
   username          String           @unique
@@ -121,9 +100,9 @@ model Customer {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   accountId       String?      @unique
-  account         Account?     @relation(fields: [accountId], references: [id])
-  assignedTo      User?        @relation("CustomerAssignment", fields: [assignedToId], references: [id])
   lead            Lead?        @relation(fields: [leadId], references: [id])
+  assignedTo      User?        @relation("CustomerAssignment", fields: [assignedToId], references: [id])
+  account         Account?     @relation(fields: [accountId], references: [id])
   customerPOs     CustomerPO[]
   invoices        Invoice[]
   payments        Payment[]
@@ -187,14 +166,14 @@ model Account {
   children          Account[]     @relation("AccountHierarchy")
   caseExpenses      CaseExpense[]
   customer          Customer?
-  itemsSales        Item[]        @relation("ItemSalesAccount")
-  itemsCogs         Item[]        @relation("ItemCogsAccount")
   itemsInventory    Item[]        @relation("ItemInventoryAccount")
+  itemsCogs         Item[]        @relation("ItemCogsAccount")
+  itemsSales        Item[]        @relation("ItemSalesAccount")
   journalLines      JournalLine[]
   locations         Location[]    @relation("LocationInventoryAccount")
   supplier          Supplier?     @relation("SupplierAccount")
-  taxRatesPaid      TaxRate[]     @relation("TaxPaidAccount")
   taxRatesCollected TaxRate[]     @relation("TaxCollectedAccount")
+  taxRatesPaid      TaxRate[]     @relation("TaxPaidAccount")
 
   @@index([code])
   @@index([type])
@@ -211,7 +190,7 @@ model JournalEntry {
   reference        String?
   currency         String            @default("USD")
   exchangeRate     Float             @default(1.0)
-  status           JournalStatus     @default(DRAFT)
+  status           String            @default("DRAFT")
   createdBy        String
   postedBy         String?
   createdAt        DateTime          @default(now())
@@ -239,8 +218,8 @@ model JournalLine {
   exchangeRate     Float        @default(1.0)
   baseDebitAmount  Float        @default(0)
   baseCreditAmount Float        @default(0)
-  account          Account      @relation(fields: [accountId], references: [id])
   journalEntry     JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account          Account      @relation(fields: [accountId], references: [id])
 
   @@index([journalEntryId])
   @@index([accountId])
@@ -311,10 +290,10 @@ model QuotationTemplateItem {
   defaultTaxRate      Float             @default(0)
   taxRateId           String?
   sortOrder           Int               @default(0)
-  taxRateConfig       TaxRate?          @relation("TemplateItemTaxRate", fields: [taxRateId], references: [id])
-  unitOfMeasure       UnitOfMeasure?    @relation("TemplateItemUoM", fields: [unitOfMeasureId], references: [id])
-  item                Item?             @relation("TemplateItemProduct", fields: [itemId], references: [id])
   template            QuotationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  item                Item?             @relation("TemplateItemProduct", fields: [itemId], references: [id])
+  unitOfMeasure       UnitOfMeasure?    @relation("TemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  taxRateConfig       TaxRate?          @relation("TemplateItemTaxRate", fields: [taxRateId], references: [id])
 
   @@index([templateId])
   @@index([itemId])
@@ -345,10 +324,10 @@ model QuotationItem {
   availabilityStatus  String?
   availableQuantity   Float?
   sortOrder           Int            @default(0)
-  unitOfMeasure       UnitOfMeasure? @relation("QuotationItemUoM", fields: [unitOfMeasureId], references: [id])
-  taxRateConfig       TaxRate?       @relation("QuotationItemTaxRate", fields: [taxRateId], references: [id])
-  item                Item?          @relation("QuotationItemProduct", fields: [itemId], references: [id])
   quotation           Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  item                Item?          @relation("QuotationItemProduct", fields: [itemId], references: [id])
+  taxRateConfig       TaxRate?       @relation("QuotationItemTaxRate", fields: [taxRateId], references: [id])
+  unitOfMeasure       UnitOfMeasure? @relation("QuotationItemUoM", fields: [unitOfMeasureId], references: [id])
 
   @@index([quotationId])
   @@index([itemId])
@@ -360,6 +339,7 @@ model SalesOrder {
   quotationId           String?
   salesCaseId           String
   status                String             @default("PENDING")
+  version               Int                @default(1)
   orderDate             DateTime           @default(now())
   requestedDate         DateTime?
   promisedDate          DateTime?
@@ -374,12 +354,15 @@ model SalesOrder {
   billingAddress        String?
   customerPO            String?
   notes                 String?
+  internalNotes         String?
   fulfilledAmount       Float              @default(0)
   shippedAmount         Float              @default(0)
   invoicedAmount        Float              @default(0)
   createdBy             String
   approvedBy            String?
   approvedAt            DateTime?
+  sentBy                String?
+  sentAt                DateTime?
   cancelledBy           String?
   cancelledAt           DateTime?
   cancellationReason    String?
@@ -387,8 +370,8 @@ model SalesOrder {
   updatedAt             DateTime           @updatedAt
   customerPurchaseOrder CustomerPO?
   invoices              Invoice[]
-  salesCase             SalesCase          @relation(fields: [salesCaseId], references: [id])
   quotation             Quotation?         @relation(fields: [quotationId], references: [id])
+  salesCase             SalesCase          @relation(fields: [salesCaseId], references: [id])
   items                 SalesOrderItem[]
   shipments             Shipment[]
   stockReservations     StockReservation[] @relation("OrderStockReservations")
@@ -425,10 +408,10 @@ model SalesOrderItem {
   quantityShipped     Float              @default(0)
   quantityInvoiced    Float              @default(0)
   sortOrder           Int                @default(0)
-  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderItemUoM", fields: [unitOfMeasureId], references: [id])
-  taxRateConfig       TaxRate?           @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
-  item                Item?              @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
   salesOrder          SalesOrder         @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  item                Item?              @relation("SalesOrderItemProduct", fields: [itemId], references: [id])
+  taxRateConfig       TaxRate?           @relation("SalesOrderItemTaxRate", fields: [taxRateId], references: [id])
+  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderItemUoM", fields: [unitOfMeasureId], references: [id])
   stockReservations   StockReservation[] @relation("OrderItemStockReservations")
 
   @@index([salesOrderId])
@@ -473,10 +456,10 @@ model SalesOrderTemplateItem {
   defaultTaxRate      Float              @default(0)
   taxRateId           String?
   sortOrder           Int                @default(0)
-  taxRateConfig       TaxRate?           @relation("SalesOrderTemplateItemTaxRate", fields: [taxRateId], references: [id])
-  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderTemplateItemUoM", fields: [unitOfMeasureId], references: [id])
-  item                Item?              @relation("SalesOrderTemplateItemProduct", fields: [itemId], references: [id])
   template            SalesOrderTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  item                Item?              @relation("SalesOrderTemplateItemProduct", fields: [itemId], references: [id])
+  unitOfMeasure       UnitOfMeasure?     @relation("SalesOrderTemplateItemUoM", fields: [unitOfMeasureId], references: [id])
+  taxRateConfig       TaxRate?           @relation("SalesOrderTemplateItemTaxRate", fields: [taxRateId], references: [id])
 
   @@index([templateId])
   @@index([itemId])
@@ -517,8 +500,8 @@ model ShipmentItem {
   itemCode         String
   description      String
   quantityShipped  Float
-  item             Item     @relation("ShipmentItemProduct", fields: [itemId], references: [id])
   shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  item             Item     @relation("ShipmentItemProduct", fields: [itemId], references: [id])
 
   @@index([shipmentId])
   @@index([salesOrderItemId])
@@ -548,8 +531,8 @@ model Invoice {
   paidAt         DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  customer       Customer      @relation(fields: [customerId], references: [id])
   salesOrder     SalesOrder?   @relation(fields: [salesOrderId], references: [id])
+  customer       Customer      @relation(fields: [customerId], references: [id])
   items          InvoiceItem[]
   payments       Payment[]
 
@@ -574,9 +557,9 @@ model InvoiceItem {
   discountAmount Float    @default(0)
   taxAmount      Float    @default(0)
   totalAmount    Float    @default(0)
-  taxRateConfig  TaxRate? @relation("InvoiceItemTaxRate", fields: [taxRateId], references: [id])
-  item           Item?    @relation("InvoiceItemProduct", fields: [itemId], references: [id])
   invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  item           Item?    @relation("InvoiceItemProduct", fields: [itemId], references: [id])
+  taxRateConfig  TaxRate? @relation("InvoiceItemTaxRate", fields: [taxRateId], references: [id])
 
   @@index([invoiceId])
   @@index([itemId])
@@ -595,8 +578,8 @@ model Payment {
   createdBy     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  customer      Customer @relation(fields: [customerId], references: [id])
   invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+  customer      Customer @relation(fields: [customerId], references: [id])
 
   @@index([invoiceId])
   @@index([customerId])
@@ -673,11 +656,11 @@ model Item {
   goodsReceiptItems       GoodsReceiptItem[]       @relation("ReceiptItemProduct")
   inventoryBalances       InventoryBalance[]       @relation("ItemLocationBalances")
   invoiceItems            InvoiceItem[]            @relation("InvoiceItemProduct")
-  salesAccount            Account?                 @relation("ItemSalesAccount", fields: [salesAccountId], references: [id])
-  cogsAccount             Account?                 @relation("ItemCogsAccount", fields: [cogsAccountId], references: [id])
-  inventoryAccount        Account?                 @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id])
-  unitOfMeasure           UnitOfMeasure            @relation(fields: [unitOfMeasureId], references: [id])
   category                Category                 @relation(fields: [categoryId], references: [id])
+  unitOfMeasure           UnitOfMeasure            @relation(fields: [unitOfMeasureId], references: [id])
+  inventoryAccount        Account?                 @relation("ItemInventoryAccount", fields: [inventoryAccountId], references: [id])
+  cogsAccount             Account?                 @relation("ItemCogsAccount", fields: [cogsAccountId], references: [id])
+  salesAccount            Account?                 @relation("ItemSalesAccount", fields: [salesAccountId], references: [id])
   physicalCountItems      PhysicalCountItem[]      @relation("ItemPhysicalCounts")
   purchaseOrderItems      PurchaseOrderItem[]      @relation("POItemProduct")
   quotationItems          QuotationItem[]          @relation("QuotationItemProduct")
@@ -715,8 +698,8 @@ model StockLot {
   updatedAt          DateTime            @updatedAt
   locationStockLots  LocationStockLot[]  @relation("LotLocationStock")
   physicalCountItems PhysicalCountItem[] @relation("LotPhysicalCounts")
-  supplier           Supplier?           @relation("SupplierStockLots", fields: [supplierId], references: [id])
   item               Item                @relation(fields: [itemId], references: [id])
+  supplier           Supplier?           @relation("SupplierStockLots", fields: [supplierId], references: [id])
   stockMovements     StockMovement[]
   stockTransferItems StockTransferItem[] @relation("LotStockTransfers")
 
@@ -730,7 +713,7 @@ model StockMovement {
   movementNumber  String        @unique
   itemId          String
   stockLotId      String?
-  movementType    MovementType
+  movementType    String
   movementDate    DateTime
   quantity        Float
   unitCost        Float         @default(0)
@@ -749,12 +732,12 @@ model StockMovement {
   createdBy       String
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  goodsReceipt    GoodsReceipt? @relation("ReceiptStockMovements", fields: [goodsReceiptId], references: [id])
-  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
-  location        Location?     @relation("LocationStockMovements", fields: [locationId], references: [id])
-  unitOfMeasure   UnitOfMeasure @relation(fields: [unitOfMeasureId], references: [id])
-  stockLot        StockLot?     @relation(fields: [stockLotId], references: [id])
   item            Item          @relation(fields: [itemId], references: [id])
+  stockLot        StockLot?     @relation(fields: [stockLotId], references: [id])
+  unitOfMeasure   UnitOfMeasure @relation(fields: [unitOfMeasureId], references: [id])
+  location        Location?     @relation("LocationStockMovements", fields: [locationId], references: [id])
+  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  goodsReceipt    GoodsReceipt? @relation("ReceiptStockMovements", fields: [goodsReceiptId], references: [id])
 
   @@index([itemId])
   @@index([movementType])
@@ -775,9 +758,9 @@ model StockReservation {
   releasedAt       DateTime?
   expiresAt        DateTime?
   notes            String?
-  salesOrderItem   SalesOrderItem? @relation("OrderItemStockReservations", fields: [salesOrderItemId], references: [id])
-  salesOrder       SalesOrder      @relation("OrderStockReservations", fields: [salesOrderId], references: [id])
   item             Item            @relation("ItemStockReservations", fields: [itemId], references: [id])
+  salesOrder       SalesOrder      @relation("OrderStockReservations", fields: [salesOrderId], references: [id])
+  salesOrderItem   SalesOrderItem? @relation("OrderItemStockReservations", fields: [salesOrderItemId], references: [id])
 
   @@index([itemId])
   @@index([salesOrderId])
@@ -807,8 +790,8 @@ model CustomerPO {
   id            String      @id @default(cuid())
   poNumber      String      @unique
   customerId    String
-  quotationId   String
-  salesCaseId   String
+  quotationId   String?
+  salesCaseId   String?
   poDate        DateTime
   poAmount      Float
   currency      String      @default("USD")
@@ -822,10 +805,10 @@ model CustomerPO {
   createdBy     String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  salesOrder    SalesOrder? @relation(fields: [salesOrderId], references: [id])
-  salesCase     SalesCase   @relation(fields: [salesCaseId], references: [id])
-  quotation     Quotation   @relation(fields: [quotationId], references: [id])
   customer      Customer    @relation(fields: [customerId], references: [id])
+  quotation     Quotation?  @relation(fields: [quotationId], references: [id])
+  salesCase     SalesCase?  @relation(fields: [salesCaseId], references: [id])
+  salesOrder    SalesOrder? @relation(fields: [salesOrderId], references: [id])
 
   @@index([customerId])
   @@index([quotationId])
@@ -857,9 +840,9 @@ model CaseExpense {
   createdBy       String
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
-  account         Account?      @relation(fields: [accountId], references: [id])
   salesCase       SalesCase     @relation(fields: [salesCaseId], references: [id])
+  account         Account?      @relation(fields: [accountId], references: [id])
+  journalEntry    JournalEntry? @relation(fields: [journalEntryId], references: [id])
 
   @@index([salesCaseId])
   @@index([expenseDate])
@@ -965,10 +948,10 @@ model PurchaseOrderItem {
   quantityInvoiced Float              @default(0)
   sortOrder        Int                @default(0)
   receiptItems     GoodsReceiptItem[]
-  unitOfMeasure    UnitOfMeasure?     @relation("POItemUoM", fields: [unitOfMeasureId], references: [id])
-  taxRateConfig    TaxRate?           @relation("POItemTaxRate", fields: [taxRateId], references: [id])
-  item             Item?              @relation("POItemProduct", fields: [itemId], references: [id])
   purchaseOrder    PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  item             Item?              @relation("POItemProduct", fields: [itemId], references: [id])
+  taxRateConfig    TaxRate?           @relation("POItemTaxRate", fields: [taxRateId], references: [id])
+  unitOfMeasure    UnitOfMeasure?     @relation("POItemUoM", fields: [unitOfMeasureId], references: [id])
 
   @@index([purchaseOrderId])
   @@index([itemId])
@@ -1008,9 +991,9 @@ model GoodsReceiptItem {
   unitCost            Float
   condition           String?
   notes               String?
-  item                Item              @relation("ReceiptItemProduct", fields: [itemId], references: [id])
-  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
   goodsReceipt        GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  purchaseOrderItem   PurchaseOrderItem @relation(fields: [purchaseOrderItemId], references: [id])
+  item                Item              @relation("ReceiptItemProduct", fields: [itemId], references: [id])
 
   @@index([goodsReceiptId])
   @@index([purchaseOrderItemId])
@@ -1040,9 +1023,9 @@ model SupplierInvoice {
   createdBy       String
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  journalEntry    JournalEntry?     @relation(fields: [journalEntryId], references: [id])
-  purchaseOrder   PurchaseOrder?    @relation(fields: [purchaseOrderId], references: [id])
   supplier        Supplier          @relation(fields: [supplierId], references: [id])
+  purchaseOrder   PurchaseOrder?    @relation(fields: [purchaseOrderId], references: [id])
+  journalEntry    JournalEntry?     @relation(fields: [journalEntryId], references: [id])
   payments        SupplierPayment[]
 
   @@index([supplierId])
@@ -1069,9 +1052,9 @@ model SupplierPayment {
   createdBy         String
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  journalEntry      JournalEntry?    @relation(fields: [journalEntryId], references: [id])
-  supplierInvoice   SupplierInvoice? @relation(fields: [supplierInvoiceId], references: [id])
   supplier          Supplier         @relation(fields: [supplierId], references: [id])
+  supplierInvoice   SupplierInvoice? @relation(fields: [supplierInvoiceId], references: [id])
+  journalEntry      JournalEntry?    @relation(fields: [journalEntryId], references: [id])
 
   @@index([supplierId])
   @@index([supplierInvoiceId])
@@ -1121,9 +1104,9 @@ model TaxRate {
   salesOrderItems         SalesOrderItem[]         @relation("SalesOrderItemTaxRate")
   salesOrderTemplateItems SalesOrderTemplateItem[] @relation("SalesOrderTemplateItemTaxRate")
   taxExemptions           TaxExemption[]
-  paidAccount             Account?                 @relation("TaxPaidAccount", fields: [paidAccountId], references: [id])
-  collectedAccount        Account?                 @relation("TaxCollectedAccount", fields: [collectedAccountId], references: [id])
   category                TaxCategory              @relation(fields: [categoryId], references: [id])
+  collectedAccount        Account?                 @relation("TaxCollectedAccount", fields: [collectedAccountId], references: [id])
+  paidAccount             Account?                 @relation("TaxPaidAccount", fields: [paidAccountId], references: [id])
 
   @@index([code])
   @@index([categoryId])
@@ -1223,8 +1206,8 @@ model UserPermission {
   granted      Boolean    @default(true)
   expiresAt    DateTime?
   createdAt    DateTime   @default(now())
-  permission   Permission @relation(fields: [permissionId], references: [id])
   user         User       @relation(fields: [userId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
 
   @@unique([userId, permissionId])
   @@index([userId])
@@ -1315,8 +1298,8 @@ model Location {
   stockLots          LocationStockLot[]
   physicalCounts     PhysicalCount[]
   stockMovements     StockMovement[]    @relation("LocationStockMovements")
-  stockTransfersTo   StockTransfer[]    @relation("TransferToLocation")
   stockTransfersFrom StockTransfer[]    @relation("TransferFromLocation")
+  stockTransfersTo   StockTransfer[]    @relation("TransferToLocation")
 
   @@index([locationCode])
   @@index([type])
@@ -1339,8 +1322,8 @@ model InventoryBalance {
   lastMovementDate  DateTime?
   lastCountDate     DateTime?
   updatedAt         DateTime  @updatedAt
-  item              Item      @relation("ItemLocationBalances", fields: [itemId], references: [id])
   location          Location  @relation(fields: [locationId], references: [id])
+  item              Item      @relation("ItemLocationBalances", fields: [itemId], references: [id])
 
   @@unique([locationId, itemId])
   @@index([locationId])
@@ -1359,8 +1342,8 @@ model LocationStockLot {
   shelf        String?
   bin          String?
   updatedAt    DateTime @updatedAt
-  stockLot     StockLot @relation("LotLocationStock", fields: [stockLotId], references: [id])
   location     Location @relation(fields: [locationId], references: [id])
+  stockLot     StockLot @relation("LotLocationStock", fields: [stockLotId], references: [id])
 
   @@unique([locationId, stockLotId])
   @@index([locationId])
@@ -1391,8 +1374,8 @@ model StockTransfer {
   createdBy      String
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
-  toLocation     Location            @relation("TransferToLocation", fields: [toLocationId], references: [id])
   fromLocation   Location            @relation("TransferFromLocation", fields: [fromLocationId], references: [id])
+  toLocation     Location            @relation("TransferToLocation", fields: [toLocationId], references: [id])
   items          StockTransferItem[]
 
   @@index([fromLocationId])
@@ -1414,9 +1397,9 @@ model StockTransferItem {
   condition         String?
   notes             String?
   sortOrder         Int           @default(0)
-  stockLot          StockLot?     @relation("LotStockTransfers", fields: [stockLotId], references: [id])
-  item              Item          @relation("ItemStockTransfers", fields: [itemId], references: [id])
   stockTransfer     StockTransfer @relation(fields: [stockTransferId], references: [id], onDelete: Cascade)
+  item              Item          @relation("ItemStockTransfers", fields: [itemId], references: [id])
+  stockLot          StockLot?     @relation("LotStockTransfers", fields: [stockLotId], references: [id])
 
   @@index([stockTransferId])
   @@index([itemId])
@@ -1469,11 +1452,17 @@ model PhysicalCountItem {
   notes             String?
   adjustmentCreated Boolean       @default(false)
   adjustmentId      String?
-  stockLot          StockLot?     @relation("LotPhysicalCounts", fields: [stockLotId], references: [id])
-  item              Item          @relation("ItemPhysicalCounts", fields: [itemId], references: [id])
   physicalCount     PhysicalCount @relation(fields: [physicalCountId], references: [id], onDelete: Cascade)
+  item              Item          @relation("ItemPhysicalCounts", fields: [itemId], references: [id])
+  stockLot          StockLot?     @relation("LotPhysicalCounts", fields: [stockLotId], references: [id])
 
   @@index([physicalCountId])
   @@index([itemId])
   @@index([variance])
+}
+
+model Sequence {
+  name      String   @id
+  value     Int      @default(0)
+  updatedAt DateTime @updatedAt
 }

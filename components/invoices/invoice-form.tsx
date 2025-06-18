@@ -62,6 +62,7 @@ interface Customer {
   name: string
   email: string
   address?: string
+  currency?: string
 }
 
 interface SalesOrder {
@@ -420,7 +421,16 @@ export function InvoiceForm({
   // Format currency
   const formatCurrency = (amount: number): string => {
     const multiplier = formData.type === 'CREDIT_NOTE' ? -1 : 1
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount * multiplier)
+    const customer = customers.find(c => c.id === formData.customerId)
+    const currency = customer?.currency || 'AED' // Use customer currency or fallback to AED
+    const formattedAmount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(Math.abs(amount * multiplier))
+    
+    // Use English literal format
+    const prefix = amount * multiplier < 0 ? '-' : ''
+    return `${prefix}${currency} ${formattedAmount}`
   }
 
   // Get form title

@@ -11,7 +11,7 @@ import {
   ArrowLeftRight, 
   FileText, 
   Calendar,
-  DollarSign,
+  Receipt,
   Package,
   TrendingUp,
   TrendingDown,

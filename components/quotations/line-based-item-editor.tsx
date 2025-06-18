@@ -85,9 +85,12 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
     setLoading(true);
     try {
       const response = await apiClient<{ data: any[]; total: number }>(`/api/inventory/items?search=${searchQuery}`);
-      if (response.ok && response?.data) {
-        const items = response.data || [];
+      if (response.ok && response?.data?.data) {
+        // The API returns { data: [...], total: number }
+        const items = Array.isArray(response.data.data) ? response.data.data : [];
         setInventoryItems(items);
+      } else {
+        setInventoryItems([]);
       }
     } catch (error) {
       console.error('Failed to search inventory:', error);
@@ -557,7 +560,7 @@ export function LineBasedItemEditor({ lines, onLinesChange, viewMode = 'internal
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {inventoryItems.map((item) => (
+                    {Array.isArray(inventoryItems) && inventoryItems.map((item) => (
                       <Card
                         key={item.id}
                         className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"

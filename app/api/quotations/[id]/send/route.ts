@@ -5,15 +5,14 @@ import { QuotationService } from '@/lib/services/quotation.service'
 // POST /api/quotations/[id]/send - Send quotation (change status to SENT)
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = { user: { id: 'system' } }
     // const user = await getUserFromRequest(request)
     const quotationService = new QuotationService()
     
-    const resolvedParams = await params
-    const quotation = await quotationService.sendQuotation(resolvedParams.id, session.user.id)
+    const quotation = await quotationService.sendQuotation(params.id, session.user.id)
 
     return NextResponse.json({
       success: true,

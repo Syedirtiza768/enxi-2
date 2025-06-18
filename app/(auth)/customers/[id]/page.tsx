@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { CustomerDetailTabs } from '@/components/customers/customer-detail-tabs'
+import { apiClient } from '@/lib/api/client'
 
 interface Customer {
   id: string
@@ -60,49 +61,64 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetchCustomer()
-    fetchCreditCheck()
+    if (id && id !== 'undefined') {
+      fetchCustomer()
+      fetchCreditCheck()
+    } else {
+      setError('Invalid customer ID')
+      setLoading(false)
+    }
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCustomer = async (): Promise<void> => {
+    if (!id || id === 'undefined') {
+      setError('Invalid customer ID')
+      setLoading(false)
+      return
+    }
+    
     try {
-      const response = await fetch(`/api/customers/${id}`)
-      if (!response.ok) throw new Error('Failed to fetch customer')
-      const data = await response.json()
-      setCustomer(data.data)
+      const response = await apiClient(`/api/customers/${id}`)
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to fetch customer')
+      }
+      setCustomer(response.data.data)
     } catch (error) {
       console.error('Error fetching customer:', error)
-      setError('Failed to load customer')
+      setError(error instanceof Error ? error.message : 'Failed to load customer')
     } finally {
       setLoading(false)
     }
   }
 
   const fetchCreditCheck = async (): Promise<void> => {
+    if (!id || id === 'undefined') return
+    
     try {
-      const response = await fetch(`/api/customers/${id}/credit-check`)
-      if (!response.ok) throw new Error('Failed to fetch credit check')
-      const data = await response.json()
-      setCreditCheck(data.data)
+      const response = await apiClient(`/api/customers/${id}/credit-check`)
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to fetch credit check')
+      }
+      setCreditCheck(response.data.data)
     } catch (error) {
       console.error('Error fetching credit check:', error)
     }
   }
 
   const handleUpdateCreditLimit = async (): Promise<void> => {
+    if (!id || id === 'undefined') return
+    
     setError('')
     setSubmitting(true)
 
     try {
-      const response = await fetch(`/api/customers/${id}/credit-limit`, {
+      const response = await apiClient(`/api/customers/${id}/credit-limit`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ creditLimit: newCreditLimit })
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update credit limit')
+        throw new Error(response.error || 'Failed to update credit limit')
       }
 
       setShowCreditModal(false)
@@ -115,23 +131,61 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  const formatCurrency = (amount: number, currency: string): void => {
+  const formatCurrency = (amount: number, currency: string): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency
     }).format(amount)
   }
 
-  const formatDate = (date: string): void => {
+  const formatDate = (date: string): string => {
     return new Date(date).toLocaleDateString()
   }
 
+  if (!id || id === 'undefined') {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-red-600 text-lg">Invalid customer ID</div>
+        <Link
+          href="/customers"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Back to Customers
+        </Link>
+      </div>
+    )
+  }
+
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading...</div>
+    return <div className="flex items-center justify-center h-64">Loading customer details...</div>
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-red-600 text-lg">{error}</div>
+        <Link
+          href="/customers"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Back to Customers
+        </Link>
+      </div>
+    )
   }
 
   if (!customer) {
-    return <div className="text-center py-12">Customer not found</div>
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="text-gray-600 text-lg">Customer not found</div>
+        <Link
+          href="/customers"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Back to Customers
+        </Link>
+      </div>
+    )
   }
 
   return (

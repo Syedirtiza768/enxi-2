@@ -90,9 +90,9 @@ export function ShipmentList(): React.JSX.Element {
 
       const data = await apiClient<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
       
-      if (data) {
-        setShipments(data.data)
-        setTotal(data.total)
+      if (data && data.data) {
+        setShipments(data.data || [])
+        setTotal(data.total || 0)
       } else {
         throw new Error('Failed to fetch shipments')
       }
@@ -281,10 +281,10 @@ export function ShipmentList(): React.JSX.Element {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {shipment.salesOrder.salesCase.customer.name}
+                        {shipment.salesOrder?.salesCase?.customer?.name || '-'}
                       </TableCell>
                       <TableCell>
-                        {shipment.salesOrder.orderNumber}
+                        {shipment.salesOrder?.orderNumber || '-'}
                       </TableCell>
                       <TableCell>
                         {shipment.carrier || '-'}
@@ -296,10 +296,10 @@ export function ShipmentList(): React.JSX.Element {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {shipment.items.length} item{shipment.items.length !== 1 ? 's' : ''}
+                          {shipment.items?.length || 0} item{(shipment.items?.length || 0) !== 1 ? 's' : ''}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {shipment.items.reduce((sum, item) => sum + item.quantityShipped, 0)} total qty
+                          {shipment.items?.reduce((sum, item) => sum + item.quantityShipped, 0) || 0} total qty
                         </div>
                       </TableCell>
                       <TableCell>

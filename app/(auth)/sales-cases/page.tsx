@@ -153,11 +153,11 @@ export default function SalesCasesPage(): React.JSX.Element {
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string): void => {
+  const formatDate = (date: string): string => {
     return new Date(date).toLocaleDateString()
   }
 
-  const getStatusColor = (status: string): void => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'OPEN':
         return 'bg-yellow-100 text-yellow-800'
@@ -509,8 +509,8 @@ export default function SalesCasesPage(): React.JSX.Element {
                 </button>
                 
                 {/* Page numbers */}
-                {((): void => {
-                  const pages = []
+                {((): React.ReactNode[] => {
+                  const pages: React.ReactNode[] = []
                   const maxPagesToShow = 7
                   let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
                   let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
