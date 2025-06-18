@@ -8,9 +8,9 @@ module.exports = {
       PORT: 3000,
       NODE_ENV: 'production',
       DATABASE_URL: 'file:./prisma/prod.db',
-      JWT_SECRET: 'your-secret-key-here',
-      NEXTAUTH_URL: 'http://localhost:3000',
-      NEXTAUTH_SECRET: 'your-nextauth-secret-here'
+      JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-here',
+      NEXTAUTH_URL: 'https://erp.alsahab.me',
+      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'your-nextauth-secret-here'
     },
     exec_mode: 'fork',
     instances: 1,
