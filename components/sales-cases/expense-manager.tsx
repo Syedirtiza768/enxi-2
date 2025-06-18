@@ -40,15 +40,19 @@ interface ExpenseManagerProps {
 }
 
 const expenseCategories = [
-  'Travel',
-  'Entertainment',
-  'Marketing',
-  'Consulting',
-  'Software',
-  'Hardware',
-  'Professional Services',
-  'Samples',
-  'Shipping',
+  'Diagnostic Services',
+  'Engine Parts',
+  'Labor - Technician',
+  'Labor - Specialist',
+  'Travel - Service Call',
+  'Equipment Rental',
+  'Subcontractor Services',
+  'Expedited Shipping',
+  'Warranty Parts',
+  'Emergency Response',
+  'Testing & Analysis',
+  'Certification Fees',
+  'Environmental Disposal',
   'Other'
 ]
 

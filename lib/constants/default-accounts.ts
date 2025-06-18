@@ -43,13 +43,24 @@ export const ACCOUNT_CODES = {
   INVENTORY_ADJUSTMENTS: '5200',
   
   // Operating Expenses
-  SALARIES_EXPENSE: '6100',
-  RENT_EXPENSE: '6200',
-  UTILITIES_EXPENSE: '6300',
-  OFFICE_SUPPLIES: '6400',
-  DEPRECIATION_EXPENSE: '6500',
-  BANK_CHARGES: '6600',
-  GENERAL_EXPENSE: '6900',
+  PERSONNEL_EXPENSES: '6100',
+  TECHNICIAN_SALARIES: '6110',
+  ADMINISTRATIVE_SALARIES: '6120',
+  FACILITY_EXPENSES: '6200',
+  WORKSHOP_RENT: '6210',
+  UTILITIES: '6300',
+  EQUIPMENT_AND_TOOLS: '6400',
+  PARTS_AND_MATERIALS: '6500',
+  VEHICLE_EXPENSES: '6600',
+  PROFESSIONAL_SERVICES: '6700',
+  INSURANCE_AND_LICENSES: '6800',
+  MARKETING_EXPENSES: '6900',
+  ADMINISTRATIVE_EXPENSES: '7000',
+  OFFICE_SUPPLIES: '7010',
+  BANK_CHARGES: '7030',
+  DEPRECIATION_EXPENSE: '7100',
+  OTHER_EXPENSES: '7200',
+  GENERAL_EXPENSE: '7250',
 } as const
 
 export const DEFAULT_CHART_OF_ACCOUNTS: DefaultAccount[] = [
@@ -102,13 +113,104 @@ export const DEFAULT_CHART_OF_ACCOUNTS: DefaultAccount[] = [
 
   // Operating Expenses (6000s)
   { code: '6000', name: 'Operating Expenses', type: AccountType.EXPENSE },
-  { code: '6100', name: 'Salaries and Wages', type: AccountType.EXPENSE, parentCode: '6000', description: 'Employee compensation' },
-  { code: '6200', name: 'Rent Expense', type: AccountType.EXPENSE, parentCode: '6000', description: 'Office and warehouse rent' },
-  { code: '6300', name: 'Utilities Expense', type: AccountType.EXPENSE, parentCode: '6000', description: 'Electricity, water, internet, etc.' },
-  { code: '6400', name: 'Office Supplies', type: AccountType.EXPENSE, parentCode: '6000', description: 'Stationery and office materials' },
-  { code: '6500', name: 'Depreciation Expense', type: AccountType.EXPENSE, parentCode: '6000', description: 'Asset depreciation' },
-  { code: '6600', name: 'Bank Charges', type: AccountType.EXPENSE, parentCode: '6000', description: 'Bank fees and charges' },
-  { code: '6900', name: 'General Expenses', type: AccountType.EXPENSE, parentCode: '6000', isSystemAccount: true, description: 'Miscellaneous operating expenses' },
+  
+  // Personnel Expenses (6100s)
+  { code: '6100', name: 'Personnel Expenses', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6110', name: 'Technician Salaries', type: AccountType.EXPENSE, parentCode: '6100', description: 'Diesel mechanics and technician wages' },
+  { code: '6120', name: 'Administrative Salaries', type: AccountType.EXPENSE, parentCode: '6100', description: 'Office staff and management salaries' },
+  { code: '6130', name: 'Overtime Wages', type: AccountType.EXPENSE, parentCode: '6100', description: 'Overtime payments for technical staff' },
+  { code: '6140', name: 'Employee Benefits', type: AccountType.EXPENSE, parentCode: '6100', description: 'Health insurance, pension contributions' },
+  { code: '6150', name: 'Employee Training', type: AccountType.EXPENSE, parentCode: '6100', description: 'Technical certifications and skill development' },
+  { code: '6160', name: 'Worker Compensation Insurance', type: AccountType.EXPENSE, parentCode: '6100', description: 'Workplace injury insurance' },
+  
+  // Facility Expenses (6200s)
+  { code: '6200', name: 'Facility Expenses', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6210', name: 'Workshop Rent', type: AccountType.EXPENSE, parentCode: '6200', description: 'Main workshop and service bay rental' },
+  { code: '6220', name: 'Storage Facility Rent', type: AccountType.EXPENSE, parentCode: '6200', description: 'Parts warehouse and equipment storage' },
+  { code: '6230', name: 'Facility Maintenance', type: AccountType.EXPENSE, parentCode: '6200', description: 'Workshop repairs and upkeep' },
+  { code: '6240', name: 'Security Services', type: AccountType.EXPENSE, parentCode: '6200', description: 'Workshop security and monitoring' },
+  { code: '6250', name: 'Waste Disposal', type: AccountType.EXPENSE, parentCode: '6200', description: 'Hazardous waste and oil disposal fees' },
+  
+  // Utilities (6300s)
+  { code: '6300', name: 'Utilities', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6310', name: 'Electricity - Workshop', type: AccountType.EXPENSE, parentCode: '6300', description: 'High-voltage power for equipment' },
+  { code: '6320', name: 'Compressed Air Systems', type: AccountType.EXPENSE, parentCode: '6300', description: 'Compressed air generation and maintenance' },
+  { code: '6330', name: 'Water and Sewerage', type: AccountType.EXPENSE, parentCode: '6300', description: 'Industrial water usage and disposal' },
+  { code: '6340', name: 'Gas and Welding Gases', type: AccountType.EXPENSE, parentCode: '6300', description: 'Acetylene, oxygen, and other gases' },
+  { code: '6350', name: 'Internet and Communications', type: AccountType.EXPENSE, parentCode: '6300', description: 'Internet, phone, and data services' },
+  
+  // Equipment and Tools (6400s)
+  { code: '6400', name: 'Equipment and Tools', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6410', name: 'Diagnostic Equipment', type: AccountType.EXPENSE, parentCode: '6400', description: 'Engine analyzers, scan tools, software licenses' },
+  { code: '6420', name: 'Hand Tools', type: AccountType.EXPENSE, parentCode: '6400', description: 'Wrenches, sockets, specialty diesel tools' },
+  { code: '6430', name: 'Power Tools', type: AccountType.EXPENSE, parentCode: '6400', description: 'Impact guns, grinders, drills' },
+  { code: '6440', name: 'Lifting Equipment', type: AccountType.EXPENSE, parentCode: '6400', description: 'Engine hoists, jacks, crane rental' },
+  { code: '6450', name: 'Welding Equipment', type: AccountType.EXPENSE, parentCode: '6400', description: 'Welders, torches, welding supplies' },
+  { code: '6460', name: 'Tool Calibration', type: AccountType.EXPENSE, parentCode: '6400', description: 'Precision tool calibration services' },
+  
+  // Parts and Materials (6500s)
+  { code: '6500', name: 'Parts and Materials', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6510', name: 'Engine Parts - OEM', type: AccountType.EXPENSE, parentCode: '6500', description: 'Original manufacturer parts' },
+  { code: '6520', name: 'Engine Parts - Aftermarket', type: AccountType.EXPENSE, parentCode: '6500', description: 'Third-party replacement parts' },
+  { code: '6530', name: 'Filters and Fluids', type: AccountType.EXPENSE, parentCode: '6500', description: 'Oil, fuel, air filters, coolants' },
+  { code: '6540', name: 'Lubricants and Oils', type: AccountType.EXPENSE, parentCode: '6500', description: 'Engine oils, hydraulic fluids, greases' },
+  { code: '6550', name: 'Gaskets and Seals', type: AccountType.EXPENSE, parentCode: '6500', description: 'Engine gaskets, O-rings, seals' },
+  { code: '6560', name: 'Hardware and Fasteners', type: AccountType.EXPENSE, parentCode: '6500', description: 'Bolts, nuts, clamps, fittings' },
+  { code: '6570', name: 'Shop Supplies', type: AccountType.EXPENSE, parentCode: '6500', description: 'Rags, cleaners, solvents, absorbents' },
+  
+  // Vehicle and Transportation (6600s)
+  { code: '6600', name: 'Vehicle and Transportation', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6610', name: 'Service Vehicle Fuel', type: AccountType.EXPENSE, parentCode: '6600', description: 'Fuel for mobile service trucks' },
+  { code: '6620', name: 'Vehicle Maintenance', type: AccountType.EXPENSE, parentCode: '6600', description: 'Service vehicle repairs and maintenance' },
+  { code: '6630', name: 'Vehicle Insurance', type: AccountType.EXPENSE, parentCode: '6600', description: 'Commercial vehicle insurance' },
+  { code: '6640', name: 'Vehicle Registration', type: AccountType.EXPENSE, parentCode: '6600', description: 'License plates and permits' },
+  { code: '6650', name: 'Parts Delivery', type: AccountType.EXPENSE, parentCode: '6600', description: 'Expedited parts shipping costs' },
+  
+  // Professional Services (6700s)
+  { code: '6700', name: 'Professional Services', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6710', name: 'Technical Consulting', type: AccountType.EXPENSE, parentCode: '6700', description: 'Specialist diesel consultants' },
+  { code: '6720', name: 'Legal Services', type: AccountType.EXPENSE, parentCode: '6700', description: 'Contract and compliance legal fees' },
+  { code: '6730', name: 'Accounting Services', type: AccountType.EXPENSE, parentCode: '6700', description: 'Bookkeeping and tax preparation' },
+  { code: '6740', name: 'Safety Compliance', type: AccountType.EXPENSE, parentCode: '6700', description: 'OSHA and safety consultants' },
+  { code: '6750', name: 'Environmental Compliance', type: AccountType.EXPENSE, parentCode: '6700', description: 'EPA compliance and testing' },
+  
+  // Insurance and Licenses (6800s)
+  { code: '6800', name: 'Insurance and Licenses', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6810', name: 'General Liability Insurance', type: AccountType.EXPENSE, parentCode: '6800', description: 'Business liability coverage' },
+  { code: '6820', name: 'Professional Liability Insurance', type: AccountType.EXPENSE, parentCode: '6800', description: 'Errors and omissions coverage' },
+  { code: '6830', name: 'Property Insurance', type: AccountType.EXPENSE, parentCode: '6800', description: 'Workshop and equipment insurance' },
+  { code: '6840', name: 'Business Licenses', type: AccountType.EXPENSE, parentCode: '6800', description: 'Operating permits and licenses' },
+  { code: '6850', name: 'Certifications', type: AccountType.EXPENSE, parentCode: '6800', description: 'Industry certifications and renewals' },
+  
+  // Marketing and Sales (6900s)
+  { code: '6900', name: 'Marketing and Sales', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '6910', name: 'Advertising', type: AccountType.EXPENSE, parentCode: '6900', description: 'Online and print advertising' },
+  { code: '6920', name: 'Website Maintenance', type: AccountType.EXPENSE, parentCode: '6900', description: 'Website hosting and updates' },
+  { code: '6930', name: 'Trade Shows', type: AccountType.EXPENSE, parentCode: '6900', description: 'Industry exhibition costs' },
+  { code: '6940', name: 'Customer Entertainment', type: AccountType.EXPENSE, parentCode: '6900', description: 'Client relationship building' },
+  { code: '6950', name: 'Promotional Materials', type: AccountType.EXPENSE, parentCode: '6900', description: 'Brochures, business cards, uniforms' },
+  
+  // Administrative Expenses (7000s)
+  { code: '7000', name: 'Administrative Expenses', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '7010', name: 'Office Supplies', type: AccountType.EXPENSE, parentCode: '7000', description: 'Paper, ink, stationery' },
+  { code: '7020', name: 'Computer Software', type: AccountType.EXPENSE, parentCode: '7000', description: 'Office and technical software licenses' },
+  { code: '7030', name: 'Bank Charges', type: AccountType.EXPENSE, parentCode: '7000', description: 'Banking fees and charges' },
+  { code: '7040', name: 'Credit Card Fees', type: AccountType.EXPENSE, parentCode: '7000', description: 'Merchant service fees' },
+  { code: '7050', name: 'Bad Debt Expense', type: AccountType.EXPENSE, parentCode: '7000', description: 'Uncollectible customer accounts' },
+  
+  // Depreciation and Amortization (7100s)
+  { code: '7100', name: 'Depreciation and Amortization', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '7110', name: 'Equipment Depreciation', type: AccountType.EXPENSE, parentCode: '7100', description: 'Diagnostic equipment depreciation' },
+  { code: '7120', name: 'Vehicle Depreciation', type: AccountType.EXPENSE, parentCode: '7100', description: 'Service vehicle depreciation' },
+  { code: '7130', name: 'Building Improvements', type: AccountType.EXPENSE, parentCode: '7100', description: 'Workshop improvement amortization' },
+  
+  // Other Operating Expenses (7200s)
+  { code: '7200', name: 'Other Operating Expenses', type: AccountType.EXPENSE, parentCode: '6000' },
+  { code: '7210', name: 'Equipment Rental', type: AccountType.EXPENSE, parentCode: '7200', description: 'Specialized equipment rental' },
+  { code: '7220', name: 'Subcontractor Services', type: AccountType.EXPENSE, parentCode: '7200', description: 'Outsourced specialized work' },
+  { code: '7230', name: 'Warranty Claims', type: AccountType.EXPENSE, parentCode: '7200', description: 'Warranty work costs' },
+  { code: '7240', name: 'R&D Expenses', type: AccountType.EXPENSE, parentCode: '7200', description: 'Research and development costs' },
+  { code: '7250', name: 'Miscellaneous Expenses', type: AccountType.EXPENSE, parentCode: '7200', isSystemAccount: true, description: 'Other unclassified expenses' },
 ]
 
 // Account configuration for different transaction types

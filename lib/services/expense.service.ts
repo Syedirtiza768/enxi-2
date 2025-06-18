@@ -66,16 +66,21 @@ export interface ExpenseCategory {
   accountId?: string
 }
 
-// Predefined expense categories
+// Predefined expense categories for diesel engine maintenance
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  { name: 'Travel', description: 'Travel and transportation expenses' },
-  { name: 'Materials', description: 'Materials and supplies' },
-  { name: 'Labor', description: 'Labor and contractor costs' },
-  { name: 'Equipment', description: 'Equipment rental or purchase' },
-  { name: 'Shipping', description: 'Shipping and freight costs' },
-  { name: 'Commission', description: 'Sales commissions' },
-  { name: 'Marketing', description: 'Marketing and promotional expenses' },
-  { name: 'Professional', description: 'Professional services' },
+  { name: 'Diagnostic Services', description: 'Engine diagnostics and analysis services' },
+  { name: 'Engine Parts', description: 'Diesel engine parts and components' },
+  { name: 'Labor - Technician', description: 'Regular technician labor costs' },
+  { name: 'Labor - Specialist', description: 'Specialist consultant or expert labor' },
+  { name: 'Travel - Service Call', description: 'Travel expenses for on-site service calls' },
+  { name: 'Equipment Rental', description: 'Specialized equipment rental for repairs' },
+  { name: 'Subcontractor Services', description: 'Outsourced specialized repair services' },
+  { name: 'Expedited Shipping', description: 'Rush delivery for critical parts' },
+  { name: 'Warranty Parts', description: 'Parts covered under warranty claims' },
+  { name: 'Emergency Response', description: '24/7 emergency service expenses' },
+  { name: 'Testing & Analysis', description: 'Oil analysis, compression testing, etc.' },
+  { name: 'Certification Fees', description: 'Compliance and certification costs' },
+  { name: 'Environmental Disposal', description: 'Hazardous waste and oil disposal' },
   { name: 'Other', description: 'Other miscellaneous expenses' }
 ]
 
