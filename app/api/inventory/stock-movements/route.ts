@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockMovementService, CreateStockMovementInput } from '@/lib/services/inventory/stock-movement.service'
-import { MovementType } from '@/lib/generated/prisma'
+// MovementType is a string in the schema, not an enum
 
 // GET /api/inventory/stock-movements - Get stock movements
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const searchParams = request.nextUrl.searchParams
     const itemId = searchParams.get('itemId')
-    const type = searchParams.get('type') as MovementType | null
+    const type = searchParams.get('type') as string | null
     const days = searchParams.get('days')
     const locationId = searchParams.get('locationId')
     const limit = searchParams.get('limit')

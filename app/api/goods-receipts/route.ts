@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { GoodsReceiptService } from '@/lib/services/purchase/goods-receipt.service'
-import { ReceiptStatus } from '@/lib/generated/prisma'
+import { ReceiptStatus } from '@/lib/types/shared-enums'
 
 // GET /api/goods-receipts - Get all goods receipts
 export async function GET(request: NextRequest): Promise<NextResponse> {

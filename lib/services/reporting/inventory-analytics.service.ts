@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from '../base.service'
-import { MovementType } from '@/lib/generated/prisma'
+import { MovementType } from '@/lib/types/shared-enums'
 
 export interface InventoryMetrics {
   totalValue: number

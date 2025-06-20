@@ -6,11 +6,11 @@ import {
   Item,
   StockMovement,
   StockLot,
-  MovementType,
   Prisma,
   Location,
   UnitOfMeasure
 } from '@/lib/generated/prisma'
+import { MovementType } from '@/lib/types/shared-enums'
 import { CreateJournalLineInput } from '@/lib/types/accounting.types'
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 

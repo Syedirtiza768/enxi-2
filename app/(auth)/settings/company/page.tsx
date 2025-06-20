@@ -12,7 +12,8 @@ import {
   Text,
   Button,
   Input,
-  Select
+  Select,
+  Switch
 } from '@/components/design-system'
 import { Save, Building, Globe, Upload, X } from 'lucide-react'
 import Image from 'next/image'
@@ -26,11 +27,22 @@ interface CompanySettings {
   website?: string | null
   logoUrl?: string | null
   defaultCurrency: string
+  defaultInventoryAccountId?: string | null
+  defaultCogsAccountId?: string | null
+  defaultSalesAccountId?: string | null
+  defaultTrackInventory?: boolean
 }
 
 interface Currency {
   code: string
   name: string
+}
+
+interface Account {
+  id: string
+  code: string
+  name: string
+  type: string
 }
 
 export default function CompanySettingsPage() {
@@ -45,6 +57,15 @@ export default function CompanySettingsPage() {
     { code: 'AED', name: 'UAE Dirham' },
     { code: 'PKR', name: 'Pakistani Rupee' }
   ])
+  const [accounts, setAccounts] = useState<{
+    inventory: Account[]
+    cogs: Account[]
+    sales: Account[]
+  }>({
+    inventory: [],
+    cogs: [],
+    sales: []
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -63,24 +84,81 @@ export default function CompanySettingsPage() {
     try {
       setLoading(true)
       
-      const response = await apiClient('/api/settings/company')
+      // Load company settings and GL accounts in parallel
+      const [settingsResponse, accountsResponse] = await Promise.all([
+        apiClient('/api/settings/company'),
+        apiClient('/api/accounting/accounts')
+      ])
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (!settingsResponse.ok) {
+        if (settingsResponse.status === 401) {
           setError('Your session has expired. Please log in again.')
           // Optionally redirect to login
           window.location.href = '/login'
           return
         }
-        throw new Error(response.error || 'Failed to load settings')
+        throw new Error(settingsResponse.error || 'Failed to load settings')
       }
 
-      const data = response.data
-      setSettings(data.settings || {
+      const data = settingsResponse.data
+      console.log('Settings response data:', data)
+      
+      // Handle both direct settings and nested settings response
+      const settingsData = data.settings || data
+      setSettings(settingsData || {
         companyName: 'EnXi ERP',
         defaultCurrency: 'USD'
       })
       setSupportedCurrencies(data.supportedCurrencies || [])
+
+      // Process GL accounts
+      if (accountsResponse.ok && accountsResponse.data) {
+        // Ensure we have a valid array of accounts
+        const accountsData = accountsResponse.data.data || accountsResponse.data
+        const allAccounts = Array.isArray(accountsData) ? accountsData : []
+        
+        // Filter accounts more specifically for GL defaults
+        const inventoryAccounts = allAccounts.filter((acc: Account) => 
+          acc.type === 'ASSET' && 
+          (acc.code.startsWith('13') || // Inventory accounts (1300-1399)
+           acc.name.toLowerCase().includes('inventory') ||
+           acc.name.toLowerCase().includes('stock') ||
+           acc.name.toLowerCase().includes('raw material') ||
+           acc.name.toLowerCase().includes('finished goods'))
+        )
+        
+        const cogsAccounts = allAccounts.filter((acc: Account) => 
+          acc.type === 'EXPENSE' && 
+          (acc.code.startsWith('51') || // COGS accounts (5100-5199)
+           acc.name.toLowerCase().includes('cost of goods') ||
+           acc.name.toLowerCase().includes('cogs') ||
+           acc.name.toLowerCase().includes('product cost'))
+        )
+        
+        const salesAccounts = allAccounts.filter((acc: Account) => 
+          acc.type === 'INCOME' && 
+          (acc.code.startsWith('41') || // Sales accounts (4100-4199)
+           acc.name.toLowerCase().includes('sales') ||
+           acc.name.toLowerCase().includes('product sales') ||
+           acc.name.toLowerCase().includes('revenue') ||
+           acc.code === '4100' || // Specifically include Sales Revenue
+           acc.code === '4110') // Specifically include Product Sales
+        )
+        
+        // If specific accounts not found, fall back to broader categories
+        setAccounts({
+          inventory: inventoryAccounts.length > 0 ? inventoryAccounts : allAccounts.filter((acc: Account) => acc.type === 'ASSET'),
+          cogs: cogsAccounts.length > 0 ? cogsAccounts : allAccounts.filter((acc: Account) => acc.type === 'EXPENSE'),
+          sales: salesAccounts.length > 0 ? salesAccounts : allAccounts.filter((acc: Account) => acc.type === 'INCOME')
+        })
+        
+        console.log('Filtered accounts:', {
+          inventory: inventoryAccounts.length,
+          cogs: cogsAccounts.length,
+          sales: salesAccounts.length,
+          totalAccounts: allAccounts.length
+        })
+      }
     } catch (error) {
       console.error('Error loading settings:', error)
       setError('Failed to load company settings')
@@ -94,16 +172,35 @@ export default function CompanySettingsPage() {
       setSaving(true)
       setError(null)
 
+      // Clean up the settings data before sending
+      const cleanedSettings = {
+        ...settings,
+        // Convert empty strings to null for optional fields
+        address: settings.address || null,
+        phone: settings.phone || null,
+        email: settings.email || null,
+        website: settings.website || null,
+        logoUrl: settings.logoUrl || null,
+        defaultInventoryAccountId: settings.defaultInventoryAccountId || null,
+        defaultCogsAccountId: settings.defaultCogsAccountId || null,
+        defaultSalesAccountId: settings.defaultSalesAccountId || null
+      }
+
+      console.log('Settings before cleaning:', settings)
+      console.log('Cleaned settings being sent:', cleanedSettings)
+
       const response = await apiClient('/api/settings/company', {
         method: 'PUT',
-        body: JSON.stringify(settings)
+        body: JSON.stringify(cleanedSettings)
       })
 
       if (!response.ok) {
+        console.error('Save failed - Response:', response)
         throw new Error(response.error || 'Failed to save settings')
       }
 
       const updatedSettings = response.data
+      console.log('Settings received from server:', updatedSettings)
       setSettings(updatedSettings)
       setSaved(true)
       
@@ -375,6 +472,82 @@ export default function CompanySettingsPage() {
                 : [{ value: 'USD', label: 'USD - US Dollar' }]
               }
             />
+          </CardContent>
+        </Card>
+
+        {/* Default GL Accounts */}
+        <Card variant="elevated" padding="xl" className="w-full max-w-2xl">
+          <CardHeader border>
+            <HStack gap="md" align="center">
+              <div className="p-3 bg-[var(--color-brand-primary-100)] dark:bg-[var(--color-brand-primary-900)] rounded-[var(--radius-lg)]">
+                <Building className="h-6 w-6 text-[var(--color-brand-primary-600)]" />
+              </div>
+              <VStack gap="xs">
+                <Heading as="h2">Default GL Accounts</Heading>
+                <Text size="sm" color="secondary">
+                  Set default accounts for new inventory items
+                </Text>
+              </VStack>
+            </HStack>
+          </CardHeader>
+
+          <CardContent className="pt-6">
+            <VStack gap="lg">
+              <Select
+                label="Default Inventory Account"
+                value={settings.defaultInventoryAccountId || ''}
+                onChange={(e) => handleInputChange('defaultInventoryAccountId', e.target.value)}
+                fullWidth
+                options={[
+                  { value: '', label: 'Select an account...' },
+                  ...accounts.inventory.map(account => ({
+                    value: account.id,
+                    label: `${account.code} - ${account.name}`
+                  }))
+                ]}
+              />
+
+              <Select
+                label="Default COGS Account"
+                value={settings.defaultCogsAccountId || ''}
+                onChange={(e) => handleInputChange('defaultCogsAccountId', e.target.value)}
+                fullWidth
+                options={[
+                  { value: '', label: 'Select an account...' },
+                  ...accounts.cogs.map(account => ({
+                    value: account.id,
+                    label: `${account.code} - ${account.name}`
+                  }))
+                ]}
+              />
+
+              <Select
+                label="Default Sales Account"
+                value={settings.defaultSalesAccountId || ''}
+                onChange={(e) => handleInputChange('defaultSalesAccountId', e.target.value)}
+                fullWidth
+                options={[
+                  { value: '', label: 'Select an account...' },
+                  ...accounts.sales.map(account => ({
+                    value: account.id,
+                    label: `${account.code} - ${account.name}`
+                  }))
+                ]}
+              />
+
+              <div className="w-full">
+                <Switch
+                  label="Track inventory by default"
+                  checked={settings.defaultTrackInventory ?? true}
+                  onChange={(checked) => handleInputChange('defaultTrackInventory', checked)}
+                  description="New items will have inventory tracking enabled by default"
+                />
+              </div>
+
+              <Text size="sm" color="secondary">
+                These accounts will be automatically selected when creating new inventory items.
+              </Text>
+            </VStack>
           </CardContent>
         </Card>
 

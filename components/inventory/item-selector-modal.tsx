@@ -87,6 +87,9 @@ interface NewItemForm {
   standardCost: number
   trackInventory: boolean
   initialQuantity: number
+  inventoryAccountId?: string
+  cogsAccountId?: string
+  salesAccountId?: string
 }
 
 export function ItemSelectorModal({
@@ -109,6 +112,16 @@ export function ItemSelectorModal({
   const [items, setItems] = useState<Item[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [unitOfMeasures, setUnitOfMeasures] = useState<UnitOfMeasure[]>([])
+  const [glAccounts, setGlAccounts] = useState<{
+    inventory: any[]
+    cogs: any[]
+    sales: any[]
+  }>({
+    inventory: [],
+    cogs: [],
+    sales: []
+  })
+  const [companySettings, setCompanySettings] = useState<any>(null)
   const [selectedItems, setSelectedItems] = useState<Map<string, SelectedItem>>(new Map())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -133,7 +146,10 @@ export function ItemSelectorModal({
     listPrice: 0,
     standardCost: 0,
     trackInventory: true,
-    initialQuantity: 0
+    initialQuantity: 0,
+    inventoryAccountId: '',
+    cogsAccountId: '',
+    salesAccountId: ''
   })
   const [savingNewItem, setSavingNewItem] = useState(false)
   
@@ -157,9 +173,11 @@ export function ItemSelectorModal({
 
   const loadReferenceData = async (): Promise<void> => {
     try {
-      const [categoriesRes, uomRes] = await Promise.all([
+      const [categoriesRes, uomRes, accountsRes, settingsRes] = await Promise.all([
         apiClient('/api/inventory/categories', { method: 'GET' }),
-        apiClient('/api/inventory/units-of-measure', { method: 'GET' })
+        apiClient('/api/inventory/units-of-measure', { method: 'GET' }),
+        apiClient('/api/accounting/accounts', { method: 'GET' }),
+        apiClient('/api/settings/company', { method: 'GET' })
       ])
 
       if (categoriesRes.ok) {
@@ -168,6 +186,19 @@ export function ItemSelectorModal({
       
       if (uomRes.ok) {
         setUnitOfMeasures(uomRes.data || [])
+      }
+      
+      if (accountsRes.ok && accountsRes.data) {
+        const allAccounts = accountsRes.data
+        setGlAccounts({
+          inventory: allAccounts.filter((acc: any) => acc.type === 'ASSET'),
+          cogs: allAccounts.filter((acc: any) => acc.type === 'EXPENSE'),
+          sales: allAccounts.filter((acc: any) => acc.type === 'INCOME')
+        })
+      }
+      
+      if (settingsRes.ok && settingsRes.data) {
+        setCompanySettings(settingsRes.data.settings)
       }
     } catch (err) {
       console.error('Error loading reference data:', err)
@@ -293,7 +324,10 @@ export function ItemSelectorModal({
           ...newItemForm,
           isSaleable: true,
           isPurchaseable: true,
-          isActive: true
+          isActive: true,
+          inventoryAccountId: newItemForm.inventoryAccountId || undefined,
+          cogsAccountId: newItemForm.cogsAccountId || undefined,
+          salesAccountId: newItemForm.salesAccountId || undefined
         }
       })
 
@@ -391,7 +425,24 @@ export function ItemSelectorModal({
             {showCreateNew && (
               <Button
                 type="button"
-                onClick={() => setShowNewItemForm(true)}
+                onClick={() => {
+                  setNewItemForm({
+                    code: '',
+                    name: '',
+                    description: '',
+                    type: 'PRODUCT',
+                    categoryId: '',
+                    unitOfMeasureId: '',
+                    listPrice: 0,
+                    standardCost: 0,
+                    trackInventory: true,
+                    initialQuantity: 0,
+                    inventoryAccountId: companySettings?.defaultInventoryAccountId || '',
+                    cogsAccountId: companySettings?.defaultCogsAccountId || '',
+                    salesAccountId: companySettings?.defaultSalesAccountId || ''
+                  })
+                  setShowNewItemForm(true)
+                }}
                 variant="outline"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -788,6 +839,62 @@ export function ItemSelectorModal({
                   )}
                 </>
               )}
+
+              {/* GL Accounts Section */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">GL Accounts</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  {newItemForm.trackInventory && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Inventory Account</label>
+                      <select
+                        value={newItemForm.inventoryAccountId || ''}
+                        onChange={(e) => setNewItemForm(prev => ({ ...prev, inventoryAccountId: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        <option value="">Select account...</option>
+                        {glAccounts.inventory.map((account) => (
+                          <option key={account.id} value={account.id}>
+                            {account.code} - {account.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">COGS Account</label>
+                    <select
+                      value={newItemForm.cogsAccountId || ''}
+                      onChange={(e) => setNewItemForm(prev => ({ ...prev, cogsAccountId: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md"
+                    >
+                      <option value="">Select account...</option>
+                      {glAccounts.cogs.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.code} - {account.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Sales Account</label>
+                    <select
+                      value={newItemForm.salesAccountId || ''}
+                      onChange={(e) => setNewItemForm(prev => ({ ...prev, salesAccountId: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-md"
+                    >
+                      <option value="">Select account...</option>
+                      {glAccounts.sales.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.code} - {account.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="px-6 py-4 border-t flex justify-end gap-2">

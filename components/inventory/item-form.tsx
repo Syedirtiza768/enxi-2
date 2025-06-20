@@ -72,7 +72,7 @@ export function ItemForm({
     categoryId: item?.category?.id || '',
     type: item?.type || 'PRODUCT',
     unitOfMeasureId: item?.unitOfMeasure?.id || '',
-    trackInventory: item?.trackInventory ?? true,
+    trackInventory: item?.trackInventory ?? true, // Will be updated from company settings
     minStockLevel: item?.minStockLevel || 0,
     maxStockLevel: item?.maxStockLevel || 0,
     reorderPoint: item?.reorderPoint || 0,
@@ -91,6 +91,7 @@ export function ItemForm({
   const [categories, setCategories] = useState<Category[]>([])
   const [units, setUnits] = useState<UnitOfMeasure[]>([])
   const [glAccounts, setGlAccounts] = useState<GLAccount[]>([])
+  const [companySettings, setCompanySettings] = useState<any>(null)
   const [generatingCode, setGeneratingCode] = useState(false)
   const [checkingCodeUniqueness, setCheckingCodeUniqueness] = useState(false)
   const [fieldTouched, setFieldTouched] = useState<Record<string, boolean>>({})
@@ -99,25 +100,48 @@ export function ItemForm({
   useEffect(() => {
     const loadData = async (): Promise<void> => {
       try {
-        // Load categories
-        const catResponse = await fetch('/api/inventory/categories')
+        // Load all data in parallel
+        const [catResponse, uomResponse, glResponse, settingsResponse] = await Promise.all([
+          fetch('/api/inventory/categories'),
+          fetch('/api/inventory/units-of-measure'),
+          fetch('/api/accounting/accounts'),
+          fetch('/api/settings/company')
+        ])
+
+        // Process categories
         if (catResponse.ok) {
           const catData = await catResponse.json()
           setCategories(catData.data || [])
         }
 
-        // Load units of measure
-        const uomResponse = await fetch('/api/inventory/units-of-measure')
+        // Process units of measure
         if (uomResponse.ok) {
           const uomData = await uomResponse.json()
           setUnits(uomData.data || [])
         }
 
-        // Load GL accounts
-        const glResponse = await fetch('/api/accounting/accounts')
+        // Process GL accounts
         if (glResponse.ok) {
           const glData = await glResponse.json()
           setGlAccounts(glData.data || [])
+        }
+
+        // Process company settings and set defaults if creating new item
+        if (settingsResponse.ok && mode === 'create') {
+          const settingsData = await settingsResponse.json()
+          const settings = settingsData.settings
+          setCompanySettings(settings)
+          
+          // Set default GL accounts and track inventory if available
+          if (settings) {
+            setFormData(prev => ({
+              ...prev,
+              inventoryAccountId: settings.defaultInventoryAccountId || prev.inventoryAccountId || '',
+              cogsAccountId: settings.defaultCogsAccountId || prev.cogsAccountId || '',
+              salesAccountId: settings.defaultSalesAccountId || prev.salesAccountId || '',
+              trackInventory: settings.defaultTrackInventory ?? true
+            }))
+          }
         }
       } catch (error) {
         console.error('Error loading data:', error)
@@ -158,6 +182,10 @@ export function ItemForm({
   const checkCodeUniqueness = async (code: string): void => {
     if (!code || mode !== 'create') return
 
+    // Temporarily disabled until check-code endpoint is implemented
+    console.log('Code uniqueness check disabled - endpoint not implemented')
+    return
+
     setCheckingCodeUniqueness(true)
     try {
       const response = await fetch(`/api/inventory/items/check-code?code=${encodeURIComponent(code)}`)
@@ -174,8 +202,13 @@ export function ItemForm({
     }
   }
 
-  const validateForm = (): void => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
+    
+    // Get GL accounts for validation
+    const inventoryAccounts = glAccounts.filter(acc => acc.type === 'ASSET')
+    const cogsAccounts = glAccounts.filter(acc => acc.type === 'EXPENSE')
+    const salesAccounts = glAccounts.filter(acc => acc.type === 'INCOME')
 
     // Item code validation using common validator
     if (!formData.code.trim()) {
@@ -261,17 +294,21 @@ export function ItemForm({
       newErrors.standardCost = 'Standard cost should not exceed list price'
     }
 
-    // GL Account validations
-    if (formData.trackInventory && !formData.inventoryAccountId) {
-      newErrors.inventoryAccountId = 'Inventory account is required for items that track inventory'
-    }
+    // GL Account validations - made optional if no accounts exist
+    const hasGLAccounts = inventoryAccounts.length > 0 || cogsAccounts.length > 0 || salesAccounts.length > 0
+    
+    if (hasGLAccounts) {
+      if (formData.trackInventory && !formData.inventoryAccountId) {
+        newErrors.inventoryAccountId = 'Inventory account is required for items that track inventory'
+      }
 
-    if (formData.isSaleable && !formData.salesAccountId) {
-      newErrors.salesAccountId = 'Sales account is required for saleable items'
-    }
+      if (formData.isSaleable && !formData.salesAccountId) {
+        newErrors.salesAccountId = 'Sales account is required for saleable items'
+      }
 
-    if ((formData.isSaleable || formData.trackInventory) && !formData.cogsAccountId) {
-      newErrors.cogsAccountId = 'COGS account is required'
+      if ((formData.isSaleable || formData.trackInventory) && !formData.cogsAccountId) {
+        newErrors.cogsAccountId = 'COGS account is required'
+      }
     }
 
     // Business rule validations
@@ -287,18 +324,26 @@ export function ItemForm({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     
+    console.log('Form submission started')
+    console.log('Form data:', formData)
+    
     if (!validateForm()) {
+      console.log('Form validation failed')
+      console.log('Validation errors:', errors)
       return
     }
 
+    console.log('Form validation passed')
     setIsSubmitting(true)
     try {
       await onSubmit(formData)
     } catch (error) {
       console.error('Error submitting form:', error)
+      // Don't reset isSubmitting here, let the parent component handle it
+      throw error
     } finally {
       setIsSubmitting(false)
     }
@@ -612,7 +657,12 @@ export function ItemForm({
 
         {/* GL Accounts */}
         <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">GL Account Assignments</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            GL Account Assignments
+            {glAccounts.length === 0 && (
+              <span className="ml-2 text-sm font-normal text-gray-500">(Optional - No GL accounts configured)</span>
+            )}
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label htmlFor="inventoryAccount" className="block text-sm font-medium text-gray-700 mb-1">
@@ -720,6 +770,7 @@ export function ItemForm({
             type="submit"
             disabled={isSubmitting || checkingCodeUniqueness}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            onClick={() => console.log('Button clicked. isSubmitting:', isSubmitting, 'checkingCodeUniqueness:', checkingCodeUniqueness)}
           >
             {isSubmitting 
               ? (mode === 'create' ? 'Creating...' : 'Updating...')

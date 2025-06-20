@@ -1,4 +1,4 @@
-import { PrismaClient, AccountType } from '@/lib/generated/prisma'
+import { PrismaClient } from '@/lib/generated/prisma'
 
 const prisma = new PrismaClient()
 
@@ -21,7 +21,7 @@ async function main(): Promise<void> {
       {
         code: '1200',
         name: 'Inventory - Raw Materials',
-        type: AccountType.ASSET,
+        type: 'ASSET' as const,
         description: 'Raw materials inventory',
         currency: 'USD',
         createdBy: adminUser.id
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
       {
         code: '1210',
         name: 'Inventory - Work in Progress',
-        type: AccountType.ASSET,
+        type: 'ASSET' as const,
         description: 'Work in progress inventory',
         currency: 'USD',
         createdBy: adminUser.id
@@ -37,7 +37,7 @@ async function main(): Promise<void> {
       {
         code: '1220',
         name: 'Inventory - Finished Goods',
-        type: AccountType.ASSET,
+        type: 'ASSET' as const,
         description: 'Finished goods inventory',
         currency: 'USD',
         createdBy: adminUser.id
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
       {
         code: '1230',
         name: 'Inventory - Packaging Materials',
-        type: AccountType.ASSET,
+        type: 'ASSET' as const,
         description: 'Packaging materials inventory',
         currency: 'USD',
         createdBy: adminUser.id
@@ -55,7 +55,7 @@ async function main(): Promise<void> {
       {
         code: '4000',
         name: 'Sales Revenue - Products',
-        type: AccountType.INCOME,
+        type: 'INCOME' as const,
         description: 'Revenue from product sales',
         currency: 'USD',
         createdBy: adminUser.id
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
       {
         code: '4010',
         name: 'Sales Revenue - Services',
-        type: AccountType.INCOME,
+        type: 'INCOME' as const,
         description: 'Revenue from service sales',
         currency: 'USD',
         createdBy: adminUser.id
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
       {
         code: '5000',
         name: 'COGS - Products',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Cost of goods sold for products',
         currency: 'USD',
         createdBy: adminUser.id
@@ -81,7 +81,7 @@ async function main(): Promise<void> {
       {
         code: '5010',
         name: 'COGS - Raw Materials',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Cost of raw materials consumed',
         currency: 'USD',
         createdBy: adminUser.id
@@ -89,7 +89,7 @@ async function main(): Promise<void> {
       {
         code: '5020',
         name: 'COGS - Services',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Cost of services delivered',
         currency: 'USD',
         createdBy: adminUser.id
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
       {
         code: '5900',
         name: 'Inventory Adjustments',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Inventory adjustment account',
         currency: 'USD',
         createdBy: adminUser.id
@@ -107,7 +107,7 @@ async function main(): Promise<void> {
       {
         code: '5910',
         name: 'Inventory Write-offs',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Inventory write-off expense',
         currency: 'USD',
         createdBy: adminUser.id
@@ -115,7 +115,7 @@ async function main(): Promise<void> {
       {
         code: '5920',
         name: 'Inventory Shrinkage',
-        type: AccountType.EXPENSE,
+        type: 'EXPENSE' as const,
         description: 'Inventory shrinkage and loss',
         currency: 'USD',
         createdBy: adminUser.id

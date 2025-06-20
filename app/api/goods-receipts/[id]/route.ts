@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
-import { ReceiptStatus } from '@/lib/generated/prisma'
+import { ReceiptStatus } from '@/lib/types/shared-enums'
 
 interface RouteParams {
   params: Promise<{ id: string }>

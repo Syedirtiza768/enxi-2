@@ -30,6 +30,12 @@ export interface UpdateCompanySettingsInput {
   orderApprovalThreshold?: number
   orderConfirmationTemplate?: string
   showCompanyLogoOnOrders?: boolean
+  // Default GL Accounts
+  defaultInventoryAccountId?: string | null
+  defaultCogsAccountId?: string | null
+  defaultSalesAccountId?: string | null
+  // Default Inventory Settings
+  defaultTrackInventory?: boolean
 }
 
 export class CompanySettingsService extends BaseService {
@@ -41,7 +47,12 @@ export class CompanySettingsService extends BaseService {
     return this.withLogging('getSettings', async () => {
       // Get the first active settings record
       let settings = await prisma.companySettings.findFirst({
-        where: { isActive: true }
+        where: { isActive: true },
+        include: {
+          defaultInventoryAccount: true,
+          defaultCogsAccount: true,
+          defaultSalesAccount: true
+        }
       })
 
       // If no settings exist, create default settings
@@ -61,6 +72,11 @@ export class CompanySettingsService extends BaseService {
             autoReserveInventory: true,
             requireCustomerPO: false,
             showCompanyLogoOnOrders: true
+          },
+          include: {
+            defaultInventoryAccount: true,
+            defaultCogsAccount: true,
+            defaultSalesAccount: true
           }
         })
       }
@@ -78,12 +94,25 @@ export class CompanySettingsService extends BaseService {
       // Validate settings
       this.validateSettings(data)
 
+      // Remove relation objects and keep only IDs
+      const { 
+        defaultInventoryAccount, 
+        defaultCogsAccount, 
+        defaultSalesAccount,
+        ...updateData 
+      } = data as any
+
       // Update settings
       const updated = await prisma.companySettings.update({
         where: { id: settings.id },
         data: {
-          ...data,
+          ...updateData,
           updatedAt: new Date()
+        },
+        include: {
+          defaultInventoryAccount: true,
+          defaultCogsAccount: true,
+          defaultSalesAccount: true
         }
       })
 
@@ -304,7 +333,7 @@ export class CompanySettingsService extends BaseService {
       throw new Error('Invalid email format')
     }
 
-    if (data.website && !this.isValidUrl(data.website)) {
+    if (data.website && data.website.trim() && !this.isValidUrl(data.website)) {
       throw new Error('Invalid website URL format')
     }
 
@@ -359,11 +388,34 @@ export class CompanySettingsService extends BaseService {
 
   private isValidUrl(url: string): boolean {
     try {
-      new URL(url)
+      // If the URL doesn't have a protocol, add https:// as default
+      let urlToValidate = url.trim()
+      if (!urlToValidate.match(/^https?:\/\//i)) {
+        urlToValidate = 'https://' + urlToValidate
+      }
+      new URL(urlToValidate)
       return true
     } catch {
       return false
     }
+  }
+
+  async getInventoryDefaults(): Promise<{
+    trackInventory: boolean
+    inventoryAccountId: string | null
+    cogsAccountId: string | null
+    salesAccountId: string | null
+  }> {
+    return this.withLogging('getInventoryDefaults', async () => {
+      const settings = await this.getSettings()
+      
+      return {
+        trackInventory: settings.defaultTrackInventory,
+        inventoryAccountId: settings.defaultInventoryAccountId,
+        cogsAccountId: settings.defaultCogsAccountId,
+        salesAccountId: settings.defaultSalesAccountId
+      }
+    })
   }
 
   getSupportedCurrencies(): Array<{ code: string; name: string; symbol: string }> {

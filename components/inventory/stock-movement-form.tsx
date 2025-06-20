@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { MovementType } from '@/lib/generated/prisma'
+import { MovementType } from '@/lib/types/shared-enums'
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { 
   quantityValidator,

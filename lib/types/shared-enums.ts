@@ -120,6 +120,27 @@ export const ExpenseStatus = {
 
 export type ExpenseStatus = typeof ExpenseStatus[keyof typeof ExpenseStatus]
 
+// Define MovementType as a constant since it's not an enum in the schema
+export const MovementType = {
+  STOCK_IN: 'STOCK_IN',
+  STOCK_OUT: 'STOCK_OUT',
+  TRANSFER: 'TRANSFER',
+  ADJUSTMENT: 'ADJUSTMENT',
+  OPENING: 'OPENING'
+} as const
+
+export type MovementType = typeof MovementType[keyof typeof MovementType]
+
+// Define ReceiptStatus as a constant since it's not an enum in the schema
+export const ReceiptStatus = {
+  PENDING: 'PENDING',
+  PARTIAL: 'PARTIAL',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type ReceiptStatus = typeof ReceiptStatus[keyof typeof ReceiptStatus]
+
 // Type aliases for locally defined enums
 export type AccountTypeEnum = AccountType
 export type AccountStatusEnum = AccountStatus

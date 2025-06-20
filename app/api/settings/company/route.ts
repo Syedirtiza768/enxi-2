@@ -38,9 +38,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
   try {
+    console.log('Company settings PUT request received')
+    
     let user
     try {
       user = await getUserFromRequest(request)
+      console.log('Authenticated user:', user)
     } catch (authError) {
       console.error('Authentication failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -52,17 +55,22 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 
     // Only admins can update company settings
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+      console.error(`User role ${user.role} is not authorized to update company settings`)
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const body = await request.json()
+    console.log('Update company settings request body:', body)
+    
     const updatedSettings = await companySettingsService.updateSettings({
       ...body,
       updatedBy: user.id
     })
 
+    console.log('Company settings updated successfully')
     return NextResponse.json(updatedSettings)
   } catch (error: any) {
+    console.error('Company settings PUT error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to update company settings' },
       { status: 500 }

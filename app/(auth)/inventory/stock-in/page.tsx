@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -78,6 +82,7 @@ const [items, setItems] = useState<Item[]>([])
   })
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [formError, setFormError] = useState('')
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     fetchItems()
@@ -86,12 +91,13 @@ const [items, setItems] = useState<Item[]>([])
 
   const fetchItems = async (): Promise<void> => {
     try {
-      const response = await apiClient<Item[]>('/api/inventory/items', { method: 'GET' })
+      const response = await apiClient<{ data: Item[], total: number }>('/api/inventory/items', { method: 'GET' })
       if (response.ok && response?.data) {
-        setItems(Array.isArray(response?.data) ? response?.data : [])
+        const itemsData = response.data.data || []
+        setItems(itemsData)
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error fetching items:', error)
     }
   }
 
@@ -184,6 +190,7 @@ const [items, setItems] = useState<Item[]>([])
           notes: ''
         })
         setSelectedItem(null)
+        setSearch('') // Clear search after successful submission
         fetchRecentMovements()
       } else {
         setFormError(response.error || 'Failed to create stock movement')
@@ -289,34 +296,74 @@ const [items, setItems] = useState<Item[]>([])
 
                   <div className="space-y-2">
                     <Label htmlFor="item">Item *</Label>
-                    <Select value={formData.itemId} onValueChange={handleItemSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an item" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <div className="p-2">
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={open}
+                          className="w-full justify-between text-left font-normal"
+                        >
+                          {selectedItem ? (
+                            <span>{selectedItem.code} - {selectedItem.name}</span>
+                          ) : (
+                            <span className="text-muted-foreground">Select an item</span>
+                          )}
+                          <Package className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-4" align="start">
+                        <div className="space-y-2">
                           <Input
                             type="text"
                             placeholder="Search items..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="mb-2"
+                            className="w-full"
                           />
+                          {search && (
+                            <p className="text-sm text-gray-500">
+                              Showing {filteredItems.length} of {items.length} items
+                            </p>
+                          )}
                         </div>
-                        {filteredItems.map(item => (
-                          <SelectItem key={item.id} value={item.id}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{item.code} - {item.name}</span>
-                              {item.currentStock !== undefined && (
-                                <Badge variant="outline" className="ml-2">
-                                  Stock: {item.currentStock}
-                                </Badge>
-                              )}
+                        <div className="mt-4 max-h-64 overflow-y-auto">
+                          {filteredItems.length === 0 ? (
+                            <div className="py-6 text-center text-sm text-gray-500">
+                              No items found{search && ` matching "${search}"`}
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          ) : (
+                            <div className="space-y-1">
+                              {filteredItems.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  className="w-full p-2 text-left hover:bg-gray-100 rounded-md transition-colors"
+                                  onClick={() => {
+                                    handleItemSelect(item.id)
+                                    setOpen(false)
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className="font-medium">{item.code} - {item.name}</div>
+                                      {item.description && (
+                                        <div className="text-sm text-gray-500">{item.description}</div>
+                                      )}
+                                    </div>
+                                    {item.currentStock !== undefined && (
+                                      <Badge variant="outline" className="ml-2">
+                                        Stock: {item.currentStock}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -430,6 +477,7 @@ const [items, setItems] = useState<Item[]>([])
                       onClick={() => {
                         setShowForm(false)
                         setFormError('')
+                        setSearch('')
                       }}
                     >
                       Cancel

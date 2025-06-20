@@ -6,12 +6,12 @@ import {
   Prisma,
   ShipmentStatus,
   OrderStatus,
-  MovementType,
   Shipment,
   ShipmentItem,
   SalesOrder,
   Customer
 } from '@/lib/generated/prisma'
+import { MovementType } from '@/lib/types/shared-enums'
 import { AuditAction } from '@/lib/validators/audit.validator'
 
 interface CreateShipmentDto {

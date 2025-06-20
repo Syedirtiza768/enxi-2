@@ -32,6 +32,8 @@ export default function NewItemPage() {
   const handleSubmit = async (data: ItemFormData) => {
     _setSubmitting(true)
     setError(null)
+    
+    console.log('Submitting item data:', JSON.stringify(data, null, 2))
 
     try {
       const response = await fetch('/api/inventory/items', {
@@ -44,8 +46,16 @@ export default function NewItemPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create item')
+        let errorData = {}
+        try {
+          errorData = await response.json()
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError)
+          errorData = { error: `HTTP ${response.status}: ${response.statusText}` }
+        }
+        console.error('API Error:', errorData)
+        const errorMessage = errorData.error || errorData.message || `Failed to create item (${response.status})`
+        throw new Error(errorMessage)
       }
 
       const _result = await response.json()
