@@ -2,9 +2,9 @@ import { prisma } from '@/lib/db/prisma'
 import { FinancialStatementsService } from '../accounting/financial-statements.service'
 import { TrialBalanceService } from '../accounting/trial-balance.service'
 import { 
-  InvoiceStatus,
-  OrderStatus
-} from '@/lib/generated/prisma'
+  InvoiceStatus
+} from "@prisma/client"
+import { OrderStatus } from '@/lib/constants/order-status'
 
 export interface DashboardMetrics {
   revenue: {

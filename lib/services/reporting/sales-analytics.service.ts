@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from '../base.service'
-import { InvoiceStatus, OrderStatus, QuotationStatus } from '@/lib/generated/prisma'
+import { InvoiceStatus, QuotationStatus } from "@prisma/client"
+import { OrderStatus } from '@/lib/constants/order-status'
 
 export interface SalesMetrics {
   totalRevenue: number

@@ -1,4 +1,5 @@
-import { PrismaClient, AccountType, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { AccountType } from '@/lib/constants/account-type';
 
 // Initialize Prisma Client with production-friendly settings
 const prisma = new PrismaClient({

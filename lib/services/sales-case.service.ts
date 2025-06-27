@@ -9,7 +9,7 @@ import {
   Prisma,
   Quotation,
   SalesOrder
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { SalesCaseStatus, ExpenseStatus } from '@/lib/types/shared-enums'
 
 export interface CreateSalesCaseInput {

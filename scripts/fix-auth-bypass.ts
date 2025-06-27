@@ -35,7 +35,7 @@ if (!authContent.includes('BYPASS_AUTH')) {
 // Step 2: Ensure database has at least one user
 console.log('\n2️⃣ Creating seed script...');
 
-const seedScript = `import { PrismaClient } from '@/lib/generated/prisma'
+const seedScript = `import { PrismaClient } from "@prisma/client"
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()

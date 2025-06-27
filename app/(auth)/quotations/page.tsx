@@ -161,10 +161,21 @@ export default function QuotationsPage(): React.JSX.Element {
       SENT: { text: 'Sent', className: 'bg-blue-100 text-blue-800' },
       ACCEPTED: { text: 'Accepted', className: 'bg-green-100 text-green-800' },
       REJECTED: { text: 'Rejected', className: 'bg-red-100 text-red-800' },
-      EXPIRED: { text: 'Expired', className: 'bg-red-100 text-red-800' }
+      EXPIRED: { text: 'Expired', className: 'bg-red-100 text-red-800' },
+      CANCELLED: { text: 'Cancelled', className: 'bg-gray-100 text-gray-800' }
     } as const
 
     const config = statusConfig[status as keyof typeof statusConfig]
+    
+    // Fallback for any unexpected status
+    if (!config) {
+      return (
+        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+          {status}
+        </span>
+      )
+    }
+    
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${config.className}`}>
         {config.text}

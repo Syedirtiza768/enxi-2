@@ -4,7 +4,7 @@ import { AuditAction } from '@/lib/validators/audit.validator'
 import { 
   Account,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { 
   AccountType,
   AccountStatus,

@@ -44,12 +44,13 @@ export const GET = createProtectedHandler(
     }
 
     return NextResponse.json(shipment)
-} catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    } catch (error) {
+      console.error('Error fetching shipment:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error'
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 500 }
+      )
     }
   },
   { permissions: ['shipments.read'] }
@@ -66,12 +67,29 @@ export const PUT = createProtectedHandler(
     const shipment = await shipmentService.updateTrackingInfo(resolvedParams.id, validatedData)
     
     return NextResponse.json(shipment)
-  } catch (error) {
-    console.error('Error updating shipment:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    } catch (error) {
+      console.error('Error updating shipment:', error)
+      
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Invalid request data', details: error.errors },
+          { status: 400 }
+        )
+      }
+      
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error'
+      
+      if (errorMessage.includes('not found')) {
+        return NextResponse.json(
+          { error: errorMessage },
+          { status: 404 }
+        )
+      }
+      
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 500 }
+      )
     }
   },
   { permissions: ['shipments.update'] }

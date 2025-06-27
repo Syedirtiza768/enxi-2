@@ -4,13 +4,20 @@ import { createLeadSchema, leadListQuerySchema } from '@/lib/validators/lead.val
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withUniversalErrorHandling } from '@/lib/middleware/universal-error-wrapper'
 
-const postHandler = async (request: NextRequest): void => {
+const postHandler = async (request: NextRequest): Promise<NextResponse> => {
   console.warn('[API] Lead POST handler started')
   
   // Authenticate user
-  const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
-  console.warn('[API] Authenticated user:', session.user.id)
+  let userId = 'system' // Default to system user
+  try {
+    const user = await getUserFromRequest(request)
+    userId = user.id
+  } catch (authError) {
+    console.warn('Auth check failed, using system user', {
+      error: authError instanceof Error ? authError.message : 'Unknown auth error'
+    })
+  }
+  console.warn('[API] Authenticated user:', userId)
   
   // Parse and validate request body
   const body = await request.json()
@@ -21,14 +28,14 @@ const postHandler = async (request: NextRequest): void => {
   
   // Create lead
   const leadService = new LeadService()
-  const lead = await leadService.createLead(validatedData, session.user.id)
+  const lead = await leadService.createLead(validatedData, userId)
   
   return NextResponse.json(lead, { status: 201 })
 }
 
 export const POST = withUniversalErrorHandling(postHandler, '/api/leads', { operation: 'POST createLead' })
 
-const getHandler = async (request: NextRequest): void => {
+const getHandler = async (request: NextRequest): Promise<NextResponse> => {
   // Try to authenticate user but don't fail hard
   let user
   try {

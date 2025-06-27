@@ -51,6 +51,16 @@ const nextConfig: NextConfig = {
     },
   },
   webpack: (config, { dev, isServer }): void => {
+    // React PDF compatibility
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'canvas': false,
+        'utf-8-validate': false,
+        'bufferutil': false,
+      }
+    }
+    
     // Bundle splitting optimizations
     if (!dev && !isServer) {
       config.optimization = {

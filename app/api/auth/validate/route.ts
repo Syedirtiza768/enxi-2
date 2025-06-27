@@ -4,8 +4,7 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Validate token and get user (this handles both cookies and headers)
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
     
     if (!user) {
       return NextResponse.json(
@@ -18,7 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       valid: true,
       user: {
-        id: session.user.id,
+        id: user.id,
         username: user.username,
         email: user.email,
         role: user.role

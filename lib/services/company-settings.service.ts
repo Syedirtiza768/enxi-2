@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
-import { CompanySettings } from '@/lib/generated/prisma'
+import { CompanySettings } from "@prisma/client"
 
 export interface UpdateCompanySettingsInput {
   companyName?: string

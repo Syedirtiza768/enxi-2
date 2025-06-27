@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoiceService } from '@/lib/services/invoice.service'
-import { InvoiceType, InvoiceStatus } from '@/lib/generated/prisma'
+// InvoiceType values: SALES, PURCHASE, CREDIT_NOTE, DEBIT_NOTE
+// InvoiceStatus values: DRAFT, SENT, PAID, CANCELLED, OVERDUE
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withCrudAudit } from '@/lib/middleware/audit.middleware'
 import { EntityType } from '@/lib/validators/audit.validator'
@@ -9,7 +10,7 @@ import { z } from 'zod'
 const createInvoiceSchema = z.object({
   salesOrderId: z.string().optional(),
   customerId: z.string(),
-  type: z.nativeEnum(InvoiceType).optional(),
+  type: z.enum(['SALES', 'PURCHASE', 'CREDIT_NOTE', 'DEBIT_NOTE']).optional(),
   dueDate: z.string().datetime(),
   paymentTerms: z.string().optional(),
   billingAddress: z.string().optional(),
@@ -37,8 +38,8 @@ const getHandler = async (request: NextRequest): Promise<NextResponse> => {
     
     // Build filters from query parameters
     const filters = {
-      status: searchParams.get('status') as InvoiceStatus || undefined,
-      type: searchParams.get('type') as InvoiceType || undefined,
+      status: searchParams.get('status') as any || undefined,
+      type: searchParams.get('type') as any || undefined,
       customerId: searchParams.get('customerId') || undefined,
       dateFrom: searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined,
       dateTo: searchParams.get('dateTo') ? new Date(searchParams.get('dateTo')!) : undefined,

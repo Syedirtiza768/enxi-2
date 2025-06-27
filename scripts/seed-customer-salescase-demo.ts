@@ -1,4 +1,5 @@
-import { PrismaClient, LeadStatus, LeadSource, SalesCaseStatus, QuotationStatus, PaymentMethod } from '@/lib/generated/prisma'
+import { PrismaClient, QuotationStatus, PaymentMethod } from "@prisma/client"
+import { LeadStatus, LeadSource, SalesCaseStatus } from "@/lib/types/shared-enums"
 
 const prisma = new PrismaClient()
 

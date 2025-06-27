@@ -4,7 +4,8 @@ import { SalesCaseService } from '@/lib/services/sales-case.service'
 import { JournalEntryService } from '@/lib/services/accounting/journal-entry.service'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 import { TrialBalanceService } from '@/lib/services/accounting/trial-balance.service'
-import { AccountType, SalesCaseStatus, LeadStatus } from '@/lib/generated/prisma'
+import { AccountType } from '@/lib/constants/account-type'
+import { SalesCaseStatus, LeadStatus } from "@/lib/types/shared-enums"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Customer-Sales-Accounting Integration', () => {

@@ -1,6 +1,6 @@
 import { LeadService } from '@/lib/services/lead.service'
 import { AuthService } from '@/lib/services/auth.service'
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+import { LeadSource, LeadStatus } from "@/lib/types/shared-enums"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Lead API Integration', () => {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LeadService } from '@/lib/services/lead.service'
-import { LeadSource } from '@/lib/generated/prisma'
+import { LeadSource } from "@/lib/types/shared-enums"
 
 const leadService = new LeadService()
 

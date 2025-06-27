@@ -4,7 +4,7 @@
  * Test script to verify invoice-payment integration workflow
  */
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 
 async function testInvoicePaymentIntegration(): Promise<void> {
   console.warn('🧪 Testing Invoice-Payment Integration...\n')

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector';
+import { TaxType } from '@/lib/types/shared-enums';
 import { apiClient } from '@/lib/api/client';
 import { useCurrency } from '@/lib/contexts/currency-context';
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate';
@@ -231,6 +232,7 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
       id: `item-${Date.now()}`,
       lineNumber,
       sortOrder: maxSortOrder + 1,
+      isLineHeader: false,
       itemCode: '',
       description: '',
       quantity: 1,
@@ -446,6 +448,7 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
                               onChange={(taxRateId, taxRate) => updateItem(item.id, { taxRateId, taxRate })}
                               disabled={disabled}
                               placeholder="Tax"
+                              taxType={TaxType.SALES}
                             />
                           </div>
                         </div>

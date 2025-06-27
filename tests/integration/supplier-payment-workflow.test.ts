@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
 
 const prisma = new PrismaClient()

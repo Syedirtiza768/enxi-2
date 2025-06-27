@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { CustomerService } from '@/lib/services/customer.service'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
-import { AccountType, LeadStatus } from '@/lib/generated/prisma'
+import { AccountType } from '@/lib/constants/account-type'
+import { LeadStatus } from "@/lib/types/shared-enums"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Customer Service', () => {

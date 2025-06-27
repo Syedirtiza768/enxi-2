@@ -9,7 +9,7 @@ import {
   Prisma,
   Location,
   UnitOfMeasure
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { MovementType } from '@/lib/types/shared-enums'
 import { CreateJournalLineInput } from '@/lib/types/accounting.types'
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'

@@ -1,6 +1,6 @@
 import { LeadService } from '@/lib/services/lead.service'
 import { CreateLeadData, UpdateLeadData, LeadResponse } from '@/lib/types/lead.types'
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+import { LeadSource, LeadStatus } from "@/lib/types/shared-enums"
 
 // Mock Prisma
 jest.mock('@/lib/db/prisma', () => ({

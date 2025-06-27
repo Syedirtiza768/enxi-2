@@ -7,7 +7,7 @@ import {
   ReceiptStatus,
   POStatus,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { MovementType } from '@/lib/types/shared-enums'
 
 export interface CreateGoodsReceiptInput {

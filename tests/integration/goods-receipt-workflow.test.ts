@@ -6,7 +6,7 @@ import { ItemService } from '@/lib/services/inventory/item.service'
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 import { JournalEntryService } from '@/lib/services/accounting/journal-entry.service'
 import { prisma } from '@/lib/db/prisma'
-import { MovementType } from '@/lib/generated/prisma'
+import { MovementType } from "@prisma/client"
 
 describe('Goods Receipt Workflow Integration', () => {
   let goodsReceiptService: GoodsReceiptService

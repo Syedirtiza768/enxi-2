@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import { UserService } from '@/lib/services/user.service'
 import { prisma } from '@/lib/db/prisma'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 import bcrypt from 'bcryptjs'
 
 describe('UserService Integration Tests', () => {

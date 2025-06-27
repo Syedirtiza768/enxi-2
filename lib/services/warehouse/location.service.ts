@@ -5,7 +5,7 @@ import {
   LocationType,
   InventoryBalance,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 export interface CreateLocationInput {
   locationCode?: string

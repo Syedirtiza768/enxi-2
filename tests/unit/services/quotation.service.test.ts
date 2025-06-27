@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { QuotationService } from '@/lib/services/quotation.service'
-import { QuotationStatus, Prisma } from '@/lib/generated/prisma'
+import { QuotationStatus, Prisma } from "@prisma/client"
 import { prismaMock, setupCommonMocks } from '@/tests/helpers/mock-prisma'
 import { testFactory } from '@/tests/helpers/test-utils'
 

@@ -2,12 +2,8 @@ import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 import {
   Role,
-  AccountType,
   AccountStatus,
   CustomerStatus,
-  LeadStatus,
-  LeadSource,
-  SalesCaseStatus,
   QuotationStatus,
   OrderStatus,
   ShipmentStatus,
@@ -24,7 +20,9 @@ import {
   TransferStatus,
   CountType,
   CountStatus,
-} from "@/lib/generated/prisma";
+} from "@prisma/client";
+import { AccountType } from '@/lib/constants/account-type';
+import { LeadStatus, LeadSource, SalesCaseStatus } from "@/lib/types/shared-enums";
 
 // Simple helper to create users with hashed password
 async function createUsers(): Promise<T> {

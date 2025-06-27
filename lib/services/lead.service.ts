@@ -25,13 +25,9 @@ import {
   updateLeadSchema, 
   leadListQuerySchema 
 } from '@/lib/validators/lead.validator'
-import { 
-  Lead,
-  LeadStatus,
-  LeadSource,
-  Customer,
-  Prisma
-} from '@/lib/generated/prisma'
+import { Lead, Customer, Prisma } from "@prisma/client"
+import { LeadStatus, LeadSource } from "@/lib/types/shared-enums"
+
 
 export interface ConvertLeadInput {
   leadId: string

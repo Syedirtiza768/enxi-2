@@ -1,5 +1,29 @@
+import { LeadSource, LeadStatus } from "@/lib/types/shared-enums";
 import { z } from 'zod'
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+
+
+// Create enum schemas from the constant objects
+const leadSourceSchema = z.enum([
+  'WEBSITE',
+  'REFERRAL',
+  'SOCIAL_MEDIA',
+  'EMAIL_CAMPAIGN',
+  'PHONE_CALL',
+  'TRADE_SHOW',
+  'PARTNER',
+  'OTHER'
+] as const)
+
+const leadStatusSchema = z.enum([
+  'NEW',
+  'CONTACTED',
+  'QUALIFIED',
+  'PROPOSAL_SENT',
+  'NEGOTIATING',
+  'CONVERTED',
+  'LOST',
+  'DISQUALIFIED'
+] as const)
 
 export const createLeadSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100, 'First name too long'),
@@ -8,7 +32,7 @@ export const createLeadSchema = z.object({
   phone: z.string().optional().nullable(),
   company: z.string().max(255, 'Company name too long').optional().nullable(),
   jobTitle: z.string().max(100, 'Job title too long').optional().nullable(),
-  source: z.nativeEnum(LeadSource),
+  source: leadSourceSchema,
   notes: z.string().max(1000, 'Notes too long').optional().nullable(),
 })
 
@@ -19,8 +43,8 @@ export const updateLeadSchema = z.object({
   phone: z.string().optional().nullable(),
   company: z.string().max(255, 'Company name too long').optional().nullable(),
   jobTitle: z.string().max(100, 'Job title too long').optional().nullable(),
-  source: z.nativeEnum(LeadSource).optional(),
-  status: z.nativeEnum(LeadStatus).optional(),
+  source: leadSourceSchema.optional(),
+  status: leadStatusSchema.optional(),
   notes: z.string().max(1000, 'Notes too long').optional().nullable(),
 })
 
@@ -28,8 +52,8 @@ export const leadListQuerySchema = z.object({
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(10),
   search: z.string().optional(),
-  status: z.nativeEnum(LeadStatus).optional(),
-  source: z.nativeEnum(LeadSource).optional(),
+  status: leadStatusSchema.optional(),
+  source: leadSourceSchema.optional(),
 })
 
 export type CreateLeadInput = z.infer<typeof createLeadSchema>

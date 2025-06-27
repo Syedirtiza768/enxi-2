@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { POST, GET } from '@/app/api/leads/route'
 import { POST as PostById, PUT, DELETE } from '@/app/api/leads/[id]/route'
-import { LeadSource, LeadStatus } from '@/lib/generated/prisma'
+import { LeadSource, LeadStatus } from "@/lib/types/shared-enums"
 
 // Mock the LeadService
 jest.mock('@/lib/services/lead.service')

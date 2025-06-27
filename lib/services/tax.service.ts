@@ -1,6 +1,7 @@
 import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
-import { TaxCategory, TaxRate, TaxExemption, TaxType, Prisma } from '@/lib/generated/prisma'
+import { TaxCategory, TaxRate, TaxExemption, Prisma } from "@prisma/client"
+import { TaxType } from '@/lib/types/shared-enums'
 
 interface CreateTaxCategoryDto {
   code: string

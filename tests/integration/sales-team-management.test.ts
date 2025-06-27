@@ -5,7 +5,7 @@ import { POST as assignCustomerRoute } from '@/app/api/sales-team/assign-custome
 import { POST as unassignCustomerRoute } from '@/app/api/sales-team/unassign-customer/route'
 import { GET as salesTeamRoute } from '@/app/api/sales-team/route'
 import { prisma } from '@/lib/db/prisma'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 
 describe('Sales Team Management Integration Tests', () => {
   let testUsers: any = {}

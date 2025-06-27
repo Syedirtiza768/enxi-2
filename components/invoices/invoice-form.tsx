@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
+import { TaxType } from '@/lib/types/shared-enums'
 
 interface InvoiceItem {
   id?: string
@@ -764,6 +765,7 @@ export function InvoiceForm({
                             taxRate 
                           })
                         }}
+                        taxType={TaxType.SALES}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Select tax"
                       />

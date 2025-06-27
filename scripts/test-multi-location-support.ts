@@ -12,7 +12,7 @@
  * 6. Test stock reservation and release functionality
  */
 
-import { PrismaClient, LocationType, TransferStatus } from '@/lib/generated/prisma'
+import { PrismaClient, LocationType, TransferStatus } from "@prisma/client"
 import { LocationService } from '@/lib/services/warehouse/location.service'
 import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.service'
 import { InventoryBalanceService } from '@/lib/services/warehouse/inventory-balance.service'

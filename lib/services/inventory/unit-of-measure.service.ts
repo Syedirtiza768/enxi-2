@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { UnitOfMeasure, Prisma } from '@/lib/generated/prisma'
+import { UnitOfMeasure, Prisma } from "@prisma/client"
 
 export interface CreateUnitOfMeasureInput {
   code: string

@@ -16,12 +16,14 @@ interface Account {
   code: string
   name: string
   type: 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE'
-  subtype: string
+  status: string
   parentId?: string
-  isActive: boolean
   balance: number
   currency: string
+  description?: string
+  isSystemAccount: boolean
   createdAt: string
+  parent?: Account
   children?: Account[]
 }
 
@@ -78,7 +80,7 @@ export default function AccountsPage(): React.JSX.Element {
     const matchesSearch = account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          account.code.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = !typeFilter || typeFilter === 'all' || account.type === typeFilter
-    const matchesActive = showInactive || account.isActive
+    const matchesActive = showInactive || account.status === 'ACTIVE'
     
     return matchesSearch && matchesType && matchesActive
   })
@@ -127,7 +129,7 @@ export default function AccountsPage(): React.JSX.Element {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {accountTypes.map(type => {
-          const typeAccounts = accounts.filter(a => a.type === type && a.isActive)
+          const typeAccounts = accounts.filter(a => a.type === type && a.status === 'ACTIVE')
           const totalBalance = typeAccounts.reduce((sum, acc) => sum + acc.balance, 0)
           
           return (
@@ -202,7 +204,7 @@ export default function AccountsPage(): React.JSX.Element {
                   <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Subtype</TableHead>
+                  <TableHead>Currency</TableHead>
                   <TableHead className="text-right">Balance</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -235,14 +237,14 @@ export default function AccountsPage(): React.JSX.Element {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-gray-600">
-                        {account.subtype}
+                        {account.currency}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {formatCurrency(account.balance)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={account.isActive ? "default" : "secondary"}>
-                          {account.isActive ? 'Active' : 'Inactive'}
+                        <Badge variant={account.status === 'ACTIVE' ? "default" : "secondary"}>
+                          {account.status}
                         </Badge>
                       </TableCell>
                       <TableCell>

@@ -5,13 +5,13 @@ import { InvoiceService } from './invoice.service'
 import { ShipmentService } from './shipment.service'
 import { StockMovementService } from './inventory/stock-movement.service'
 import { 
-  OrderStatus, 
   ShipmentStatus, 
   InvoiceStatus,
   InvoiceType,
   SalesOrder,
   Shipment
 } from '@prisma/client'
+import { OrderStatus } from '@/lib/constants/order-status'
 
 /**
  * Sales Workflow Orchestration Service

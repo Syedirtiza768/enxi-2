@@ -4,7 +4,8 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { LeadService } from '@/lib/services/lead.service'
-import { LeadStatus, LeadSource, Prisma } from '@/lib/generated/prisma'
+import { Prisma } from "@prisma/client"
+import { LeadStatus, LeadSource } from "@/lib/types/shared-enums"
 import { prismaMock, setupCommonMocks } from '@/tests/helpers/mock-prisma'
 import { testFactory } from '@/tests/helpers/test-utils'
 

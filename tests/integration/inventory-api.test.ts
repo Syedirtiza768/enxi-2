@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { prisma } from '@/lib/db/prisma'
-import { MovementType, ItemType } from '@/lib/generated/prisma'
+import { MovementType, ItemType } from "@prisma/client"
 
 describe('Inventory API Integration Tests', () => {
   let testUserId: string

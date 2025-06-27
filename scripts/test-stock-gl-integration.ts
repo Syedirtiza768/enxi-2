@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { StockMovementService } from '@/lib/services/inventory/stock-movement.service'
 import { MovementType } from '@/lib/types/shared-enums'
 

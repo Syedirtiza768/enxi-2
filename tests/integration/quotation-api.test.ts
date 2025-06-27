@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { CustomerService } from '@/lib/services/customer.service'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
 import { QuotationService } from '@/lib/services/quotation.service'
-import { QuotationStatus } from '@/lib/generated/prisma'
+import { QuotationStatus } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Quotation API Integration', () => {

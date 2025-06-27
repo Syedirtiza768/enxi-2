@@ -1,5 +1,6 @@
 'use client'
 
+import { LeadSource, LeadStatus } from "@/lib/types/shared-enums";
 import { useState, useCallback, useEffect } from 'react'
 import type { FormErrors } from '@/lib/types'
 import { 
@@ -12,7 +13,7 @@ import {
   Select,
   Text
 } from '@/components/design-system'
-import { LeadSource, LeadStatus } from '@/lib/types/shared-enums'
+
 import { LeadResponse, CreateLeadData, UpdateLeadData } from '@/lib/types/lead.types'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import {

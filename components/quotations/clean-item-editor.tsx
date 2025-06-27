@@ -22,6 +22,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector';
+import { TaxType } from '@/lib/types/shared-enums';
 import { formatCurrency } from '@/lib/utils/format';
 import { apiClient } from '@/lib/api/client';
 
@@ -339,6 +340,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
                           <TaxRateSelector
                             value={manualItem.taxRateId}
                             onChange={(taxRateId, _taxRate) => setManualItem(prev => ({ ...prev, taxRateId: taxRateId || '' }))}
+                            taxType={TaxType.SALES}
                           />
                         </div>
                       </div>
@@ -431,6 +433,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
                 <TaxRateSelector
                   value={editingItem.taxRateId}
                   onChange={(taxRateId, _taxRate) => setEditingItem({ ...editingItem, taxRateId: taxRateId || '' })}
+                  taxType={TaxType.SALES}
                 />
               </div>
               <div>

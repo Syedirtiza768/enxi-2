@@ -4,7 +4,7 @@
  * Test script to verify quotation-to-invoice workflow
  */
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 
 async function testQuotationToInvoiceWorkflow(): Promise<void> {
   console.warn('🧪 Testing Quotation-to-Invoice Workflow...\n')

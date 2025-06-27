@@ -8,22 +8,29 @@ import {
   Eye, EyeOff, Download
 } from 'lucide-react'
 import { OrderTimeline } from '@/components/sales-orders/order-timeline'
+import { SalesOrderLineView } from '@/components/sales-orders/sales-order-line-view'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SalesOrderItem {
   id: string
+  lineNumber: number
+  lineDescription?: string
+  isLineHeader: boolean
+  sortOrder: number
+  itemType: 'PRODUCT' | 'SERVICE'
+  itemId?: string
   itemCode: string
   description: string
   internalDescription?: string
   quantity: number
   unitPrice: number
+  cost?: number
   discount: number
   taxRate: number
   subtotal: number
   discountAmount: number
   taxAmount: number
   totalAmount: number
-  cost?: number
   margin?: number
 }
 
@@ -183,17 +190,25 @@ export default function SalesOrderDetailPage() {
       const response = await fetch(`/api/sales-orders/${orderId}/approve`, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to approve sales order')
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.error || `Failed to approve sales order (${response.status})`
+        throw new Error(errorMessage)
       }
 
       const updatedOrder = await response.json()
-      setOrder(updatedOrder)
+      setOrder(updatedOrder.order || updatedOrder)
       alert('Sales order has been approved!')
     } catch (error) {
       console.error('Error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to approve sales order')
+    } finally {
       setActionLoading(null)
     }
   }
@@ -208,10 +223,16 @@ export default function SalesOrderDetailPage() {
       const response = await fetch(`/api/sales-orders/${orderId}/process`, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to start processing')
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.error || `Failed to start processing (${response.status})`
+        throw new Error(errorMessage)
       }
 
       const updatedOrder = await response.json()
@@ -219,6 +240,8 @@ export default function SalesOrderDetailPage() {
       alert('Order processing has started!')
     } catch (error) {
       console.error('Error:', error);
+      alert(error instanceof Error ? error.message : 'Failed to start processing')
+    } finally {
       setActionLoading(null)
     }
   }
@@ -317,20 +340,44 @@ export default function SalesOrderDetailPage() {
 
     try {
       setActionLoading('invoice')
+      console.log('Creating invoice for order:', orderId)
+      
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      
       const response = await fetch(`/api/sales-orders/${orderId}/create-invoice`, {
         method: 'POST',
         credentials: 'include',
-      })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeoutId))
 
       if (!response.ok) {
-        throw new Error('Failed to create invoice')
+        const errorData = await response.json().catch(() => null)
+        const errorMessage = errorData?.error || `Failed to create invoice (${response.status})`
+        throw new Error(errorMessage)
       }
 
       const invoice = await response.json()
       alert(`Invoice ${invoice.invoiceNumber} has been created!`)
       router.push(`/invoices/${invoice.id}`)
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error creating invoice:', error);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          alert('Request timed out. Please try again.')
+        } else if (error.message.includes('Failed to fetch')) {
+          alert('Network error. Please check your connection and try again.')
+        } else {
+          alert(error.message)
+        }
+      } else {
+        alert('Failed to create invoice')
+      }
+    } finally {
       setActionLoading(null)
     }
   }
@@ -639,107 +686,33 @@ export default function SalesOrderDetailPage() {
           {/* Order Items */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Order Items</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Qty
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Unit Price
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Discount
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tax
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {order.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-3 py-4">
-                        <div className="text-sm font-medium text-gray-900">{item.itemCode}</div>
-                        <div className="text-sm text-gray-500">{item.description}</div>
-                        {viewMode === 'internal' && item.internalDescription && (
-                          <div className="text-xs text-gray-400 italic mt-1">{item.internalDescription}</div>
-                        )}
-                      </td>
-                      <td className="px-3 py-4 text-right text-sm text-gray-900">
-                        {item.quantity}
-                      </td>
-                      <td className="px-3 py-4 text-right text-sm text-gray-900">
-                        {formatCurrency(item.unitPrice)}
-                        {viewMode === 'internal' && item.cost && (
-                          <div className="text-xs text-gray-400">
-                            Cost: {formatCurrency(item.cost)}
-                            {item.margin !== undefined && (
-                              <span className={`ml-1 ${item.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                ({item.margin.toFixed(1)}%)
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-3 py-4 text-right text-sm text-gray-900">
-                        {item.discount > 0 ? `${item.discount}%` : '-'}
-                      </td>
-                      <td className="px-3 py-4 text-right text-sm text-gray-900">
-                        {item.taxRate > 0 ? `${item.taxRate}%` : '-'}
-                      </td>
-                      <td className="px-3 py-4 text-right text-sm font-medium text-gray-900">
-                        {formatCurrency(item.totalAmount)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan={5} className="px-3 py-3 text-right text-sm font-medium text-gray-900">
-                      Subtotal
-                    </td>
-                    <td className="px-3 py-3 text-right text-sm font-medium text-gray-900">
-                      {formatCurrency(order.subtotal)}
-                    </td>
-                  </tr>
-                  {order.discountAmount > 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-3 py-3 text-right text-sm font-medium text-gray-900">
-                        Discount
-                      </td>
-                      <td className="px-3 py-3 text-right text-sm font-medium text-red-600">
-                        -{formatCurrency(order.discountAmount)}
-                      </td>
-                    </tr>
-                  )}
-                  {order.taxAmount > 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-3 py-3 text-right text-sm font-medium text-gray-900">
-                        Tax
-                      </td>
-                      <td className="px-3 py-3 text-right text-sm font-medium text-gray-900">
-                        {formatCurrency(order.taxAmount)}
-                      </td>
-                    </tr>
-                  )}
-                  <tr>
-                    <td colSpan={5} className="px-3 py-3 text-right text-lg font-semibold text-gray-900">
-                      Total
-                    </td>
-                    <td className="px-3 py-3 text-right text-lg font-semibold text-gray-900">
-                      {formatCurrency(order.totalAmount)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+            
+            <SalesOrderLineView items={order.items} viewMode={viewMode} />
+            
+            {/* Order Totals */}
+            <div className="mt-6 border-t pt-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-900">Subtotal</span>
+                  <span className="font-medium text-gray-900">{formatCurrency(order.subtotal)}</span>
+                </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-gray-900">Discount</span>
+                    <span className="font-medium text-red-600">-{formatCurrency(order.discountAmount)}</span>
+                  </div>
+                )}
+                {order.taxAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-gray-900">Tax</span>
+                    <span className="font-medium text-gray-900">{formatCurrency(order.taxAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base pt-2 border-t">
+                  <span className="font-semibold text-gray-900">Total</span>
+                  <span className="font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

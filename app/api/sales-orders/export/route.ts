@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { SalesOrderService } from '@/lib/services/sales-order.service'
-import { OrderStatus } from '@/lib/generated/prisma'
+import { OrderStatus } from '@/lib/constants/order-status'
 
 // GET /api/sales-orders/export - Export sales orders report
 export async function GET(request: NextRequest): Promise<NextResponse> {

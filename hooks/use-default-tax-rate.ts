@@ -1,5 +1,6 @@
+import { TaxType } from '@/lib/types/shared-enums';
 import { useState, useEffect } from 'react'
-import { TaxRate, TaxType } from '@/lib/types/shared-enums'
+import { TaxRate } from "@/lib/types/shared-enums"
 
 interface UseDefaultTaxRateOptions {
   taxType?: TaxType

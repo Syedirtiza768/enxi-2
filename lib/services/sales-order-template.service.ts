@@ -4,7 +4,7 @@ import {
   SalesOrderTemplate,
   SalesOrderTemplateItem,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 export interface CreateOrderTemplateInput {
   name: string

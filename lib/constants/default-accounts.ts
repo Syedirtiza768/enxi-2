@@ -3,12 +3,13 @@
  * This ensures all required accounts exist for automatic journal entry creation
  */
 
-import { AccountType } from '@/lib/types/shared-enums'
+import { AccountType } from "./account-type";
+
 
 export interface DefaultAccount {
   code: string
   name: string
-  type: AccountType
+  type: string
   parentCode?: string
   isSystemAccount?: boolean
   description?: string

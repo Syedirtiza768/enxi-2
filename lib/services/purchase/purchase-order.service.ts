@@ -6,7 +6,7 @@ import {
   PurchaseOrderItem,
   POStatus,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 export interface CreatePurchaseOrderInput {
   supplierId: string

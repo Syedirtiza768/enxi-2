@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 
 const prisma = new PrismaClient()

@@ -9,7 +9,7 @@ import {
   SalesCase,
   Account,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 export interface CreateExpenseInput {
   salesCaseId: string

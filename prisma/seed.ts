@@ -6,11 +6,25 @@ import {
   LeadSource,
   LeadStatus,
   SalesCaseStatus,
-  QuotationStatus,
-  ItemType,
   MovementType,
   JournalStatus
-} from '@/lib/generated/prisma'
+} from "@/lib/types/shared-enums"
+
+// These constants are not yet in shared-enums, so define them locally
+const QuotationStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+const ItemType = {
+  PRODUCT: 'PRODUCT',
+  SERVICE: 'SERVICE',
+  CONSUMABLE: 'CONSUMABLE'
+} as const
 
 async function main(): Promise<void> {
   console.warn('🌱 Starting seed...')
@@ -133,7 +147,7 @@ async function createChartOfAccounts(userId: string) {
       name: 'Assets',
       type: AccountType.ASSET,
       description: 'All company assets',
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -147,7 +161,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Assets expected to be converted to cash within one year',
       parentId: assets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -160,7 +174,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Physical cash and petty cash',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -173,7 +187,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Main operating bank account',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -186,7 +200,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Savings and reserve accounts',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -198,7 +212,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Customer receivables',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -211,7 +225,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Products held for sale',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -224,7 +238,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Expenses paid in advance',
       parentId: currentAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -237,7 +251,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Long-term tangible assets',
       parentId: assets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -249,7 +263,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Office and operational equipment',
       parentId: fixedAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -261,7 +275,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Accumulated depreciation on equipment',
       parentId: fixedAssets.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -273,7 +287,7 @@ async function createChartOfAccounts(userId: string) {
       name: 'Liabilities',
       type: AccountType.LIABILITY,
       description: 'All company liabilities',
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -287,7 +301,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.LIABILITY,
       description: 'Liabilities due within one year',
       parentId: liabilities.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -299,7 +313,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.LIABILITY,
       description: 'Amounts owed to suppliers',
       parentId: currentLiabilities.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -312,7 +326,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.LIABILITY,
       description: 'Taxes owed to government',
       parentId: currentLiabilities.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -324,7 +338,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.LIABILITY,
       description: 'Salaries owed to employees',
       parentId: currentLiabilities.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -336,7 +350,7 @@ async function createChartOfAccounts(userId: string) {
       name: 'Equity',
       type: AccountType.EQUITY,
       description: 'Owner\'s equity',
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -349,7 +363,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EQUITY,
       description: 'Common stock',
       parentId: equity.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -362,7 +376,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EQUITY,
       description: 'Accumulated profits',
       parentId: equity.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -374,7 +388,7 @@ async function createChartOfAccounts(userId: string) {
       name: 'Income',
       type: AccountType.INCOME,
       description: 'All revenue accounts',
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -387,7 +401,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.INCOME,
       description: 'Revenue from product sales',
       parentId: income.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -400,7 +414,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.INCOME,
       description: 'Revenue from services',
       parentId: income.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -412,7 +426,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.INCOME,
       description: 'Discounts given to customers',
       parentId: income.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -424,7 +438,7 @@ async function createChartOfAccounts(userId: string) {
       name: 'Expenses',
       type: AccountType.EXPENSE,
       description: 'All expense accounts',
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -437,7 +451,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Direct cost of products sold',
       parentId: expenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       isSystemAccount: true,
       createdBy: userId
     }
@@ -451,7 +465,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'General operating expenses',
       parentId: expenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -463,7 +477,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Employee salaries and wages',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -475,7 +489,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Office and warehouse rent',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -487,7 +501,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Electricity, water, internet',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -499,7 +513,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Office supplies and materials',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -511,7 +525,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Depreciation on fixed assets',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -523,7 +537,7 @@ async function createChartOfAccounts(userId: string) {
       type: AccountType.EXPENSE,
       description: 'Bank fees and charges',
       parentId: operatingExpenses.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -996,11 +1010,26 @@ async function createQuotations(
 }
 
 async function createStockMovements(warehouseId: string, items: any) {
+  // Create stock lot for laptop first
+  const laptopLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-LAP-001',
+      itemId: items.laptop.id,
+      receivedDate: new Date('2024-01-01'),
+      receivedQty: 50,
+      availableQty: 50,
+      unitCost: 800,
+      totalCost: 40000,
+      createdBy: warehouseId
+    }
+  })
+
   // Opening stock for laptop
   await prisma.stockMovement.create({
     data: {
       movementNumber: 'OPEN-0001',
       itemId: items.laptop.id,
+      stockLotId: laptopLot.id,
       movementType: MovementType.OPENING,
       movementDate: new Date('2024-01-01'),
       quantity: 50,
@@ -1008,19 +1037,21 @@ async function createStockMovements(warehouseId: string, items: any) {
       totalCost: 40000,
       unitOfMeasureId: items.laptop.unitOfMeasureId,
       notes: 'Opening stock balance',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-LAP-001',
-          itemId: items.laptop.id,
-          receivedDate: new Date('2024-01-01'),
-          receivedQty: 50,
-          availableQty: 50,
-          unitCost: 800,
-          totalCost: 40000,
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
+    }
+  })
+
+  // Create stock lot for smartphone
+  const smartphoneLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-PHN-001',
+      itemId: items.smartphone.id,
+      receivedDate: new Date('2024-01-01'),
+      receivedQty: 100,
+      availableQty: 100,
+      unitCost: 600,
+      totalCost: 60000,
+      createdBy: warehouseId
     }
   })
 
@@ -1029,6 +1060,7 @@ async function createStockMovements(warehouseId: string, items: any) {
     data: {
       movementNumber: 'OPEN-0002',
       itemId: items.smartphone.id,
+      stockLotId: smartphoneLot.id,
       movementType: MovementType.OPENING,
       movementDate: new Date('2024-01-01'),
       quantity: 100,
@@ -1036,19 +1068,23 @@ async function createStockMovements(warehouseId: string, items: any) {
       totalCost: 60000,
       unitOfMeasureId: items.smartphone.unitOfMeasureId,
       notes: 'Opening stock balance',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-PHN-001',
-          itemId: items.smartphone.id,
-          receivedDate: new Date('2024-01-01'),
-          receivedQty: 100,
-          availableQty: 100,
-          unitCost: 600,
-          totalCost: 60000,
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
+    }
+  })
+
+  // Create stock lot for mouse
+  const mouseLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-MSE-001',
+      itemId: items.mouse.id,
+      receivedDate: new Date('2024-01-10'),
+      receivedQty: 200,
+      availableQty: 200,
+      unitCost: 20,
+      totalCost: 4000,
+      supplierName: 'Tech Supplies Inc',
+      purchaseRef: 'PO-2024-001',
+      createdBy: warehouseId
     }
   })
 
@@ -1057,6 +1093,7 @@ async function createStockMovements(warehouseId: string, items: any) {
     data: {
       movementNumber: 'SIN-0001',
       itemId: items.mouse.id,
+      stockLotId: mouseLot.id,
       movementType: MovementType.STOCK_IN,
       movementDate: new Date('2024-01-10'),
       quantity: 200,
@@ -1066,21 +1103,24 @@ async function createStockMovements(warehouseId: string, items: any) {
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-001',
       notes: 'Regular stock replenishment',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-MSE-001',
-          itemId: items.mouse.id,
-          receivedDate: new Date('2024-01-10'),
-          receivedQty: 200,
-          availableQty: 200,
-          unitCost: 20,
-          totalCost: 4000,
-          supplierName: 'Tech Supplies Inc',
-          purchaseRef: 'PO-2024-001',
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
+    }
+  })
+
+  // Create stock lot for paper with expiry
+  const paperLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-PAP-001',
+      itemId: items.paperA4.id,
+      receivedDate: new Date('2024-01-05'),
+      receivedQty: 500,
+      availableQty: 500,
+      unitCost: 5,
+      totalCost: 2500,
+      supplierName: 'Office Supplies Co',
+      purchaseRef: 'PO-2024-002',
+      expiryDate: new Date('2025-01-05'), // 1 year shelf life
+      createdBy: warehouseId
     }
   })
 
@@ -1089,6 +1129,7 @@ async function createStockMovements(warehouseId: string, items: any) {
     data: {
       movementNumber: 'SIN-0002',
       itemId: items.paperA4.id,
+      stockLotId: paperLot.id,
       movementType: MovementType.STOCK_IN,
       movementDate: new Date('2024-01-05'),
       quantity: 500,
@@ -1098,22 +1139,7 @@ async function createStockMovements(warehouseId: string, items: any) {
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-002',
       notes: 'Bulk paper purchase',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-PAP-001',
-          itemId: items.paperA4.id,
-          receivedDate: new Date('2024-01-05'),
-          receivedQty: 500,
-          availableQty: 500,
-          unitCost: 5,
-          totalCost: 2500,
-          supplierName: 'Office Supplies Co',
-          purchaseRef: 'PO-2024-002',
-          expiryDate: new Date('2025-01-05'), // 1 year shelf life
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   })
 

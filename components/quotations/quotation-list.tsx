@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
-import { QuotationStatus } from '@/lib/generated/prisma';
+import { QuotationStatus } from "@prisma/client";
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface QuotationListItem {

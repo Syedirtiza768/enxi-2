@@ -71,8 +71,15 @@ export const GET = createProtectedHandler(
       return NextResponse.json(result)
     } catch (error) {
       console.error('Error fetching shipments:', error)
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Invalid query parameters', details: error.errors },
+          { status: 400 }
+        )
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Internal server error'
       return NextResponse.json(
-        { error: 'Internal server error' },
+        { error: errorMessage },
         { status: 500 }
       )
     }
@@ -98,9 +105,20 @@ export const POST = createProtectedHandler(
       return NextResponse.json(shipment, { status: 201 })
     } catch (error) {
       console.error('Error creating shipment:', error)
+      
+      if (error instanceof z.ZodError) {
+        return NextResponse.json(
+          { error: 'Invalid request data', details: error.errors },
+          { status: 400 }
+        )
+      }
+      
       const errorMessage = error instanceof Error ? error.message : String(error)
       
-      if (errorMessage.includes('Order must be approved') || errorMessage.includes('Cannot ship more than')) {
+      // Business logic errors
+      if (errorMessage.includes('not found') || 
+          errorMessage.includes('Order must be approved') || 
+          errorMessage.includes('Cannot ship more than')) {
         return NextResponse.json(
           { error: errorMessage },
           { status: 400 }
@@ -108,7 +126,7 @@ export const POST = createProtectedHandler(
       }
       
       return NextResponse.json(
-        { error: 'Internal server error' },
+        { error: errorMessage || 'Internal server error' },
         { status: 500 }
       )
     }

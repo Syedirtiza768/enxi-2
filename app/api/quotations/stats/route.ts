@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // // import { getUserFromRequest } from '@/lib/auth/server-auth'
 import { prisma } from '@/lib/db/prisma'
-import { QuotationStatus } from '@/lib/generated/prisma'
+import { QuotationStatus } from "@prisma/client"
 import { withCrudAudit } from '@/lib/middleware/audit.middleware'
 import { EntityType } from '@/lib/validators/audit.validator'
 

@@ -6,7 +6,7 @@
  */
 
 import { prisma } from '@/lib/db/prisma'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 
 const salesTeamService = new SalesTeamService()

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import { InvoiceService } from '@/lib/services/invoice.service'
-import { PaymentMethod, InvoiceStatus } from '@/lib/generated/prisma'
+import { PaymentMethod, InvoiceStatus } from "@prisma/client"
 
 async function validateSystem() {
   console.log('🔍 Starting system validation...\n')

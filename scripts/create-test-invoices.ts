@@ -4,7 +4,7 @@
  * Create test invoices for testing the invoice-payment workflow
  */
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 
 async function createTestInvoices(): Promise<Invoice> {
   console.warn('🚀 Creating test invoices...\n')

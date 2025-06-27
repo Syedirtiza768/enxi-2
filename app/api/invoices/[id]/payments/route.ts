@@ -4,8 +4,8 @@ import { z } from 'zod'
 
 const createPaymentSchema = z.object({
   amount: z.number().positive(),
-  paymentDate: z.string().datetime().optional(),
-  paymentMethod: z.enum(['BANK_TRANSFER', 'CHECK', 'CASH', 'CREDIT_CARD', 'WIRE_TRANSFER', 'ONLINE']),
+  paymentDate: z.string().optional(),
+  paymentMethod: z.enum(['BANK_TRANSFER', 'CASH', 'CHEQUE', 'CREDIT_CARD', 'DEBIT_CARD', 'PAYPAL', 'OTHER']),
   reference: z.string().optional(),
   notes: z.string().optional()
 })

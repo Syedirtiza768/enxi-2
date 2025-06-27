@@ -76,6 +76,14 @@ export default function QuotationDetailPage() {
         }
 
         const quotationData = response?.data?.data || response?.data
+        console.log('Fetched quotation data:', {
+          viewMode,
+          hasItems: !!quotationData.items,
+          itemsCount: quotationData.items?.length,
+          hasLines: !!quotationData.lines,
+          linesCount: quotationData.lines?.length,
+          data: quotationData
+        })
         setQuotation(quotationData as Quotation)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load quotation')
@@ -92,6 +100,7 @@ export default function QuotationDetailPage() {
 
   const handleUpdate = async (quotationData: Partial<Quotation>) => {
     try {
+      console.log('Updating quotation with data:', quotationData)
       const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}`, {
         method: 'PUT',
         body: JSON.stringify(quotationData)
@@ -159,17 +168,17 @@ export default function QuotationDetailPage() {
   }
 
   const handleDelete = async (): Promise<void> => {
-    if (!confirm('Are you sure you want to delete this quotation?')) {
+    if (!confirm('Are you sure you want to cancel this quotation?')) {
       return
     }
 
     try {
-      const response = await apiClient(`/api/quotations/${quotationId}`, {
-        method: 'DELETE'
+      const response = await apiClient(`/api/quotations/${quotationId}/cancel`, {
+        method: 'POST'
       })
 
       if (!response.ok) {
-        throw new Error('Failed to delete quotation')
+        throw new Error('Failed to cancel quotation')
       }
 
       router.push('/quotations')
@@ -285,9 +294,10 @@ export default function QuotationDetailPage() {
   }
 
   const formatCurrency = (amount: number) => {
+    const currency = (quotation as any)?.currency || 'AED'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: currency
     }).format(amount)
   }
 
@@ -364,7 +374,12 @@ export default function QuotationDetailPage() {
             discountAmount: quotation.discountAmount,
             taxAmount: quotation.taxAmount,
             totalAmount: quotation.totalAmount,
-            items: quotation.items
+            // For internal view, extract items from lines structure
+            items: viewMode === 'internal' && (quotation as any).lines 
+              ? (quotation as any).lines.flatMap((line: any) => line.items || [])
+              : quotation.items || [],
+            lines: (quotation as any).lines,
+            currency: (quotation as any).currency
           }}
           onSubmit={handleUpdate}
           onCancel={() => setMode('view')}
@@ -548,8 +563,15 @@ export default function QuotationDetailPage() {
           discountAmount: quotation.discountAmount,
           taxAmount: quotation.taxAmount,
           totalAmount: quotation.totalAmount,
-          items: quotation.items,
-          lines: (quotation as any).lines // For client view
+          // For internal view, extract items from lines structure
+          items: viewMode === 'internal' && (quotation as any).lines 
+            ? (quotation as any).lines.flatMap((line: any) => {
+                console.log('Extracting items from line:', line);
+                return line.items || [];
+              })
+            : quotation.items || [],
+          lines: (quotation as any).lines, // For both views
+          currency: (quotation as any).currency
         }}
         onSubmit={handleUpdate}
         onCancel={() => {}}

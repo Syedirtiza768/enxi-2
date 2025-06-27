@@ -28,6 +28,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!pdfData.quotation) {
       return NextResponse.json({ error: 'Quotation not found' }, { status: 404 })
     }
+    
+    // Debug log
+    console.log('PDF Data:', {
+      viewType,
+      hasLines: !!pdfData.quotation.lines,
+      linesCount: pdfData.quotation.lines?.length,
+      hasItems: !!pdfData.quotation.items,
+      itemsCount: pdfData.quotation.items?.length,
+      currency: pdfData.quotation.currency
+    })
 
     // Generate PDF buffer
     const pdfBuffer = await renderToBuffer(

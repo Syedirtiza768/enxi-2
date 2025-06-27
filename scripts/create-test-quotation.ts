@@ -4,7 +4,7 @@
  * Create a test quotation to verify the complete workflow
  */
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 
 async function createTestQuotation(): Promise<T> {
   console.warn('🚀 Creating test quotation...\n')

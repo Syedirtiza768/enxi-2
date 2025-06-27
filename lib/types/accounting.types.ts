@@ -1,5 +1,6 @@
 // Import enums from shared-enums since they're not in Prisma schema
-import { AccountType, AccountStatus, JournalStatus } from '@/lib/types/shared-enums'
+import { AccountType } from '@/lib/constants/account-type';
+import { AccountStatus, JournalStatus } from "@/lib/types/shared-enums"
 export { AccountType, AccountStatus, JournalStatus }
 
 export enum TransactionType {

@@ -3,7 +3,7 @@ import { CustomerService } from '@/lib/services/customer.service'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
 import { JournalEntryService } from '@/lib/services/accounting/journal-entry.service'
 import { TrialBalanceService } from '@/lib/services/accounting/trial-balance.service'
-import { SalesCaseStatus, LeadStatus } from '@/lib/generated/prisma'
+import { SalesCaseStatus, LeadStatus } from "@/lib/types/shared-enums"
 import { TestSetup, getAccountByCode } from '../helpers/setup'
 import { prisma } from '@/lib/db/prisma'
 

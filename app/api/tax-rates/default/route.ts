@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { taxService } from '@/lib/services/tax.service'
 import { withAuth } from '@/lib/utils/auth'
-import { TaxType } from '@/lib/generated/prisma'
+import { TaxType } from '@/lib/types/shared-enums'
 
 // GET /api/tax-rates/default
 export async function GET(request: NextRequest): Promise<NextResponse> {

@@ -21,7 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
-import { QuotationStatus } from '@/lib/generated/prisma';
+import { QuotationStatus } from "@prisma/client";
 import { toast } from '@/components/ui/use-toast';
 
 interface QuotationVersion {

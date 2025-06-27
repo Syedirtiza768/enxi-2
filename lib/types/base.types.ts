@@ -160,4 +160,4 @@ export interface CrudOperations<T, CreateInput, UpdateInput> {
 }
 
 // Re-export commonly used types
-export type { Prisma } from '@/lib/generated/prisma'
+export type { Prisma } from "@prisma/client"

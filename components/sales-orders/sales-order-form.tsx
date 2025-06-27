@@ -21,18 +21,27 @@ import {
 
 interface SalesOrderItem {
   id?: string
+  lineNumber: number
+  lineDescription?: string
+  isLineHeader: boolean
+  sortOrder: number
+  itemType: 'PRODUCT' | 'SERVICE'
+  itemId?: string
   itemCode: string
   description: string
+  internalDescription?: string
   quantity: number
   unitPrice: number
+  cost?: number
   discount: number
   taxRate: number
+  taxRateId?: string
+  unitOfMeasureId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
   totalAmount: number
   availableQuantity?: number
-  itemId?: string
 }
 
 interface Customer {

@@ -6,7 +6,7 @@
 import { render, RenderOptions } from '@testing-library/react'
 import { ReactElement } from 'react'
 import { NextRouter } from 'next/router'
-import { User, Customer, Supplier, Item, Role } from '@/lib/generated/prisma'
+import { User, Customer, Supplier, Item, Role } from "@prisma/client"
 
 // Mock Next.js router
 export const mockRouter: NextRouter = {

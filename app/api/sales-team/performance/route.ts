@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { SalesTeamService } from '@/lib/services/sales-team.service'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 
 const salesTeamService = new SalesTeamService()
 

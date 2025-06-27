@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { JournalEntryService } from '../accounting/journal-entry.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { StockMovement, StockLot, Prisma } from '@/lib/generated/prisma'
+import { StockMovement, StockLot, Prisma } from "@prisma/client"
 import { MovementType } from '@/lib/types/shared-enums'
 
 export interface CreateStockMovementInput {

@@ -1,11 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
 import { 
-  AccountType, 
   Role, 
-  LeadSource,
-  LeadStatus,
-  SalesCaseStatus,
   QuotationStatus,
   ItemType,
   MovementType,
@@ -17,7 +13,9 @@ import {
   SupplierInvoiceStatus,
   SupplierPaymentStatus,
   ShipmentStatus
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
+import { AccountType } from '@/lib/constants/account-type'
+import { LeadSource, LeadStatus, SalesCaseStatus } from "@/lib/types/shared-enums"
 
 async function main(): Promise<void> {
   console.warn('🌱 Starting UAE Marine Diesel Company seed...')

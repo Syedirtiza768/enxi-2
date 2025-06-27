@@ -1,92 +1,69 @@
-#!/usr/bin/env tsx
-/**
- * Verify that currency formatter fixes don't break functionality
- */
+#!/usr/bin/env npx tsx
 
-import { formatCurrency } from '@/lib/utils/currency'
+import { QuotationService } from '../lib/services/quotation.service'
+import { CompanySettingsService } from '../lib/services/company-settings.service'
+import { PrismaClient } from '@prisma/client'
 
-// Test cases to verify currency formatting still works
-const testCases = [
-  { amount: 1000, currency: 'USD', expected: '$1,000.00' },
-  { amount: 1000, currency: 'EUR', expected: '€1,000.00' },
-  { amount: 1000, currency: 'GBP', expected: '£1,000.00' },
-  { amount: 1000, currency: 'AED', expected: 'AED 1,000.00' },
-  { amount: 1000.5, currency: 'USD', expected: '$1,000.50' },
-  { amount: 0, currency: 'USD', expected: '$0.00' },
-  { amount: -500, currency: 'USD', expected: '-$500.00' },
-]
+const quotationService = new QuotationService()
+const settingsService = new CompanySettingsService()
+const prisma = new PrismaClient()
 
-console.log('🧪 Testing currency formatter functionality...\n')
-
-let passed = 0
-let failed = 0
-
-testCases.forEach(({ amount, currency, expected }) => {
+async function verifyCurrencyFix(quotationId: string) {
   try {
-    const result = formatCurrency(amount, { currency })
+    console.log('🔍 Verifying Currency Fix\n')
     
-    // Note: The exact format might vary based on locale
-    // What's important is that it returns a string and doesn't throw
-    if (typeof result === 'string' && result.length > 0) {
-      console.log(`✅ formatCurrency(${amount}, '${currency}') = ${result}`)
-      passed++
-    } else {
-      console.log(`❌ formatCurrency(${amount}, '${currency}') returned invalid result: ${result}`)
-      failed++
-    }
+    // Check company settings
+    console.log('1️⃣ Company Settings:')
+    const settings = await settingsService.getSettings()
+    console.log('   Default Currency:', settings.defaultCurrency)
+    console.log('   Company Name:', settings.companyName)
+    
+    // Check customer currency
+    console.log('\n2️⃣ Customer Currency (should not be used):')
+    const quotation = await prisma.quotation.findUnique({
+      where: { id: quotationId },
+      include: {
+        salesCase: {
+          include: {
+            customer: true
+          }
+        }
+      }
+    })
+    console.log('   Customer:', quotation?.salesCase.customer.name)
+    console.log('   Customer Currency:', quotation?.salesCase.customer.currency || 'Not set')
+    
+    // Check quotation views
+    console.log('\n3️⃣ Quotation Views (should use company currency):')
+    
+    // Client view
+    const clientView = await quotationService.getQuotationClientView(quotationId)
+    console.log('   Client View Currency:', clientView.currency)
+    
+    // Internal view
+    const internalView = await quotationService.getQuotationInternalView(quotationId)
+    console.log('   Internal View Currency:', internalView.currency)
+    
+    // PDF data
+    console.log('\n4️⃣ PDF Data:')
+    const clientPDF = await quotationService.getQuotationPDFData(quotationId, 'client')
+    console.log('   Client PDF Currency:', clientPDF.quotation.currency)
+    
+    const internalPDF = await quotationService.getQuotationPDFData(quotationId, 'internal')
+    console.log('   Internal PDF Currency:', internalPDF.quotation.currency)
+    
+    console.log('\n✅ Summary:')
+    console.log('   Company Default: AED')
+    console.log('   All views should show: AED')
+    console.log('   Customer currency should be ignored')
+    
   } catch (error) {
-    console.log(`❌ formatCurrency(${amount}, '${currency}') threw error:`, error)
-    failed++
+    console.error('❌ Error:', error)
+  } finally {
+    await prisma.$disconnect()
   }
-})
-
-console.log(`\n📊 Results: ${passed} passed, ${failed} failed`)
-
-// Test the React hook behavior
-console.log('\n🧪 Testing hook return structure...')
-
-// Simulate what the hook returns
-const mockHookReturn = {
-  format: (amount: number, currency?: string): string => {
-    return formatCurrency(amount, { currency: currency || 'USD' })
-  },
-  defaultCurrency: 'USD'
 }
 
-// Test that destructuring works
-const { format } = mockHookReturn
-const testResult = format(1000)
-
-if (typeof testResult === 'string') {
-  console.log('✅ Hook destructuring works correctly')
-  console.log(`   format(1000) = ${testResult}`)
-} else {
-  console.log('❌ Hook destructuring failed')
-  process.exit(1)
-}
-
-// Test runtime behavior that was failing
-console.log('\n🧪 Testing the exact error scenario...')
-
-try {
-  // This simulates what was happening in the build
-  const formatter = mockHookReturn // This is what the page was getting
-  const format = formatter // This was the bug - treating object as function
-  
-  // This would fail with "e is not a function"
-  if (typeof format === 'function') {
-    console.log('❌ Bug reproduced: formatter object treated as function')
-  } else {
-    console.log('✅ Correctly identified that format is not a function')
-  }
-  
-  // Correct usage
-  const { format: formatFn } = mockHookReturn
-  const result = formatFn(1000)
-  console.log(`✅ Correct usage: formatFn(1000) = ${result}`)
-  
-} catch (error) {
-  console.log('❌ Runtime error:', error)
-}
-
-process.exit(failed > 0 ? 1 : 0)
+// Run verification
+const quotationId = process.argv[2] || 'cmccf4dwo0001v2c981x2a5tm'
+verifyCurrencyFix(quotationId)

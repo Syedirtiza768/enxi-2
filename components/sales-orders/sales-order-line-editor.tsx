@@ -3,21 +3,33 @@
 import React from 'react';
 import { CleanLineEditor } from '@/components/quotations/clean-line-editor';
 
+// Updated interface to match the full structure from sales-order-form.tsx
 interface SalesOrderItem {
   id?: string;
+  lineNumber: number;
+  lineDescription?: string;
+  isLineHeader: boolean;
+  sortOrder: number;
+  itemType: 'PRODUCT' | 'SERVICE';
+  itemId?: string;
   itemCode: string;
   description: string;
+  internalDescription?: string;
   quantity: number;
   unitPrice: number;
+  cost?: number;
   discount: number;
   taxRate: number;
+  taxRateId?: string;
+  unitOfMeasureId?: string;
   subtotal: number;
   discountAmount: number;
   taxAmount: number;
   totalAmount: number;
-  itemId?: string;
+  availableQuantity?: number;
 }
 
+// QuotationItem type for CleanLineEditor
 interface QuotationItem {
   id: string;
   lineNumber: number;
@@ -27,6 +39,7 @@ interface QuotationItem {
   itemId?: string;
   itemCode: string;
   description: string;
+  internalDescription?: string;
   quantity: number;
   unitPrice: number;
   discount?: number;
@@ -65,82 +78,61 @@ export function SalesOrderLineEditor({ items, onChange, disabled = false }: Sale
       }];
     }
 
-    // Group items by line (for now, put all items in line 1)
-    // In future, we can support multiple lines based on some grouping logic
-    const quotationItems: QuotationItem[] = [];
-    
-    // Add header for line 1
-    quotationItems.push({
-      id: `line-header-1`,
-      lineNumber: 1,
-      sortOrder: 0,
-      isLineHeader: true,
-      lineDescription: 'Sales Order Items',
-      itemCode: '',
-      description: '',
-      quantity: 0,
-      unitPrice: 0,
-      subtotal: 0,
-      totalAmount: 0,
-      itemType: 'PRODUCT'
-    });
-
-    // Add all items to line 1
-    salesOrderItems.forEach((item, index) => {
-      const subtotal = item.quantity * item.unitPrice;
-      const discountAmount = subtotal * (item.discount / 100);
-      const afterDiscount = subtotal - discountAmount;
-      const taxAmount = afterDiscount * (item.taxRate / 100);
-      const totalAmount = afterDiscount + taxAmount;
-
-      quotationItems.push({
-        id: item.id || `item-${Date.now()}-${index}`,
-        lineNumber: 1,
-        sortOrder: index + 1,
-        isLineHeader: false,
-        itemId: item.itemId,
-        itemCode: item.itemCode,
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        discount: item.discount,
-        taxRate: item.taxRate,
-        subtotal: subtotal,
-        totalAmount: totalAmount,
-        itemType: 'PRODUCT',
-        cost: 0
-      });
-    });
-
-    return quotationItems;
+    // Convert directly - maintain the line structure
+    return salesOrderItems.map(item => ({
+      id: item.id || `item-${Date.now()}-${item.sortOrder}`,
+      lineNumber: item.lineNumber,
+      sortOrder: item.sortOrder,
+      isLineHeader: item.isLineHeader,
+      lineDescription: item.lineDescription,
+      itemId: item.itemId,
+      itemCode: item.itemCode,
+      description: item.description,
+      internalDescription: item.internalDescription,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      cost: item.cost,
+      discount: item.discount,
+      taxRate: item.taxRate,
+      taxRateId: item.taxRateId,
+      subtotal: item.subtotal,
+      totalAmount: item.totalAmount,
+      itemType: item.itemType
+    }));
   };
 
   // Convert quotation items back to sales order items
   const convertToSalesOrderItems = (quotationItems: QuotationItem[]): SalesOrderItem[] => {
-    return quotationItems
-      .filter(item => !item.isLineHeader) // Exclude line headers
-      .map(item => {
-        const subtotal = item.quantity * item.unitPrice;
-        const discountAmount = subtotal * ((item.discount || 0) / 100);
-        const afterDiscount = subtotal - discountAmount;
-        const taxAmount = afterDiscount * ((item.taxRate || 0) / 100);
-        const totalAmount = afterDiscount + taxAmount;
+    return quotationItems.map(item => {
+      const subtotal = item.quantity * item.unitPrice;
+      const discountAmount = subtotal * ((item.discount || 0) / 100);
+      const afterDiscount = subtotal - discountAmount;
+      const taxAmount = afterDiscount * ((item.taxRate || 0) / 100);
+      const totalAmount = afterDiscount + taxAmount;
 
-        return {
-          id: item.id,
-          itemId: item.itemId,
-          itemCode: item.itemCode,
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          discount: item.discount || 0,
-          taxRate: item.taxRate || 0,
-          subtotal: subtotal,
-          discountAmount: discountAmount,
-          taxAmount: taxAmount,
-          totalAmount: totalAmount
-        };
-      });
+      return {
+        id: item.id,
+        lineNumber: item.lineNumber,
+        lineDescription: item.lineDescription,
+        isLineHeader: item.isLineHeader || false,
+        sortOrder: item.sortOrder,
+        itemType: item.itemType,
+        itemId: item.itemId,
+        itemCode: item.itemCode,
+        description: item.description,
+        internalDescription: item.internalDescription,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        cost: item.cost,
+        discount: item.discount || 0,
+        taxRate: item.taxRate || 0,
+        taxRateId: item.taxRateId,
+        subtotal: subtotal,
+        discountAmount: discountAmount,
+        taxAmount: taxAmount,
+        totalAmount: totalAmount
+      };
+    });
   };
 
   const quotationItems = convertToQuotationItems(items);

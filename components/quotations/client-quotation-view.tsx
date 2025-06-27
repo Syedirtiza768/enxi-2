@@ -7,6 +7,10 @@ interface ClientLine {
   lineNumber: number
   lineDescription: string
   quantity: number
+  unitPrice?: number
+  subtotal?: number
+  taxAmount?: number
+  discountAmount?: number
   totalAmount: number
 }
 
@@ -19,7 +23,7 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
   const { formatCurrency } = useCurrency()
 
   // If lines are provided from the API, use them
-  if (lines && lines.length > 0) {
+  if (lines && Array.isArray(lines) && lines.length > 0) {
     return (
       <div className="space-y-2">
         <div className="bg-gray-50 p-4 rounded-lg">
@@ -58,6 +62,14 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
   }
 
   // Fallback: Group items by line number if lines not provided
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No items to display
+      </div>
+    )
+  }
+
   const lineGroups = new Map<number, typeof items>()
   
   items.forEach(item => {
@@ -107,7 +119,7 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
             </div>
             <div className="col-span-2 text-right">
               <span className="text-sm font-medium text-gray-900">
-                {formatCurrency(line.totalAmount)}
+                {formatCurrency(line.totalAmount || 0)}
               </span>
             </div>
           </div>

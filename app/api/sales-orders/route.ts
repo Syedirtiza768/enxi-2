@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SalesOrderService } from '@/lib/services/sales-order.service'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
-import { OrderStatus } from '@/lib/generated/prisma'
+import { OrderStatus } from '@/lib/constants/order-status'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { withCrudAudit } from '@/lib/middleware/audit.middleware'
 import { EntityType } from '@/lib/validators/audit.validator'
@@ -20,13 +20,21 @@ const createSalesOrderSchema = z.object({
   customerPO: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(z.object({
+    lineNumber: z.number().optional(),
+    lineDescription: z.string().optional(),
+    isLineHeader: z.boolean().optional(),
+    sortOrder: z.number().optional(),
+    itemType: z.enum(['PRODUCT', 'SERVICE']).optional(),
     itemId: z.string().optional(),
     itemCode: z.string(),
     description: z.string(),
+    internalDescription: z.string().optional(),
     quantity: z.number().positive(),
     unitPrice: z.number().min(0),
+    cost: z.number().min(0).optional(),
     discount: z.number().min(0).max(100).optional(),
     taxRate: z.number().min(0).max(100).optional(),
+    taxRateId: z.string().optional(),
     unitOfMeasureId: z.string().optional()
   })).min(1)
 }).refine(data => data.salesCaseId || data.customerId, {

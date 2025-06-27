@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { JournalEntryService } from '@/lib/services/accounting/journal-entry.service'
-import { JournalStatus } from '@/lib/generated/prisma'
+import { JournalStatus } from "@prisma/client"
 
 // GET /api/accounting/journal-entries - List journal entries with filtering
 export async function GET(request: NextRequest): Promise<NextResponse> {

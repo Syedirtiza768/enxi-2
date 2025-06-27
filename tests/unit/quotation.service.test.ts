@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { QuotationService } from '@/lib/services/quotation.service'
 import { CustomerService } from '@/lib/services/customer.service'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
-import { QuotationStatus, SalesCaseStatus } from '@/lib/generated/prisma'
+import { QuotationStatus, SalesCaseStatus } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Quotation Service', () => {

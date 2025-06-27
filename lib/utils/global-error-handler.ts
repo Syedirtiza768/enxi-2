@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
-import { Prisma } from '@/lib/generated/prisma';
+import { Prisma } from "@prisma/client";
 
 export interface ErrorResponse {
   error: string;
@@ -459,10 +459,11 @@ export function asyncHandler<T extends (...args: unknown[]) => Promise<unknown>>
   fn: T,
   _context?: unknown
 ): T {
-  return (async (...args: Parameters<T>): void => {
+  return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args);
-} catch {      throw error;
+    } catch (error) {
+      throw error;
     }
   }) as T;
 }
@@ -498,6 +499,7 @@ export async function withPerformanceLogging<T>(
     
     return result;
   } catch (error) {
+    const duration = Date.now() - startTime;
     console.error('Error handling error:', error);
     console.warn('Error handling failed', {
       duration: `${duration}ms`,

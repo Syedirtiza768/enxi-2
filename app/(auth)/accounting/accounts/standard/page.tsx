@@ -34,7 +34,16 @@ export default function StandardChartPage() {
           router.push('/accounting/accounts')
         }, 2000)
       } else {
-        setError(response.error || 'Failed to create standard chart of accounts')
+        // Extract the actual error message from the response
+        const errorMessage = response.error || response.message || 'Failed to create standard chart of accounts'
+        setError(errorMessage)
+        
+        // If accounts already exist, suggest navigating to the accounts page
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          setTimeout(() => {
+            router.push('/accounting/accounts')
+          }, 3000)
+        }
       }
     } catch (err) {
       console.error('Error creating standard COA:', err)
@@ -117,9 +126,16 @@ export default function StandardChartPage() {
 
       {/* Status Messages */}
       {error && (
-        <Alert variant="destructive">
+        <Alert variant={error.toLowerCase().includes('already exists') ? 'default' : 'destructive'}>
           <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>
+            {error}
+            {error.toLowerCase().includes('already exists') && (
+              <span className="block mt-2 text-sm">
+                Redirecting to the accounts page...
+              </span>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -149,6 +165,8 @@ export default function StandardChartPage() {
                   <SelectItem value="USD">USD - US Dollar</SelectItem>
                   <SelectItem value="EUR">EUR - Euro</SelectItem>
                   <SelectItem value="GBP">GBP - British Pound</SelectItem>
+                  <SelectItem value="AED">AED - UAE Dirham</SelectItem>
+                  <SelectItem value="PKR">PKR - Pakistani Rupee</SelectItem>
                   <SelectItem value="CAD">CAD - Canadian Dollar</SelectItem>
                   <SelectItem value="AUD">AUD - Australian Dollar</SelectItem>
                 </SelectContent>

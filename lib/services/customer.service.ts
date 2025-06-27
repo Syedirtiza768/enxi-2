@@ -6,9 +6,9 @@ import { ChartOfAccountsService } from './accounting/chart-of-accounts.service'
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 import { 
   Customer,
-  LeadStatus,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
+import { LeadStatus } from "@/lib/types/shared-enums"
 
 export interface CreateCustomerInput {
   name: string

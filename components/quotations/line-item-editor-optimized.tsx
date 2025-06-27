@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
+import { TaxType } from '@/lib/types/shared-enums'
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
 import { useDebounce } from '@/lib/utils/performance'
 import {
@@ -249,6 +250,7 @@ const LineItemRow = memo(({
             }}
             className="w-20"
             size="sm"
+            taxType={TaxType.SALES}
           />
         </td>
         

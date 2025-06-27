@@ -4,8 +4,8 @@
  */
 
 // Re-export Prisma types
-export * from '@/lib/generated/prisma'
-export type { Prisma } from '@/lib/generated/prisma'
+export * from "@prisma/client"
+export type { Prisma } from "@prisma/client"
 
 // Base types
 export {
@@ -133,7 +133,6 @@ export type ValidationRule<T = unknown> = {
 // Re-export commonly used enums with friendly names
 export {
   AccountStatus,
-  AccountType,
   AuditAction,
   CustomerStatus,
   EntityType,
@@ -141,8 +140,6 @@ export {
   InvoiceType,
   ItemType,
   JournalStatus,
-  LeadSource,
-  LeadStatus,
   LocationType,
   OrderStatus,
   PaymentMethod,
@@ -157,4 +154,10 @@ export {
   SupplierInvoiceStatus,
   SupplierPaymentStatus,
   TaxType,
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
+
+// Export AccountType from constants
+export { AccountType } from '@/lib/constants/account-type'
+
+// Import LeadSource and LeadStatus from shared-enums
+export { LeadSource, LeadStatus } from '@/lib/types/shared-enums'

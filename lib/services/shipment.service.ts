@@ -4,13 +4,13 @@ import { AuditService } from './audit.service'
 import { InventoryService } from './inventory/inventory.service'
 import { 
   Prisma,
-  ShipmentStatus,
-  OrderStatus,
   Shipment,
   ShipmentItem,
   SalesOrder,
   Customer
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
+import { OrderStatus } from '@/lib/constants/order-status'
+import { ShipmentStatus } from '@/lib/constants/shipment-status'
 import { MovementType } from '@/lib/types/shared-enums'
 import { AuditAction } from '@/lib/validators/audit.validator'
 
@@ -113,7 +113,7 @@ export class ShipmentService extends BaseService {
           carrier: data.carrier,
           trackingNumber: data.trackingNumber,
           shippingMethod: data.shippingMethod,
-          shipToAddress: order.shippingAddress || order.customer.shippingAddress || '',
+          shipToAddress: order.shippingAddress || order.salesCase?.customer?.address || '',
           shipFromAddress: data.shipFromAddress,
           createdBy: data.createdBy,
           items: {
@@ -133,7 +133,11 @@ export class ShipmentService extends BaseService {
           items: true,
           salesOrder: {
             include: {
-              customer: true,
+              salesCase: {
+                include: {
+                  customer: true
+                }
+              }
             },
           },
         },

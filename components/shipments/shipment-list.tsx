@@ -88,13 +88,19 @@ export function ShipmentList(): React.JSX.Element {
         params.append('search', searchTerm)
       }
 
-      const data = await apiClient<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
+      const response = await apiClient<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
       
-      if (data && data.data) {
-        setShipments(data.data || [])
-        setTotal(data.total || 0)
+      // Handle the response from apiClient
+      if (response.ok && response.data) {
+        setShipments(response.data.data || [])
+        setTotal(response.data.total || 0)
+      } else if (!response.ok) {
+        console.error('API Error:', response.error)
+        throw new Error(response.error || 'Failed to fetch shipments')
       } else {
-        throw new Error('Failed to fetch shipments')
+        console.error('Invalid shipments response:', response)
+        setShipments([])
+        setTotal(0)
       }
     } catch (err) {
       console.error('Error fetching shipments:', err)
@@ -209,9 +215,10 @@ export function ShipmentList(): React.JSX.Element {
               </div>
             </div>
             <div className="w-48">
-              <Select
+              <select
                 value={statusFilter}
-                onValueChange={setStatusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Statuses</option>
                 <option value="PREPARING">Preparing</option>
@@ -220,7 +227,7 @@ export function ShipmentList(): React.JSX.Element {
                 <option value="IN_TRANSIT">In Transit</option>
                 <option value="DELIVERED">Delivered</option>
                 <option value="CANCELLED">Cancelled</option>
-              </Select>
+              </select>
             </div>
           </div>
         </CardContent>

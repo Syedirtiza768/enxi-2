@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { LocationService } from '@/lib/services/warehouse/location.service'
-import { LocationType } from '@/lib/generated/prisma'
+import { LocationType } from "@prisma/client"
 
 // GET /api/locations - Get all locations
 export async function GET(request: NextRequest): Promise<NextResponse> {

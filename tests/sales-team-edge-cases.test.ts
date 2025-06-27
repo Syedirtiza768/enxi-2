@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, jest, afterEach } from '@jest/globals'
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 import { prisma } from '@/lib/db/prisma'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 import { apiClient } from '@/lib/api/client'
 import { createServer } from 'http'
 import { NextRequest } from 'next/server'

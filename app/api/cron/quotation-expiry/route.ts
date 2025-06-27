@@ -1,3 +1,4 @@
+import { getUserFromRequest } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server'
 import { QuotationService } from '@/lib/services/quotation.service'
 import { AuditService } from '@/lib/services/audit.service'
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Log the cron job execution
     await auditService.logAction({
-      userId: 'system',
+      userId: user?.id || 'system',
       action: 'UPDATE',
       entityType: 'System',
       entityId: 'quotation-expiry-job',

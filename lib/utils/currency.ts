@@ -23,7 +23,7 @@ export function getDefaultCurrency(): string {
 
 // Format currency with proper locale and currency code
 export function formatCurrency(
-  amount: number, 
+  amount: number | null | undefined, 
   options: CurrencyFormatOptions = {}
 ): string {
   const {
@@ -33,8 +33,11 @@ export function formatCurrency(
     maximumFractionDigits = 2
   } = options
 
+  // Handle null/undefined amounts
+  const safeAmount = amount ?? 0
+
   // Always use English literal format: CURRENCY_CODE AMOUNT
-  const formattedAmount = amount.toLocaleString(locale, {
+  const formattedAmount = safeAmount.toLocaleString(locale, {
     minimumFractionDigits,
     maximumFractionDigits
   })

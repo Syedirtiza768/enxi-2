@@ -12,7 +12,7 @@
  * 6. Test three-way matching preparation
  */
 
-import { PrismaClient, POStatus, ReceiptStatus } from '@/lib/generated/prisma'
+import { PrismaClient, POStatus, ReceiptStatus } from "@prisma/client"
 import { SupplierService } from '@/lib/services/purchase/supplier.service'
 import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.service'
 import { GoodsReceiptService } from '@/lib/services/purchase/goods-receipt.service'

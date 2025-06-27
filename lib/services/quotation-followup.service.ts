@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/prisma'
 import { BaseService } from './base.service'
 import { NotificationService } from './notification.service'
 import { QuotationService } from './quotation.service'
-import { QuotationStatus } from '@/lib/generated/prisma'
+import { QuotationStatus } from "@prisma/client"
 import { addDays, isAfter, isBefore, differenceInDays } from 'date-fns'
 
 export interface FollowUpConfig {

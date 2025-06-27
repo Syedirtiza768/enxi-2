@@ -7,7 +7,7 @@ import {
   UserSession,
   UserPermission,
   RolePermission
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 

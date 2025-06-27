@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Search, AlertTriangle, Package } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
 import { formatCurrency } from '@/lib/utils/currency'
-import type { Supplier, Account, GoodsReceipt } from '@/lib/generated/prisma'
+import type { Supplier, Account, GoodsReceipt } from "@prisma/client"
 
 interface SupplierWithRelations extends Supplier {
   account?: Account | null

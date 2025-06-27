@@ -93,7 +93,7 @@ export function ItemList({
       SERVICE: { text: 'Service', className: 'bg-purple-100 text-purple-800' },
       RAW_MATERIAL: { text: 'Raw Material', className: 'bg-gray-100 text-gray-800' }
     }
-    const badge = badges[type]
+    const badge = badges[type] || { text: type, className: 'bg-gray-100 text-gray-800' }
     return (
       <span className={`px-2 py-1 text-xs font-medium rounded-full ${badge.className}`}>
         {badge.text}

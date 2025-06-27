@@ -4,7 +4,7 @@ import { CategoryService } from '@/lib/services/inventory/category.service'
 import { UnitOfMeasureService } from '@/lib/services/inventory/unit-of-measure.service'
 import { ItemService } from '@/lib/services/inventory/item.service'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
-import { MovementType, ItemType } from '@/lib/generated/prisma'
+import { MovementType, ItemType } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Stock Movement Service', () => {

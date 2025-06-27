@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
-import { TaxType } from '@/lib/generated/prisma'
+import { TaxType } from '@/lib/types/shared-enums'
 
 async function seedTaxConfiguration(): Promise<User> {
   console.log('🌱 Starting tax configuration seed...')

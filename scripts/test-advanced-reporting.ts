@@ -12,7 +12,7 @@
  * 6. Report export functionality
  */
 
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { FinancialDashboardService } from '@/lib/services/reporting/financial-dashboard.service'
 import { InventoryAnalyticsService } from '@/lib/services/reporting/inventory-analytics.service'
 import { SalesAnalyticsService } from '@/lib/services/reporting/sales-analytics.service'

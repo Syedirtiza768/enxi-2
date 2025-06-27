@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { Category, Prisma } from '@/lib/generated/prisma'
+import { Category, Prisma } from "@prisma/client"
 
 export interface CreateCategoryInput {
   code: string

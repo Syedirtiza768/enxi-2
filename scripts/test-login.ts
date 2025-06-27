@@ -1,6 +1,6 @@
 import axios from 'axios'
 import bcrypt from 'bcryptjs'
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 const API_URL = 'http://localhost:3000/api'

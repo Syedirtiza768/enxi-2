@@ -9,9 +9,9 @@ import {
   Invoice,
   InvoiceItem,
   Payment,
-  Prisma,
-  OrderStatus
-} from '@/lib/generated/prisma'
+  Prisma
+} from "@prisma/client"
+import { OrderStatus } from '@/lib/constants/order-status'
 
 export interface InvoiceWithDetails extends Invoice {
   customer: {
@@ -91,13 +91,13 @@ export class InvoiceService extends BaseService {
         // Validate sales order if provided
         let salesOrder = null
         if (data.salesOrderId) {
-          salesOrder = await this.salesOrderService.getSalesOrder(data.salesOrderId)
+          // Only fetch basic info needed for update
+          salesOrder = await tx.salesOrder.findUnique({
+            where: { id: data.salesOrderId },
+            select: { id: true, status: true }
+          })
           if (!salesOrder) {
             throw new Error('Sales order not found')
-          }
-          const validStatuses: OrderStatus[] = [OrderStatus.APPROVED, OrderStatus.PROCESSING, OrderStatus.SHIPPED]
-          if (!validStatuses.includes(salesOrder.status)) {
-            throw new Error('Sales order must be approved, processing, or shipped to create invoice')
           }
         }
 
@@ -179,6 +179,8 @@ export class InvoiceService extends BaseService {
 
 
         return this.getInvoice(invoice.id, tx)
+      }, {
+        timeout: 10000 // 10 seconds timeout
       })
       
       if (!result) {
@@ -564,11 +566,12 @@ export class InvoiceService extends BaseService {
     const invoiceData: CreateInvoiceInput & { createdBy: string } = {
       salesOrderId,
       customerId: salesOrder.salesCase.customer.id,
-      dueDate,
       paymentTerms: salesOrder.paymentTerms,
       billingAddress: salesOrder.billingAddress,
       items,
-      ...additionalData
+      ...additionalData,
+      dueDate: additionalData.dueDate || dueDate,
+      createdBy: additionalData.createdBy
     }
 
       return this.createInvoice(invoiceData)

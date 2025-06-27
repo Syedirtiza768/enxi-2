@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { SalesCaseService } from '@/lib/services/sales-case.service'
 import { CustomerService } from '@/lib/services/customer.service'
-import { SalesCaseStatus } from '@/lib/generated/prisma'
+import { SalesCaseStatus } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 describe('Sales Case Service', () => {

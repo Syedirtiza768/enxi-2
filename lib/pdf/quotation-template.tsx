@@ -31,8 +31,23 @@ interface QuotationPDFData {
   lines?: Array<{
     lineNumber: number
     lineDescription: string
-    quantity: number
-    totalAmount: number
+    quantity?: number
+    totalAmount?: number
+    lineTotalAmount?: number
+    lineSubtotal?: number
+    itemCount?: number
+    items?: Array<{
+      id?: string
+      itemCode: string
+      description: string
+      internalDescription?: string
+      quantity: number
+      unitPrice: number
+      discount?: number
+      taxRate?: number
+      totalAmount: number
+      margin?: number
+    }>
   }>
   items?: Array<{
     id: string
@@ -343,13 +358,14 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
   showTaxBreakdown = true,
   viewType = 'client'
 }) => {
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     // Use English literal format: CURRENCY_CODE AMOUNT
     const currency = quotation.currency || 'USD'
+    const safeAmount = amount ?? 0
     const formattedAmount = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount)
+    }).format(safeAmount)
     return `${currency} ${formattedAmount}`
   }
 
@@ -361,8 +377,9 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
     })
   }
 
-  const formatPercent = (percent: number) => {
-    return `${percent.toFixed(1)}%`
+  const formatPercent = (percent: number | null | undefined) => {
+    const safePercent = percent ?? 0
+    return `${safePercent.toFixed(1)}%`
   }
 
   const getStatusColor = (status: string) => {
@@ -461,7 +478,16 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
         <View style={styles.itemsTable}>
           <Text style={styles.sectionTitle}>Items & Services:</Text>
           
-          {viewType === 'client' && quotation.lines ? (
+          {/* Debug Info */}
+          {(!quotation.lines || quotation.lines.length === 0) && (!quotation.items || quotation.items.length === 0) && (
+            <View style={{ padding: 20, backgroundColor: '#FEF2F2', marginBottom: 10 }}>
+              <Text style={{ color: '#991B1B', fontSize: 10 }}>
+                No items found in quotation
+              </Text>
+            </View>
+          )}
+          
+          {viewType === 'client' && quotation.lines && quotation.lines.length > 0 ? (
             <>
               {/* Client View - Show Lines */}
               <View style={styles.tableHeader}>
@@ -484,40 +510,71 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
                     <Text style={styles.cellText}>{line.quantity}</Text>
                   </Text>
                   <Text style={{ ...styles.itemTotal, width: '20%' }}>
-                    <Text style={styles.cellText}>{formatCurrency(line.totalAmount)}</Text>
+                    <Text style={styles.cellText}>{formatCurrency(line.totalAmount || line.lineTotalAmount)}</Text>
                   </Text>
                 </View>
               ))}
             </>
-          ) : viewType === 'internal' && quotation.items ? (
+          ) : viewType === 'internal' && quotation.lines && quotation.lines.length > 0 ? (
             <>
-              {/* Internal View - Show Detailed Items */}
-              <View style={styles.tableHeader}>
-                <Text style={{ ...styles.itemCode, width: '12%' }}>Item Code</Text>
-                <Text style={{ ...styles.itemDescription, width: '28%' }}>Description</Text>
-                <Text style={{ ...styles.itemQuantity, width: '8%' }}>Qty</Text>
-                <Text style={{ ...styles.itemPrice, width: '10%' }}>Price</Text>
-                <Text style={{ ...styles.itemDiscount, width: '8%' }}>Disc</Text>
-                <Text style={{ ...styles.itemTax, width: '8%' }}>Tax</Text>
-                <Text style={{ ...styles.itemTotal, width: '12%' }}>Total</Text>
-                {viewType === 'internal' && (
-                  <>
-                    <Text style={{ ...styles.itemTotal, width: '7%' }}>Cost</Text>
-                    <Text style={{ ...styles.itemTotal, width: '7%' }}>Margin</Text>
-                  </>
-                )}
-              </View>
+              {/* Internal View - Show Lines with Detailed Items */}
+              {quotation.lines.map((line, lineIndex) => (
+                <View key={line.lineNumber}>
+                  {/* Line Header */}
+                  <View style={{
+                    backgroundColor: '#F3F4F6',
+                    padding: 10,
+                    marginTop: lineIndex > 0 ? 10 : 0,
+                    marginBottom: 5
+                  }}>
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                      color: '#1F2937'
+                    }}>
+                      Line {line.lineNumber}: {line.lineDescription || 'Line Items'}
+                    </Text>
+                    <Text style={{
+                      fontSize: 10,
+                      color: '#6B7280',
+                      marginTop: 2
+                    }}>
+                      {line.itemCount} item{line.itemCount !== 1 ? 's' : ''} • Subtotal: {formatCurrency(line.lineSubtotal || line.lineTotalAmount || line.totalAmount)}
+                    </Text>
+                  </View>
 
-              {/* Table Rows */}
-              {quotation.items.map((item, index) => (
+                  {/* Items Table Header */}
+                  <View style={styles.tableHeader}>
+                    <Text style={{ ...styles.itemCode, width: '12%' }}>Item Code</Text>
+                    <Text style={{ ...styles.itemDescription, width: '33%' }}>Description</Text>
+                    <Text style={{ ...styles.itemQuantity, width: '8%' }}>Qty</Text>
+                    <Text style={{ ...styles.itemPrice, width: '10%' }}>Price</Text>
+                    <Text style={{ ...styles.itemDiscount, width: '8%' }}>Disc</Text>
+                    <Text style={{ ...styles.itemTax, width: '8%' }}>Tax</Text>
+                    <Text style={{ ...styles.itemTotal, width: '12%' }}>Total</Text>
+                    <Text style={{ ...styles.itemTotal, width: '9%' }}>Margin</Text>
+                  </View>
+
+                  {/* Line Items */}
+                  {line.items && line.items.map((item, index) => (
                 <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
                   <Text style={{ ...styles.itemCode, width: '12%' }}>
                     <Text style={styles.cellText}>{item.itemCode}</Text>
                   </Text>
-                  <View style={{ ...styles.itemDescription, width: '28%' }}>
+                  <View style={{ ...styles.itemDescription, width: '33%' }}>
                     <Text style={styles.lineItemText}>
-                      {viewType === 'internal' && item.internalDescription ? item.internalDescription : item.description}
+                      {item.description}
                     </Text>
+                    {item.internalDescription && (
+                      <Text style={{
+                        fontSize: 9,
+                        color: '#6B7280',
+                        fontStyle: 'italic',
+                        marginTop: 2
+                      }}>
+                        Internal: {item.internalDescription}
+                      </Text>
+                    )}
                   </View>
                   <Text style={{ ...styles.itemQuantity, width: '8%' }}>
                     <Text style={styles.cellText}>{item.quantity}</Text>
@@ -534,16 +591,13 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
                   <Text style={{ ...styles.itemTotal, width: '12%' }}>
                     <Text style={styles.cellText}>{formatCurrency(item.totalAmount)}</Text>
                   </Text>
-                  {viewType === 'internal' && (
-                    <>
-                      <Text style={{ ...styles.itemTotal, width: '7%' }}>
-                        {item.cost ? formatCurrency(item.cost) : '-'}
-                      </Text>
-                      <Text style={{ ...styles.itemTotal, width: '7%' }}>
-                        {item.margin !== undefined ? formatPercent(item.margin) : '-'}
-                      </Text>
-                    </>
-                  )}
+                  <Text style={{ ...styles.itemTotal, width: '9%' }}>
+                    <Text style={styles.cellText}>
+                      {item.margin !== undefined ? formatPercent(item.margin) : '-'}
+                    </Text>
+                  </Text>
+                </View>
+                  ))}
                 </View>
               ))}
             </>

@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 
-import { PrismaClient, ItemType } from '@/lib/generated/prisma'
+import { PrismaClient, ItemType } from "@prisma/client"
 import jwt from 'jsonwebtoken'
 import fetch from 'node-fetch'
 

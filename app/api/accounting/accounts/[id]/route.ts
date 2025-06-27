@@ -3,7 +3,7 @@ import { getUserFromRequest } from '@/lib/utils/auth'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 import { 
   AccountStatus 
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 interface RouteParams {
   params: Promise<{ id: string }>

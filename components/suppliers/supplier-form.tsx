@@ -1021,6 +1021,7 @@ export function SupplierForm({ supplier, onSuccess }: SupplierFormProps) {
                     onChange={handleChange}
                     options={[
                       { value: 'AED', label: 'AED - UAE Dirham' },
+                      { value: 'PKR', label: 'PKR - Pakistani Rupee' },
                       { value: 'USD', label: 'USD - US Dollar' },
                       { value: 'EUR', label: 'EUR - Euro' },
                       { value: 'GBP', label: 'GBP - British Pound' },

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { UserService } from '@/lib/services/user.service'
 import { createProtectedHandler } from '@/lib/middleware/rbac.middleware'
 import { z } from 'zod'
-import { Role } from '@/lib/generated/prisma'
+// Role values: SUPER_ADMIN, ADMIN, MANAGER, SALES_REP, ACCOUNTANT, WAREHOUSE, VIEWER, USER
 
 const userService = new UserService()
 
@@ -10,7 +10,7 @@ const userService = new UserService()
 const updateUserSchema = z.object({
   username: z.string().min(3).max(50).optional(),
   email: z.string().email().optional(),
-  role: z.nativeEnum(Role).optional(),
+  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'SALES_REP', 'ACCOUNTANT', 'WAREHOUSE', 'VIEWER', 'USER']).optional(),
   isActive: z.boolean().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),

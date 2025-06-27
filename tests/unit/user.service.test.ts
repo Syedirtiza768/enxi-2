@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { UserService } from '@/lib/services/user.service'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 import * as bcrypt from 'bcryptjs'
 
 // Mock Prisma

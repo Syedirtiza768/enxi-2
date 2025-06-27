@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { taxService } from '@/lib/services/tax.service'
 import { withAuth } from '@/lib/utils/auth'
-import { TaxCategory } from '@/lib/generated/prisma'
+import { TaxCategory } from "@prisma/client"
 
 // GET /api/tax-categories
 export async function GET(request: NextRequest): Promise<NextResponse> {

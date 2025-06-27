@@ -49,7 +49,7 @@ export type JournalStatus = typeof JournalStatus[keyof typeof JournalStatus]
 //   TransferStatus,
 //   CountType,
 //   CountStatus
-// } from '@/lib/generated/prisma'
+// } from "@prisma/client"
 
 // Define TaxType as a constant since it's not an enum in the schema
 export const TaxType = {

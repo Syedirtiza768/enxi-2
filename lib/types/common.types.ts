@@ -36,7 +36,7 @@ import {
   TaxExemption,
   UnitOfMeasure,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 /**
  * Form Event Types

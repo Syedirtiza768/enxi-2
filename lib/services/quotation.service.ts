@@ -10,8 +10,7 @@ import {
   Quotation,
   QuotationItem,
   Prisma
-} from '@/lib/generated/prisma'
-import { QuotationStatus } from '@/lib/constants/quotation.constants'
+} from "@prisma/client"
 import { SalesCaseStatus } from '@/lib/types/shared-enums'
 
 export interface CreateQuotationInput {
@@ -223,7 +222,7 @@ export class QuotationService extends BaseService {
             quotationNumber,
             salesCaseId: data.salesCaseId,
             version: 1,
-            status: QuotationStatus.DRAFT,
+            status: 'DRAFT',
             validUntil: data.validUntil,
             paymentTerms: data.paymentTerms,
             deliveryTerms: data.deliveryTerms,
@@ -301,25 +300,56 @@ export class QuotationService extends BaseService {
     data: UpdateQuotationInput & { createdBy: string }
   ): Promise<QuotationWithDetails> {
     return this.withLogging('createNewVersion', async () => {
+      console.log('Creating new version for quotation:', quotationId)
       const existingQuotation = await this.getQuotation(quotationId)
       if (!existingQuotation) {
-        throw new Error('Quotation not found')
+        console.error('Quotation not found with ID:', quotationId)
+        throw new Error(`Quotation not found with ID: ${quotationId}`)
       }
 
     // Generate new quotation number with version
     const newVersion = existingQuotation.version + 1
     const baseNumber = existingQuotation.quotationNumber.split('-v')[0]
     const quotationNumber = `${baseNumber}-v${newVersion}`
+    
+    console.log('Generating new quotation number:', {
+      existing: existingQuotation.quotationNumber,
+      existingVersion: existingQuotation.version,
+      newVersion,
+      baseNumber,
+      newQuotationNumber: quotationNumber
+    })
+    
+    // Check if a quotation with this number already exists
+    const existingWithNumber = await prisma.quotation.findUnique({
+      where: { quotationNumber }
+    })
+    
+    if (existingWithNumber) {
+      console.error('Quotation with number already exists:', quotationNumber)
+      throw new Error(`Quotation with number ${quotationNumber} already exists. Please try again.`)
+    }
 
     // Use existing items if not provided
     const items = data.items || existingQuotation.items.map(item => ({
+      lineNumber: item.lineNumber,
+      lineDescription: item.lineDescription,
+      isLineHeader: item.isLineHeader,
+      itemType: item.itemType,
+      itemId: item.itemId,
       itemCode: item.itemCode,
       description: item.description,
+      internalDescription: item.internalDescription,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
+      unitOfMeasureId: item.unitOfMeasureId,
+      cost: item.cost,
       discount: item.discount,
       taxRate: item.taxRate,
-      sortOrder: item.sortOrder
+      taxRateId: item.taxRateId,
+      sortOrder: item.sortOrder,
+      availabilityStatus: item.availabilityStatus,
+      availableQuantity: item.availableQuantity
     }))
 
     // Get customer ID for tax calculations
@@ -343,7 +373,7 @@ export class QuotationService extends BaseService {
         quotationNumber,
         salesCaseId: existingQuotation.salesCaseId,
         version: newVersion,
-        status: QuotationStatus.DRAFT,
+        status: 'DRAFT',
         validUntil: data.validUntil ?? existingQuotation.validUntil,
         paymentTerms: data.paymentTerms ?? existingQuotation.paymentTerms,
         deliveryTerms: data.deliveryTerms ?? existingQuotation.deliveryTerms,
@@ -354,11 +384,15 @@ export class QuotationService extends BaseService {
         totalAmount: calculations.totalAmount,
         createdBy: data.createdBy,
         items: {
-          create: items.map((item, index) => ({
-            ...item,
-            ...itemTotalsArray[index],
-            sortOrder: item.sortOrder ?? index
-          }))
+          create: items.map((item, index) => {
+            // Exclude fields that should not be included when creating new items
+            const { id, quotationId, createdAt, updatedAt, ...itemData } = item as any
+            return {
+              ...itemData,
+              ...itemTotalsArray[index],
+              sortOrder: item.sortOrder ?? index
+            }
+          })
         }
       },
       include: {
@@ -398,7 +432,7 @@ export class QuotationService extends BaseService {
       }
 
     // Only allow updates to draft quotations
-    if (existingQuotation.status !== QuotationStatus.DRAFT) {
+    if (existingQuotation.status !== 'DRAFT') {
       throw new Error('Only draft quotations can be updated')
     }
 
@@ -514,37 +548,60 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-    // Group items by line number for client view
-    const lineGroups = new Map<number, any[]>()
-    
-    quotation.items.forEach(item => {
-      if (!lineGroups.has(item.lineNumber)) {
-        lineGroups.set(item.lineNumber, [])
-      }
-      lineGroups.get(item.lineNumber)?.push(item)
-    })
-
-    // Create client-friendly line structure
-    const clientLines = Array.from(lineGroups.entries()).map(([lineNumber, items]) => {
-      const lineHeader = items.find(item => item.isLineHeader)
-      const lineTotal = items.reduce((sum, item) => sum + item.totalAmount, 0)
+      // Group items by line number for client view
+      const lineGroups = new Map<number, any[]>()
       
-      return {
-        lineNumber,
-        lineDescription: lineHeader?.lineDescription || '',
-        quantity: lineHeader?.quantity || 1,
-        totalAmount: lineTotal,
-        // Don't show individual items or internal details
-      }
-    })
+      quotation.items.forEach(item => {
+        if (!lineGroups.has(item.lineNumber)) {
+          lineGroups.set(item.lineNumber, [])
+        }
+        lineGroups.get(item.lineNumber)?.push(item)
+      })
 
-    // Remove internal fields from quotation
-    const clientQuotation = {
-      ...quotation,
-      internalNotes: undefined,
-      lines: clientLines,
-      items: undefined // Remove detailed items from client view
-    }
+      // Create client-friendly line structure - only show line descriptions and totals
+      const clientLines = Array.from(lineGroups.entries())
+        .sort(([a], [b]) => a - b) // Sort by line number
+        .map(([lineNumber, items]) => {
+          const lineHeader = items.find(item => item.isLineHeader)
+          
+          // Calculate totals for the entire line
+          const lineSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+          const lineTaxAmount = items.reduce((sum, item) => sum + item.taxAmount, 0)
+          const lineDiscountAmount = items.reduce((sum, item) => sum + item.discountAmount, 0)
+          const lineTotalAmount = items.reduce((sum, item) => sum + item.totalAmount, 0)
+          
+          // For client view, aggregate quantities if meaningful
+          const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+          
+          return {
+            lineNumber,
+            lineDescription: lineHeader?.lineDescription || `Line ${lineNumber}`,
+            quantity: totalQuantity,
+            unitPrice: lineSubtotal / (totalQuantity || 1), // Average unit price
+            subtotal: lineSubtotal,
+            taxAmount: lineTaxAmount,
+            discountAmount: lineDiscountAmount,
+            totalAmount: lineTotalAmount
+            // No individual items shown in client view
+          }
+        })
+
+      // Get company default currency
+      const companySettings = await this.settingsService.getSettings()
+      
+      // Remove internal fields from quotation
+      const clientQuotation = {
+        ...quotation,
+        currency: companySettings.defaultCurrency || 'AED', // Use company's default currency
+        internalNotes: undefined,
+        lines: clientLines,
+        items: undefined, // Remove detailed items from client view
+        // Recalculate totals from lines to ensure consistency
+        subtotal: clientLines.reduce((sum, line) => sum + line.subtotal, 0),
+        taxAmount: clientLines.reduce((sum, line) => sum + line.taxAmount, 0),
+        discountAmount: clientLines.reduce((sum, line) => sum + line.discountAmount, 0),
+        totalAmount: clientLines.reduce((sum, line) => sum + line.totalAmount, 0)
+      }
 
       return clientQuotation
     })
@@ -557,18 +614,60 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-    // Calculate margins for items
-    const itemsWithMargins = quotation.items.map(item => ({
-      ...item,
-      // Calculate margin if cost is available
-      margin: item.cost && item.unitPrice > 0 ? 
-        ((item.unitPrice - item.cost) / item.unitPrice) * 100 : 
-        undefined
-    }))
+      // Group items by line number for internal view
+      const lineGroups = new Map<number, any[]>()
+      
+      quotation.items.forEach(item => {
+        if (!lineGroups.has(item.lineNumber)) {
+          lineGroups.set(item.lineNumber, [])
+        }
+        lineGroups.get(item.lineNumber)?.push(item)
+      })
 
+      // Create structured lines with all details for internal view
+      const lines = Array.from(lineGroups.entries())
+        .sort(([a], [b]) => a - b) // Sort by line number
+        .map(([lineNumber, items]) => {
+          const lineHeader = items.find(item => item.isLineHeader)
+          const sortedItems = items.sort((a, b) => a.sortOrder - b.sortOrder)
+          
+          // Calculate line totals
+          const lineSubtotal = items.reduce((sum, item) => sum + item.subtotal, 0)
+          const lineTaxAmount = items.reduce((sum, item) => sum + item.taxAmount, 0)
+          const lineDiscountAmount = items.reduce((sum, item) => sum + item.discountAmount, 0)
+          const lineTotalAmount = items.reduce((sum, item) => sum + item.totalAmount, 0)
+          
+          // Calculate margins for items
+          const itemsWithMargins = sortedItems.map(item => ({
+            ...item,
+            margin: item.cost && item.unitPrice > 0 ? 
+              ((item.unitPrice - item.cost) / item.unitPrice) * 100 : 
+              undefined
+          }))
+          
+          return {
+            lineNumber,
+            lineDescription: lineHeader?.lineDescription || `Line ${lineNumber}`,
+            isLineHeader: true,
+            items: itemsWithMargins,
+            // Line totals
+            lineSubtotal,
+            lineTaxAmount,
+            lineDiscountAmount,
+            lineTotalAmount,
+            // Line item counts
+            itemCount: items.length
+          }
+        })
+
+      // Get company default currency
+      const companySettings = await this.settingsService.getSettings()
+      
       return {
         ...quotation,
-        items: itemsWithMargins
+        currency: companySettings.defaultCurrency || 'AED', // Use company's default currency
+        lines,
+        items: undefined // Remove flat items array since we have structured lines
       }
     })
   }
@@ -607,7 +706,7 @@ export class QuotationService extends BaseService {
       })
 
       // Update sales case if quotation is accepted
-      if (status === QuotationStatus.ACCEPTED) {
+      if (status === 'ACCEPTED') {
         await tx.salesCase.update({
           where: { id: quotation.salesCaseId },
           data: { 
@@ -637,7 +736,8 @@ export class QuotationService extends BaseService {
 
   async getQuotation(id: string): Promise<QuotationWithDetails | null> {
     return this.withLogging('getQuotation', async () => {
-
+      console.log('Looking for quotation with ID:', id)
+      
       const quotation = await prisma.quotation.findUnique({
         where: { id },
         include: {
@@ -653,9 +753,9 @@ export class QuotationService extends BaseService {
       })
 
       if (!quotation) {
-        // Quotation not found
+        console.log('Quotation not found in database for ID:', id)
       } else {
-        // Quotation found
+        console.log('Found quotation:', quotation.quotationNumber, 'with', quotation.items.length, 'items')
       }
 
       return quotation
@@ -780,7 +880,7 @@ export class QuotationService extends BaseService {
         throw new Error('Only draft quotations can be sent')
       }
 
-      const result = await this.updateQuotationStatus(quotationId, QuotationStatus.SENT, userId)
+      const result = await this.updateQuotationStatus(quotationId, 'SENT', userId)
 
 
       return result
@@ -798,7 +898,7 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-      if (quotation.status !== QuotationStatus.SENT) {
+      if (quotation.status !== 'SENT') {
         throw new Error('Only sent quotations can be accepted')
       }
 
@@ -807,7 +907,7 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation has expired')
       }
 
-      const result = await this.updateQuotationStatus(quotationId, QuotationStatus.ACCEPTED, userId)
+      const result = await this.updateQuotationStatus(quotationId, 'ACCEPTED', userId)
 
 
       return result
@@ -824,11 +924,11 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-      if (quotation.status !== QuotationStatus.SENT) {
+      if (quotation.status !== 'SENT') {
         throw new Error('Only sent quotations can be rejected')
       }
 
-      return this.updateQuotationStatus(quotationId, QuotationStatus.REJECTED, userId)
+      return this.updateQuotationStatus(quotationId, 'REJECTED', userId)
     })
   }
 
@@ -842,15 +942,15 @@ export class QuotationService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-      if (quotation.status === QuotationStatus.ACCEPTED) {
+      if (quotation.status === 'ACCEPTED') {
         throw new Error('Cannot cancel accepted quotations')
       }
 
-      if (quotation.status === QuotationStatus.CANCELLED) {
+      if (quotation.status === 'CANCELLED') {
         throw new Error('Quotation is already cancelled')
       }
 
-      return this.updateQuotationStatus(quotationId, QuotationStatus.CANCELLED, userId)
+      return this.updateQuotationStatus(quotationId, 'CANCELLED', userId)
     })
   }
 
@@ -858,7 +958,7 @@ export class QuotationService extends BaseService {
     return this.withLogging('checkExpiredQuotations', async () => {
       const expiredQuotations = await prisma.quotation.findMany({
         where: {
-          status: QuotationStatus.SENT,
+          status: 'SENT',
           validUntil: {
             lt: new Date()
           }
@@ -868,7 +968,7 @@ export class QuotationService extends BaseService {
       for (const quotation of expiredQuotations) {
         await prisma.quotation.update({
           where: { id: quotation.id },
-          data: { status: QuotationStatus.EXPIRED }
+          data: { status: 'EXPIRED' }
         })
       }
     })
@@ -947,12 +1047,12 @@ export class QuotationService extends BaseService {
 
   private validateStatusTransition(currentStatus: QuotationStatus, newStatus: QuotationStatus): void {
     const validTransitions: Record<QuotationStatus, QuotationStatus[]> = {
-      [QuotationStatus.DRAFT]: [QuotationStatus.SENT, QuotationStatus.CANCELLED],
-      [QuotationStatus.SENT]: [QuotationStatus.ACCEPTED, QuotationStatus.REJECTED, QuotationStatus.EXPIRED, QuotationStatus.CANCELLED],
-      [QuotationStatus.ACCEPTED]: [],
-      [QuotationStatus.REJECTED]: [QuotationStatus.CANCELLED],
-      [QuotationStatus.EXPIRED]: [QuotationStatus.CANCELLED],
-      [QuotationStatus.CANCELLED]: []
+      ['DRAFT']: ['SENT', 'CANCELLED'],
+      ['SENT']: ['ACCEPTED', 'REJECTED', 'EXPIRED', 'CANCELLED'],
+      ['ACCEPTED']: [],
+      ['REJECTED']: ['CANCELLED'],
+      ['EXPIRED']: ['CANCELLED'],
+      ['CANCELLED']: []
     }
 
     if (!validTransitions[currentStatus].includes(newStatus)) {

@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -485,6 +484,7 @@ model Shipment {
   createdBy       String
   shippedBy       String?
   deliveredBy     String?
+  notes           String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   shippedAt       DateTime?
@@ -504,7 +504,9 @@ model ShipmentItem {
   itemId           String
   itemCode         String
   description      String
+  quantity         Float    // Alias for quantityShipped for consistency
   quantityShipped  Float
+  trackingDetails  String?
   shipment         Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   item             Item     @relation("ShipmentItemProduct", fields: [itemId], references: [id])
 

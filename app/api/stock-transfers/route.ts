@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { StockTransferService } from '@/lib/services/warehouse/stock-transfer.service'
-import { TransferStatus } from '@/lib/generated/prisma'
+import { TransferStatus } from "@prisma/client"
 
 // GET /api/stock-transfers - Get all stock transfers
 export async function GET(request: NextRequest): Promise<NextResponse> {

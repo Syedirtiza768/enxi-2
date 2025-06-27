@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { PurchaseOrderService } from '@/lib/services/purchase/purchase-order.service'
-import { POStatus } from '@/lib/generated/prisma'
+import { POStatus } from "@prisma/client"
 
 // GET /api/purchase-orders - Get all purchase orders
 export async function GET(request: NextRequest): Promise<NextResponse> {

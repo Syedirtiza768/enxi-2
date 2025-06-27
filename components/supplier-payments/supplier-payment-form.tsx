@@ -320,9 +320,11 @@ export function SupplierPaymentForm({
                     onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                     required
                   >
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
+                    <option value="AED">AED - UAE Dirham</option>
+                    <option value="PKR">PKR - Pakistani Rupee</option>
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
                   </Select>
                 </VStack>
               </Grid>

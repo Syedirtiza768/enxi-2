@@ -2,15 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
 import { 
-  AccountType, 
   AccountStatus 
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
+import { AccountType } from '@/lib/constants/account-type'
 
 // GET /api/accounting/accounts - List all accounts with filtering
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
     const chartOfAccountsService = new ChartOfAccountsService()
     const searchParams = request.nextUrl.searchParams
     
@@ -53,8 +59,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // POST /api/accounting/accounts - Create new account
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = { user: { id: 'system' } }
-    // const user = await getUserFromRequest(request)
+    const user = await getUserFromRequest(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
     const body = await request.json()
     const { code, name, type, currency, description, parentId } = body
 
@@ -81,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       currency: currency || 'USD',
       description,
       parentId,
-      createdBy: session.user.id
+      createdBy: user.id
     })
 
     return NextResponse.json({

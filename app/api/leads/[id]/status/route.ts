@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LeadService } from '@/lib/services/lead.service'
-import { LeadStatus } from '@/lib/generated/prisma'
+// LeadStatus values: NEW, CONTACTED, QUALIFIED, PROPOSAL_SENT, NEGOTIATING, CONVERTED, LOST, DISQUALIFIED
 import { z } from 'zod'
 
 const updateStatusSchema = z.object({
-  status: z.nativeEnum(LeadStatus)
+  status: z.enum(['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL_SENT', 'NEGOTIATING', 'CONVERTED', 'LOST', 'DISQUALIFIED'])
 })
 
 const leadService = new LeadService()

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromRequest } from '@/lib/utils/auth'
 import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
-import { ReceiptStatus } from '@/lib/types/shared-enums'
+// ReceiptStatus values: PENDING, PARTIAL, COMPLETED, CANCELLED
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       deliveryNote: z.string().optional(),
       condition: z.string().optional(),
       notes: z.string().optional(),
-      status: z.nativeEnum(ReceiptStatus).optional()
+      status: z.enum(['PENDING', 'PARTIAL', 'COMPLETED', 'CANCELLED']).optional()
     })
     
     const data = updateSchema.parse(body)

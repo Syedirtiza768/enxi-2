@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 
 async function createAdminUser() {
   try {

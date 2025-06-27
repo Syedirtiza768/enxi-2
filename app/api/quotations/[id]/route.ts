@@ -109,6 +109,9 @@ export async function PUT(
     const quotationService = new QuotationService()
     const { id } = await context.params
     
+    console.log('PUT /api/quotations/[id] - Updating quotation with ID:', id)
+    console.log('Update data:', updateData)
+    
     const quotation = await quotationService.createNewVersion(id, {
       ...updateData,
       createdBy: session.user.id
@@ -122,6 +125,14 @@ export async function PUT(
     console.error('Error updating quotation:', error)
     
     const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    // Log detailed error for debugging
+    console.error('Detailed error:', {
+      message: errorMessage,
+      stack: errorStack,
+      quotationId: (await context.params).id
+    })
     
     if (errorMessage.includes('not found')) {
       return NextResponse.json(
@@ -131,7 +142,7 @@ export async function PUT(
     }
 
     return NextResponse.json(
-      { error: 'Failed to update quotation' },
+      { error: 'Failed to update quotation', details: errorMessage },
       { status: 500 }
     )
   }

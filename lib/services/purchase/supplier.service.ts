@@ -2,9 +2,9 @@ import { prisma } from '@/lib/db/prisma'
 import { BaseService } from '../base.service'
 import { 
   Supplier, 
-  Prisma,
-  AccountType
-} from '@/lib/generated/prisma'
+  Prisma
+} from "@prisma/client"
+import { AccountType } from '@/lib/constants/account-type'
 
 export interface CreateSupplierInput {
   supplierNumber?: string

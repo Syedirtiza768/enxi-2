@@ -1,19 +1,8 @@
+import { PurchaseOrderStatus, QuotationStatus } from "@prisma/client";
+import { AccountType } from '@/lib/constants/account-type';
 import { prisma } from '@/lib/db/prisma'
 import bcrypt from 'bcryptjs'
-import { 
-  AccountType, 
-  ExpenseStatus,
-  ItemType,
-  LocationType,
-  MovementType,
-  PurchaseOrderStatus,
-  SalesCaseStatus,
-  SalesCaseStage,
-  SalesCaseSource,
-  QuotationStatus,
-  Priority,
-  CustomerType
-} from '@/lib/types/shared-enums'
+import { ExpenseStatus, ItemType, LocationType, MovementType, SalesCaseStatus, SalesCaseStage, SalesCaseSource, Priority, CustomerType } from "@/lib/types/shared-enums"
 import { DEFAULT_CHART_OF_ACCOUNTS } from '@/lib/constants/default-accounts'
 
 async function clearDatabase() {

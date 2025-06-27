@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { FinancialStatementsService } from '@/lib/services/accounting/financial-statements.service'
 import { JournalEntryService } from '@/lib/services/accounting/journal-entry.service'
 import { ChartOfAccountsService } from '@/lib/services/accounting/chart-of-accounts.service'
-import { AccountType } from '@/lib/generated/prisma'
+import { AccountType } from '@/lib/constants/account-type'
 import { prisma } from '@/lib/db/prisma'
 
 describe('Financial Statements Service', () => {

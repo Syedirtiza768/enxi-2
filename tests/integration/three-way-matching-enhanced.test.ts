@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { ThreeWayMatchingService } from '@/lib/services/purchase/three-way-matching.service'
 
 const prisma = new PrismaClient()

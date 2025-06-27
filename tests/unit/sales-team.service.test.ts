@@ -1,6 +1,6 @@
 import { SalesTeamService } from '@/lib/services/sales-team.service'
 import { prisma } from '@/lib/db/prisma'
-import { Role } from '@/lib/generated/prisma'
+import { Role } from "@prisma/client"
 import bcrypt from 'bcryptjs'
 
 // Mock the prisma client

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { SupplierPaymentService } from '@/lib/services/purchase/supplier-payment.service'
-import { PaymentMethod } from '@/lib/generated/prisma'
+import { PaymentMethod } from "@prisma/client"
 
 // GET /api/supplier-payments - Get all supplier payments
 export async function GET(request: NextRequest): Promise<NextResponse> {

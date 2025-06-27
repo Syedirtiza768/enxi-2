@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoiceService } from '@/lib/services/invoice.service'
-import { InvoiceType } from '@/lib/generated/prisma'
+// InvoiceType values: SALES, PURCHASE, CREDIT_NOTE, DEBIT_NOTE
 import { z } from 'zod'
 
 const createInvoiceFromOrderSchema = z.object({
-  type: z.nativeEnum(InvoiceType).optional(),
+  type: z.enum(['SALES', 'PURCHASE', 'CREDIT_NOTE', 'DEBIT_NOTE']).optional(),
   dueDate: z.string().datetime().optional(),
   paymentTerms: z.string().optional(),
   billingAddress: z.string().optional(),

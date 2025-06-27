@@ -11,7 +11,7 @@ import {
   OrderStatus,
   QuotationStatus,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 
 export interface SalesOrderWithDetails extends SalesOrder {
@@ -114,7 +114,7 @@ export class SalesOrderService extends BaseService {
           if (!quotation) {
             throw new Error('Quotation not found')
           }
-          if (quotation.status !== QuotationStatus.ACCEPTED) {
+          if (quotation.status !== 'ACCEPTED') {
             throw new Error('Only accepted quotations can be converted to sales orders')
           }
         }
@@ -138,7 +138,7 @@ export class SalesOrderService extends BaseService {
             orderNumber,
             quotationId: data.quotationId,
             salesCaseId: data.salesCaseId,
-            status: OrderStatus.PENDING,
+            status: 'PENDING',
             orderDate: new Date(),
             requestedDate: data.requestedDate,
             promisedDate: data.promisedDate,
@@ -194,7 +194,7 @@ export class SalesOrderService extends BaseService {
         if (data.quotationId) {
           await tx.quotation.update({
             where: { id: data.quotationId },
-            data: { status: QuotationStatus.ACCEPTED }
+            data: { status: 'ACCEPTED' }
           })
         }
 
@@ -442,16 +442,16 @@ export class SalesOrderService extends BaseService {
       // Debug OrderStatus
       console.log('OrderStatus enum:', OrderStatus);
       console.log('Current status:', salesOrder.status);
-      console.log('PENDING value:', OrderStatus.PENDING);
+      console.log('PENDING value:', 'PENDING');
       
-      if (salesOrder.status !== OrderStatus.PENDING) {
+      if (salesOrder.status !== 'PENDING') {
         throw new Error('Only pending orders can be approved')
       }
 
       const _updatedOrder = await prisma.salesOrder.update({
         where: { id },
         data: {
-          status: OrderStatus.APPROVED,
+          status: 'APPROVED',
           approvedBy: userId,
           approvedAt: new Date()
         }
@@ -465,8 +465,8 @@ export class SalesOrderService extends BaseService {
         entityId: id,
         metadata: {
           orderNumber: salesOrder.orderNumber,
-          previousStatus: OrderStatus.PENDING,
-          newStatus: OrderStatus.APPROVED
+          previousStatus: 'PENDING',
+          newStatus: 'APPROVED'
         }
       })
 
@@ -486,14 +486,14 @@ export class SalesOrderService extends BaseService {
         throw new Error('Sales order not found')
       }
 
-    if ([OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.COMPLETED].includes(salesOrder.status)) {
+    if (['SHIPPED', 'DELIVERED', 'COMPLETED'].includes(salesOrder.status)) {
       throw new Error('Cannot cancel shipped, delivered, or completed orders')
     }
 
     const _updatedOrder = await prisma.salesOrder.update({
       where: { id },
       data: {
-        status: OrderStatus.CANCELLED,
+        status: 'CANCELLED',
         cancelledBy: userId,
         cancelledAt: new Date(),
         cancellationReason: reason
@@ -769,14 +769,14 @@ export class SalesOrderService extends BaseService {
         throw new Error('Sales order not found')
       }
 
-      if (salesOrder.status !== OrderStatus.APPROVED) {
+      if (salesOrder.status !== 'APPROVED') {
         throw new Error('Only approved sales orders can be sent')
       }
 
       const _updatedOrder = await prisma.salesOrder.update({
         where: { id },
         data: {
-          status: OrderStatus.PROCESSING,
+          status: 'PROCESSING',
           sentAt: new Date(),
           sentBy: userId
         }
@@ -790,8 +790,8 @@ export class SalesOrderService extends BaseService {
         entityId: id,
         metadata: {
           orderNumber: salesOrder.orderNumber,
-          previousStatus: OrderStatus.APPROVED,
-          newStatus: OrderStatus.PROCESSING,
+          previousStatus: 'APPROVED',
+          newStatus: 'PROCESSING',
           action: 'sent'
         }
       })

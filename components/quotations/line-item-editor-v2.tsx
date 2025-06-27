@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label'
 import { useCurrency } from '@/lib/contexts/currency-context'
 import { TaxRateSelector } from '@/components/tax/tax-rate-selector'
+import { TaxType } from '@/lib/types/shared-enums'
 import { useDefaultTaxRate } from '@/hooks/use-default-tax-rate'
 import {
   validateItemCode,
@@ -879,6 +880,7 @@ export function LineItemEditorV2({ quotationItems, onChange, disabled = false }:
                           disabled={disabled}
                           className="w-full h-9"
                           placeholder="Tax"
+                          taxType={TaxType.SALES}
                         />
                       </div>
 

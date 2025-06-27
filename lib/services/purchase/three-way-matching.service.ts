@@ -1,5 +1,5 @@
 import { BaseService } from '@/lib/services/base.service'
-import { PrismaClient } from '@/lib/generated/prisma'
+import { PrismaClient } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 interface MatchingTolerance {

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/prisma'
 import { AuditService } from '../audit.service'
 import { JournalEntryService } from '../accounting/journal-entry.service'
 import { AuditAction } from '@/lib/validators/audit.validator'
-import { SupplierInvoice, SupplierInvoiceItem, Prisma } from '@/lib/generated/prisma'
+import { SupplierInvoice, SupplierInvoiceItem, Prisma } from "@prisma/client"
 
 export interface CreateSupplierInvoiceInput {
   supplierId: string

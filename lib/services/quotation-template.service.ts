@@ -4,7 +4,7 @@ import {
   QuotationTemplate,
   QuotationTemplateItem,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 
 export interface CreateTemplateInput {
   name: string

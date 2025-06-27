@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // import { verifyJWTFromRequest } from '@/lib/auth/server-auth'
 import { ItemService, CreateItemInput } from '@/lib/services/inventory/item.service'
 import { prisma } from '@/lib/db/prisma'
-// import { ItemType } from '@/lib/generated/prisma'
+// import { ItemType } from "@prisma/client"
 
 // GET /api/inventory/items - Get all items with filters
 export async function GET(request: NextRequest): Promise<NextResponse> {

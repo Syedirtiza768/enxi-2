@@ -1,5 +1,5 @@
 import { BaseService } from '@/lib/services/base.service'
-import { PrismaClient, PaymentMethod, Prisma } from '@/lib/generated/prisma'
+import { PrismaClient, PaymentMethod, Prisma } from "@prisma/client"
 import { prisma } from '@/lib/db/prisma'
 
 interface CreateSupplierPaymentInput {

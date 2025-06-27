@@ -8,7 +8,7 @@ import {
   JournalEntry,
   JournalLine,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { 
   CreateJournalEntryInput,
   _CreateJournalLineInput

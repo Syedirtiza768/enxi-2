@@ -434,6 +434,8 @@ export function QuotationForm({
               notes: formData.notes,
               items: formData.items
             }
+            console.log('Auto-save - Submitting update data:', updateData)
+            console.log('Auto-save - formData:', formData)
             await onSubmit(updateData)
             setHasUnsavedChanges(false)
             setLastAutoSave(new Date())
@@ -492,6 +494,8 @@ export function QuotationForm({
         notes: formData.notes,
         items: formData.items
       }
+      console.log('QuotationForm - Submitting update data:', updateData)
+      console.log('QuotationForm - formData:', formData)
       await onSubmit(updateData)
       
       setHasUnsavedChanges(false)
@@ -1019,28 +1023,35 @@ export function QuotationForm({
                 </p>
               )}
             </div>
-            <CleanLineEditor
-              items={formData.items}
-              onChange={(items) => {
-                updateFormData({ items })
-                setTouchedFields(prev => new Set(prev).add('items'))
-                
-                // Validate items immediately
-                const error = validateField('items', items)
-                if (error) {
-                  setValidationErrors(prev => ({ ...prev, items: error }))
-                  setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
-                } else {
-                  setValidationErrors(prev => {
-                    const { items, ...rest } = prev
-                    return rest
-                  })
-                  setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
-                  }
-                }}
-                viewMode={viewMode}
-                disabled={isPreview}
+            {viewMode === 'client' && quotation?.lines ? (
+              <ClientQuotationView 
+                lines={quotation.lines} 
+                items={formData.items}
               />
+            ) : (
+              <CleanLineEditor
+                items={formData.items}
+                onChange={(items) => {
+                  updateFormData({ items })
+                  setTouchedFields(prev => new Set(prev).add('items'))
+                  
+                  // Validate items immediately
+                  const error = validateField('items', items)
+                  if (error) {
+                    setValidationErrors(prev => ({ ...prev, items: error }))
+                    setFieldValidationStatus(prev => ({ ...prev, items: 'invalid' }))
+                  } else {
+                    setValidationErrors(prev => {
+                      const { items, ...rest } = prev
+                      return rest
+                    })
+                    setFieldValidationStatus(prev => ({ ...prev, items: 'valid' }))
+                    }
+                  }}
+                  viewMode={viewMode}
+                  disabled={isPreview}
+                />
+            )}
             {validationErrors.items && (
               <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-800 flex items-center">

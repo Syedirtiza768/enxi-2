@@ -3,7 +3,7 @@ import { BaseService } from '../base.service'
 import { 
   InventoryBalance,
   Prisma
-} from '@/lib/generated/prisma'
+} from "@prisma/client"
 import { MovementType } from '@/lib/types/shared-enums'
 
 export interface InventoryBalanceWithDetails extends InventoryBalance {
