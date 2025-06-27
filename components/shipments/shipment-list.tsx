@@ -2,31 +2,36 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { apiClient } from '@/lib/api/client'
+import { 
+  DataTable,
+  ColumnDef,
+  createActionsColumn,
+} from '@/components/ui/data-table'
 import { 
   Package, 
   Truck, 
   Clock, 
   CheckCircle, 
   XCircle,
-  Search,
   Plus,
-  ChevronLeft,
-  ChevronRight,
+  Eye,
+  Download,
+  Mail,
+  MoreVertical,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { formatDate } from '@/lib/utils/format'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Shipment {
   id: string
@@ -61,15 +66,15 @@ interface ShipmentListResponse {
 }
 
 export function ShipmentList(): React.JSX.Element {
-  const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [total, setTotal] = useState(0)
-  const limit = 10
 
   const fetchShipments = useCallback(async () => {
     try {
@@ -78,7 +83,7 @@ export function ShipmentList(): React.JSX.Element {
 
       const params = new URLSearchParams()
       params.append('page', page.toString())
-      params.append('limit', limit.toString())
+      params.append('limit', pageSize.toString())
 
       if (statusFilter) {
         params.append('status', statusFilter)
@@ -90,7 +95,6 @@ export function ShipmentList(): React.JSX.Element {
 
       const response = await apiClient<ShipmentListResponse>(`/api/shipments?${params.toString()}`)
       
-      // Handle the response from apiClient
       if (response.ok && response.data) {
         setShipments(response.data.data || [])
         setTotal(response.data.total || 0)
@@ -108,7 +112,7 @@ export function ShipmentList(): React.JSX.Element {
     } finally {
       setLoading(false)
     }
-  }, [page, statusFilter, searchTerm, limit])
+  }, [page, pageSize, statusFilter, searchTerm])
 
   useEffect(() => {
     fetchShipments()
@@ -150,206 +154,213 @@ export function ShipmentList(): React.JSX.Element {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const handleRowClick = (shipmentId: string) => {
-    router.push(`/shipments/${shipmentId}`)
+  const handleRowClick = (shipment: Shipment) => {
+    router.push(`/shipments/${shipment.id}`)
   }
 
   const handleCreateShipment = () => {
     router.push('/shipments/new')
   }
 
-  const totalPages = Math.ceil(total / limit)
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            {error}
-            <Button 
-              onClick={fetchShipments} 
-              className="ml-4"
-              variant="outline"
-            >
-              Retry
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    )
+  const handleExport = async () => {
+    try {
+      const response = await apiClient('/api/shipments/export', {
+        method: 'POST',
+        body: JSON.stringify({ status: statusFilter }),
+      })
+      
+      if (response.ok) {
+        console.log('Export initiated')
+      }
+    } catch (error) {
+      console.error('Export failed:', error)
+    }
   }
+
+  const columns: ColumnDef<Shipment>[] = [
+    {
+      accessorKey: 'shipmentNumber',
+      header: 'Shipment #',
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue('shipmentNumber')}</div>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const status = row.getValue('status') as string
+        return (
+          <Badge className={`${getStatusColor(status)} flex items-center gap-1 w-fit`}>
+            {getStatusIcon(status)}
+            {status}
+          </Badge>
+        )
+      },
+    },
+    {
+      accessorKey: 'salesOrder.salesCase.customer.name',
+      header: 'Customer',
+      cell: ({ row }) => (
+        <div>{row.original.salesOrder?.salesCase?.customer?.name || '-'}</div>
+      ),
+    },
+    {
+      accessorKey: 'salesOrder.orderNumber',
+      header: 'Order #',
+      cell: ({ row }) => (
+        <div>{row.original.salesOrder?.orderNumber || '-'}</div>
+      ),
+    },
+    {
+      accessorKey: 'carrier',
+      header: 'Carrier',
+      cell: ({ row }) => (
+        <div>
+          <div>{row.original.carrier || '-'}</div>
+          {row.original.trackingNumber && (
+            <div className="text-sm text-gray-500">
+              {row.original.trackingNumber}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'items',
+      header: 'Items',
+      cell: ({ row }) => {
+        const items = row.original.items || []
+        const totalQty = items.reduce((sum, item) => sum + item.quantityShipped, 0)
+        return (
+          <div>
+            <div className="text-sm">
+              {items.length} item{items.length !== 1 ? 's' : ''}
+            </div>
+            <div className="text-xs text-gray-500">
+              {totalQty} total qty
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'createdAt',
+      header: 'Created',
+      cell: ({ row }) => formatDate(row.getValue('createdAt')),
+    },
+    {
+      accessorKey: 'shippedAt',
+      header: 'Shipped',
+      cell: ({ row }) => {
+        const shippedAt = row.getValue('shippedAt') as string | undefined
+        return shippedAt ? formatDate(shippedAt) : '-'
+      },
+    },
+    createActionsColumn<Shipment>((shipment) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => router.push(`/shipments/${shipment.id}`)}>
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open(`/api/shipments/${shipment.id}/label`, '_blank')}>
+            <Download className="mr-2 h-4 w-4" />
+            Download Label
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => console.log('Send notification', shipment.id)}
+            disabled={shipment.status !== 'SHIPPED'}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Send Notification
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )),
+  ]
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Shipments</h1>
-        <Button onClick={handleCreateShipment}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Shipment
-        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Shipments</h1>
+          <p className="text-muted-foreground">Manage and track your shipments</p>
+        </div>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
+      <DataTable
+        columns={columns}
+        data={shipments}
+        loading={loading}
+        error={error}
+        pagination={{
+          page,
+          pageSize,
+          total,
+          onPageChange: setPage,
+          onPageSizeChange: (size) => {
+            setPageSize(size)
+            setPage(1)
+          },
+        }}
+        search={{
+          value: searchTerm,
+          placeholder: 'Search by shipment number, order number, or customer...',
+          onChange: setSearchTerm,
+        }}
+        filters={
           <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Search by shipment number, order number, or customer..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Statuses</option>
-                <option value="PREPARING">Preparing</option>
-                <option value="READY">Ready</option>
-                <option value="SHIPPED">Shipped</option>
-                <option value="IN_TRANSIT">In Transit</option>
-                <option value="DELIVERED">Delivered</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
-            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="PREPARING">Preparing</SelectItem>
+                <SelectItem value="READY">Ready</SelectItem>
+                <SelectItem value="SHIPPED">Shipped</SelectItem>
+                <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
+                <SelectItem value="DELIVERED">Delivered</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Shipment List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Shipment List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-gray-600">Loading shipments...</p>
-            </div>
-          ) : shipments.length === 0 ? (
-            <div className="text-center py-8">
-              <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-gray-600">No shipments found</p>
-              <Button 
-                onClick={handleCreateShipment}
-                className="mt-4"
-                variant="outline"
-              >
-                Create First Shipment
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Shipment #</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Order #</TableHead>
-                    <TableHead>Carrier</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Shipped</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {shipments.map((shipment) => (
-                    <TableRow
-                      key={shipment.id}
-                      onClick={() => handleRowClick(shipment.id)}
-                      className="cursor-pointer hover:bg-gray-50"
-                    >
-                      <TableCell className="font-medium">
-                        {shipment.shipmentNumber}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${getStatusColor(shipment.status)} flex items-center gap-1 w-fit`}>
-                          {getStatusIcon(shipment.status)}
-                          {shipment.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {shipment.salesOrder?.salesCase?.customer?.name || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {shipment.salesOrder?.orderNumber || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {shipment.carrier || '-'}
-                        {shipment.trackingNumber && (
-                          <div className="text-sm text-gray-500">
-                            {shipment.trackingNumber}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {shipment.items?.length || 0} item{(shipment.items?.length || 0) !== 1 ? 's' : ''}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {shipment.items?.reduce((sum, item) => sum + item.quantityShipped, 0) || 0} total qty
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(shipment.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        {shipment.shippedAt ? formatDate(shipment.shippedAt) : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
-                    Previous
-                  </Button>
-                  
-                  <span className="text-sm text-gray-600">
-                    Page {page} of {totalPages}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => setPage(p => p + 1)}
-                    disabled={page >= totalPages}
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+        }
+        actions={
+          <Button onClick={handleCreateShipment}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Shipment
+          </Button>
+        }
+        onRefresh={fetchShipments}
+        onExport={handleExport}
+        onRowClick={handleRowClick}
+        emptyState={{
+          icon: <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />,
+          title: 'No shipments found',
+          description: 'Get started by creating your first shipment',
+          action: (
+            <Button 
+              onClick={handleCreateShipment}
+              variant="outline"
+            >
+              Create First Shipment
+            </Button>
+          ),
+        }}
+        showColumnVisibility
+        showSorting
+        stickyHeader
+      />
     </div>
   )
 }

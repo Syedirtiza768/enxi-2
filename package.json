@@ -72,6 +72,7 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@react-pdf/renderer": "^4.3.0",
     "@tailwindcss/postcss": "^4.1.8",
+    "@tanstack/react-table": "^8.21.3",
     "@types/node-cron": "^3.0.11",
     "@types/node-fetch": "^2.6.12",
     "@types/papaparse": "^5.3.16",

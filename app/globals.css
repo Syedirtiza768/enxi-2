@@ -89,3 +89,46 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* Custom scrollbar styles for DataTables */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-gray-300 {
+  scrollbar-color: #d1d5db transparent;
+}
+
+.scrollbar-track-gray-100 {
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Ensure DataTable scrollbars are always visible when content overflows */
+.overflow-auto {
+  overflow: auto !important;
+}
+
+/* Show scrollbars on hover for better UX */
+.overflow-auto:hover::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+}

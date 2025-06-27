@@ -8,18 +8,20 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  DataTable,
+  ColumnDef,
+  createSelectionColumn,
+  createActionsColumn,
+} from '@/components/ui/data-table';
 import { 
   Plus, 
-  Search, 
-  Filter, 
   Download, 
   Mail, 
   Eye, 
   Edit, 
   Copy, 
   MoreVertical,
-  RefreshCw,
   FileText,
   Calendar,
   TrendingUp,
@@ -38,7 +40,6 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { QuotationStatus } from "@prisma/client";
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface QuotationListItem {
   id: string;
@@ -76,16 +77,15 @@ export function QuotationList() {
   const [quotations, setQuotations] = useState<QuotationListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<QuotationStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<QuotationStatus | 'ALL'>('ALL');
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
-  const [showFilters, setShowFilters] = useState(false);
   
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectAll, setSelectAll] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -94,82 +94,78 @@ export function QuotationList() {
 
   const fetchQuotations = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (statusFilter !== 'ALL') params.append('status', statusFilter);
-      if (dateRange.from) params.append('dateFrom', dateRange.from);
-      if (dateRange.to) params.append('dateTo', dateRange.to);
+      if (dateRange.from) params.append('fromDate', dateRange.from);
+      if (dateRange.to) params.append('toDate', dateRange.to);
+      params.append('page', page.toString());
       params.append('limit', pageSize.toString());
-      params.append('offset', ((page - 1) * pageSize).toString());
 
-      const response = await apiClient<{ data: QuotationListItem[], total: number }>(`/api/quotations?${params.toString()}`);
-      
+      const response = await apiClient<{
+        data: QuotationListItem[];
+        total: number;
+        stats: QuotationStats;
+      }>(`/api/quotations?${params.toString()}`);
+
       if (response.ok && response.data) {
-        setQuotations(response.data.data);
-        setTotalItems(response.data.total);
+        setQuotations(response.data.data || []);
+        setTotalItems(response.data.total || 0);
+        setStats(response.data.stats || null);
+      } else {
+        throw new Error(response.error || 'Failed to fetch quotations');
       }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch quotations',
-        variant: 'destructive',
-      });
+    } catch (err) {
+      console.error('Error fetching quotations:', err);
+      setError('Failed to load quotations. Please try again.');
     } finally {
       setLoading(false);
     }
   }, [searchQuery, statusFilter, dateRange, page, pageSize]);
 
-  const fetchStats = async () => {
-    try {
-      const response = await apiClient<{ data: QuotationStats }>('/api/quotations/stats');
-      if (response.ok && response.data) {
-        setStats(response.data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
-
   useEffect(() => {
     fetchQuotations();
-    fetchStats();
   }, [fetchQuotations]);
 
   const getStatusBadge = (status: QuotationStatus) => {
-    const variants: Record<QuotationStatus, { label: string; className: string }> = {
-      DRAFT: { label: 'Draft', className: 'bg-gray-100 text-gray-700' },
-      SENT: { label: 'Sent', className: 'bg-blue-100 text-blue-700' },
-      ACCEPTED: { label: 'Accepted', className: 'bg-green-100 text-green-700' },
-      REJECTED: { label: 'Rejected', className: 'bg-red-100 text-red-700' },
-      EXPIRED: { label: 'Expired', className: 'bg-orange-100 text-orange-700' },
-      CANCELLED: { label: 'Cancelled', className: 'bg-gray-100 text-gray-700' },
+    const config = {
+      DRAFT: { color: 'bg-gray-100 text-gray-800', icon: <FileText className="h-3 w-3" /> },
+      SENT: { color: 'bg-blue-100 text-blue-800', icon: <Mail className="h-3 w-3" /> },
+      ACCEPTED: { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-3 w-3" /> },
+      REJECTED: { color: 'bg-red-100 text-red-800', icon: <XCircle className="h-3 w-3" /> },
+      EXPIRED: { color: 'bg-orange-100 text-orange-800', icon: <AlertCircle className="h-3 w-3" /> },
+      CANCELLED: { color: 'bg-gray-100 text-gray-800', icon: <XCircle className="h-3 w-3" /> },
     };
 
-    const variant = variants[status] || { label: status, className: 'bg-gray-100 text-gray-700' };
-    return <Badge className={variant.className}>{variant.label}</Badge>;
+    const { color, icon } = config[status] || config.DRAFT;
+    
+    return (
+      <Badge className={`${color} flex items-center gap-1`}>
+        {icon}
+        {status}
+      </Badge>
+    );
   };
 
   const handleBulkExport = async () => {
-    if (selectedIds.size === 0) {
-      toast({
-        title: 'No quotations selected',
-        description: 'Please select quotations to export',
-      });
-      return;
-    }
-
     try {
-      const ids = Array.from(selectedIds).join(',');
-      window.open(`/api/quotations/export?ids=${ids}`, '_blank');
-      toast({
-        title: 'Export started',
-        description: `Exporting ${selectedIds.size} quotations`,
+      const response = await apiClient('/api/quotations/export', {
+        method: 'POST',
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
       });
+
+      if (response.ok) {
+        toast({
+          title: 'Export started',
+          description: 'Your quotations are being exported',
+        });
+      }
     } catch (error) {
       toast({
         title: 'Export failed',
-        description: 'Failed to export quotations',
+        description: 'Could not export quotations',
         variant: 'destructive',
       });
     }
@@ -184,13 +180,13 @@ export function QuotationList() {
       if (response.ok) {
         toast({
           title: 'Email sent',
-          description: 'Quotation has been sent successfully',
+          description: 'Quotation has been sent to the customer',
         });
         fetchQuotations();
       }
     } catch (error) {
       toast({
-        title: 'Failed to send',
+        title: 'Send failed',
         description: 'Could not send the quotation',
         variant: 'destructive',
       });
@@ -223,6 +219,98 @@ export function QuotationList() {
     return new Date(validUntil) < new Date();
   };
 
+  const columns: ColumnDef<QuotationListItem>[] = [
+    createSelectionColumn<QuotationListItem>(),
+    {
+      accessorKey: 'quotationNumber',
+      header: 'Number',
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.getValue('quotationNumber')}</div>
+          <div className="text-sm text-gray-500">v{row.original.version}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'salesCase.customer.name',
+      header: 'Customer',
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.original.salesCase.customer.name}</div>
+          <div className="text-sm text-gray-500">{row.original.salesCase.caseNumber}</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'totalAmount',
+      header: 'Amount',
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {formatCurrency(row.getValue('totalAmount'), row.original.currency)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => getStatusBadge(row.getValue('status')),
+    },
+    {
+      accessorKey: 'validUntil',
+      header: 'Valid Until',
+      cell: ({ row }) => {
+        const validUntil = row.getValue('validUntil') as string;
+        const expired = isExpired(validUntil);
+        return (
+          <div className="flex items-center gap-2">
+            <span className={expired ? 'text-red-600' : ''}>
+              {formatDate(validUntil)}
+            </span>
+            {expired && <AlertCircle className="h-4 w-4 text-red-600" />}
+          </div>
+        );
+      },
+    },
+    createActionsColumn<QuotationListItem>((quotation) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/quotations/${quotation.id}`)}>
+            <Eye className="h-4 w-4 mr-2" />
+            View
+          </DropdownMenuItem>
+          <DropdownMenuItem 
+            onClick={() => router.push(`/quotations/${quotation.id}/edit`)}
+            disabled={quotation.status !== 'DRAFT'}
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleClone(quotation.id)}>
+            <Copy className="h-4 w-4 mr-2" />
+            Clone
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={() => handleSendEmail(quotation.id)}
+            disabled={quotation.status !== 'DRAFT'}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Send Email
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => window.open(`/api/quotations/${quotation.id}/pdf`, '_blank')}>
+            <Download className="h-4 w-4 mr-2" />
+            Download PDF
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )),
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -230,16 +318,6 @@ export function QuotationList() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Quotations</h1>
           <p className="text-muted-foreground">Manage and track your quotations</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchQuotations}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={() => router.push('/quotations/new')}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Quotation
-          </Button>
         </div>
       </div>
 
@@ -288,21 +366,31 @@ export function QuotationList() {
         </div>
       )}
 
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by number, customer, or description..."
-                className="pl-10"
-              />
-            </div>
+      {/* Data Table */}
+      <DataTable
+        columns={columns}
+        data={quotations}
+        loading={loading}
+        error={error}
+        pagination={{
+          page,
+          pageSize,
+          total: totalItems,
+          onPageChange: setPage,
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setPage(1);
+          },
+        }}
+        search={{
+          value: searchQuery,
+          placeholder: 'Search by number, customer, or description...',
+          onChange: setSearchQuery,
+        }}
+        filters={
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
@@ -315,233 +403,72 @@ export function QuotationList() {
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4" />
+            <div>
+              <Input
+                type="date"
+                placeholder="From date"
+                value={dateRange.from}
+                onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Input
+                type="date"
+                placeholder="To date"
+                value={dateRange.to}
+                onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+              />
+            </div>
+          </div>
+        }
+        actions={
+          <Button onClick={() => router.push('/quotations/new')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Quotation
+          </Button>
+        }
+        onRefresh={fetchQuotations}
+        onRowClick={(quotation) => router.push(`/quotations/${quotation.id}`)}
+        bulkActions={{
+          selectedRows: selectedIds,
+          onSelectRow: (row, selected) => {
+            const newSet = new Set(selectedIds);
+            if (selected) {
+              newSet.add(row.id);
+            } else {
+              newSet.delete(row.id);
+            }
+            setSelectedIds(newSet);
+          },
+          onSelectAll: (selected) => {
+            if (selected) {
+              setSelectedIds(new Set(quotations.map(q => q.id)));
+            } else {
+              setSelectedIds(new Set());
+            }
+          },
+          actions: (
+            <Button size="sm" variant="outline" onClick={handleBulkExport}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
             </Button>
-          </div>
-
-          {showFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
-              <div>
-                <label className="text-sm font-medium mb-1 block">From Date</label>
-                <Input
-                  type="date"
-                  value={dateRange.from}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">To Date</label>
-                <Input
-                  type="date"
-                  value={dateRange.to}
-                  onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Bulk Actions */}
-      {selectedIds.size > 0 && (
-        <Card className="p-3 bg-blue-50 border-blue-200">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">
-              {selectedIds.size} quotation{selectedIds.size > 1 ? 's' : ''} selected
-            </p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={handleBulkExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setSelectedIds(new Set());
-                  setSelectAll(false);
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Quotations List */}
-      <Card>
-        {loading ? (
-          <div className="p-6 space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : quotations.length === 0 ? (
-          <div className="p-12 text-center">
-            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium mb-2">No quotations found</h3>
-            <p className="text-gray-500 mb-4">Get started by creating your first quotation</p>
+          ),
+        }}
+        emptyState={{
+          icon: <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />,
+          title: 'No quotations found',
+          description: 'Get started by creating your first quotation',
+          action: (
             <Button onClick={() => router.push('/quotations/new')}>
               <Plus className="h-4 w-4 mr-2" />
               Create Quotation
             </Button>
-          </div>
-        ) : (
-          <div className="divide-y">
-            {/* Table Header */}
-            <div className="p-4 bg-gray-50 hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-gray-600">
-              <div className="col-span-1 flex items-center">
-                <Checkbox
-                  checked={selectAll}
-                  onCheckedChange={(checked) => {
-                    setSelectAll(!!checked);
-                    if (checked) {
-                      setSelectedIds(new Set((quotations || []).map(q => q.id)));
-                    } else {
-                      setSelectedIds(new Set());
-                    }
-                  }}
-                />
-              </div>
-              <div className="col-span-2">Number</div>
-              <div className="col-span-3">Customer</div>
-              <div className="col-span-2">Amount</div>
-              <div className="col-span-1">Status</div>
-              <div className="col-span-2">Valid Until</div>
-              <div className="col-span-1"></div>
-            </div>
-
-            {/* Table Rows */}
-            {(quotations || []).map((quotation) => (
-              <div key={quotation.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                  <div className="md:col-span-1">
-                    <Checkbox
-                      checked={selectedIds.has(quotation.id)}
-                      onCheckedChange={(checked) => {
-                        const newSet = new Set(selectedIds);
-                        if (checked) {
-                          newSet.add(quotation.id);
-                        } else {
-                          newSet.delete(quotation.id);
-                        }
-                        setSelectedIds(newSet);
-                      }}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <div className="font-medium">{quotation.quotationNumber}</div>
-                    <div className="text-sm text-gray-500">v{quotation.version}</div>
-                  </div>
-
-                  <div className="md:col-span-3">
-                    <div className="font-medium">{quotation.salesCase.customer.name}</div>
-                    <div className="text-sm text-gray-500">{quotation.salesCase.caseNumber}</div>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <div className="font-medium">{formatCurrency(quotation.totalAmount, quotation.currency)}</div>
-                  </div>
-
-                  <div className="md:col-span-1">
-                    {getStatusBadge(quotation.status)}
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <div className="flex items-center gap-2">
-                      <span className={isExpired(quotation.validUntil) ? 'text-red-600' : ''}>
-                        {formatDate(quotation.validUntil)}
-                      </span>
-                      {isExpired(quotation.validUntil) && (
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="md:col-span-1 flex justify-end">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/quotations/${quotation.id}`)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => router.push(`/quotations/${quotation.id}/edit`)}
-                          disabled={quotation.status !== 'DRAFT'}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleClone(quotation.id)}>
-                          <Copy className="h-4 w-4 mr-2" />
-                          Clone
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => handleSendEmail(quotation.id)}
-                          disabled={quotation.status !== 'DRAFT'}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Email
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(`/api/quotations/${quotation.id}/pdf`, '_blank')}>
-                          <Download className="h-4 w-4 mr-2" />
-                          Download PDF
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      {/* Pagination */}
-      {totalItems > pageSize && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
-            Showing {((page - 1) * pageSize) + 1} to {Math.min(page * pageSize, totalItems)} of {totalItems} results
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(page + 1)}
-              disabled={page * pageSize >= totalItems}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      )}
+          ),
+        }}
+        showColumnVisibility
+        showSorting
+        stickyHeader
+      />
     </div>
   );
 }
