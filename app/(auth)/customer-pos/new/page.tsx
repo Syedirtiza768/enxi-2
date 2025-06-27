@@ -51,7 +51,21 @@ function NewCustomerPOContent(): React.JSX.Element {
         }
 
         const data = await response.json()
-        setQuotation(data)
+        // Extract the quotation from the response structure
+        const quotationData = data?.data || data
+        
+        // Debug logging to understand the data structure
+        console.log('Quotation API response:', data)
+        console.log('Extracted quotation data:', quotationData)
+        console.log('Has salesCase:', !!quotationData?.salesCase)
+        console.log('Has customer:', !!quotationData?.salesCase?.customer)
+        
+        // Validate the quotation has the required structure
+        if (!quotationData?.salesCase) {
+          throw new Error('Invalid quotation data: missing sales case information')
+        }
+        
+        setQuotation(quotationData)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load quotation')
         console.error('Error fetching quotation:', err)

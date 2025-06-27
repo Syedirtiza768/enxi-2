@@ -18,9 +18,9 @@ export interface DefaultAccount {
 // Account code mapping for system operations
 export const ACCOUNT_CODES = {
   // Assets
-  CASH_ON_HAND: '1100',
+  CASH_ON_HAND: '1000',  // Updated to match actual cash account
   BANK_ACCOUNT: '1110',
-  ACCOUNTS_RECEIVABLE: '1200',
+  ACCOUNTS_RECEIVABLE: '1100',  // This is actually AR in the system
   INVENTORY: '1300',
   PREPAID_EXPENSES: '1400',
   

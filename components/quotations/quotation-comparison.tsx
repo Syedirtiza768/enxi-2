@@ -133,7 +133,7 @@ export function QuotationComparison({ salesCaseId, currentQuotationId }: Quotati
       CANCELLED: { label: 'Cancelled', className: 'bg-gray-100 text-gray-700' },
     };
 
-    const variant = variants[status];
+    const variant = variants[status] || { label: status, className: 'bg-gray-100 text-gray-700' };
     return <Badge className={variant.className}>{variant.label}</Badge>;
   };
 

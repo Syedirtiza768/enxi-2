@@ -182,13 +182,22 @@ export function InvoiceForm({
               dueDate.setDate(dueDate.getDate() + 30)
               
               // Pre-populate form with quotation data
+              // Extract items from either direct items array or lines structure
+              let quotationItems: QuotationItem[] = []
+              if (quotationData.items && Array.isArray(quotationData.items)) {
+                quotationItems = quotationData.items
+              } else if (quotationData.lines && Array.isArray(quotationData.lines)) {
+                // Extract items from lines structure (internal view)
+                quotationItems = quotationData.lines.flatMap((line: any) => line.items || [])
+              }
+              
               setFormData(prev => ({
                 ...prev,
                 customerId: quotationData.salesCase?.customerId || '',
                 paymentTerms: quotationData.paymentTerms || 'Net 30',
                 dueDate: dueDate.toISOString().split('T')[0],
                 notes: `Invoice created from quotation ${quotationData.quotationNumber}\n\n${quotationData.notes || ''}`,
-                items: quotationData.items.map((item: QuotationItem) => ({
+                items: quotationItems.map((item: QuotationItem) => ({
                   itemCode: item.itemCode,
                   description: item.description,
                   quantity: item.quantity,

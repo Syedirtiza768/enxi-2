@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next'
 import withBundleAnalyzer from '@next/bundle-analyzer'
+// const ChunkErrorPlugin = require('./lib/webpack/chunk-error-plugin')
 
 const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -9,6 +10,9 @@ const nextConfig: NextConfig = {
   // output: 'standalone', // Temporarily disabled
   reactStrictMode: true,
   poweredByHeader: false,
+  // Optimize chunk loading
+  productionBrowserSourceMaps: false,
+  generateEtags: true,
   typescript: {
     // TEMPORARY: Remove after fixing type errors
     // Added on: 2025-06-14T21:01:48.722Z
@@ -42,6 +46,29 @@ const nextConfig: NextConfig = {
     ],
     // optimizeCss: true, // Disabled temporarily due to missing dependency
   },
+  // Configure headers for better caching
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          }
+        ]
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      }
+    ]
+  },
   turbopack: {
     rules: {
       '*.svg': {
@@ -51,6 +78,10 @@ const nextConfig: NextConfig = {
     },
   },
   webpack: (config, { dev, isServer }): void => {
+    // Add chunk error handling plugin
+    // if (!isServer && !dev) {
+    //   config.plugins.push(new ChunkErrorPlugin())
+    // }
     // React PDF compatibility
     if (!isServer) {
       config.resolve.alias = {
@@ -67,6 +98,9 @@ const nextConfig: NextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
+          maxAsyncRequests: 30,
+          maxInitialRequests: 30,
+          minSize: 20000,
           cacheGroups: {
             default: {
               minChunks: 2,
@@ -111,7 +145,9 @@ const nextConfig: NextConfig = {
     return config
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn']
+    } : false,
   },
   compress: true,
 }

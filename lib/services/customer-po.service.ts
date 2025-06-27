@@ -118,12 +118,14 @@ export class CustomerPOService {
       include: this.getDetailedInclude()
     })
 
-    // Update quotation status to ACCEPTED
-    await this.quotationService.updateQuotationStatus(
-      data.quotationId,
-      'ACCEPTED',
-      data.createdBy
-    )
+    // Update quotation status to ACCEPTED if quotation exists and not already accepted
+    if (data.quotationId && quotation && quotation.status !== 'ACCEPTED') {
+      await this.quotationService.updateQuotationStatus(
+        data.quotationId,
+        'ACCEPTED',
+        data.createdBy
+      )
+    }
 
     await this.auditService.logAction({
       userId: data.createdBy,
@@ -193,9 +195,12 @@ export class CustomerPOService {
       throw new Error('PO has already been accepted')
     }
 
-    return await prisma.$transaction(async (tx) => {
+    // Execute operations outside transaction first to avoid nested transaction issues
+    let salesOrder
+    
+    try {
       // Mark PO as accepted
-      const updatedPO = await tx.customerPO.update({
+      const updatedPO = await prisma.customerPO.update({
         where: { id },
         data: {
           isAccepted: true,
@@ -205,8 +210,17 @@ export class CustomerPOService {
         include: this.getDetailedInclude()
       })
 
-      let salesOrder
-      if (createSalesOrder) {
+      if (createSalesOrder && customerPO.quotationId) {
+        // First, update the quotation status to ACCEPTED if not already
+        const quotation = await this.quotationService.getQuotation(customerPO.quotationId)
+        if (quotation && quotation.status !== 'ACCEPTED') {
+          await this.quotationService.updateQuotationStatus(
+            customerPO.quotationId,
+            'ACCEPTED',
+            acceptedBy
+          )
+        }
+        
         // Convert quotation to sales order
         salesOrder = await this.salesOrderService.convertQuotationToSalesOrder(
           customerPO.quotationId,
@@ -219,7 +233,7 @@ export class CustomerPOService {
         )
 
         // Link sales order to PO
-        await tx.customerPO.update({
+        await prisma.customerPO.update({
           where: { id },
           data: {
             salesOrderId: salesOrder.id
@@ -237,11 +251,30 @@ export class CustomerPOService {
         }
       })
 
+      // Get final updated PO with all relationships
+      const finalPO = await this.getCustomerPO(id)
+      if (!finalPO) {
+        throw new Error('Failed to retrieve updated Customer PO')
+      }
+
       return {
-        customerPO: updatedPO as CustomerPOWithDetails,
+        customerPO: finalPO,
         salesOrder
       }
-    })
+    } catch (error) {
+      // If something fails, revert the PO acceptance
+      if (customerPO && !customerPO.isAccepted) {
+        await prisma.customerPO.update({
+          where: { id },
+          data: {
+            isAccepted: false,
+            acceptedAt: null,
+            acceptedBy: null
+          }
+        }).catch(console.error)
+      }
+      throw error
+    }
   }
 
   async getCustomerPO(id: string): Promise<CustomerPOWithDetails | null> {

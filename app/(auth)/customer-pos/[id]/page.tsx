@@ -44,7 +44,7 @@ interface CustomerPO {
 export default function CustomerPODetailPage(): React.JSX.Element {
   
   const { formatCurrency } = useCurrency()
-const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
+  const router = useRouter()
   const params = useParams()
   const poId = params.id as string
 
@@ -86,7 +86,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     }
   }, [poId])
 
-  const handleAccept = async (): Promise<unknown> => {
+  const handleAccept = async (): Promise<void> => {
     if (!confirm('Are you sure you want to accept this PO? This will create a sales order.')) {
       return
     }
@@ -96,6 +96,12 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
       const response = await fetch(`/api/customer-pos/${poId}/accept`, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          createSalesOrder: true
+        })
       })
 
       if (!response.ok) {
@@ -125,7 +131,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
     window.open(url, '_blank')
   }
 
-  const getStatusBadge = (po: CustomerPO): void => {
+  const getStatusBadge = (po: CustomerPO): React.JSX.Element => {
     if (po.isAccepted) {
       return (
         <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
@@ -145,7 +151,7 @@ const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-v
 
   // formatCurrency function removed - use useCurrency hook instead
 
-  const formatDate = (date: string): void => {
+  const formatDate = (date: string): string => {
     return new Date(date).toLocaleDateString()
   }
 

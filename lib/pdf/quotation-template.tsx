@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     padding: 40,
     fontSize: 11,
     fontFamily: 'Helvetica',
+    lineHeight: 1.4,
   },
   header: {
     flexDirection: 'row',
@@ -87,8 +88,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   logo: {
-    width: 150,
-    height: 50,
+    width: 120,
+    height: 40,
     marginBottom: 10,
     objectFit: 'contain',
   },
@@ -185,10 +186,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottom: 1,
     borderBottomColor: '#F3F4F6',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     fontSize: 10,
-    minHeight: 35,
+    minHeight: 40,
     alignItems: 'flex-start',
   },
   tableRowAlt: {
@@ -196,17 +197,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFBFC',
     borderBottom: 1,
     borderBottomColor: '#F3F4F6',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     fontSize: 10,
-    minHeight: 35,
+    minHeight: 40,
     alignItems: 'flex-start',
   },
   itemCode: { width: '15%' },
   itemDescription: { 
     width: '35%',
     flexWrap: 'wrap',
-    paddingRight: 5,
+    paddingRight: 10,
+    lineHeight: 1.4,
   },
   itemQuantity: { width: '10%', textAlign: 'right' },
   itemPrice: { width: '12%', textAlign: 'right' },
@@ -257,8 +259,9 @@ const styles = StyleSheet.create({
   },
   lineItemText: {
     fontSize: 10,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     flexWrap: 'wrap',
+    paddingBottom: 2,
   },
   cellText: {
     fontSize: 10,
@@ -358,6 +361,25 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
   showTaxBreakdown = true,
   viewType = 'client'
 }) => {
+  // Convert relative logo URL to absolute URL for PDF generation
+  const getAbsoluteLogoUrl = (logoUrl: string | null | undefined) => {
+    if (!logoUrl) return null;
+    
+    // If it's a data URL (base64), return as is
+    if (logoUrl.startsWith('data:')) {
+      return logoUrl;
+    }
+    
+    // If already absolute URL, return as is
+    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+      return logoUrl;
+    }
+    
+    // For relative URLs, prepend the base URL
+    // In production, this should be your actual domain
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    return `${baseUrl}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+  };
   const formatCurrency = (amount: number | null | undefined) => {
     // Use English literal format: CURRENCY_CODE AMOUNT
     const currency = quotation.currency || 'USD'
@@ -412,7 +434,11 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
         <View style={styles.header}>
           <View style={styles.companyInfo}>
             {showLogo && companyInfo.logoUrl ? (
-              <Image style={styles.logo} src={companyInfo.logoUrl} />
+              <Image 
+                style={styles.logo} 
+                src={getAbsoluteLogoUrl(companyInfo.logoUrl) || ''} 
+                cache={false}
+              />
             ) : (
               <Text style={styles.companyName}>{companyInfo.name}</Text>
             )}
@@ -500,18 +526,18 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
               {/* Line Rows */}
               {quotation.lines.map((line, index) => (
                 <View key={line.lineNumber} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                  <Text style={{ ...styles.itemCode, width: '10%' }}>
+                  <View style={{ ...styles.itemCode, width: '10%' }}>
                     <Text style={styles.cellText}>{line.lineNumber}</Text>
-                  </Text>
+                  </View>
                   <View style={{ ...styles.itemDescription, width: '60%' }}>
                     <Text style={styles.lineItemText}>{line.lineDescription || 'No description'}</Text>
                   </View>
-                  <Text style={{ ...styles.itemQuantity, width: '10%' }}>
+                  <View style={{ ...styles.itemQuantity, width: '10%' }}>
                     <Text style={styles.cellText}>{line.quantity}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemTotal, width: '20%' }}>
+                  </View>
+                  <View style={{ ...styles.itemTotal, width: '20%' }}>
                     <Text style={styles.cellText}>{formatCurrency(line.totalAmount || line.lineTotalAmount)}</Text>
-                  </Text>
+                  </View>
                 </View>
               ))}
             </>
@@ -558,9 +584,9 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
                   {/* Line Items */}
                   {line.items && line.items.map((item, index) => (
                 <View key={item.id} style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                  <Text style={{ ...styles.itemCode, width: '12%' }}>
+                  <View style={{ ...styles.itemCode, width: '12%' }}>
                     <Text style={styles.cellText}>{item.itemCode}</Text>
-                  </Text>
+                  </View>
                   <View style={{ ...styles.itemDescription, width: '33%' }}>
                     <Text style={styles.lineItemText}>
                       {item.description}
@@ -576,26 +602,26 @@ export const QuotationPDF: React.FC<QuotationPDFProps> = ({
                       </Text>
                     )}
                   </View>
-                  <Text style={{ ...styles.itemQuantity, width: '8%' }}>
+                  <View style={{ ...styles.itemQuantity, width: '8%' }}>
                     <Text style={styles.cellText}>{item.quantity}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemPrice, width: '10%' }}>
+                  </View>
+                  <View style={{ ...styles.itemPrice, width: '10%' }}>
                     <Text style={styles.cellText}>{formatCurrency(item.unitPrice)}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemDiscount, width: '8%' }}>
+                  </View>
+                  <View style={{ ...styles.itemDiscount, width: '8%' }}>
                     <Text style={styles.cellText}>{formatPercent(item.discount)}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemTax, width: '8%' }}>
+                  </View>
+                  <View style={{ ...styles.itemTax, width: '8%' }}>
                     <Text style={styles.cellText}>{formatPercent(item.taxRate)}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemTotal, width: '12%' }}>
+                  </View>
+                  <View style={{ ...styles.itemTotal, width: '12%' }}>
                     <Text style={styles.cellText}>{formatCurrency(item.totalAmount)}</Text>
-                  </Text>
-                  <Text style={{ ...styles.itemTotal, width: '9%' }}>
+                  </View>
+                  <View style={{ ...styles.itemTotal, width: '9%' }}>
                     <Text style={styles.cellText}>
                       {item.margin !== undefined ? formatPercent(item.margin) : '-'}
                     </Text>
-                  </Text>
+                  </View>
                 </View>
                   ))}
                 </View>

@@ -1,4 +1,5 @@
 import { globalErrorHandler } from './global-error-handler';
+import { chunkPreloader } from './chunk-preloader';
 
 let isInitialized = false;
 
@@ -11,6 +12,11 @@ export function initializeRobustSystem(): void {
   try {
     // Initialize global error handler
     globalErrorHandler.initialize();
+    
+    // Initialize chunk preloader
+    if (typeof window !== 'undefined') {
+      chunkPreloader.getDiagnostics(); // Initialize
+    }
     
     // Periodic health checks disabled
     

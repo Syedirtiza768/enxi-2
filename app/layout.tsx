@@ -7,6 +7,8 @@ import { ThemeScript } from '@/components/design-system/ThemeScript'
 import { WebVitals } from '@/components/performance/web-vitals'
 import { preloadCriticalComponents } from '@/lib/utils/dynamic-imports'
 import '@/lib/utils/robust-system-init'
+import { ChunkErrorBoundary } from '@/components/error-boundaries/chunk-error-boundary'
+import { ChunkErrorRecovery } from './chunk-error-recovery'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -37,9 +39,12 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
       </head>
       <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
+        <ChunkErrorBoundary>
+          <Providers>
+            <ChunkErrorRecovery />
+            {children}
+          </Providers>
+        </ChunkErrorBoundary>
         <WebVitals />
       </body>
     </html>

@@ -1,6 +1,7 @@
 import { BaseService } from './base.service'
 import { prisma } from '@/lib/db/prisma'
-import { Role, Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client"
+import { Role } from '@/lib/types/shared-enums'
 
 export class SalesTeamService extends BaseService {
   constructor() {

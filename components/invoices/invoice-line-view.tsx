@@ -25,7 +25,7 @@ export function InvoiceLineView({ items }: InvoiceLineViewProps) {
   const { formatCurrency } = useCurrency();
 
   // Filter out empty items (items with no code or description)
-  const validItems = items.filter(item => item.itemCode || item.description);
+  const validItems = (items || []).filter(item => item.itemCode || item.description);
 
   return (
     <div className="overflow-hidden">

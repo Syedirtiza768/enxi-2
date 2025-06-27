@@ -35,7 +35,7 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
           </div>
         </div>
         
-        {lines.map((line) => (
+        {(lines || []).map((line) => (
           <div key={line.lineNumber} className="bg-white p-4 border rounded-lg">
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-1 text-sm text-gray-600">
@@ -103,7 +103,7 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
         </div>
       </div>
       
-      {clientLines.map((line) => (
+      {(clientLines || []).map((line) => (
         <div key={line.lineNumber} className="bg-white p-4 border rounded-lg">
           <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-1 text-sm text-gray-600">

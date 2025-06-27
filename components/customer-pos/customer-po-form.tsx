@@ -74,12 +74,12 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
     if (quotation) {
       setFormData(prev => ({
         ...prev,
-        customerId: quotation?.salesCase?.customer?.id,
+        customerId: quotation?.salesCase?.customer?.id || '',
         quotationId: quotation.id,
         poAmount: quotation.totalAmount,
         currency: quotation.currency
       }))
-      setSelectedCustomer(quotation.salesCase.customer)
+      setSelectedCustomer(quotation.salesCase?.customer || null)
     }
   }, [quotation])
 
@@ -346,7 +346,7 @@ export default function CustomerPOForm({ quotation, onSubmit, onCancel }: Custom
               <input
                 type="text"
                 id="customer"
-                value={quotation.salesCase.customer.name}
+                value={quotation.salesCase?.customer?.name || 'N/A'}
                 readOnly
                 className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 sm:text-sm"
               />

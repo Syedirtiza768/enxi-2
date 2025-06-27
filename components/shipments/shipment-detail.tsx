@@ -574,7 +574,7 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {shipment.items.map((item) => (
+                  {(shipment.items || []).map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.itemCode}</TableCell>
                       <TableCell>{item.description}</TableCell>

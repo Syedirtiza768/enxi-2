@@ -146,7 +146,7 @@ export function QuotationList() {
       CANCELLED: { label: 'Cancelled', className: 'bg-gray-100 text-gray-700' },
     };
 
-    const variant = variants[status];
+    const variant = variants[status] || { label: status, className: 'bg-gray-100 text-gray-700' };
     return <Badge className={variant.className}>{variant.label}</Badge>;
   };
 
@@ -408,7 +408,7 @@ export function QuotationList() {
                   onCheckedChange={(checked) => {
                     setSelectAll(!!checked);
                     if (checked) {
-                      setSelectedIds(new Set(quotations.map(q => q.id)));
+                      setSelectedIds(new Set((quotations || []).map(q => q.id)));
                     } else {
                       setSelectedIds(new Set());
                     }
@@ -424,7 +424,7 @@ export function QuotationList() {
             </div>
 
             {/* Table Rows */}
-            {quotations.map((quotation) => (
+            {(quotations || []).map((quotation) => (
               <div key={quotation.id} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   <div className="md:col-span-1">

@@ -6,7 +6,7 @@ const createCustomerPOSchema = z.object({
   poNumber: z.string(),
   customerId: z.string(),
   quotationId: z.string().optional(),
-  poDate: z.string().datetime(),
+  poDate: z.string(), // Accept any date string format
   poAmount: z.number().positive(),
   currency: z.string().optional(),
   attachmentUrl: z.string().optional(),
@@ -57,20 +57,82 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const userId = 'system' // Replace with actual user authentication
     
     const body = await request.json()
-    const data = createCustomerPOSchema.parse(body)
+    
+    // Validate the request data
+    const validationResult = createCustomerPOSchema.safeParse(body)
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error)
+      return NextResponse.json(
+        { 
+          error: 'Validation error', 
+          details: validationResult.error.errors 
+        },
+        { status: 400 }
+      )
+    }
+    
+    const data = validationResult.data
+    
+    // Parse the date - handle both date-only and datetime formats
+    let poDate: Date
+    try {
+      poDate = new Date(data.poDate)
+      if (isNaN(poDate.getTime())) {
+        throw new Error('Invalid date format')
+      }
+    } catch (dateError) {
+      console.error('Date parsing error:', dateError)
+      return NextResponse.json(
+        { error: 'Invalid date format. Please provide a valid date.' },
+        { status: 400 }
+      )
+    }
     
     const customerPO = await customerPOService.createCustomerPO({
       ...data,
-      poDate: new Date(data.poDate),
+      poDate,
       createdBy: userId
     })
     
     return NextResponse.json(customerPO, { status: 201 })
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Customer PO creation error:', error)
+    
+    // Handle specific error cases
+    if (error instanceof Error) {
+      if (error.message.includes('PO number already exists')) {
+        return NextResponse.json(
+          { error: 'PO number already exists. Please use a different number.' },
+          { status: 409 }
+        )
+      }
+      if (error.message.includes('Quotation not found')) {
+        return NextResponse.json(
+          { error: 'The specified quotation was not found.' },
+          { status: 404 }
+        )
+      }
+      if (error.message.includes('Quotation does not belong to this customer')) {
+        return NextResponse.json(
+          { error: 'The quotation does not belong to the selected customer.' },
+          { status: 400 }
+        )
+      }
+      if (error.message.includes('Quotation must be sent')) {
+        return NextResponse.json(
+          { error: 'The quotation must be sent to the customer before creating a PO.' },
+          { status: 400 }
+        )
+      }
+      
+      // Log the full error for debugging
+      console.error('Unhandled error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 400 }
+      { error: 'Failed to create customer PO. Please try again or contact support.' },
+      { status: 500 }
     )
   }
 }

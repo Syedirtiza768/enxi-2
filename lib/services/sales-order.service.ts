@@ -9,7 +9,6 @@ import {
   SalesOrder,
   SalesOrderItem,
   OrderStatus,
-  QuotationStatus,
   Prisma
 } from "@prisma/client"
 import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
@@ -528,7 +527,7 @@ export class SalesOrderService extends BaseService {
         throw new Error('Quotation not found')
       }
 
-      if (quotation.status !== QuotationStatus.ACCEPTED) {
+      if (quotation.status !== 'ACCEPTED') {
         throw new Error('Only accepted quotations can be converted to sales orders')
       }
 

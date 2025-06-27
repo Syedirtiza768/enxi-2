@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CreditCard, Calendar, DollarSign } from 'lucide-react'
 import { apiClient } from '@/lib/api/client'
@@ -18,7 +18,11 @@ interface Invoice {
   }
 }
 
-export default function RecordPaymentPage({ params }: { params: Promise<{ id: string }> }) {
+interface PageProps {
+  params: Promise<{ id: string }>
+}
+
+function RecordPaymentContent({ invoiceId }: { invoiceId: string }) {
   const router = useRouter()
   const { format: formatCurrency } = useCurrencyFormatter()
   const [isLoading, setIsLoading] = useState(false)
@@ -35,8 +39,7 @@ export default function RecordPaymentPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     async function fetchInvoice() {
       try {
-        const resolvedParams = await params
-        const response = await apiClient<Invoice>(`/api/invoices/${resolvedParams.id}`)
+        const response = await apiClient<Invoice>(`/api/invoices/${invoiceId}`)
         
         // Check if it's an error response
         if ('error' in response) {
@@ -57,7 +60,7 @@ export default function RecordPaymentPage({ params }: { params: Promise<{ id: st
       }
     }
     fetchInvoice()
-  }, [params])
+  }, [invoiceId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,8 +87,8 @@ export default function RecordPaymentPage({ params }: { params: Promise<{ id: st
       }
 
       // Check if response has data property
-      const paymentData = response.data || response
-      console.log('Payment created:', paymentData)
+      const responseData = response.data || response
+      console.log('Payment created:', responseData)
 
       // Success - redirect to invoice page
       alert('Payment recorded successfully!')
@@ -278,4 +281,9 @@ export default function RecordPaymentPage({ params }: { params: Promise<{ id: st
       </form>
     </div>
   )
+}
+
+export default function RecordPaymentPage({ params }: PageProps) {
+  const resolvedParams = use(params)
+  return <RecordPaymentContent invoiceId={resolvedParams.id} />
 }

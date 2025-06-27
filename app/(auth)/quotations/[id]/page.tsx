@@ -84,6 +84,18 @@ export default function QuotationDetailPage() {
           linesCount: quotationData.lines?.length,
           data: quotationData
         })
+        
+        // For internal view, the API returns lines with nested items
+        // We need to extract the items from the lines structure
+        if (viewMode === 'internal' && quotationData.lines && !quotationData.items) {
+          const extractedItems = quotationData.lines.flatMap((line: any) => {
+            console.log('Processing line:', line.lineNumber, 'with items:', line.items?.length);
+            return line.items || [];
+          });
+          console.log('Extracted items from lines:', extractedItems.length);
+          quotationData.items = extractedItems;
+        }
+        
         setQuotation(quotationData as Quotation)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load quotation')
@@ -117,6 +129,13 @@ export default function QuotationDetailPage() {
 
       if (refreshResponse.ok) {
         const quotationData = refreshResponse?.data?.data || refreshResponse?.data
+        
+        // For internal view, extract items from lines structure
+        if (viewMode === 'internal' && quotationData.lines && !quotationData.items) {
+          const extractedItems = quotationData.lines.flatMap((line: any) => line.items || []);
+          quotationData.items = extractedItems;
+        }
+        
         setQuotation(quotationData as Quotation)
       }
       
@@ -143,6 +162,13 @@ export default function QuotationDetailPage() {
 
       if (refreshResponse.ok) {
         const quotationData = refreshResponse?.data?.data || refreshResponse?.data
+        
+        // For internal view, extract items from lines structure
+        if (viewMode === 'internal' && quotationData.lines && !quotationData.items) {
+          const extractedItems = quotationData.lines.flatMap((line: any) => line.items || []);
+          quotationData.items = extractedItems;
+        }
+        
         setQuotation(quotationData as Quotation)
       }
     } catch (error) {
@@ -193,7 +219,7 @@ export default function QuotationDetailPage() {
     }
 
     try {
-      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/accept`, {
+      const response = await apiClient<{ data: any }>(`/api/quotations/${quotationId}/accept`, {
         method: 'POST'
       })
 
@@ -201,17 +227,20 @@ export default function QuotationDetailPage() {
         throw new Error(response.error || 'Failed to accept quotation')
       }
 
-      const result = response?.data || response
-      setQuotation(result.quotation || result)
+      // The API returns the updated quotation directly in data
+      const updatedQuotation = response?.data?.data || response?.data
       
-      // If a sales order was created, show success message and redirect
-      if (result.salesOrder) {
-        alert(`Quotation accepted! Sales Order ${result.salesOrder.orderNumber} has been created.`)
-        // Redirect to the sales order
-        router.push(`/sales-orders/${result.salesOrder.id}`)
-      }
+      // Update the quotation with the accepted status
+      setQuotation(updatedQuotation)
+      
+      // Show success message
+      alert('Quotation has been accepted successfully!')
+      
+      // Optionally refresh the page to show updated status
+      window.location.reload()
     } catch (error) {
       console.error('Error:', error)
+      alert('Failed to accept quotation: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
@@ -222,7 +251,7 @@ export default function QuotationDetailPage() {
     }
 
     try {
-      const response = await apiClient<{ data: any[] }>(`/api/quotations/${quotationId}/reject`, {
+      const response = await apiClient<{ data: any }>(`/api/quotations/${quotationId}/reject`, {
         method: 'POST',
         body: JSON.stringify({ reason })
       })
@@ -231,10 +260,18 @@ export default function QuotationDetailPage() {
         throw new Error(response.error || 'Failed to reject quotation')
       }
 
-      setQuotation(response?.data || response)
+      // The API returns the updated quotation directly in data
+      const updatedQuotation = response?.data?.data || response?.data
+      
+      // Update the quotation with the rejected status
+      setQuotation(updatedQuotation)
       alert('Quotation has been rejected.')
+      
+      // Optionally refresh the page to show updated status
+      window.location.reload()
     } catch (error) {
       console.error('Error:', error)
+      alert('Failed to reject quotation: ' + (error instanceof Error ? error.message : 'Unknown error'))
     }
   }
 
@@ -286,6 +323,14 @@ export default function QuotationDetailPage() {
     } as const
 
     const config = statusConfig[status as keyof typeof statusConfig]
+    if (!config) {
+      // Fallback for unknown status
+      return (
+        <span className="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-800">
+          {status}
+        </span>
+      )
+    }
     return (
       <span className={`px-3 py-1 text-sm font-medium rounded-full ${config.className}`}>
         {config.text}
@@ -374,11 +419,9 @@ export default function QuotationDetailPage() {
             discountAmount: quotation.discountAmount,
             taxAmount: quotation.taxAmount,
             totalAmount: quotation.totalAmount,
-            // For internal view, extract items from lines structure
-            items: viewMode === 'internal' && (quotation as any).lines 
-              ? (quotation as any).lines.flatMap((line: any) => line.items || [])
-              : quotation.items || [],
-            lines: (quotation as any).lines,
+            // Items are already extracted in useEffect for internal view
+            items: quotation.items || [],
+            lines: (quotation as any).lines, // Pass lines for display purposes
             currency: (quotation as any).currency
           }}
           onSubmit={handleUpdate}
@@ -563,14 +606,9 @@ export default function QuotationDetailPage() {
           discountAmount: quotation.discountAmount,
           taxAmount: quotation.taxAmount,
           totalAmount: quotation.totalAmount,
-          // For internal view, extract items from lines structure
-          items: viewMode === 'internal' && (quotation as any).lines 
-            ? (quotation as any).lines.flatMap((line: any) => {
-                console.log('Extracting items from line:', line);
-                return line.items || [];
-              })
-            : quotation.items || [],
-          lines: (quotation as any).lines, // For both views
+          // Items are already extracted in useEffect for internal view
+          items: quotation.items || [],
+          lines: (quotation as any).lines, // Pass lines for display purposes
           currency: (quotation as any).currency
         }}
         onSubmit={handleUpdate}

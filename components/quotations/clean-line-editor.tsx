@@ -371,7 +371,8 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
               {/* Line Items (only in internal view and when expanded) */}
               {viewMode === 'internal' && isExpanded && (
                 <div className="ml-8 space-y-2">
-                  {group.items.map((item) => (
+                  {/* Show all non-header items for this line */}
+                  {(group.items.length > 0 ? group.items : items.filter(i => i.lineNumber === lineNo && !i.isLineHeader)).map((item) => (
                     <div key={item.id} className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       {/* First Row: Search, Description, Delete */}
                       <div className="grid grid-cols-12 gap-2 items-center">
