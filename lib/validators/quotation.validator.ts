@@ -168,7 +168,10 @@ export function validateDescription(description: string): string | null {
   return null
 }
 
-export function validateQuantity(quantity: number): string | null {
+export function validateQuantity(quantity: number, isLineHeader?: boolean): string | null {
+  // Allow 0 quantity for line headers
+  if (isLineHeader && quantity === 0) return null
+  
   if (!quantity || quantity <= 0) return 'Quantity must be greater than 0'
   if (quantity > MAX_QUANTITY) return `Quantity must be less than ${MAX_QUANTITY.toLocaleString()}`
   if (!Number.isFinite(quantity)) return 'Quantity must be a valid number'

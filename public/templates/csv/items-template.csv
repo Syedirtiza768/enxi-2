@@ -1,0 +1,4 @@
+code,name,description,categoryCode,type,unitOfMeasureCode,listPrice,standardCost,reorderPoint,minStockLevel,maxStockLevel,isSaleable,isPurchaseable,trackInventory
+"PROD-001","Widget A","Standard widget for general use","PROD","PRODUCT","EACH",25.99,15.50,100,50,500,"true","true","true"
+"PROD-002","Widget B","Premium widget with extra features","PROD","PRODUCT","EACH",45.99,28.00,75,25,300,"true","true","true"
+"SERV-001","Maintenance Service","Annual maintenance service","SERV","SERVICE","HOUR",150.00,0,0,0,0,"true","false","false"

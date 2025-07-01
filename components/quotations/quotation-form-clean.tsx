@@ -206,7 +206,7 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
               items.push({
                 ...item,
                 lineNumber: lineIndex + 1,
-                lineDescription: line.description || '',
+                lineDescription: line.description || undefined,
                 isLineHeader: itemIndex === 0,
                 sortOrder: lineIndex * 100 + itemIndex
               });
@@ -243,14 +243,14 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
         internalNotes: formData.internalNotes || '',
         items: validItems.map((item, index) => ({
           lineNumber: item.lineNumber || 1,
-          lineDescription: item.lineDescription || '',
+          lineDescription: item.lineDescription || undefined,
           isLineHeader: item.isLineHeader !== undefined ? item.isLineHeader : false,
           itemType: item.itemType || 'PRODUCT',
           itemId: item.inventoryItemId || item.itemId || undefined,
           itemCode: item.code || item.itemCode || item.name || `ITEM-${index + 1}`,
           description: item.description || item.name || 'Item',
-          internalDescription: item.internalDescription || '',
-          quantity: Number(item.quantity) || 1,
+          internalDescription: item.internalDescription || undefined,
+          quantity: Number(item.quantity ?? 1),
           unitPrice: Number(item.unitPrice || item.price) || 0,
           discount: Number(item.discount) || 0,
           taxRate: Number(item.taxRate) || 0,

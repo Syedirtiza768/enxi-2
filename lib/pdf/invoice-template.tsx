@@ -29,24 +29,54 @@ interface InvoicePDFData {
   notes?: string
   internalNotes?: string
   lines?: Array<{
-    id?: string
-    itemCode?: string
-    description: string
-    quantity: number
-    unitPrice: number | string
-    discount?: number
-    taxRate?: number
-    totalAmount: number | string
+    lineNumber: number
+    lineDescription: string
+    items: Array<{
+      id?: string
+      lineNumber: number
+      lineDescription?: string
+      isLineHeader: boolean
+      itemType: string
+      itemId?: string
+      itemCode: string
+      description: string
+      internalDescription?: string
+      quantity: number
+      unitPrice: number | string
+      cost?: number
+      discount: number
+      taxRate: number
+      taxRateId?: string
+      unitOfMeasureId?: string
+      subtotal: number | string
+      discountAmount: number | string
+      taxAmount: number | string
+      totalAmount: number | string
+      sortOrder: number
+    }>
   }>
   items?: Array<{
     id?: string
-    itemCode?: string
+    lineNumber: number
+    lineDescription?: string
+    isLineHeader: boolean
+    itemType: string
+    itemId?: string
+    itemCode: string
     description: string
+    internalDescription?: string
     quantity: number
     unitPrice: number | string
-    discount?: number
-    taxRate?: number
+    cost?: number
+    discount: number
+    taxRate: number
+    taxRateId?: string
+    unitOfMeasureId?: string
+    subtotal: number | string
+    discountAmount: number | string
+    taxAmount: number | string
     totalAmount: number | string
+    sortOrder: number
   }>
 }
 
@@ -145,8 +175,20 @@ const styles = StyleSheet.create({
     minHeight: 35,
   },
   colDescription: {
-    width: '100%',
+    width: '40%',
     paddingRight: 10,
+  },
+  colQty: {
+    width: '15%',
+    textAlign: 'center',
+  },
+  colPrice: {
+    width: '15%',
+    textAlign: 'right',
+  },
+  colAmount: {
+    width: '30%',
+    textAlign: 'right',
   },
   headerText: {
     fontSize: 10,
@@ -361,13 +403,75 @@ export const InvoicePDF: React.FC<InvoicePDFProps> = ({
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.headerText, styles.colDescription]}>Description</Text>
+            <Text style={[styles.headerText, styles.colQty]}>Qty</Text>
+            <Text style={[styles.headerText, styles.colPrice]}>Unit Price</Text>
+            <Text style={[styles.headerText, styles.colAmount]}>Amount</Text>
           </View>
           
-          {items.map((item, index) => (
-            <View key={item.id || index} style={styles.tableRow}>
-              <Text style={[styles.cellText, styles.colDescription]}>{item.description}</Text>
-            </View>
-          ))}
+          {viewType === 'client' && invoice.lines ? (
+            // Client view - show line descriptions only
+            invoice.lines.map((line, lineIndex) => {
+              const lineTotal = line.items.reduce((sum, item) => {
+                const amount = typeof item.totalAmount === 'string' ? parseFloat(item.totalAmount) : item.totalAmount
+                return sum + amount
+              }, 0)
+              const lineQty = line.items.reduce((sum, item) => sum + item.quantity, 0)
+              
+              return (
+                <View key={lineIndex} style={styles.tableRow}>
+                  <Text style={[styles.cellText, styles.colDescription]}>
+                    {line.lineDescription || `Line ${line.lineNumber}`}
+                  </Text>
+                  <Text style={[styles.cellText, styles.colQty]}>{lineQty}</Text>
+                  <Text style={[styles.cellText, styles.colPrice]}>-</Text>
+                  <Text style={[styles.cellText, styles.colAmount]}>
+                    {formatCurrency(lineTotal, currency)}
+                  </Text>
+                </View>
+              )
+            })
+          ) : (
+            // Internal view or flat items - show all item details
+            items.map((item, index) => {
+              if (item.isLineHeader && item.lineDescription) {
+                // Line header row
+                return (
+                  <View key={item.id || `header-${index}`} style={[styles.tableRow, { backgroundColor: '#F9FAFB' }]}>
+                    <Text style={[styles.cellText, styles.colDescription, { fontWeight: 'bold' }]}>
+                      {item.lineDescription}
+                    </Text>
+                    <Text style={[styles.cellText, styles.colQty]}>-</Text>
+                    <Text style={[styles.cellText, styles.colPrice]}>-</Text>
+                    <Text style={[styles.cellText, styles.colAmount]}>-</Text>
+                  </View>
+                )
+              }
+              
+              // Regular item row
+              const unitPrice = typeof item.unitPrice === 'string' ? parseFloat(item.unitPrice) : item.unitPrice
+              const totalAmount = typeof item.totalAmount === 'string' ? parseFloat(item.totalAmount) : item.totalAmount
+              
+              return (
+                <View key={item.id || index} style={styles.tableRow}>
+                  <Text style={[styles.cellText, styles.colDescription]}>
+                    {item.description}
+                    {viewType === 'internal' && item.internalDescription && (
+                      <Text style={{ fontSize: 9, color: '#6B7280' }}>
+                        {'\n'}{item.internalDescription}
+                      </Text>
+                    )}
+                  </Text>
+                  <Text style={[styles.cellText, styles.colQty]}>{item.quantity}</Text>
+                  <Text style={[styles.cellText, styles.colPrice]}>
+                    {formatCurrency(unitPrice, currency)}
+                  </Text>
+                  <Text style={[styles.cellText, styles.colAmount]}>
+                    {formatCurrency(totalAmount, currency)}
+                  </Text>
+                </View>
+              )
+            })
+          )}
         </View>
 
         {/* Totals */}

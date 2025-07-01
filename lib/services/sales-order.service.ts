@@ -521,11 +521,16 @@ export class SalesOrderService extends BaseService {
     additionalData: Partial<CreateSalesOrderInput> & { createdBy: string }
   ): Promise<SalesOrderWithDetails> {
     return this.withLogging('convertQuotationToSalesOrder', async () => {
+      console.log('[SalesOrderService] convertQuotationToSalesOrder called')
+      console.log('[SalesOrderService] Getting quotation:', quotationId)
 
       const quotation = await this.quotationService.getQuotation(quotationId)
       if (!quotation) {
         throw new Error('Quotation not found')
       }
+
+      console.log('[SalesOrderService] Quotation found:', quotation.quotationNumber)
+      console.log('[SalesOrderService] Quotation status:', quotation.status)
 
       if (quotation.status !== 'ACCEPTED') {
         throw new Error('Only accepted quotations can be converted to sales orders')
@@ -550,6 +555,8 @@ export class SalesOrderService extends BaseService {
         unitOfMeasureId: item.unitOfMeasureId
       }))
 
+      console.log('[SalesOrderService] Converted', items.length, 'items from quotation')
+
       const salesOrderData: CreateSalesOrderInput & { createdBy: string } = {
         quotationId,
         salesCaseId: quotation.salesCaseId,
@@ -560,9 +567,16 @@ export class SalesOrderService extends BaseService {
         ...additionalData
       }
 
+      console.log('[SalesOrderService] Creating sales order with data:', {
+        quotationId: salesOrderData.quotationId,
+        salesCaseId: salesOrderData.salesCaseId,
+        itemCount: salesOrderData.items.length,
+        createdBy: salesOrderData.createdBy
+      })
 
       const result = await this.createSalesOrder(salesOrderData)
 
+      console.log('[SalesOrderService] Sales order created:', result.orderNumber)
 
       return result
     })
@@ -576,7 +590,21 @@ export class SalesOrderService extends BaseService {
     }
   ): Promise<SalesOrderWithDetails> {
     return this.withLogging('createFromQuotation', async () => {
-      return this.convertQuotationToSalesOrder(quotationId, additionalData)
+      console.log('[SalesOrderService] createFromQuotation called')
+      console.log('[SalesOrderService] Quotation ID:', quotationId)
+      console.log('[SalesOrderService] Additional data:', JSON.stringify(additionalData, null, 2))
+      
+      try {
+        const result = await this.convertQuotationToSalesOrder(quotationId, additionalData)
+        console.log('[SalesOrderService] Sales order created from quotation')
+        console.log('[SalesOrderService] Sales Order ID:', result.id)
+        console.log('[SalesOrderService] Sales Order Number:', result.orderNumber)
+        return result
+      } catch (error) {
+        console.error('[SalesOrderService] Error in createFromQuotation:', error)
+        console.error('[SalesOrderService] Error stack:', error.stack)
+        throw error
+      }
     })
   }
 

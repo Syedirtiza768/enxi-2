@@ -238,6 +238,7 @@ export class QuotationService extends BaseService {
                 ...item,
                 ...itemTotalsArray[index],
                 lineNumber: item.lineNumber ?? 1,
+                lineDescription: item.lineDescription || null,
                 isLineHeader: item.isLineHeader ?? false,
                 itemType: item.itemType ?? 'PRODUCT',
                 quantity: item.quantity ?? 1,
@@ -504,6 +505,7 @@ export class QuotationService extends BaseService {
               create: data.items.map((item, index) => ({
                 ...item,
                 ...itemTotalsArray[index],
+                lineDescription: item.lineDescription || null,
                 sortOrder: item.sortOrder ?? index
               }))
             }

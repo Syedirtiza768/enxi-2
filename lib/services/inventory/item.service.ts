@@ -116,6 +116,35 @@ export interface StockSummary {
   belowReorderPoint: boolean
 }
 
+export interface BulkImportItemInput {
+  code: string
+  name: string
+  description?: string
+  categoryCode?: string // We'll use category code for easier import
+  type?: string
+  unitOfMeasureCode?: string // We'll use UOM code for easier import
+  listPrice?: number
+  standardCost?: number
+  reorderPoint?: number
+  minStockLevel?: number
+  maxStockLevel?: number
+  isSaleable?: boolean
+  isPurchaseable?: boolean
+  trackInventory?: boolean
+}
+
+export interface BulkImportResult {
+  totalRecords: number
+  successCount: number
+  failureCount: number
+  errors: Array<{
+    row: number
+    code: string
+    error: string
+  }>
+  createdItems: Item[]
+}
+
 export class ItemService {
   private auditService: AuditService
 
@@ -1087,6 +1116,217 @@ export class ItemService {
       totalValue,
       totalItems: itemDetails.length,
       itemDetails
+    }
+  }
+
+  async bulkImportItems(
+    items: BulkImportItemInput[],
+    userId: string
+  ): Promise<BulkImportResult> {
+    const errors: Array<{ row: number; code: string; error: string }> = []
+    const createdItems: Item[] = []
+    let successCount = 0
+    let failureCount = 0
+
+    // Pre-fetch all categories and units of measure for validation
+    const [categories, unitsOfMeasure, existingItems] = await Promise.all([
+      prisma.category.findMany({
+        where: { isActive: true },
+        select: { id: true, code: true }
+      }),
+      prisma.unitOfMeasure.findMany({
+        where: { isActive: true },
+        select: { id: true, code: true }
+      }),
+      prisma.item.findMany({
+        select: { code: true }
+      })
+    ])
+
+    // Create lookup maps
+    const categoryMap = new Map(categories.map(c => [c.code, c.id]))
+    const uomMap = new Map(unitsOfMeasure.map(u => [u.code, u.id]))
+    const existingCodes = new Set(existingItems.map(i => i.code))
+
+    // Get or create default unit of measure
+    let defaultUOMId = uomMap.get('EACH')
+    if (!defaultUOMId) {
+      const defaultUOM = await prisma.unitOfMeasure.create({
+        data: {
+          code: 'EACH',
+          name: 'Each',
+          symbol: 'ea',
+          isActive: true,
+          isBaseUnit: true,
+          conversionFactor: 1.0,
+          createdBy: userId
+        }
+      })
+      defaultUOMId = defaultUOM.id
+      uomMap.set('EACH', defaultUOMId)
+    }
+
+    // Get default GL accounts from company settings
+    const companySettings = await prisma.companySettings.findFirst({
+      where: { isActive: true },
+      select: {
+        defaultInventoryAccountId: true,
+        defaultCogsAccountId: true,
+        defaultSalesAccountId: true
+      }
+    })
+
+    // Validate all items first
+    const validatedItems: Array<{ data: CreateItemInput; row: number }> = []
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      const row = i + 2 // Account for header row
+
+      // Check for required fields
+      if (!item.code || !item.name) {
+        errors.push({
+          row,
+          code: item.code || 'N/A',
+          error: 'Code and name are required'
+        })
+        failureCount++
+        continue
+      }
+
+      // Check for duplicate code in the batch
+      if (validatedItems.some(vi => vi.data.code === item.code)) {
+        errors.push({
+          row,
+          code: item.code,
+          error: 'Duplicate code in import file'
+        })
+        failureCount++
+        continue
+      }
+
+      // Check for existing code in database
+      if (existingCodes.has(item.code)) {
+        errors.push({
+          row,
+          code: item.code,
+          error: 'Item with this code already exists'
+        })
+        failureCount++
+        continue
+      }
+
+      // Validate category
+      let categoryId: string | undefined
+      if (item.categoryCode) {
+        categoryId = categoryMap.get(item.categoryCode)
+        if (!categoryId) {
+          errors.push({
+            row,
+            code: item.code,
+            error: `Category code '${item.categoryCode}' not found`
+          })
+          failureCount++
+          continue
+        }
+      } else {
+        // Default category required
+        errors.push({
+          row,
+          code: item.code,
+          error: 'Category code is required'
+        })
+        failureCount++
+        continue
+      }
+
+      // Validate unit of measure
+      let unitOfMeasureId = defaultUOMId
+      if (item.unitOfMeasureCode) {
+        const uomId = uomMap.get(item.unitOfMeasureCode)
+        if (!uomId) {
+          errors.push({
+            row,
+            code: item.code,
+            error: `Unit of measure code '${item.unitOfMeasureCode}' not found`
+          })
+          failureCount++
+          continue
+        }
+        unitOfMeasureId = uomId
+      }
+
+      // Prepare item data
+      const itemData: CreateItemInput & { createdBy: string } = {
+        code: item.code,
+        name: item.name,
+        description: item.description,
+        categoryId,
+        type: item.type || 'PRODUCT',
+        unitOfMeasureId,
+        listPrice: item.listPrice || 0,
+        standardCost: item.standardCost || 0,
+        reorderPoint: item.reorderPoint || 0,
+        minStockLevel: item.minStockLevel || 0,
+        maxStockLevel: item.maxStockLevel || 0,
+        trackInventory: item.trackInventory ?? true,
+        isSaleable: item.isSaleable ?? true,
+        isPurchaseable: item.isPurchaseable ?? true,
+        isActive: true,
+        inventoryAccountId: companySettings?.defaultInventoryAccountId,
+        cogsAccountId: companySettings?.defaultCogsAccountId,
+        salesAccountId: companySettings?.defaultSalesAccountId,
+        createdBy: userId
+      }
+
+      validatedItems.push({ data: itemData, row })
+    }
+
+    // Process items in batches to avoid overwhelming the database
+    const batchSize = 20
+    for (let i = 0; i < validatedItems.length; i += batchSize) {
+      const batch = validatedItems.slice(i, i + batchSize)
+      
+      // Process each item in the batch
+      await Promise.all(
+        batch.map(async ({ data, row }) => {
+          try {
+            const item = await this.createItem(data)
+            createdItems.push(item)
+            successCount++
+          } catch (error) {
+            errors.push({
+              row,
+              code: data.code,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            })
+            failureCount++
+          }
+        })
+      )
+    }
+
+    // Log bulk import action
+    if (createdItems.length > 0) {
+      await this.auditService.logBulkActions({
+        userId,
+        action: AuditAction.BULK_CREATE,
+        entityType: 'Item',
+        entityIds: createdItems.map(i => i.id),
+        metadata: {
+          totalRecords: items.length,
+          successCount,
+          failureCount
+        }
+      })
+    }
+
+    return {
+      totalRecords: items.length,
+      successCount,
+      failureCount,
+      errors,
+      createdItems
     }
   }
 }

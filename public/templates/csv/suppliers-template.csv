@@ -1,0 +1,3 @@
+name,email,phone,website,address,taxId,currency,paymentTerms,creditLimit,discount,bankName,bankAccount,routingNumber,contactPerson,contactEmail,contactPhone,isPreferred
+"Supplier One Inc","supplier1@example.com","+1234567890","www.supplier1.com","789 Supply St","SUP123456","USD",30,100000,5,"Bank of Commerce","1234567890","987654321","John Doe","john@supplier1.com","+1234567890","true"
+"Supplier Two Ltd","supplier2@example.com","+0987654321","www.supplier2.com","321 Vendor Ave","SUP654321","USD",45,150000,7.5,"National Bank","0987654321","123456789","Jane Smith","jane@supplier2.com","+0987654321","false"

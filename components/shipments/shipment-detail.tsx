@@ -267,11 +267,6 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     })
   }
 
-  const canConfirm = shipment.status === 'PREPARING' || shipment.status === 'READY'
-  const canDeliver = shipment.status === 'SHIPPED' || shipment.status === 'IN_TRANSIT'
-  const canCancel = shipment.status === 'PREPARING' || shipment.status === 'READY'
-  const canEdit = shipment.status === 'PREPARING' || shipment.status === 'READY'
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -299,6 +294,11 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
       </Card>
     )
   }
+
+  const canConfirm = shipment.status === 'PREPARING' || shipment.status === 'READY'
+  const canDeliver = shipment.status === 'SHIPPED' || shipment.status === 'IN_TRANSIT'
+  const canCancel = shipment.status === 'PREPARING' || shipment.status === 'READY'
+  const canEdit = shipment.status === 'PREPARING' || shipment.status === 'READY'
 
   return (
     <div className="space-y-6">

@@ -1,0 +1,3 @@
+name,email,phone,industry,website,address,taxId,currency,creditLimit,paymentTerms
+"ABC Company Ltd","abc@example.com","+1234567890","Manufacturing","www.abc.com","123 Main St, City","TAX123456","USD",50000,30
+"XYZ Corporation","xyz@example.com","+0987654321","Retail","www.xyz.com","456 Oak Ave, Town","TAX654321","USD",75000,45

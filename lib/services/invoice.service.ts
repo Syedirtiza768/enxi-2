@@ -37,18 +37,27 @@ export interface CreateInvoiceInput {
   paymentTerms?: string
   billingAddress?: string
   notes?: string
+  internalNotes?: string
   items: CreateInvoiceItemInput[]
 }
 
 export interface CreateInvoiceItemInput {
+  lineNumber: number
+  lineDescription?: string
+  isLineHeader: boolean
+  itemType: string
   itemId?: string
   itemCode: string
   description: string
+  internalDescription?: string
   quantity: number
   unitPrice: number
+  cost?: number
   discount?: number
   taxRate?: number
   taxRateId?: string // Link to centralized tax configuration
+  unitOfMeasureId?: string
+  sortOrder: number
 }
 
 export interface UpdateInvoiceInput {
@@ -56,6 +65,7 @@ export interface UpdateInvoiceInput {
   paymentTerms?: string
   billingAddress?: string
   notes?: string
+  internalNotes?: string
   items?: CreateInvoiceItemInput[]
 }
 
@@ -83,6 +93,12 @@ export class InvoiceService extends BaseService {
     data: CreateInvoiceInput & { createdBy: string }
   ): Promise<InvoiceWithDetails> {
     return this.withLogging('createInvoice', async () => {
+      console.log('Creating invoice with data:', {
+        customerId: data.customerId,
+        dueDate: data.dueDate,
+        itemCount: data.items?.length,
+        firstItem: data.items?.[0]
+      })
 
       const result = await prisma.$transaction(async (tx) => {
         // Generate unique invoice number
@@ -122,6 +138,7 @@ export class InvoiceService extends BaseService {
             paymentTerms: data.paymentTerms,
             billingAddress: data.billingAddress,
             notes: data.notes,
+            internalNotes: data.internalNotes,
             createdBy: data.createdBy
           }
         })
@@ -134,18 +151,26 @@ export class InvoiceService extends BaseService {
             return await tx.invoiceItem.create({
               data: {
                 invoiceId: invoice.id,
+                lineNumber: itemData.lineNumber,
+                lineDescription: itemData.lineDescription,
+                isLineHeader: itemData.isLineHeader,
+                itemType: itemData.itemType,
                 itemId: itemData.itemId,
                 itemCode: itemData.itemCode,
                 description: itemData.description,
+                internalDescription: itemData.internalDescription,
                 quantity: itemData.quantity,
                 unitPrice: itemData.unitPrice,
+                cost: itemData.cost,
                 discount: itemData.discount || 0,
                 taxRate: itemCalculations.effectiveTaxRate, // Use the effective tax rate from calculation
                 taxRateId: itemData.taxRateId, // Store the tax rate ID reference
+                unitOfMeasureId: itemData.unitOfMeasureId,
                 subtotal: itemCalculations.subtotal,
                 discountAmount: itemCalculations.discountAmount,
                 taxAmount: itemCalculations.taxAmount,
-                totalAmount: itemCalculations.totalAmount
+                totalAmount: itemCalculations.totalAmount,
+                sortOrder: itemData.sortOrder
               }
             })
           })
@@ -547,16 +572,24 @@ export class InvoiceService extends BaseService {
       throw new Error('Sales order must be approved, processing, or shipped to create invoice')
     }
 
-    // Convert sales order items to invoice items
+    // Convert sales order items to invoice items, preserving line structure
     const items: CreateInvoiceItemInput[] = salesOrder.items.map(item => ({
-      itemId: item.itemId,
+      lineNumber: item.lineNumber,
+      lineDescription: item.lineDescription || undefined,
+      isLineHeader: item.isLineHeader,
+      itemType: item.itemType,
+      itemId: item.itemId || undefined,
       itemCode: item.itemCode,
       description: item.description,
+      internalDescription: item.internalDescription || undefined,
       quantity: item.quantity,
       unitPrice: item.unitPrice,
-      discount: item.discount,
-      taxRate: item.taxRate,
-      taxRateId: item.taxRateId // Include tax rate ID reference
+      cost: item.cost || undefined,
+      discount: item.discount || undefined,
+      taxRate: item.taxRate || undefined,
+      taxRateId: item.taxRateId || undefined,
+      unitOfMeasureId: item.unitOfMeasureId || undefined,
+      sortOrder: item.sortOrder
     }))
 
     // Calculate due date based on payment terms (default 30 days)
@@ -578,6 +611,63 @@ export class InvoiceService extends BaseService {
     })
   }
 
+  async createInvoiceFromQuotation(
+    quotationId: string,
+    additionalData: Partial<CreateInvoiceInput> & { createdBy: string }
+  ): Promise<InvoiceWithDetails> {
+    return this.withLogging('createInvoiceFromQuotation', async () => {
+      console.log('[InvoiceService] Starting createInvoiceFromQuotation')
+      console.log('[InvoiceService] Quotation ID:', quotationId)
+      console.log('[InvoiceService] Additional data:', JSON.stringify(additionalData, null, 2))
+      
+      try {
+        // First, create a sales order from the quotation
+        const salesOrderService = new SalesOrderService()
+        
+        console.log('[InvoiceService] Creating sales order from quotation...')
+        
+        // Create sales order with all quotation details
+        const salesOrder = await salesOrderService.createFromQuotation(quotationId, {
+          customerPO: additionalData.notes?.includes('PO#') 
+            ? additionalData.notes.match(/PO#\s*(\S+)/)?.[1] 
+            : undefined,
+          createdBy: additionalData.createdBy
+        })
+        
+        console.log('[InvoiceService] Sales order created successfully!')
+        console.log('[InvoiceService] Sales Order ID:', salesOrder.id)
+        console.log('[InvoiceService] Sales Order Number:', salesOrder.orderNumber)
+        console.log('[InvoiceService] Sales Order Status:', salesOrder.status)
+        
+        // Approve the sales order so it can be invoiced
+        console.log('[InvoiceService] Approving sales order...')
+        const approvedSalesOrder = await salesOrderService.approveSalesOrder(
+          salesOrder.id,
+          additionalData.createdBy
+        )
+        console.log('[InvoiceService] Sales order approved!')
+        
+        // Now create invoice from the sales order
+        console.log('[InvoiceService] Creating invoice from sales order...')
+        const invoiceResult = await this.createInvoiceFromSalesOrder(approvedSalesOrder.id, {
+          ...additionalData,
+          createdBy: additionalData.createdBy
+        })
+        
+        console.log('[InvoiceService] Invoice created successfully!')
+        console.log('[InvoiceService] Invoice ID:', invoiceResult.id)
+        console.log('[InvoiceService] Invoice Number:', invoiceResult.invoiceNumber)
+        console.log('[InvoiceService] Invoice Sales Order ID:', invoiceResult.salesOrderId)
+        
+        return invoiceResult
+      } catch (error) {
+        console.error('[InvoiceService] Error in createInvoiceFromQuotation:', error)
+        console.error('[InvoiceService] Error stack:', error.stack)
+        throw error
+      }
+    })
+  }
+
   // Private helper methods
 
   private async calculateTotals(items: CreateInvoiceItemInput[], customerId?: string): Promise<{
@@ -591,6 +681,11 @@ export class InvoiceService extends BaseService {
     let discountAmount = 0
 
     for (const item of items) {
+      // Skip line headers in total calculation as they have 0 amounts
+      if (item.isLineHeader && item.quantity === 0) {
+        continue
+      }
+      
       const itemCalculations = await this.calculateItemTotals(item, customerId)
       subtotal += itemCalculations.subtotal
       taxAmount += itemCalculations.taxAmount
@@ -609,6 +704,17 @@ export class InvoiceService extends BaseService {
     totalAmount: number
     effectiveTaxRate: number
   }> {
+    // Handle line headers with 0 quantity
+    if (item.isLineHeader && item.quantity === 0) {
+      return {
+        subtotal: 0,
+        discountAmount: 0,
+        taxAmount: 0,
+        totalAmount: 0,
+        effectiveTaxRate: 0
+      }
+    }
+    
     const subtotal = item.quantity * item.unitPrice
     const discountAmount = subtotal * ((item.discount || 0) / 100)
     const afterDiscount = subtotal - discountAmount
@@ -618,16 +724,23 @@ export class InvoiceService extends BaseService {
     let effectiveTaxRate = item.taxRate || 0
     
     if (item.taxRateId || !item.taxRate) {
-      // Use centralized tax calculation
-      const taxCalc = await taxService.calculateTax({
-        amount: afterDiscount,
-        taxRateId: item.taxRateId,
-        customerId,
-        appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
-      })
-      
-      taxAmount = taxCalc.taxAmount
-      effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+      try {
+        // Use centralized tax calculation
+        const taxCalc = await taxService.calculateTax({
+          amount: afterDiscount,
+          taxRateId: item.taxRateId,
+          customerId,
+          appliesTo: item.itemId ? 'PRODUCTS' : 'SERVICES'
+        })
+        
+        taxAmount = taxCalc.taxAmount
+        effectiveTaxRate = taxCalc.appliedTaxRates[0]?.rate || 0
+      } catch (taxError) {
+        console.error('Tax calculation failed for item:', item.itemCode, taxError)
+        // Fallback to manual tax rate or 0
+        effectiveTaxRate = item.taxRate || 0
+        taxAmount = afterDiscount * (effectiveTaxRate / 100)
+      }
     } else {
       // Fallback to manual tax rate
       taxAmount = afterDiscount * ((item.taxRate || 0) / 100)

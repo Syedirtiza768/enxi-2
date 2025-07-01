@@ -86,7 +86,7 @@ export function ClientQuotationView({ lines, items }: ClientQuotationViewProps) 
     
     return {
       lineNumber,
-      lineDescription: lineHeader?.lineDescription || lineHeader?.description || '',
+      lineDescription: lineHeader?.lineDescription || lineHeader?.description || `Line ${lineNumber}`,
       quantity: totalQuantity,
       totalAmount: lineTotal
     }

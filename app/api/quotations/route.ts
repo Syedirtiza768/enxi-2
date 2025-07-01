@@ -23,7 +23,7 @@ const createQuotationSchema = z.object({
     itemCode: z.string(),
     description: z.string(),
     internalDescription: z.string().optional(),
-    quantity: z.number().positive(),
+    quantity: z.number().min(0),
     unitPrice: z.number().min(0),
     discount: z.number().min(0).max(100).optional(),
     taxRate: z.number().min(0).max(100).optional(),
@@ -31,7 +31,16 @@ const createQuotationSchema = z.object({
     unitOfMeasureId: z.string().optional(),
     cost: z.number().min(0).optional(),
     sortOrder: z.number().int().optional()
-  })).min(1)
+  }).refine(
+    (item) => {
+      // Allow quantity 0 only for line headers
+      if (item.isLineHeader && item.quantity === 0) return true
+      return item.quantity > 0
+    },
+    {
+      message: "Quantity must be greater than 0 (except for line headers)"
+    }
+  )).min(1)
 })
 
 // GET /api/quotations - List all quotations with filtering

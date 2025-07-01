@@ -62,6 +62,14 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
   const [searchQuery, setSearchQuery] = useState('');
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Debug logging
+  console.log('CleanLineEditor received:', {
+    itemsCount: items?.length,
+    items: items,
+    viewMode,
+    disabled
+  });
 
   // Group items by line number
   const lineGroups = items.reduce((acc, item) => {
@@ -78,6 +86,8 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
     }
     return acc;
   }, {} as Record<number, { header: QuotationItem | null; items: QuotationItem[] }>);
+  
+  console.log('Line groups:', lineGroups);
 
   // Load inventory items
   useEffect(() => {
@@ -202,7 +212,7 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
       lineNumber: newLineNumber,
       sortOrder: 0,
       isLineHeader: true,
-      lineDescription: '',
+      lineDescription: `Line ${newLineNumber}`, // Default description
       itemCode: '',
       description: '',
       quantity: 0,
@@ -218,7 +228,7 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
 
   const updateLineDescription = (lineNumber: number, description: string) => {
     onChange(items.map(item => 
-      item.lineNumber === lineNumber && item.isLineHeader
+      item.lineNumber === lineNumber
         ? { ...item, lineDescription: description }
         : item
     ));
@@ -228,9 +238,14 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
     const lineItems = items.filter(item => item.lineNumber === lineNumber && !item.isLineHeader);
     const maxSortOrder = Math.max(...lineItems.map(item => item.sortOrder), 0);
     
+    // Get line header to inherit line description
+    const lineHeader = items.find(item => item.lineNumber === lineNumber && item.isLineHeader);
+    const lineDescription = lineHeader?.lineDescription || `Line ${lineNumber}`;
+    
     const newItem: QuotationItem = {
       id: `item-${Date.now()}`,
       lineNumber,
+      lineDescription, // Inherit from line header
       sortOrder: maxSortOrder + 1,
       isLineHeader: false,
       itemCode: '',
@@ -294,7 +309,11 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
 
   // Calculate line totals
   const getLineTotals = (lineNumber: number) => {
-    const lineItems = items.filter(item => item.lineNumber === lineNumber && !item.isLineHeader);
+    // Include all items for this line, including headers that have quantity/price
+    const lineItems = items.filter(item => 
+      item.lineNumber === lineNumber && 
+      (!item.isLineHeader || (item.isLineHeader && item.quantity > 0 && item.unitPrice > 0))
+    );
     return lineItems.reduce((acc, item) => ({
       subtotal: acc.subtotal + (item.subtotal || 0),
       total: acc.total + (item.totalAmount || 0)
@@ -302,7 +321,9 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
   };
 
   // Calculate grand totals
-  const grandTotals = items.filter(item => !item.isLineHeader).reduce((acc, item) => ({
+  const grandTotals = items.filter(item => 
+    !item.isLineHeader || (item.isLineHeader && item.quantity > 0 && item.unitPrice > 0)
+  ).reduce((acc, item) => ({
     subtotal: acc.subtotal + (item.subtotal || 0),
     total: acc.total + (item.totalAmount || 0)
   }), { subtotal: 0, total: 0 });
@@ -347,7 +368,7 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
                     <div className="flex-1">
                       <Input
                         placeholder="Line description (shown to client)"
-                        value={group.header?.lineDescription || ''}
+                        value={group.header?.lineDescription || `Line ${lineNo}`}
                         onChange={(e) => updateLineDescription(lineNo, e.target.value)}
                         disabled={disabled}
                         className="font-medium"
@@ -371,8 +392,114 @@ export function CleanLineEditor({ items, onChange, viewMode = 'internal', disabl
               {/* Line Items (only in internal view and when expanded) */}
               {viewMode === 'internal' && isExpanded && (
                 <div className="ml-8 space-y-2">
+                  {/* If header has quantity/price, show it as an item */}
+                  {group.header && group.header.quantity > 0 && group.header.unitPrice > 0 && (
+                    <div key={group.header.id} className="space-y-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-sm font-medium text-blue-700 mb-2">Line Header Item</div>
+                      {/* First Row: Search, Description, Delete */}
+                      <div className="grid grid-cols-12 gap-2 items-center">
+                        <div className="col-span-1 md:col-span-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowItemSearch({ lineNumber: lineNo, itemId: group.header.id })}
+                            disabled={disabled}
+                            className="w-full"
+                          >
+                            <Search className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="col-span-10 md:col-span-10">
+                          <Input
+                            placeholder="Item description"
+                            value={group.header.description}
+                            onChange={(e) => updateItem(group.header.id, { description: e.target.value })}
+                            disabled={disabled}
+                          />
+                        </div>
+                        
+                        <div className="col-span-1 md:col-span-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(group.header.id)}
+                            disabled={disabled}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Second Row: Quantity, Price, Tax */}
+                      <div className="grid grid-cols-3 md:grid-cols-12 gap-2 items-center">
+                        <div className="col-span-1 md:col-span-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Quantity</Label>
+                            <Input
+                              type="number"
+                              placeholder="Qty"
+                              value={group.header.quantity}
+                              onChange={(e) => updateItem(group.header.id, { quantity: parseFloat(e.target.value) || 0 })}
+                              disabled={disabled}
+                              min="0"
+                              step="1"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-1 md:col-span-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Unit Price</Label>
+                            <Input
+                              type="number"
+                              placeholder="Price"
+                              value={group.header.unitPrice}
+                              onChange={(e) => updateItem(group.header.id, { unitPrice: parseFloat(e.target.value) || 0 })}
+                              disabled={disabled}
+                              min="0"
+                              step="0.01"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="col-span-1 md:col-span-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Tax</Label>
+                            <TaxRateSelector
+                              value={group.header.taxRateId}
+                              onChange={(value, rate) => updateItem(group.header.id, { 
+                                taxRateId: value, 
+                                taxRate: rate?.rate || 0 
+                              })}
+                              disabled={disabled}
+                              allowedTypes={[TaxType.SALES]}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Third Row: Item Code and Total */}
+                      <div className="grid grid-cols-2 gap-2 items-center">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Item Code</Label>
+                          <Input
+                            placeholder="Item code"
+                            value={group.header.itemCode}
+                            onChange={(e) => updateItem(group.header.id, { itemCode: e.target.value })}
+                            disabled={disabled}
+                          />
+                        </div>
+                        <div className="text-right">
+                          <Label className="text-xs text-muted-foreground">Total</Label>
+                          <div className="text-lg font-semibold">{formatCurrency(group.header.totalAmount || 0)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Show all non-header items for this line */}
-                  {(group.items.length > 0 ? group.items : items.filter(i => i.lineNumber === lineNo && !i.isLineHeader)).map((item) => (
+                  {group.items.map((item) => (
                     <div key={item.id} className="space-y-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                       {/* First Row: Search, Description, Delete */}
                       <div className="grid grid-cols-12 gap-2 items-center">

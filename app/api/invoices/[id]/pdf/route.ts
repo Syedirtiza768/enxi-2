@@ -23,11 +23,36 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
     
+    // Convert items to lines structure if not already present
+    let lines = invoice.lines
+    if (!lines && invoice.items && invoice.items.length > 0) {
+      // Group items by line number
+      const itemsByLine = new Map()
+      invoice.items.forEach((item: any) => {
+        const lineNumber = item.lineNumber || 1
+        if (!itemsByLine.has(lineNumber)) {
+          itemsByLine.set(lineNumber, [])
+        }
+        itemsByLine.get(lineNumber).push(item)
+      })
+
+      // Create lines structure
+      lines = Array.from(itemsByLine.entries()).map(([lineNumber, items]) => {
+        const lineHeader = items.find((item: any) => item.isLineHeader)
+        return {
+          lineNumber,
+          lineDescription: lineHeader?.lineDescription || lineHeader?.description || '',
+          items: items.sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        }
+      }).sort((a, b) => a.lineNumber - b.lineNumber)
+    }
+
     // Prepare PDF data similar to quotation
     const pdfData = {
       invoice: {
         ...invoice,
         items: invoice.items || [],
+        lines: lines || [],
         currency: invoice.currency || 'USD',
         subtotal: invoice.subtotalAmount || invoice.subtotal,
         // Ensure all amounts are available

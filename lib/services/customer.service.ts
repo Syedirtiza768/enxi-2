@@ -47,6 +47,31 @@ export interface CreditCheckResult {
   overdueAmount: number
 }
 
+export interface BulkImportCustomerInput {
+  name: string
+  email: string
+  phone?: string
+  industry?: string
+  website?: string
+  address?: string
+  taxId?: string
+  currency?: string
+  creditLimit?: number
+  paymentTerms?: number
+}
+
+export interface BulkImportResult {
+  totalRecords: number
+  successCount: number
+  failureCount: number
+  errors: Array<{
+    row: number
+    email: string
+    error: string
+  }>
+  createdCustomers: Customer[]
+}
+
 export class CustomerService extends BaseService {
   private auditService: AuditService
   private coaService: ChartOfAccountsService
@@ -753,6 +778,119 @@ export class CustomerService extends BaseService {
         beforeData: existingCustomer,
         afterData: { /* soft deleted */ }
       })
+    })
+  }
+
+  async bulkImportCustomers(
+    customers: BulkImportCustomerInput[],
+    userId: string
+  ): Promise<BulkImportResult> {
+    return this.withLogging('bulkImportCustomers', async () => {
+      const errors: Array<{ row: number; email: string; error: string }> = []
+      const createdCustomers: Customer[] = []
+      let successCount = 0
+      let failureCount = 0
+
+      // Validate all customers first
+      const validatedCustomers: Array<{ data: BulkImportCustomerInput; row: number }> = []
+      const existingEmails = new Set<string>()
+
+      // Get all existing customer emails
+      const existingCustomers = await prisma.customer.findMany({
+        select: { email: true }
+      })
+      existingCustomers.forEach(c => existingEmails.add(c.email))
+
+      // Validate each customer
+      for (let i = 0; i < customers.length; i++) {
+        const customer = customers[i]
+        const row = i + 2 // Account for header row
+
+        // Check for required fields
+        if (!customer.name || !customer.email) {
+          errors.push({
+            row,
+            email: customer.email || 'N/A',
+            error: 'Name and email are required'
+          })
+          failureCount++
+          continue
+        }
+
+        // Check for duplicate email in the batch
+        if (validatedCustomers.some(vc => vc.data.email === customer.email)) {
+          errors.push({
+            row,
+            email: customer.email,
+            error: 'Duplicate email in import file'
+          })
+          failureCount++
+          continue
+        }
+
+        // Check for existing email in database
+        if (existingEmails.has(customer.email)) {
+          errors.push({
+            row,
+            email: customer.email,
+            error: 'Customer with this email already exists'
+          })
+          failureCount++
+          continue
+        }
+
+        validatedCustomers.push({ data: customer, row })
+      }
+
+      // Process customers in batches to avoid overwhelming the database
+      const batchSize = 10
+      for (let i = 0; i < validatedCustomers.length; i += batchSize) {
+        const batch = validatedCustomers.slice(i, i + batchSize)
+        
+        // Process each customer in the batch
+        await Promise.all(
+          batch.map(async ({ data, row }) => {
+            try {
+              const customer = await this.createCustomer({
+                ...data,
+                createdBy: userId
+              })
+              createdCustomers.push(customer)
+              successCount++
+            } catch (error) {
+              errors.push({
+                row,
+                email: data.email,
+                error: error instanceof Error ? error.message : 'Unknown error'
+              })
+              failureCount++
+            }
+          })
+        )
+      }
+
+      // Log bulk import action
+      if (createdCustomers.length > 0) {
+        await this.auditService.logBulkActions({
+          userId,
+          action: AuditAction.BULK_CREATE,
+          entityType: EntityType.CUSTOMER,
+          entityIds: createdCustomers.map(c => c.id),
+          metadata: {
+            totalRecords: customers.length,
+            successCount,
+            failureCount
+          }
+        })
+      }
+
+      return {
+        totalRecords: customers.length,
+        successCount,
+        failureCount,
+        errors,
+        createdCustomers
+      }
     })
   }
 }

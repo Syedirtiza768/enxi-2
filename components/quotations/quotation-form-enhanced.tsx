@@ -184,7 +184,7 @@ export function QuotationFormEnhanced({
         const lineHeader = items.find(item => item.isLineHeader)
         return {
           lineNumber,
-          lineDescription: lineHeader?.lineDescription || '',
+          lineDescription: lineHeader?.lineDescription || undefined,
           items: items.sort((a, b) => a.sortOrder - b.sortOrder)
         }
       })

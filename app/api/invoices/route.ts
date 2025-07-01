@@ -10,19 +10,29 @@ import { z } from 'zod'
 const createInvoiceSchema = z.object({
   salesOrderId: z.string().optional(),
   customerId: z.string(),
-  type: z.enum(['SALES', 'PURCHASE', 'CREDIT_NOTE', 'DEBIT_NOTE']).optional(),
+  type: z.enum(['SALES', 'CREDIT_NOTE', 'DEBIT_NOTE', 'PROFORMA']).optional(),
   dueDate: z.string().datetime(),
   paymentTerms: z.string().optional(),
   billingAddress: z.string().optional(),
   notes: z.string().optional(),
+  internalNotes: z.string().optional(),
   items: z.array(z.object({
-    itemId: z.string().optional(),
+    lineNumber: z.number(),
+    lineDescription: z.string().optional().nullable(),
+    isLineHeader: z.boolean(),
+    itemType: z.string(),
+    itemId: z.string().optional().nullable(),
     itemCode: z.string(),
     description: z.string(),
-    quantity: z.number().positive(),
+    internalDescription: z.string().optional().nullable(),
+    quantity: z.number().min(0),
     unitPrice: z.number().min(0),
+    cost: z.number().min(0).optional().nullable(),
     discount: z.number().min(0).max(100).optional(),
-    taxRate: z.number().min(0).max(100).optional()
+    taxRate: z.number().min(0).max(100).optional(),
+    taxRateId: z.string().optional().nullable(),
+    unitOfMeasureId: z.string().optional().nullable(),
+    sortOrder: z.number()
   })).min(1)
 })
 
@@ -91,12 +101,31 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     
     const body = await request.json()
     
+    console.log('Invoice API - Raw request body:', JSON.stringify({
+      hasBody: !!body,
+      bodyKeys: Object.keys(body),
+      customerId: body.customerId,
+      dueDate: body.dueDate,
+      itemCount: body.items?.length,
+      firstItem: body.items?.[0],
+      hasLines: !!body.lines
+    }, null, 2))
+    
     // Validate request body
     let data;
     try {
       data = createInvoiceSchema.parse(body)
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
+        console.error('Zod validation failed:', {
+          errors: validationError.errors,
+          receivedData: {
+            customerId: body.customerId,
+            dueDate: body.dueDate,
+            itemCount: body.items?.length,
+            firstItemKeys: body.items?.[0] ? Object.keys(body.items[0]) : []
+          }
+        })
         return NextResponse.json(
           { 
             error: 'Validation failed',
@@ -127,6 +156,11 @@ const postHandler = async (request: NextRequest): Promise<NextResponse> => {
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating invoice:', error)
+    console.error('Full error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    })
     
     const errorMessage = error instanceof Error ? error.message : String(error)
     

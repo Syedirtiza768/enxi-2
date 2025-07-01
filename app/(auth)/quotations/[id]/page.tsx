@@ -8,6 +8,10 @@ import { apiClient } from '@/lib/api/client'
 
 interface QuotationItem {
   id: string
+  lineNumber: number
+  lineDescription?: string | null
+  isLineHeader: boolean
+  itemType: 'PRODUCT' | 'SERVICE'
   itemId?: string
   itemCode: string
   description: string
@@ -17,10 +21,13 @@ interface QuotationItem {
   cost?: number
   discount?: number
   taxRate?: number
+  taxRateId?: string
+  unitOfMeasureId?: string
   subtotal: number
   discountAmount: number
   taxAmount: number
   totalAmount: number
+  sortOrder: number
 }
 
 interface Quotation {
@@ -82,8 +89,22 @@ export default function QuotationDetailPage() {
           itemsCount: quotationData.items?.length,
           hasLines: !!quotationData.lines,
           linesCount: quotationData.lines?.length,
-          data: quotationData
+          rawResponse: response,
+          quotationData: quotationData
         })
+        
+        // Log the structure in detail
+        if (quotationData.lines) {
+          console.log('Lines detail:');
+          quotationData.lines.forEach((line: any, i: number) => {
+            console.log(`Line ${i + 1}:`, {
+              lineNumber: line.lineNumber,
+              lineDescription: line.lineDescription,
+              itemsCount: line.items?.length,
+              items: line.items
+            });
+          });
+        }
         
         // For internal view, the API returns lines with nested items
         // We need to extract the items from the lines structure

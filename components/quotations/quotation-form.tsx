@@ -306,8 +306,8 @@ export function QuotationForm({
             return `Line ${item.lineNumber}, Item ${i + 1}: ${descriptionError}`
           }
           
-          // Quantity validation
-          const quantityError = validateQuantity(item.quantity)
+          // Quantity validation (allow 0 for line headers)
+          const quantityError = validateQuantity(item.quantity, item.isLineHeader)
           if (quantityError) {
             return `Line ${item.lineNumber}, Item ${i + 1}: ${quantityError}`
           }

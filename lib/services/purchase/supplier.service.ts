@@ -5,6 +5,8 @@ import {
   Prisma
 } from "@prisma/client"
 import { AccountType } from '@/lib/constants/account-type'
+import { AuditService } from '../audit.service'
+import { AuditAction, EntityType } from '@/lib/validators/audit.validator'
 
 export interface CreateSupplierInput {
   supplierNumber?: string
@@ -62,9 +64,44 @@ export interface SupplierWithDetails extends Supplier {
   }
 }
 
+export interface BulkImportSupplierInput {
+  name: string
+  email?: string
+  phone?: string
+  website?: string
+  address?: string
+  taxId?: string
+  currency?: string
+  paymentTerms?: number
+  creditLimit?: number
+  discount?: number
+  bankName?: string
+  bankAccount?: string
+  routingNumber?: string
+  contactPerson?: string
+  contactEmail?: string
+  contactPhone?: string
+  isPreferred?: boolean
+}
+
+export interface BulkImportResult {
+  totalRecords: number
+  successCount: number
+  failureCount: number
+  errors: Array<{
+    row: number
+    name: string
+    error: string
+  }>
+  createdSuppliers: Supplier[]
+}
+
 export class SupplierService extends BaseService {
+  private auditService: AuditService
+
   constructor() {
     super('SupplierService')
+    this.auditService = new AuditService()
   }
 
   async createSupplier(
@@ -343,5 +380,121 @@ export class SupplierService extends BaseService {
     }
 
     return 'SUP-0001'
+  }
+
+  async bulkImportSuppliers(
+    suppliers: BulkImportSupplierInput[],
+    userId: string
+  ): Promise<BulkImportResult> {
+    return this.withLogging('bulkImportSuppliers', async () => {
+      const errors: Array<{ row: number; name: string; error: string }> = []
+      const createdSuppliers: Supplier[] = []
+      let successCount = 0
+      let failureCount = 0
+
+      // Validate all suppliers first
+      const validatedSuppliers: Array<{ data: BulkImportSupplierInput; row: number }> = []
+      const existingEmails = new Set<string>()
+
+      // Get all existing supplier emails (only non-null emails)
+      const existingSuppliers = await prisma.supplier.findMany({
+        where: { email: { not: null } },
+        select: { email: true }
+      })
+      existingSuppliers.forEach(s => {
+        if (s.email) existingEmails.add(s.email)
+      })
+
+      // Validate each supplier
+      for (let i = 0; i < suppliers.length; i++) {
+        const supplier = suppliers[i]
+        const row = i + 2 // Account for header row
+
+        // Check for required fields
+        if (!supplier.name) {
+          errors.push({
+            row,
+            name: supplier.name || 'N/A',
+            error: 'Name is required'
+          })
+          failureCount++
+          continue
+        }
+
+        // Check for duplicate email in the batch (if email is provided)
+        if (supplier.email && validatedSuppliers.some(vs => vs.data.email === supplier.email)) {
+          errors.push({
+            row,
+            name: supplier.name,
+            error: 'Duplicate email in import file'
+          })
+          failureCount++
+          continue
+        }
+
+        // Check for existing email in database (if email is provided)
+        if (supplier.email && existingEmails.has(supplier.email)) {
+          errors.push({
+            row,
+            name: supplier.name,
+            error: 'Supplier with this email already exists'
+          })
+          failureCount++
+          continue
+        }
+
+        validatedSuppliers.push({ data: supplier, row })
+      }
+
+      // Process suppliers in batches to avoid overwhelming the database
+      const batchSize = 10
+      for (let i = 0; i < validatedSuppliers.length; i += batchSize) {
+        const batch = validatedSuppliers.slice(i, i + batchSize)
+        
+        // Process each supplier in the batch
+        await Promise.all(
+          batch.map(async ({ data, row }) => {
+            try {
+              const supplier = await this.createSupplier({
+                ...data,
+                createdBy: userId
+              })
+              createdSuppliers.push(supplier)
+              successCount++
+            } catch (error) {
+              errors.push({
+                row,
+                name: data.name,
+                error: error instanceof Error ? error.message : 'Unknown error'
+              })
+              failureCount++
+            }
+          })
+        )
+      }
+
+      // Log bulk import action
+      if (createdSuppliers.length > 0) {
+        await this.auditService.logBulkActions({
+          userId,
+          action: AuditAction.BULK_CREATE,
+          entityType: EntityType.SUPPLIER,
+          entityIds: createdSuppliers.map(s => s.id),
+          metadata: {
+            totalRecords: suppliers.length,
+            successCount,
+            failureCount
+          }
+        })
+      }
+
+      return {
+        totalRecords: suppliers.length,
+        successCount,
+        failureCount,
+        errors,
+        createdSuppliers
+      }
+    })
   }
 }
