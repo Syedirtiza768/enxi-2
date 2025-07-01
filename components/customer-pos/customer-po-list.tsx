@@ -44,15 +44,15 @@ interface CustomerPO {
     name: string
     email: string
   }
-  quotation: {
+  quotation?: {
     id: string
     quotationNumber: string
-  }
-  salesCase: {
+  } | null
+  salesCase?: {
     id: string
     caseNumber: string
     title: string
-  }
+  } | null
   poDate: string
   poAmount: number
   currency: string
@@ -225,7 +225,7 @@ export function CustomerPOList() {
           [
             po.poNumber,
             po.customer.name,
-            po.quotation.quotationNumber,
+            po.quotation?.quotationNumber || '',
             formatCurrency(po.poAmount),
             po.isAccepted ? 'Accepted' : 'Pending',
             po.salesOrder?.orderNumber || '',
@@ -282,7 +282,7 @@ export function CustomerPOList() {
     {
       accessorKey: 'quotation.quotationNumber',
       header: 'Quotation',
-      cell: ({ row }) => row.original.quotation.quotationNumber,
+      cell: ({ row }) => row.original.quotation?.quotationNumber || '-',
     },
     {
       accessorKey: 'poAmount',

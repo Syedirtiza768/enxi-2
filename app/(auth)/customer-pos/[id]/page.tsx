@@ -16,15 +16,15 @@ interface CustomerPO {
     name: string
     email: string
   }
-  quotation: {
+  quotation?: {
     id: string
     quotationNumber: string
-  }
-  salesCase: {
+  } | null
+  salesCase?: {
     id: string
     caseNumber: string
     title: string
-  }
+  } | null
   poDate: string
   poAmount: number
   currency: string
@@ -328,32 +328,36 @@ export default function CustomerPODetailPage(): React.JSX.Element {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Related Records</h2>
             <dl className="space-y-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Quotation</dt>
-                <dd className="mt-1">
-                  <button
-                    onClick={(): void => router.push(`/quotations/${po.quotation.id}`)}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                  >
-                    {po.quotation.quotationNumber}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </button>
-                </dd>
-              </div>
+              {po.quotation && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Quotation</dt>
+                  <dd className="mt-1">
+                    <button
+                      onClick={(): void => router.push(`/quotations/${po.quotation.id}`)}
+                      className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                    >
+                      {po.quotation.quotationNumber}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </button>
+                  </dd>
+                </div>
+              )}
 
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Sales Case</dt>
-                <dd className="mt-1">
-                  <button
-                    onClick={(): void => router.push(`/sales-cases/${po.salesCase.id}`)}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                  >
-                    {po.salesCase.caseNumber}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </button>
-                  <div className="text-sm text-gray-900 mt-1">{po.salesCase.title}</div>
-                </dd>
-              </div>
+              {po.salesCase && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Sales Case</dt>
+                  <dd className="mt-1">
+                    <button
+                      onClick={(): void => router.push(`/sales-cases/${po.salesCase.id}`)}
+                      className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                    >
+                      {po.salesCase.caseNumber}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </button>
+                    <div className="text-sm text-gray-900 mt-1">{po.salesCase.title}</div>
+                  </dd>
+                </div>
+              )}
 
               {po.salesOrder && (
                 <div>

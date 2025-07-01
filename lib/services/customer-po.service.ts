@@ -31,16 +31,16 @@ export interface CustomerPOWithDetails extends CustomerPO {
     name: string
     email: string
   }
-  quotation: {
+  quotation?: {
     id: string
     quotationNumber: string
     totalAmount: number
-  }
-  salesCase: {
+  } | null
+  salesCase?: {
     id: string
     caseNumber: string
     title: string
-  }
+  } | null
   salesOrder?: {
     id: string
     orderNumber: string
