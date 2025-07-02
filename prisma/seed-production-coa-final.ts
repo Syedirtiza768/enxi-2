@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { AccountType } from '@/lib/constants/account-type';
+import { AccountType } from '../lib/constants/account-type';
 
 // Initialize Prisma Client with production-friendly settings
 const prisma = new PrismaClient({
@@ -40,7 +40,7 @@ export async function seedProductionChartOfAccounts(companyId?: string) {
         targetCompanyId = envCompanyId;
       } else {
         // Find first active company or create one
-        const existingCompany = await prisma.company.findFirst({
+        const existingCompany = await prisma.companySettings.findFirst({
           where: { isActive: true }
         });
 
@@ -49,7 +49,7 @@ export async function seedProductionChartOfAccounts(companyId?: string) {
           console.log(`Using existing company: ${existingCompany.name}`);
         } else {
           // Create a default company
-          const newCompany = await prisma.company.create({
+          const newCompany = await prisma.companySettings.create({
             data: {
               name: process.env.COMPANY_NAME || 'Default Company',
               code: process.env.COMPANY_CODE || 'DEFAULT',
