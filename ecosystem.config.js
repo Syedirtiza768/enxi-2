@@ -1,8 +1,8 @@
 module.exports = {
   apps: [{
     name: 'Enxi-AlSahab',
-    script: 'node_modules/.bin/next',
-    args: 'start -p 3050',
+    script: 'npm',
+    args: 'start',
     cwd: './',
     env: {
       PORT: 3050,
@@ -26,6 +26,10 @@ module.exports = {
     max_restarts: 10,
     kill_timeout: 5000,
     wait_ready: true,
-    listen_timeout: 10000
+    listen_timeout: 10000,
+    // Handle SIGINT/SIGTERM
+    shutdown_with_message: true,
+    // Interpreter args for better stability
+    interpreter_args: '--max-old-space-size=1024'
   }]
 }

@@ -57,7 +57,7 @@ echo ""
 
 # 10. Check PM2 status
 echo "10. PM2 status:"
-pm2 status
+sudo pm2 status
 echo ""
 
 echo "Diagnosis complete. Common solutions:"
