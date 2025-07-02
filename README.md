@@ -47,8 +47,9 @@ export DATABASE_URL="your-production-database-url"
 npx prisma migrate deploy
 
 # Seed production database (choose one)
-npm run seed:production     # Full production seed with users, permissions, COA, and demo data
-npm run seed:production-coa # Production Chart of Accounts only
+npm run seed:production      # Full production seed with users, permissions, COA, and demo data
+npm run seed:production-core # Core production setup without demo data (minimal seed)
+npm run seed:production-coa  # Production Chart of Accounts only
 npm run setup:production-coa # Deploy setup for Chart of Accounts
 
 # Start production server
