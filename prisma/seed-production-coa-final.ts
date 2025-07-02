@@ -46,39 +46,29 @@ export async function seedProductionChartOfAccounts(companyId?: string) {
 
         if (existingCompany) {
           targetCompanyId = existingCompany.id;
-          console.log(`Using existing company: ${existingCompany.name}`);
+          console.log(`Using existing company: ${existingCompany.companyName}`);
         } else {
           // Create a default company
           const newCompany = await prisma.companySettings.create({
             data: {
-              name: process.env.COMPANY_NAME || 'Default Company',
-              code: process.env.COMPANY_CODE || 'DEFAULT',
-              registrationNumber: process.env.COMPANY_REG_NO || 'REG-001',
-              taxNumber: process.env.COMPANY_TAX_NO || 'TAX-001',
+              companyName: process.env.COMPANY_NAME || 'Default Company',
               email: process.env.COMPANY_EMAIL || 'info@company.com',
               phone: process.env.COMPANY_PHONE || '+1234567890',
               website: process.env.COMPANY_WEBSITE || 'https://company.com',
               address: process.env.COMPANY_ADDRESS || '123 Business St',
-              city: process.env.COMPANY_CITY || 'Business City',
-              state: process.env.COMPANY_STATE || 'BC',
-              country: process.env.COMPANY_COUNTRY || 'US',
-              postalCode: process.env.COMPANY_POSTAL || '12345',
-              currency: process.env.DEFAULT_CURRENCY || 'USD',
-              fiscalYearStart: new Date(new Date().getFullYear(), 0, 1),
-              isActive: true,
-              createdBy: 'system'
+              defaultCurrency: process.env.DEFAULT_CURRENCY || 'USD',
+              taxRegistrationNumber: process.env.COMPANY_TAX_NO || 'TAX-001',
+              isActive: true
             }
           });
           targetCompanyId = newCompany.id;
-          console.log(`Created new company: ${newCompany.name}`);
+          console.log(`Created new company: ${newCompany.companyName}`);
         }
       }
     }
 
     // Check if accounts already exist
-    const existingAccounts = await prisma.account.count({
-      where: { companyId: targetCompanyId }
-    });
+    const existingAccounts = await prisma.account.count();
 
     if (existingAccounts > 0 && !process.env.FORCE_RESEED) {
       console.log(`Company already has ${existingAccounts} accounts.`);
@@ -93,24 +83,23 @@ export async function seedProductionChartOfAccounts(companyId?: string) {
       // Delete in correct order to respect foreign keys
       await prisma.journalLine.deleteMany({});
       await prisma.journalEntry.deleteMany({});
-      await prisma.account.deleteMany({ where: { companyId: targetCompanyId } });
+      await prisma.account.deleteMany();
       
       console.log('✅ Existing accounts cleared');
     }
 
     // Create the chart of accounts
-    await createChartOfAccounts(targetCompanyId);
+    await createChartOfAccounts();
 
     // Configure default accounts for the system
-    await configureSystemDefaults(targetCompanyId);
+    await configureSystemDefaults();
 
     // Create default tax rates
-    await createDefaultTaxRates(targetCompanyId);
+    await createDefaultTaxRates();
 
     // Print summary
     const summary = await prisma.account.groupBy({
       by: ['type'],
-      where: { companyId: targetCompanyId },
       _count: true
     });
 
@@ -136,7 +125,7 @@ export async function seedProductionChartOfAccounts(companyId?: string) {
   }
 }
 
-async function createChartOfAccounts(companyId: string) {
+async function createChartOfAccounts() {
   // Essential accounts for any business
   const accounts: AccountDefinition[] = [
     // ASSETS (1000)
@@ -383,14 +372,13 @@ async function createChartOfAccounts(companyId: string) {
 
   // Create accounts recursively
   for (const account of accounts) {
-    await createAccountWithChildren(account, null, companyId);
+    await createAccountWithChildren(account, null);
   }
 }
 
 async function createAccountWithChildren(
   account: AccountDefinition,
-  parentId: string | null,
-  companyId: string
+  parentId: string | null
 ): Promise<string> {
   const createdAccount = await prisma.account.create({
     data: {
@@ -400,9 +388,8 @@ async function createAccountWithChildren(
       description: account.description,
       isSystemAccount: account.isSystemAccount || false,
       parentId: parentId,
-      companyId: companyId,
       balance: 0,
-      isActive: true
+      createdBy: 'system'
     }
   });
 
@@ -424,14 +411,14 @@ async function createAccountWithChildren(
   // Create children
   if (account.children) {
     for (const child of account.children) {
-      await createAccountWithChildren(child, createdAccount.id, companyId);
+      await createAccountWithChildren(child, createdAccount.id);
     }
   }
 
   return createdAccount.id;
 }
 
-async function configureSystemDefaults(companyId: string) {
+async function configureSystemDefaults() {
   console.log('\n🔧 Configuring system defaults...');
 
   // Update items with default GL accounts
@@ -469,7 +456,7 @@ async function configureSystemDefaults(companyId: string) {
   console.log('✅ System defaults configured');
 }
 
-async function createDefaultTaxRates(companyId: string) {
+async function createDefaultTaxRates() {
   console.log('\n💰 Creating default tax rates...');
 
   const defaultTaxRate = parseFloat(process.env.DEFAULT_TAX_RATE || '10');
