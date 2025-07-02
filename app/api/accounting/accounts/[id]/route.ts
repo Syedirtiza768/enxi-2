@@ -42,16 +42,32 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // const user = await getUserFromRequest(request)
     const { id } = await params
     const body = await request.json()
-    const { name, description, status } = body
+    const { code, name, type, currency, description, status, parentId } = body
 
     const updateData: Record<string, unknown> = {}
+    
+    if (code !== undefined) {
+      updateData.code = code
+    }
     
     if (name !== undefined) {
       updateData.name = name
     }
     
+    if (type !== undefined) {
+      updateData.type = type
+    }
+    
+    if (currency !== undefined) {
+      updateData.currency = currency
+    }
+    
     if (description !== undefined) {
       updateData.description = description
+    }
+    
+    if (parentId !== undefined) {
+      updateData.parentId = parentId
     }
     
     if (status !== undefined) {

@@ -50,9 +50,9 @@ export default function BalanceSheetPage() {
         const response = await fetch('/api/settings')
         if (response.ok) {
           const data = await response.json()
-          if (data.data?.defaultCurrency) {
-            setDefaultCurrency(data.data.defaultCurrency)
-            setCurrency(data.data.defaultCurrency)
+          if (data.defaultCurrency) {
+            setDefaultCurrency(data.defaultCurrency)
+            setCurrency(data.defaultCurrency)
           }
         }
       } catch (error) {

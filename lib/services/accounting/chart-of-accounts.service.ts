@@ -83,6 +83,33 @@ export class ChartOfAccountsService {
       throw new Error('System accounts cannot be modified')
     }
 
+    // Validate code uniqueness if code is being updated
+    if (data.code && data.code !== existingAccount.code) {
+      const codeExists = await prisma.account.findUnique({
+        where: { code: data.code }
+      })
+      if (codeExists) {
+        throw new Error('Account code already exists')
+      }
+    }
+
+    // Validate parent if being updated
+    if (data.parentId !== undefined) {
+      if (data.parentId) {
+        const parentAccount = await prisma.account.findUnique({
+          where: { id: data.parentId }
+        })
+        if (!parentAccount) {
+          throw new Error('Parent account not found')
+        }
+        // Check type compatibility
+        const accountType = data.type || existingAccount.type
+        if (parentAccount.type !== accountType) {
+          throw new Error('Account type must match parent account type')
+        }
+      }
+    }
+
     const account = await prisma.account.update({
       where: { id },
       data

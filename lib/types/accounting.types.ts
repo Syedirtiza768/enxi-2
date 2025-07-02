@@ -37,8 +37,12 @@ export interface CreateAccountInput {
 }
 
 export interface UpdateAccountInput {
+  code?: string
   name?: string
+  type?: AccountType
+  currency?: string
   description?: string
+  parentId?: string | null
   status?: AccountStatus
 }
 

@@ -22,6 +22,7 @@ interface Customer {
   email: string
   creditLimit: number
   currentBalance: number
+  availableCredit?: number
 }
 
 interface Transaction {
@@ -53,15 +54,36 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.E
       setLoading(true)
       setError(null)
       
+      // Load customer info
       const customerResponse = await apiClient(`/api/customers/${customerId}`, { method: 'GET' })
       
       if (customerResponse.ok && customerResponse.data) {
         const responseData = customerResponse.data
-        setCustomer(Array.isArray(responseData) ? responseData[0] : (responseData.data || responseData))
+        const customerData = Array.isArray(responseData) ? responseData[0] : (responseData.data || responseData)
+        
+        // Load balance info
+        const balanceResponse = await apiClient(`/api/customers/${customerId}/balance`, { method: 'GET' })
+        
+        if (balanceResponse.ok && balanceResponse.data) {
+          const balanceData = balanceResponse.data.data || balanceResponse.data
+          setCustomer({
+            ...customerData,
+            currentBalance: balanceData.currentBalance || balanceData.totalOutstanding || 0,
+            availableCredit: balanceData.availableCredit
+          })
+        } else {
+          setCustomer(customerData)
+        }
       }
       
-      // TODO: Load transactions when the endpoint is implemented
-      setTransactions([])
+      // Load transactions
+      const transactionsResponse = await apiClient(`/api/customers/${customerId}/transactions`, { method: 'GET' })
+      
+      if (transactionsResponse.ok && transactionsResponse.data) {
+        setTransactions(transactionsResponse.data.data || transactionsResponse.data)
+      } else {
+        setTransactions([])
+      }
     } catch (err) {
       console.error('Error loading customer data:', err)
       setError('Error loading customer data. Please try again.')
@@ -76,7 +98,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.E
 
   // Currency formatting is now handled by useCurrencyFormatter hook
 
-  const formatDate = (dateString: string): void => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -84,12 +106,13 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.E
     })
   }
 
-  const getAvailableCredit = (): void => {
+  const getAvailableCredit = () => {
     if (!customer) return 0
+    if (customer.availableCredit !== undefined) return customer.availableCredit
     return customer.creditLimit - customer.currentBalance
   }
 
-  const getTransactionTypeLabel = (type: string): void => {
+  const getTransactionTypeLabel = (type: string) => {
     switch (type) {
       case 'invoice':
         return 'Invoice'
@@ -102,7 +125,7 @@ export function CustomerLedger({ customerId }: CustomerLedgerProps): React.JSX.E
     }
   }
 
-  const getTransactionTypeColor = (type: string): void => {
+  const getTransactionTypeColor = (type: string): "default" | "destructive" | "outline" | "secondary" => {
     switch (type) {
       case 'invoice':
         return 'destructive'
