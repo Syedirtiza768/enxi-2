@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CleanLineEditor } from '@/components/quotations/clean-line-editor';
+import { LineItemEditorV3 } from '@/components/quotations/line-item-editor-v3';
 
 // Updated interface to match the full structure from sales-order-form.tsx
 interface SalesOrderItem {
@@ -143,10 +144,9 @@ export function SalesOrderLineEditor({ items, onChange, disabled = false }: Sale
   };
 
   return (
-    <CleanLineEditor
-      items={quotationItems}
+    <LineItemEditorV3
+      quotationItems={quotationItems}
       onChange={handleChange}
-      viewMode="internal"
       disabled={disabled}
     />
   );

@@ -7,8 +7,9 @@ import {
   Truck, Edit, Calendar, MapPin, CreditCard, Clock, History,
   Eye, EyeOff, Download
 } from 'lucide-react'
-import { OrderTimeline } from '@/components/sales-orders/order-timeline'
+import { OrderTimelineEnhanced } from '@/components/sales-orders/order-timeline-enhanced'
 import { SalesOrderLineView } from '@/components/sales-orders/sales-order-line-view'
+import { SalesOrderProfitability } from '@/components/sales-orders/sales-order-profitability'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
 interface SalesOrderItem {
@@ -88,85 +89,27 @@ export default function SalesOrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [timeline, setTimeline] = useState<any[]>([])
-  const [showTimeline, setShowTimeline] = useState(false)
+  const [showTimeline, setShowTimeline] = useState(true)
   const [viewMode, setViewMode] = useState<'internal' | 'client'>('internal')
 
   // Fetch sales order details
-  useEffect(() => {
-    const fetchOrder = async (): Promise<void> => {
-      try {
-        setLoading(true)
-        setError(null)
+  const fetchOrder = async () => {
+    try {
+      setLoading(true)
+      setError(null)
 
-        const response = await fetch(`/api/sales-orders/${orderId}`, {
-          credentials: 'include',
-        })
+      const response = await fetch(`/api/sales-orders/${orderId}`, {
+        credentials: 'include',
+      })
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-          console.error('API Error:', response.status, errorData)
-          throw new Error(errorData.error || `Failed to load sales order: ${response.status}`)
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('API Error:', response.status, errorData)
+        throw new Error(errorData.error || `Failed to load sales order: ${response.status}`)
+      }
 
-        const data = await response.json()
-        setOrder(data)
-        
-        // Generate timeline events (in a real app, this would come from the backend)
-        const events = []
-        
-        // Order created
-        events.push({
-          id: '1',
-          type: 'created',
-          timestamp: data.createdAt,
-          description: 'Sales order created',
-          user: { name: 'System', email: 'system@enxi.com' }
-        })
-        
-        // Status changes
-        if (data.approvedAt) {
-          events.push({
-            id: '2',
-            type: 'approved',
-            timestamp: data.approvedAt,
-            description: 'Sales order approved',
-            user: { name: 'Manager', email: 'manager@enxi.com' }
-          })
-        }
-        
-        if (data.shippedAt) {
-          events.push({
-            id: '3',
-            type: 'shipped',
-            timestamp: data.shippedAt,
-            description: 'Order shipped',
-            metadata: data.trackingNumber ? { 'Tracking Number': data.trackingNumber } : undefined
-          })
-        }
-        
-        if (data.deliveredAt) {
-          events.push({
-            id: '4',
-            type: 'delivered',
-            timestamp: data.deliveredAt,
-            description: 'Order delivered'
-          })
-        }
-        
-        if (data.cancelledAt) {
-          events.push({
-            id: '5',
-            type: 'cancelled',
-            timestamp: data.cancelledAt,
-            description: 'Order cancelled',
-            metadata: data.cancelReason ? { 'Reason': data.cancelReason } : undefined
-          })
-        }
-        
-        // Sort by timestamp descending
-        events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        setTimeline(events)
+      const data = await response.json()
+      setOrder(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load sales order')
         console.error('Error fetching sales order:', err)
@@ -174,13 +117,34 @@ export default function SalesOrderDetailPage() {
         setLoading(false)
       }
     }
-
+  
+  useEffect(() => {
     if (orderId) {
       fetchOrder()
     }
   }, [orderId])
 
-  const handleApprove = async (): Promise<unknown> => {
+  // Auto-refresh for APPROVED status to catch workflow updates
+  useEffect(() => {
+    if (order?.status === 'APPROVED') {
+      const interval = setInterval(() => {
+        fetch(`/api/sales-orders/${orderId}`, {
+          credentials: 'include',
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.status !== order.status) {
+              setOrder(data)
+            }
+          })
+          .catch(console.error)
+      }, 3000) // Check every 3 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [order?.status, orderId])
+
+  const handleApprove = async () => {
     if (!confirm('Are you sure you want to approve this sales order?')) {
       return
     }
@@ -213,7 +177,7 @@ export default function SalesOrderDetailPage() {
     }
   }
 
-  const handleStartProcessing = async (): Promise<unknown> => {
+  const handleStartProcessing = async () => {
     if (!confirm('Start processing this order? This will begin fulfillment.')) {
       return
     }
@@ -246,7 +210,7 @@ export default function SalesOrderDetailPage() {
     }
   }
 
-  const handleMarkShipped = async (): Promise<unknown> => {
+  const handleMarkShipped = async () => {
     if (!confirm('Mark this order as shipped? This will update the delivery status.')) {
       return
     }
@@ -277,7 +241,7 @@ export default function SalesOrderDetailPage() {
     }
   }
 
-  const handleMarkDelivered = async (): Promise<unknown> => {
+  const handleMarkDelivered = async () => {
     if (!confirm('Mark this order as delivered? This will complete the order.')) {
       return
     }
@@ -302,7 +266,7 @@ export default function SalesOrderDetailPage() {
     }
   }
 
-  const handleCancel = async (): Promise<unknown> => {
+  const handleCancel = async () => {
     const reason = prompt('Please provide a reason for cancelling this order:')
     if (!reason) {
       return
@@ -333,7 +297,7 @@ export default function SalesOrderDetailPage() {
     }
   }
 
-  const handleCreateInvoice = async (): Promise<void> => {
+  const handleCreateInvoice = async () => {
     if (!confirm('Create an invoice from this sales order?')) {
       return
     }
@@ -553,31 +517,10 @@ export default function SalesOrderDetailPage() {
           {/* APPROVED Status Actions */}
           {order.status === 'APPROVED' && (
             <>
-              <button
-                onClick={() => router.push(`/shipments/new?orderId=${orderId}`)}
-                className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-              >
-                <Truck className="h-4 w-4 mr-2" />
-                Create Shipment
-              </button>
-              
-              <button
-                onClick={handleStartProcessing}
-                disabled={actionLoading !== null}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                <Package className="h-4 w-4 mr-2" />
-                {actionLoading === 'process' ? 'Starting...' : 'Start Processing'}
-              </button>
-              
-              <button
-                onClick={handleCreateInvoice}
-                disabled={actionLoading !== null}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                {actionLoading === 'invoice' ? 'Creating...' : 'Create Invoice'}
-              </button>
+              <div className="flex items-center px-4 py-2 bg-yellow-100 text-yellow-800 rounded-md">
+                <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                Stock allocation in progress...
+              </div>
               
               <button
                 onClick={() => router.push(`/sales-orders/${orderId}/edit`)}
@@ -593,20 +536,11 @@ export default function SalesOrderDetailPage() {
           {order.status === 'PROCESSING' && (
             <>
               <button
-                onClick={() => router.push(`/shipments/new?orderId=${orderId}`)}
+                onClick={() => router.push(`/shipments/new?orderId=${order.id}`)}
                 className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
               >
                 <Truck className="h-4 w-4 mr-2" />
                 Create Shipment
-              </button>
-              
-              <button
-                onClick={handleMarkShipped}
-                disabled={actionLoading !== null}
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                <Truck className="h-4 w-4 mr-2" />
-                {actionLoading === 'ship' ? 'Shipping...' : 'Mark as Shipped'}
               </button>
               
               <button
@@ -646,16 +580,6 @@ export default function SalesOrderDetailPage() {
         </div>
       </div>
 
-      {/* Order Timeline */}
-      {showTimeline && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <History className="h-5 w-5 mr-2" />
-            Order Timeline
-          </h2>
-          <OrderTimeline events={timeline} />
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -715,6 +639,9 @@ export default function SalesOrderDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Profitability Analysis */}
+          <SalesOrderProfitability orderId={orderId} />
         </div>
 
         {/* Sidebar */}
@@ -875,6 +802,14 @@ export default function SalesOrderDetailPage() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">Internal Notes</h2>
               <p className="text-sm text-gray-900 whitespace-pre-line">{order.internalNotes}</p>
             </div>
+          )}
+
+          {/* Order Timeline */}
+          {showTimeline && (
+            <OrderTimelineEnhanced 
+              salesOrderId={orderId} 
+              onRefresh={fetchOrder}
+            />
           )}
         </div>
       </div>

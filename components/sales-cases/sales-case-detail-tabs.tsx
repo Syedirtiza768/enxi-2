@@ -130,14 +130,14 @@ export function SalesCaseDetailTabs({
     }
   }, [activeTab, salesCaseId, fetchQuotations, fetchInvoices, fetchSummary])
 
-  const formatCurrency = (amount: number): void => {
+  const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: salesCaseCurrency
     }).format(amount)
   }
 
-  const getStatusColor = (status: string): void => {
+  const getStatusColor = (status: string): string => {
     switch (status) {
       case 'DRAFT':
         return 'bg-gray-100 text-gray-800'

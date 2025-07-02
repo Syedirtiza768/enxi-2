@@ -51,6 +51,7 @@ const getHandler = async (request: NextRequest): Promise<NextResponse> => {
       status: searchParams.get('status') as any || undefined,
       type: searchParams.get('type') as any || undefined,
       customerId: searchParams.get('customerId') || undefined,
+      salesCaseId: searchParams.get('salesCaseId') || undefined,
       dateFrom: searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined,
       dateTo: searchParams.get('dateTo') ? new Date(searchParams.get('dateTo')!) : undefined,
       overdue: searchParams.get('overdue') === 'true',

@@ -44,9 +44,10 @@ interface ShipmentItem {
   itemCode: string
   description: string
   quantityShipped: number
-  item: {
+  quantity?: number
+  item?: {
     name: string
-    unitPrice: number
+    listPrice?: number
   }
 }
 
@@ -65,7 +66,7 @@ interface Shipment {
   createdBy: string
   shippedBy?: string
   deliveredBy?: string
-  salesOrder: {
+  salesOrder?: {
     id: string
     orderNumber: string
     salesCase: {
@@ -107,17 +108,17 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
     try {
       setLoading(true)
       setError(null)
-      const data = await apiClient<Shipment>(`/api/shipments/${shipmentId}`)
-      if (data) {
-        setShipment(data)
+      const response = await apiClient<Shipment>(`/api/shipments/${shipmentId}`)
+      if (response.ok && response.data) {
+        setShipment(response.data)
         // Initialize tracking data
         setTrackingData({
-          carrier: data.carrier || '',
-          trackingNumber: data.trackingNumber || '',
-          shippingMethod: data.shippingMethod || '',
+          carrier: response.data.carrier || '',
+          trackingNumber: response.data.trackingNumber || '',
+          shippingMethod: response.data.shippingMethod || '',
         })
       } else {
-        throw new Error('Failed to fetch shipment')
+        throw new Error(response.error || 'Failed to fetch shipment')
       }
     } catch (err) {
       console.error('Error fetching shipment:', err)
@@ -136,18 +137,24 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
 
     try {
       setActionLoading(true)
-      const response = await apiClient(`/api/shipments/${shipmentId}/confirm`, { method: 'POST', body: JSON.stringify({
-        shippedBy: user.id,
-      }) })
+      const response = await apiClient(`/api/shipments/${shipmentId}/confirm`, { 
+        method: 'POST', 
+        body: JSON.stringify({})
+      })
+      
+      console.log('Confirm shipment response:', response)
+      
       if (response.ok && response?.data) {
         setShipment(response?.data)
       } else {
-        throw new Error(response.error || 'Failed to confirm shipment')
+        const errorDetails = response.details ? JSON.stringify(response.details) : ''
+        const fullError = `${response.error || 'Failed to confirm shipment'}${errorDetails ? ` - Details: ${errorDetails}` : ''}`
+        throw new Error(fullError)
       }
       setShowConfirmDialog(false)
     } catch (err) {
       console.error('Error confirming shipment:', err)
-      alert('Error confirming shipment. Please try again.')
+      alert(err instanceof Error ? err.message : 'Error confirming shipment. Please try again.')
     } finally {
       setActionLoading(false)
     }
@@ -547,11 +554,11 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Sales Order</Label>
-                  <p className="font-medium">{shipment.salesOrder.orderNumber}</p>
+                  <p className="font-medium">{shipment.salesOrder?.orderNumber || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Customer</Label>
-                  <p className="font-medium">{shipment.salesOrder.salesCase.customer.name}</p>
+                  <p className="font-medium">{shipment.salesOrder?.salesCase?.customer?.name || 'N/A'}</p>
                 </div>
               </div>
             </CardContent>
@@ -580,10 +587,10 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
                       <TableCell>{item.description}</TableCell>
                       <TableCell className="text-right">{item.quantityShipped}</TableCell>
                       <TableCell className="text-right">
-                        ${item.item.unitPrice.toFixed(2)}
+                        ${item.item?.listPrice?.toFixed(2) || '0.00'}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${(item.quantityShipped * item.item.unitPrice).toFixed(2)}
+                        ${((item.quantityShipped || 0) * (item.item?.listPrice || 0)).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -687,21 +694,21 @@ export function ShipmentDetail({ shipmentId }: ShipmentDetailProps): React.JSX.E
             <CardContent className="space-y-3">
               <div>
                 <Label className="text-sm font-medium text-gray-500">Name</Label>
-                <p className="font-medium">{shipment.salesOrder.salesCase.customer.name}</p>
+                <p className="font-medium">{shipment.salesOrder?.salesCase?.customer?.name || 'N/A'}</p>
               </div>
               <div>
                 <Label className="text-sm font-medium text-gray-500">Email</Label>
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4 text-gray-400" />
-                  <p className="font-medium">{shipment.salesOrder.salesCase.customer.email}</p>
+                  <p className="font-medium">{shipment.salesOrder?.salesCase?.customer?.email || 'N/A'}</p>
                 </div>
               </div>
-              {shipment.salesOrder.salesCase.customer.phone && (
+              {shipment.salesOrder?.salesCase?.customer?.phone && (
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Phone</Label>
                   <div className="flex items-center space-x-2">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    <p className="font-medium">{shipment.salesOrder.salesCase.customer.phone}</p>
+                    <p className="font-medium">{shipment.salesOrder?.salesCase?.customer?.phone}</p>
                   </div>
                 </div>
               )}

@@ -5,6 +5,7 @@ import { QuotationService } from './quotation.service'
 import { JournalEntryService } from './accounting/journal-entry.service'
 import { CompanySettingsService } from './company-settings.service'
 import { taxService } from './tax.service'
+import { FIFOCostService } from './inventory/fifo-cost.service'
 import { 
   SalesOrder,
   SalesOrderItem,
@@ -79,11 +80,25 @@ export interface UpdateSalesOrderInput {
   items?: CreateSalesOrderItemInput[]
 }
 
+export interface SalesOrderSummary {
+  totalAmount: number
+  totalCost: number
+  fifoCost: number
+  directExpenses: number
+  grossProfit: number
+  grossMargin: number
+  netProfit: number
+  netMargin: number
+  hasDeliveredItems: boolean
+  hasExpenses: boolean
+}
+
 export class SalesOrderService extends BaseService {
   private auditService: AuditService
   private quotationService: QuotationService
   private journalEntryService: JournalEntryService
   private companySettingsService: CompanySettingsService
+  private fifoCostService: FIFOCostService
 
   constructor() {
     super('SalesOrderService')
@@ -91,6 +106,7 @@ export class SalesOrderService extends BaseService {
     this.quotationService = new QuotationService()
     this.journalEntryService = new JournalEntryService()
     this.companySettingsService = new CompanySettingsService()
+    this.fifoCostService = new FIFOCostService()
   }
 
   async createSalesOrder(
@@ -824,6 +840,67 @@ export class SalesOrderService extends BaseService {
       })
 
       return this.getSalesOrder(id)
+    })
+  }
+
+  async getSalesOrderSummary(id: string): Promise<SalesOrderSummary> {
+    return this.withLogging('getSalesOrderSummary', async () => {
+      const salesOrder = await this.getSalesOrder(id)
+      if (!salesOrder) {
+        throw new Error('Sales order not found')
+      }
+
+      // Calculate FIFO cost for delivered items
+      const fifoCost = await this.fifoCostService.calculateDeliveredItemsCost([id])
+      
+      // Get direct expenses allocated to this sales order
+      // Note: This assumes expenses can be allocated to specific orders via salesCase
+      const expenses = await prisma.caseExpense.findMany({
+        where: {
+          salesCaseId: salesOrder.salesCaseId,
+          status: { in: ['APPROVED', 'PAID'] }
+        }
+      })
+      
+      // Calculate total expenses
+      const directExpenses = expenses.reduce((sum, exp) => sum + exp.baseAmount, 0)
+      
+      // Calculate costs from order items (if internal cost tracking is available)
+      const itemCosts = salesOrder.items.reduce((sum, item) => {
+        return sum + ((item.cost || 0) * item.quantity)
+      }, 0)
+      
+      // Use FIFO cost if available, otherwise fall back to item costs
+      const totalCost = fifoCost > 0 ? fifoCost : itemCosts
+      const totalCostWithExpenses = totalCost + directExpenses
+      
+      // Calculate profitability
+      const grossProfit = salesOrder.totalAmount - totalCost
+      const grossMargin = salesOrder.totalAmount > 0 ? (grossProfit / salesOrder.totalAmount) * 100 : 0
+      
+      const netProfit = salesOrder.totalAmount - totalCostWithExpenses
+      const netMargin = salesOrder.totalAmount > 0 ? (netProfit / salesOrder.totalAmount) * 100 : 0
+      
+      // Check if there are delivered items
+      const hasDeliveredItems = await prisma.shipment.count({
+        where: {
+          salesOrderId: id,
+          status: 'DELIVERED'
+        }
+      }) > 0
+
+      return {
+        totalAmount: salesOrder.totalAmount,
+        totalCost: totalCostWithExpenses,
+        fifoCost,
+        directExpenses,
+        grossProfit,
+        grossMargin,
+        netProfit,
+        netMargin,
+        hasDeliveredItems,
+        hasExpenses: expenses.length > 0
+      }
     })
   }
 }

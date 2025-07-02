@@ -61,7 +61,7 @@ const [orders, setOrders] = useState<SalesOrder[]>([])
 
   // Fetch sales orders
   useEffect(() => {
-    const fetchOrders = async (): Promise<void> => {
+    const fetchOrders = async () => {
       try {
         setLoading(true)
         setError(null)

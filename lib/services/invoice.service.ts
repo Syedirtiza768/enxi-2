@@ -261,6 +261,7 @@ export class InvoiceService extends BaseService {
     status?: 'DRAFT' | 'SENT' | 'VIEWED' | 'PARTIAL' | 'PAID' | 'OVERDUE' | 'CANCELLED' | 'REFUNDED'
     type?: 'SALES' | 'CREDIT_NOTE' | 'DEBIT_NOTE' | 'PROFORMA'
     customerId?: string
+    salesCaseId?: string
     dateFrom?: Date
     dateTo?: Date
     overdue?: boolean
@@ -277,6 +278,12 @@ export class InvoiceService extends BaseService {
       }
       if (filters.customerId) {
         where.customerId = filters.customerId
+      }
+      
+      if (filters.salesCaseId) {
+        where.salesOrder = {
+          salesCaseId: filters.salesCaseId
+        }
       }
 
       if (filters.dateFrom || filters.dateTo) {

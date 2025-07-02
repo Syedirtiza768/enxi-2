@@ -83,3 +83,6 @@ cookies.txt
 prisma/prisma/dev.db
 prisma/prisma/dev.db-shm
 prisma/prisma/dev.db-wal
+prisma/prisma/prod.db
+prisma/prisma/prod.db-shm
+prisma/prisma/prod.db-wal

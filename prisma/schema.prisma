@@ -178,6 +178,7 @@ model Account {
   defaultInventoryFor CompanySettings[] @relation("DefaultInventoryAccount")
   defaultCogsFor      CompanySettings[] @relation("DefaultCogsAccount")
   defaultSalesFor     CompanySettings[] @relation("DefaultSalesAccount")
+  defaultExpenseFor   CompanySettings[] @relation("DefaultExpenseAccount")
 
   @@index([code])
   @@index([type])
@@ -1188,9 +1189,11 @@ model CompanySettings {
   defaultInventoryAccountId   String?
   defaultCogsAccountId        String?
   defaultSalesAccountId       String?
+  defaultExpenseAccountId     String?
   defaultInventoryAccount     Account? @relation("DefaultInventoryAccount", fields: [defaultInventoryAccountId], references: [id])
   defaultCogsAccount          Account? @relation("DefaultCogsAccount", fields: [defaultCogsAccountId], references: [id])
   defaultSalesAccount         Account? @relation("DefaultSalesAccount", fields: [defaultSalesAccountId], references: [id])
+  defaultExpenseAccount       Account? @relation("DefaultExpenseAccount", fields: [defaultExpenseAccountId], references: [id])
   
   // Default Inventory Settings
   defaultTrackInventory       Boolean  @default(true)

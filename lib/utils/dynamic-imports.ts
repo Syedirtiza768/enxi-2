@@ -191,7 +191,7 @@ export const preloadForRoute = (pathname: string): void => {
     
     '/sales-orders': (): void => {
       import('@/components/sales-orders/sales-order-form')
-      import('@/components/sales-orders/order-timeline')
+      import('@/components/sales-orders/order-timeline-enhanced')
     },
     
     '/purchase-orders': (): void => {

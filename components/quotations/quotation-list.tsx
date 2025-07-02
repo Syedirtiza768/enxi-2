@@ -37,7 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/toast';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { QuotationStatus } from "@prisma/client";
 

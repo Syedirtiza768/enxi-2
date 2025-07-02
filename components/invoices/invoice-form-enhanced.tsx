@@ -5,6 +5,7 @@ import { Save, X, FileText, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { apiClient } from '@/lib/api/client'
 import { InvoiceLineEditor } from './invoice-line-editor'
+import { InvoiceLineEditorEnhanced } from './invoice-line-editor-enhanced'
 import { ClientInvoiceView } from './client-invoice-view'
 import { useCurrency } from '@/lib/contexts/currency-context'
 
@@ -686,7 +687,7 @@ export function InvoiceFormEnhanced({
           <h2 className="text-lg font-semibold mb-4">Line Items</h2>
           
           {viewMode === 'internal' ? (
-            <InvoiceLineEditor
+            <InvoiceLineEditorEnhanced
               lines={lines}
               onLinesChange={handleLinesChange}
               viewMode={viewMode}

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CustomerSearch } from '@/components/customers/customer-search';
 import { CleanItemEditor } from '@/components/quotations/clean-item-editor';
-import { LineBasedItemEditor } from '@/components/quotations/line-based-item-editor';
+import { LineItemEditorV3 } from '@/components/quotations/line-item-editor-v3';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar, CreditCard, Truck, Send, Save, AlertCircle, ToggleLeft, ToggleRight, Eye, EyeOff } from 'lucide-react';
 import { format, addDays } from 'date-fns';
@@ -58,7 +58,6 @@ export function SalesOrderFormClean({
     notes: '',
     internalNotes: '',
     items: [] as any[],
-    lines: [] as any[],
     useLineBasedEditor: true,
     status: 'PENDING' as const,
     version: 1
@@ -76,7 +75,6 @@ export function SalesOrderFormClean({
         customer_id: initialData.salesCase?.customerId || initialData.customer_id,
         customer: initialData.salesCase?.customer || initialData.customer,
         items: initialData.items || [],
-        lines: initialData.lines || [],
         useLineBasedEditor: initialData.items?.some((item: any) => item.lineNumber) || true
       });
       setSelectedSalesCase(initialData.salesCaseId || '');
@@ -108,7 +106,6 @@ export function SalesOrderFormClean({
           notes: quotation.notes || '',
           internalNotes: quotation.internalNotes || '',
           items: quotation.items || [],
-          lines: quotation.lines || [],
           useLineBasedEditor: quotation.items?.some((item: any) => item.lineNumber) || true
         }));
         setSelectedSalesCase(quotation.salesCaseId);
@@ -189,7 +186,7 @@ export function SalesOrderFormClean({
       return;
     }
 
-    const items = formData.useLineBasedEditor ? formData.lines : formData.items;
+    const items = formData.items.filter(item => !item.isLineHeader); // Filter out line headers
     if (!items || items.length === 0) {
       toast({
         title: 'Error',
@@ -201,22 +198,64 @@ export function SalesOrderFormClean({
 
     setLoading(true);
     try {
-      const orderData = {
+      const orderData: any = {
         salesCaseId: selectedSalesCase,
-        quotationId: formData.quotationId || null,
-        status: action === 'send' ? 'CONFIRMED' : 'PENDING',
-        requestedDate: formData.requestedDate || null,
-        promisedDate: formData.promisedDate || format(defaultPromisedDate, 'yyyy-MM-dd'),
-        paymentTerms: formData.paymentTerms,
-        shippingTerms: formData.shippingTerms,
-        shippingAddress: formData.shippingAddress,
-        billingAddress: formData.billingAddress,
-        customerPO: formData.customerPO,
-        notes: formData.notes,
-        internalNotes: formData.internalNotes,
-        items,
-        version: formData.version
+        items: items.map(item => {
+          const mappedItem: any = {
+            // Required fields
+            itemCode: item.itemCode || item.code || '',
+            description: item.description || item.name || '',
+            quantity: Number(item.quantity) || 1,
+            unitPrice: Number(item.unitPrice) || 0
+          };
+          
+          // Add optional fields only if they have values
+          if (typeof item.lineNumber === 'number') mappedItem.lineNumber = item.lineNumber;
+          if (item.lineDescription) mappedItem.lineDescription = item.lineDescription;
+          if (item.isLineHeader === true) mappedItem.isLineHeader = true;
+          if (typeof item.sortOrder === 'number') mappedItem.sortOrder = item.sortOrder;
+          if (item.itemType === 'PRODUCT' || item.itemType === 'SERVICE') {
+            mappedItem.itemType = item.itemType;
+          }
+          if (item.itemId) mappedItem.itemId = item.itemId;
+          if (item.internalDescription) mappedItem.internalDescription = item.internalDescription;
+          if (typeof item.cost === 'number' && item.cost >= 0) mappedItem.cost = item.cost;
+          if (typeof item.discount === 'number' && item.discount >= 0 && item.discount <= 100) {
+            mappedItem.discount = item.discount;
+          }
+          if (typeof item.taxRate === 'number' && item.taxRate >= 0 && item.taxRate <= 100) {
+            mappedItem.taxRate = item.taxRate;
+          }
+          if (item.taxRateId) mappedItem.taxRateId = item.taxRateId;
+          if (item.unitOfMeasureId) mappedItem.unitOfMeasureId = item.unitOfMeasureId;
+          
+          return mappedItem;
+        })
       };
+      
+      // Add optional fields only if they have values
+      if (formData.quotationId) orderData.quotationId = formData.quotationId;
+      if (formData.requestedDate) {
+        const requestedDate = new Date(formData.requestedDate);
+        requestedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+        orderData.requestedDate = requestedDate.toISOString();
+      }
+      if (formData.promisedDate) {
+        const promisedDate = new Date(formData.promisedDate);
+        promisedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+        orderData.promisedDate = promisedDate.toISOString();
+      } else {
+        const promisedDate = new Date(format(defaultPromisedDate, 'yyyy-MM-dd'));
+        promisedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+        orderData.promisedDate = promisedDate.toISOString();
+      }
+      if (formData.paymentTerms) orderData.paymentTerms = formData.paymentTerms;
+      if (formData.shippingTerms) orderData.shippingTerms = formData.shippingTerms;
+      if (formData.shippingAddress) orderData.shippingAddress = formData.shippingAddress;
+      if (formData.billingAddress) orderData.billingAddress = formData.billingAddress;
+      if (formData.customerPO) orderData.customerPO = formData.customerPO;
+      if (formData.notes) orderData.notes = formData.notes;
+
 
       const response = initialData?.id 
         ? await apiClient(`/api/sales-orders/${initialData.id}`, {
@@ -229,11 +268,40 @@ export function SalesOrderFormClean({
           });
 
       if (response.ok && response?.data) {
+        // The API returns { success: true, data: salesOrder }
+        // The apiClient wraps this in { data: { success: true, data: salesOrder } }
+        const salesOrder = response.data.data || response.data;
+        const orderId = salesOrder.id;
+        
+        if (!orderId) {
+          console.error('No order ID in response:', response);
+          throw new Error('Order created but no ID returned');
+        }
+        
         toast({
           title: 'Success',
           description: `Order ${action === 'send' ? 'created and confirmed' : 'saved as draft'} successfully`
         });
-        router.push(`/sales-orders/${response.data.id}`);
+        router.push(`/sales-orders/${orderId}`);
+      } else {
+        // Log the full error response for debugging
+        console.error('Error response:', response);
+        console.error('Validation details:', response?.details);
+        
+        // Extract detailed error message
+        let errorMessage = response?.error?.message || response?.message || 'Failed to save order';
+        if (response?.details && Array.isArray(response.details)) {
+          const fieldErrors = response.details.map((err: any) => 
+            `${err.path.join('.')}: ${err.message}`
+          ).join(', ');
+          errorMessage = `Validation failed: ${fieldErrors}`;
+        }
+        
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Error saving order:', error);
@@ -250,12 +318,12 @@ export function SalesOrderFormClean({
   const handleItemsChange = (items: any[]) => {
     setFormData(prev => ({ 
       ...prev, 
-      [prev.useLineBasedEditor ? 'lines' : 'items']: items 
+      items: items 
     }));
   };
 
   const calculateTotals = () => {
-    const items = formData.useLineBasedEditor ? formData.lines : formData.items;
+    const items = formData.items || [];
     const subtotal = items.reduce((sum, item) => {
       if (item.isLineHeader) return sum;
       return sum + (item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100));
@@ -471,10 +539,10 @@ export function SalesOrderFormClean({
           </div>
           
           {formData.useLineBasedEditor ? (
-            <LineBasedItemEditor
-              lines={formData.lines}
-              onLinesChange={handleItemsChange}
-              viewMode={viewMode}
+            <LineItemEditorV3
+              quotationItems={formData.items}
+              onChange={handleItemsChange}
+              disabled={loading}
             />
           ) : (
             <CleanItemEditor

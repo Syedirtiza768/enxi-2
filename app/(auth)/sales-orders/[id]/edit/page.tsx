@@ -41,7 +41,7 @@ interface SalesOrder {
     id: string
     quotationNumber: string
   } | null
-  status: 'DRAFT' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+  status: 'PENDING' | 'APPROVED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'INVOICED' | 'COMPLETED' | 'CANCELLED' | 'ON_HOLD'
   customerPO?: string
   requestedDate?: string
   promisedDate?: string
@@ -82,7 +82,7 @@ export default function SalesOrderEditPage() {
 
   // Fetch sales order details
   useEffect(() => {
-    const fetchOrder = async (): Promise<void> => {
+    const fetchOrder = async () => {
       try {
         setLoading(true)
         setError(null)
@@ -201,7 +201,7 @@ export default function SalesOrderEditPage() {
   }
 
   // Check if order can be edited
-  if (!['DRAFT', 'CONFIRMED', 'PENDING'].includes(order.status)) {
+  if (!['PENDING'].includes(order.status)) {
     return (
       <div className="text-center py-12">
         <div className="text-yellow-500 mb-4">
@@ -210,7 +210,7 @@ export default function SalesOrderEditPage() {
         <h3 className="text-lg font-medium text-gray-900 mb-2">
           Cannot edit order with status: {order.status}
         </h3>
-        <p className="text-gray-600 mb-4">Only DRAFT, PENDING and CONFIRMED orders can be edited</p>
+        <p className="text-gray-600 mb-4">Only PENDING orders can be edited. This order is {order.status}.</p>
         <button
           onClick={() => router.push(`/sales-orders/${orderId}`)}
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"

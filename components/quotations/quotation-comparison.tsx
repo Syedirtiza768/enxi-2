@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils/format';
 import { QuotationStatus } from "@prisma/client";
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/toast';
 
 interface QuotationVersion {
   id: string;

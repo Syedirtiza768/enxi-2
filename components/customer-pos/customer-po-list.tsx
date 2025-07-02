@@ -34,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { toast } from '@/components/ui/use-toast'
+import { toast } from '@/components/ui/toast'
 
 interface CustomerPO {
   id: string

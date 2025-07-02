@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CustomerSearch } from '@/components/customers/customer-search';
 import { CleanItemEditor } from './clean-item-editor';
 import { LineBasedItemEditor } from './line-based-item-editor';
+import { LineItemEditorV3 } from './line-item-editor-v3';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar, CreditCard, Truck, Send, Save, AlertCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 import { format, addDays } from 'date-fns';
@@ -475,21 +476,27 @@ export function QuotationFormClean({ salesCaseId: initialSalesCaseId }: Quotatio
           </div>
           
           {formData.useLineBasedEditor ? (
-            <LineBasedItemEditor
-              lines={formData.lines}
-              onLinesChange={(lines) => {
-                // Convert lines to flat items array for backend compatibility
-                const items = lines.flatMap(line => 
-                  line.items.map((item, index) => ({
-                    ...item,
-                    lineNumber: line.lineNumber,
-                    lineDescription: line.lineDescription,
-                    isLineHeader: index === 0,
-                    sortOrder: (line.lineNumber - 1) * 100 + index
-                  }))
-                );
-                setFormData(prev => ({ ...prev, lines, items }));
+            <LineItemEditorV3
+              quotationItems={formData.items}
+              onChange={(items) => {
+                // Update items and rebuild lines structure
+                const linesMap = new Map();
+                items.forEach(item => {
+                  if (!linesMap.has(item.lineNumber)) {
+                    linesMap.set(item.lineNumber, {
+                      lineNumber: item.lineNumber,
+                      lineDescription: item.lineDescription || `Line ${item.lineNumber}`,
+                      items: []
+                    });
+                  }
+                  if (!item.isLineHeader) {
+                    linesMap.get(item.lineNumber).items.push(item);
+                  }
+                });
+                const lines = Array.from(linesMap.values()).sort((a, b) => a.lineNumber - b.lineNumber);
+                setFormData(prev => ({ ...prev, items, lines }));
               }}
+              disabled={loading}
             />
           ) : (
             <CleanItemEditor

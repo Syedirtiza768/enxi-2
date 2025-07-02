@@ -10,6 +10,11 @@ const prismaClientSingleton = (): PrismaClient => {
       ? ['error', 'warn'] 
       : ['error'],
     errorFormat: 'pretty',
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   })
 }
 

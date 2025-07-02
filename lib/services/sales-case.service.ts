@@ -11,6 +11,7 @@ import {
   SalesOrder
 } from "@prisma/client"
 import { SalesCaseStatus, ExpenseStatus } from '@/lib/types/shared-enums'
+import { FIFOCostService } from './inventory/fifo-cost.service'
 
 export interface CreateSalesCaseInput {
   customerId: string
@@ -96,10 +97,12 @@ export interface SalesCaseSummary {
 export class SalesCaseService {
   private auditService: AuditService
   private customerService: CustomerService
+  private fifoCostService: FIFOCostService
 
   constructor() {
     this.auditService = new AuditService()
     this.customerService = new CustomerService()
+    this.fifoCostService = new FIFOCostService()
   }
 
   async createSalesCase(
@@ -629,8 +632,9 @@ export class SalesCaseService {
       .filter(e => e.status === ExpenseStatus.APPROVED || e.status === ExpenseStatus.PAID)
       .reduce((sum, e) => sum + e.baseAmount, 0)
     
-    // TODO: Calculate product cost from delivered items using FIFO
-    const productCost = 0
+    // Calculate product cost from delivered items using FIFO
+    const salesOrderIds = salesCase.salesOrders.map(so => so.id)
+    const productCost = await this.fifoCostService.calculateDeliveredItemsCost(salesOrderIds)
     
     const totalCost = directExpenses + productCost
     

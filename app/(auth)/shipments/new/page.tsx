@@ -12,7 +12,7 @@ import { Search, ArrowLeft } from 'lucide-react'
 function NewShipmentContent() {
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
   const searchParams = useSearchParams()
-  const orderIdFromParams = searchParams.get('orderId')
+  const orderIdFromParams = searchParams.get('orderId') || searchParams.get('salesOrderId')
   
   const [salesOrderId, setSalesOrderId] = useState(orderIdFromParams || '')
   const [showForm, setShowForm] = useState(!!orderIdFromParams)

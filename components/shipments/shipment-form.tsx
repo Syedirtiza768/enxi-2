@@ -83,20 +83,26 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
     try {
       setLoading(true)
       setError(null)
-      const data = await apiClient<SalesOrder>(`/api/sales-orders/${salesOrderId}`)
-      if (data) {
-        setSalesOrder(data)
-      } else {
-        throw new Error('Failed to fetch sales order')
+      const response = await apiClient<SalesOrder>(`/api/sales-orders/${salesOrderId}`)
+      
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to fetch sales order')
       }
-
-        // Check if order is approved
-        if (data.status !== 'APPROVED') {
-          setError('Order must be approved before creating shipment')
+      
+      const data = response.data
+      if (data) {
+        // Check if order is approved or processing
+        if (data.status !== 'APPROVED' && data.status !== 'PROCESSING') {
+          setError('Order must be approved or in processing status before creating shipment')
+        } else {
+          setSalesOrder(data)
         }
+      } else {
+        throw new Error('No data received from API')
+      }
     } catch (err) {
       console.error('Error fetching sales order:', err)
-      setError('Error loading order. Please try again.')
+      setError(err instanceof Error ? err.message : 'Error loading order. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -183,6 +189,13 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
   const validateForm = () => {
     const errors: Record<string, string> = {}
 
+    // Check if carrier is provided
+    if (!carrier?.trim()) {
+      errors.general = 'Carrier is required'
+      setValidationErrors(errors)
+      return false
+    }
+
     // Check if at least one item is selected
     if (Object.keys(selectedItems).length === 0) {
       errors.general = 'Please select at least one item to ship'
@@ -232,17 +245,23 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
         createdBy: user.id,
       }
 
-      const shipment = await apiClient('/api/shipments', { 
+      console.log('Creating shipment with data:', shipmentData)
+
+      const response = await apiClient('/api/shipments', { 
         method: 'POST', 
         body: JSON.stringify(shipmentData) 
       })
       
-      if (onSuccess) {
-        onSuccess(shipment)
+      if (!response.ok) {
+        throw new Error(response.error || 'Failed to create shipment')
+      }
+      
+      if (onSuccess && response.data) {
+        onSuccess(response.data)
       }
     } catch (err) {
       console.error('Error creating shipment:', err)
-      setError('Error creating shipment. Please try again.')
+      setError(err instanceof Error ? err.message : 'Error creating shipment. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -427,12 +446,15 @@ export function ShipmentForm({ salesOrderId, onSuccess, onCancel }: ShipmentForm
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="carrier">Carrier</Label>
+                  <Label htmlFor="carrier">
+                    Carrier <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="carrier"
                     value={carrier}
                     onChange={(e) => setCarrier(e.target.value)}
                     placeholder="FedEx, UPS, DHL, etc."
+                    required
                   />
                 </div>
                 <div>

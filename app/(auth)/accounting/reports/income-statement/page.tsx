@@ -18,6 +18,7 @@ export default function IncomeStatementPage() {
   const [fromDate, setFromDate] = useState(firstDayOfMonth.toISOString().split('T')[0])
   const [toDate, setToDate] = useState(lastDayOfMonth.toISOString().split('T')[0])
   const [currency, setCurrency] = useState('USD')
+  const [defaultCurrency, setDefaultCurrency] = useState('USD')
 
   const fetchIncomeStatement = async (): Promise<void> => {
     setLoading(true)
@@ -47,7 +48,25 @@ export default function IncomeStatementPage() {
   }
 
   useEffect(() => {
-    fetchIncomeStatement()
+    // Fetch company settings to get default currency
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.data?.defaultCurrency) {
+            setDefaultCurrency(data.data.defaultCurrency)
+            setCurrency(data.data.defaultCurrency)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching company settings:', error)
+      }
+    }
+    
+    fetchSettings().then(() => {
+      fetchIncomeStatement()
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

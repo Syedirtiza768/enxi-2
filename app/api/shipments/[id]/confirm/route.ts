@@ -4,7 +4,6 @@ import { ShipmentService } from '@/lib/services/shipment.service'
 import { z } from 'zod'
 
 const confirmShipmentSchema = z.object({
-  shippedBy: z.string().min(1, 'Shipped by is required'),
   actualCarrier: z.string().optional(),
   actualTrackingNumber: z.string().optional(),
 })
@@ -27,6 +26,13 @@ export const POST = createProtectedHandler(
     console.error('Error confirming shipment:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
     
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request data', details: error.errors },
+        { status: 400 }
+      )
+    }
+    
     if (errorMessage.includes('already shipped')) {
       return NextResponse.json(
         { error: errorMessage },
@@ -42,7 +48,7 @@ export const POST = createProtectedHandler(
     }
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage || 'Internal server error' },
       { status: 500 }
     )
     }

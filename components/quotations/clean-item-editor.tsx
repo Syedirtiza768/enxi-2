@@ -28,10 +28,13 @@ import { apiClient } from '@/lib/api/client';
 
 interface CleanItemEditorProps {
   items: any[];
-  onItemsChange: (items: any[]) => void;
+  onChange?: (items: any[]) => void;
+  onItemsChange?: (items: any[]) => void;
+  disabled?: boolean;
 }
 
-export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) {
+export function CleanItemEditor({ items, onChange, onItemsChange, disabled = false }: CleanItemEditorProps) {
+  const handleItemsChange = onChange || onItemsChange || (() => {});
   const [showItemSearch, setShowItemSearch] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -97,7 +100,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
       total: item.listPrice || 0
     };
 
-    onItemsChange([...items, newItem]);
+    handleItemsChange([...items, newItem]);
     setShowItemSearch(false);
     setSearchQuery('');
   };
@@ -114,7 +117,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
       cost: 0
     };
 
-    onItemsChange([...items, newItem]);
+    handleItemsChange([...items, newItem]);
     setManualItem({
       name: '',
       description: '',
@@ -136,7 +139,7 @@ export function CleanItemEditor({ items, onItemsChange }: CleanItemEditorProps) 
     item.total = subtotal; // Tax calculation happens on backend
     
     newItems[index] = item;
-    onItemsChange(newItems);
+    handleItemsChange(newItems);
   };
 
   const removeItem = (index: number) => {
