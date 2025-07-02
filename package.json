@@ -34,6 +34,7 @@
     "seed:production": "tsx scripts/seed-production.ts",
     "seed:production-core": "tsx scripts/seed-production-core.ts",
     "seed:production-coa": "tsx prisma/seed-production-coa-final.ts",
+    "check:production-db": "tsx scripts/check-production-db-status.ts",
     "setup:production-coa": "bash scripts/deploy-setup-coa.sh",
     "setup:accounts": "tsx scripts/setup-chart-of-accounts.ts",
     "test:integration": "tsx scripts/test-integration.ts",

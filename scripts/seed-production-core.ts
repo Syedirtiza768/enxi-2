@@ -4159,88 +4159,80 @@ async function seedTaxConfiguration() {
   console.log('💰 Seeding tax configuration...');
   const categories = [
   {
-    "id": "cmcd8ug7z00jev2dps2l73deq",
     "code": "VAT-UAE",
     "name": "UAE VAT",
     "description": "Value Added Tax - UAE",
     "isActive": true,
-    "isDefault": false,
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:56.064Z",
-    "updatedAt": "2025-06-26T10:31:56.064Z"
+    "isDefault": false
   },
   {
-    "id": "cmcfaq75b0008v2oxm8fj6sw3",
     "code": "STANDARD",
     "name": "Standard Tax",
     "description": "",
     "isActive": true,
-    "isDefault": false,
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-27T21:00:09.264Z",
-    "updatedAt": "2025-06-27T21:00:18.449Z"
+    "isDefault": false
   }
 ];
+
+  // Create categories and store their IDs
+  const categoryMap: Record<string, string> = {};
+  
+  for (const category of categories) {
+    const created = await prisma.taxCategory.create({
+      data: {
+        ...category,
+        createdBy: 'system',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    });
+    categoryMap[category.code] = created.id;
+  }
+
+  // Find tax collection account
+  const taxAccount = await prisma.account.findFirst({
+    where: { code: '2120' } // Sales Tax Payable account
+  });
+  
   const rates = [
   {
-    "id": "cmcd8ug8400jgv2dpq9uotrcu",
     "code": "VAT-5",
     "name": "UAE VAT 5%",
     "description": null,
     "rate": 5,
-    "categoryId": "cmcd8ug7z00jev2dps2l73deq",
+    "categoryCode": "VAT-UAE", // Use code instead of ID
     "taxType": "BOTH",
     "appliesTo": "ALL",
-    "effectiveFrom": "2025-06-26T10:31:56.068Z",
-    "effectiveTo": null,
     "isActive": true,
     "isDefault": true,
-    "isCompound": false,
-    "collectedAccountId": "cmcd8uecz000sv2dpmy4qjgyj",
-    "paidAccountId": "cmcd8uecz000sv2dpmy4qjgyj",
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:56.068Z",
-    "updatedAt": "2025-06-26T10:31:56.068Z"
+    "isCompound": false
   },
   {
-    "id": "cmcfape7a0007v2oxyyivo4w8",
     "code": "UAE_8",
     "name": "UAE 8%",
     "description": "",
     "rate": 8,
-    "categoryId": "cmcd8ug7z00jev2dps2l73deq",
+    "categoryCode": "VAT-UAE", // Use code instead of ID
     "taxType": "SALES",
     "appliesTo": "ALL",
-    "effectiveFrom": "2025-06-27T00:00:00.000Z",
-    "effectiveTo": null,
     "isActive": true,
     "isDefault": false,
-    "isCompound": false,
-    "collectedAccountId": null,
-    "paidAccountId": null,
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-27T20:59:31.750Z",
-    "updatedAt": "2025-06-27T20:59:31.750Z"
+    "isCompound": false
   }
 ];
   
-  for (const category of categories) {
-    await prisma.taxCategory.create({
-      data: {
-        ...category,
-        createdAt: new Date(category.createdAt),
-        updatedAt: new Date(category.updatedAt)
-      }
-    });
-  }
-  
   for (const rate of rates) {
+    const { categoryCode, ...rateData } = rate;
     await prisma.taxRate.create({
       data: {
-        ...rate,
-        rate: rate.rate || 0,
-        createdAt: new Date(rate.createdAt),
-        updatedAt: new Date(rate.updatedAt)
+        ...rateData,
+        categoryId: categoryMap[categoryCode],
+        collectedAccountId: taxAccount?.id || null,
+        paidAccountId: taxAccount?.id || null,
+        createdBy: 'system',
+        effectiveFrom: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     });
   }
@@ -4249,9 +4241,14 @@ async function seedTaxConfiguration() {
 
 async function seedLocations() {
   console.log('📍 Seeding locations...');
+  
+  // Find inventory account
+  const inventoryAccount = await prisma.account.findFirst({
+    where: { code: '1130' } // Inventory account
+  });
+  
   const locations = [
   {
-    "id": "cmcd8ufwq00hpv2dpy6a0o383",
     "locationCode": "MAIN-WH",
     "name": "Main Warehouse - Jebel Ali",
     "type": "WAREHOUSE",
@@ -4268,14 +4265,9 @@ async function seedLocations() {
     "isDefault": true,
     "allowNegativeStock": false,
     "maxCapacity": 10000,
-    "currentUtilization": 0,
-    "inventoryAccountId": "cmcd8uecd000mv2dp2hfpwyxm",
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:55.658Z",
-    "updatedAt": "2025-06-26T10:31:55.658Z"
+    "currentUtilization": 0
   },
   {
-    "id": "cmcd8ufwu00hvv2dp6s7ftsi2",
     "locationCode": "SVC-VAN-02",
     "name": "Mobile Service Van 02",
     "type": "VEHICLE",
@@ -4292,14 +4284,9 @@ async function seedLocations() {
     "isDefault": false,
     "allowNegativeStock": false,
     "maxCapacity": 100,
-    "currentUtilization": 0,
-    "inventoryAccountId": "cmcd8uecd000mv2dp2hfpwyxm",
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:55.662Z",
-    "updatedAt": "2025-06-26T10:31:55.662Z"
+    "currentUtilization": 0
   },
   {
-    "id": "cmcd8ufws00htv2dpmvgsq6bp",
     "locationCode": "SVC-VAN-01",
     "name": "Mobile Service Van 01",
     "type": "VEHICLE",
@@ -4316,14 +4303,9 @@ async function seedLocations() {
     "isDefault": false,
     "allowNegativeStock": false,
     "maxCapacity": 100,
-    "currentUtilization": 0,
-    "inventoryAccountId": "cmcd8uecd000mv2dp2hfpwyxm",
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:55.660Z",
-    "updatedAt": "2025-06-26T10:31:55.660Z"
+    "currentUtilization": 0
   },
   {
-    "id": "cmcd8ufws00hrv2dp6z4p4gdu",
     "locationCode": "ABU-WH",
     "name": "Abu Dhabi Warehouse",
     "type": "WAREHOUSE",
@@ -4340,11 +4322,7 @@ async function seedLocations() {
     "isDefault": false,
     "allowNegativeStock": false,
     "maxCapacity": 5000,
-    "currentUtilization": 0,
-    "inventoryAccountId": "cmcd8uecd000mv2dp2hfpwyxm",
-    "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
-    "createdAt": "2025-06-26T10:31:55.660Z",
-    "updatedAt": "2025-06-26T10:31:55.660Z"
+    "currentUtilization": 0
   }
 ];
   
@@ -4352,8 +4330,10 @@ async function seedLocations() {
     await prisma.location.create({
       data: {
         ...location,
-        createdAt: new Date(location.createdAt),
-        updatedAt: new Date(location.updatedAt)
+        inventoryAccountId: inventoryAccount?.id || null,
+        createdBy: 'system',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     });
   }

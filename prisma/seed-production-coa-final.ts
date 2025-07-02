@@ -457,8 +457,54 @@ async function configureSystemDefaults() {
 }
 
 async function createDefaultTaxRates() {
-  console.log('\n💰 Creating default tax rates...');
+  console.log('\n💰 Creating default tax categories and rates...');
 
+  // First create tax categories
+  const taxCategories = [
+    {
+      code: 'GENERAL',
+      name: 'General',
+      description: 'General tax category',
+      isDefault: true
+    },
+    {
+      code: 'EXEMPT',
+      name: 'Tax Exempt',
+      description: 'Tax exempt category',
+      isDefault: false
+    }
+  ];
+
+  const categoryIds: Record<string, string> = {};
+
+  for (const category of taxCategories) {
+    try {
+      const created = await prisma.taxCategory.create({
+        data: {
+          ...category,
+          createdBy: 'system',
+          isActive: true
+        }
+      });
+      categoryIds[category.code] = created.id;
+      console.log(`Created tax category: ${category.code} - ${category.name}`);
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        // Category already exists, fetch it
+        const existing = await prisma.taxCategory.findUnique({
+          where: { code: category.code }
+        });
+        if (existing) {
+          categoryIds[category.code] = existing.id;
+          console.log(`Tax category ${category.code} already exists`);
+        }
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // Now create tax rates
   const defaultTaxRate = parseFloat(process.env.DEFAULT_TAX_RATE || '10');
   
   const taxRates = [
@@ -467,6 +513,7 @@ async function createDefaultTaxRates() {
       name: 'Standard Tax',
       description: 'Standard sales tax',
       rate: defaultTaxRate,
+      categoryId: categoryIds['GENERAL'],
       isDefault: true,
       collectedAccountId: defaultAccounts.salesTax
     },
@@ -475,6 +522,7 @@ async function createDefaultTaxRates() {
       name: 'Tax Exempt',
       description: 'No tax',
       rate: 0,
+      categoryId: categoryIds['EXEMPT'],
       isDefault: false
     }
   ];
@@ -498,7 +546,7 @@ async function createDefaultTaxRates() {
     }
   }
 
-  console.log('✅ Tax rates created');
+  console.log('✅ Tax categories and rates created');
 }
 
 // Main execution
