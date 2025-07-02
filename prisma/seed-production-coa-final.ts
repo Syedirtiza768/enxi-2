@@ -484,7 +484,6 @@ async function createDefaultTaxRates() {
       await prisma.taxRate.create({
         data: {
           ...taxRate,
-          companyId,
           createdBy: 'system',
           isActive: true
         }
