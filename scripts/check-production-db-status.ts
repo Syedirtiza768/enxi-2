@@ -13,17 +13,20 @@ async function checkDatabaseStatus() {
     await prisma.$queryRaw`SELECT 1`;
     console.log('✅ Database connection successful');
     
-    // Check existing data
-    const counts = {
-      users: await prisma.user.count(),
-      accounts: await prisma.account.count(),
-      companySettings: await prisma.companySettings.count(),
-      taxCategories: await prisma.taxCategory.count(),
-      taxRates: await prisma.taxRate.count(),
-      locations: await prisma.location.count(),
-      permissions: await prisma.permission.count(),
-      roles: await prisma.role.count(),
-    };
+    // Check existing data - handle models that might not exist
+    const counts: Record<string, number> = {};
+    
+    // Check each model separately to handle potential errors
+    try { counts.users = await prisma.user.count(); } catch { counts.users = 0; }
+    try { counts.accounts = await prisma.account.count(); } catch { counts.accounts = 0; }
+    try { counts.companySettings = await prisma.companySettings.count(); } catch { counts.companySettings = 0; }
+    try { counts.taxCategories = await prisma.taxCategory.count(); } catch { counts.taxCategories = 0; }
+    try { counts.taxRates = await prisma.taxRate.count(); } catch { counts.taxRates = 0; }
+    try { counts.locations = await prisma.location.count(); } catch { counts.locations = 0; }
+    try { counts.permissions = await prisma.permission.count(); } catch { counts.permissions = 0; }
+    try { counts.rolePermissions = await prisma.rolePermission.count(); } catch { counts.rolePermissions = 0; }
+    try { counts.customers = await prisma.customer.count(); } catch { counts.customers = 0; }
+    try { counts.items = await prisma.item.count(); } catch { counts.items = 0; }
     
     console.log('\n📊 Current database state:');
     console.log('-------------------------');
@@ -40,9 +43,9 @@ async function checkDatabaseStatus() {
       console.log('   (Sets up Chart of Accounts - required for all other seeds)');
     }
     
-    if (counts.companySettings === 0 || counts.permissions === 0 || counts.roles === 0 || counts.users === 0) {
+    if (counts.companySettings === 0 || counts.permissions === 0 || counts.users === 0) {
       console.log('2. Run: npm run seed:production-core');
-      console.log('   (Sets up company settings, permissions, roles, and admin user)');
+      console.log('   (Sets up company settings, permissions, and admin user)');
     }
     
     if (counts.accounts > 0 && counts.companySettings > 0) {
