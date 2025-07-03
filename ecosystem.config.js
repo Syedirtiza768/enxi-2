@@ -7,10 +7,10 @@ module.exports = {
     env: {
       PORT: 3050,
       NODE_ENV: 'production',
-      DATABASE_URL: 'file:./prisma/prod.db',
-      JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-here',
+      DATABASE_URL: process.env.DATABASE_URL || 'file:./prisma/production.db',
+      JWT_SECRET: 'production-jwt-secret-alsahab-2024',
       NEXTAUTH_URL: 'https://erp.alsahab.me',
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'your-nextauth-secret-here',
+      NEXTAUTH_SECRET: 'production-nextauth-secret-alsahab-2024',
       NODE_OPTIONS: '--max-old-space-size=1024'
     },
     exec_mode: 'fork',
