@@ -34,11 +34,7 @@ const Role = {
   SALES: 'SALES'
 } as const
 
-const CustomerStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  BLOCKED: 'BLOCKED'
-} as const
+// CustomerStatus removed - Customer model doesn't have status field
 
 const LeadStatus = {
   NEW: 'NEW',
@@ -649,7 +645,6 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
       creditLimit: 100000,
       paymentTerms: 30,
       currency: 'USD',
-      status: CustomerStatus.ACTIVE,
       createdBy: adminId,
       // Create dedicated AR account
       account: {
@@ -679,7 +674,6 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
       creditLimit: 250000,
       paymentTerms: 45,
       currency: 'USD',
-      status: CustomerStatus.ACTIVE,
       createdBy: salesId,
       account: {
         create: {
@@ -707,7 +701,6 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
       creditLimit: 150000,
       paymentTerms: 60,
       currency: 'USD',
-      status: CustomerStatus.ACTIVE,
       createdBy: salesId,
       account: {
         create: {
@@ -735,7 +728,6 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
       creditLimit: 200000,
       paymentTerms: 30,
       currency: 'USD',
-      status: CustomerStatus.ACTIVE,
       createdBy: salesId,
       account: {
         create: {
@@ -1247,49 +1239,64 @@ async function createQuotations(salesId: string, customers: any, items: any, sal
       items: {
         create: [
           {
-            itemId: items.laptopPro.id,
+            itemCode: items.laptopPro.code,
             description: 'Professional Laptop 15" - Executive Configuration',
             quantity: 25,
             unitPrice: 1750.00,
-            discountPercent: 7.8,
+            discount: 7.8,
             taxRate: 8.5,
-            sortOrder: 1
+            sortOrder: 1,
+            item: {
+              connect: { id: items.laptopPro.id }
+            }
           },
           {
-            itemId: items.desktop.id,
+            itemCode: items.desktop.code,
             description: 'Workstation Desktop - Engineering Stations',
             quantity: 10,
             unitPrice: 3800.00,
-            discountPercent: 5.0,
+            discount: 5.0,
             taxRate: 8.5,
-            sortOrder: 2
+            sortOrder: 2,
+            item: {
+              connect: { id: items.desktop.id }
+            }
           },
           {
-            itemId: items.monitor.id,
+            itemCode: items.monitor.code,
             description: '27" 4K Monitor - Dual setup per workstation',
             quantity: 20,
             unitPrice: 550.00,
-            discountPercent: 8.0,
+            discount: 8.0,
             taxRate: 8.5,
-            sortOrder: 3
+            sortOrder: 3,
+            item: {
+              connect: { id: items.monitor.id }
+            }
           },
           {
-            itemId: items.office365.id,
+            itemCode: items.office365.code,
             description: 'Office 365 Business Premium - Annual licenses',
             quantity: 35,
             unitPrice: 264.00,
-            discountPercent: 15.0,
+            discount: 15.0,
             taxRate: 0,
-            sortOrder: 4
+            sortOrder: 4,
+            item: {
+              connect: { id: items.office365.id }
+            }
           },
           {
-            itemId: items.setup.id,
+            itemCode: items.setup.code,
             description: 'Professional setup and configuration',
             quantity: 35,
             unitPrice: 149.99,
-            discountPercent: 0,
+            discount: 0,
             taxRate: 8.5,
-            sortOrder: 5
+            sortOrder: 5,
+            item: {
+              connect: { id: items.setup.id }
+            }
           }
         ]
       }
@@ -1310,40 +1317,52 @@ async function createQuotations(salesId: string, customers: any, items: any, sal
       items: {
         create: [
           {
-            itemId: items.desktop.id,
+            itemCode: items.desktop.code,
             description: 'Medical Workstation - HIPAA Compliant',
             quantity: 15,
             unitPrice: 4200.00,
-            discountPercent: 3.0,
+            discount: 3.0,
             taxRate: 8.5,
-            sortOrder: 1
+            sortOrder: 1,
+            item: {
+              connect: { id: items.desktop.id }
+            }
           },
           {
-            itemId: items.laptopBusiness.id,
+            itemCode: items.laptopBusiness.code,
             description: 'Mobile Carts Laptop Configuration',
             quantity: 8,
             unitPrice: 1400.00,
-            discountPercent: 5.0,
+            discount: 5.0,
             taxRate: 8.5,
-            sortOrder: 2
+            sortOrder: 2,
+            item: {
+              connect: { id: items.laptopBusiness.id }
+            }
           },
           {
-            itemId: items.antivirus.id,
+            itemCode: items.antivirus.code,
             description: 'Enterprise Security Suite - Healthcare Edition',
             quantity: 23,
             unitPrice: 120.00,
-            discountPercent: 10.0,
+            discount: 10.0,
             taxRate: 0,
-            sortOrder: 3
+            sortOrder: 3,
+            item: {
+              connect: { id: items.antivirus.id }
+            }
           },
           {
-            itemId: items.training.id,
+            itemCode: items.training.code,
             description: 'HIPAA Compliance Training - 2 sessions',
             quantity: 2,
             unitPrice: 800.00,
-            discountPercent: 0,
+            discount: 0,
             taxRate: 0,
-            sortOrder: 4
+            sortOrder: 4,
+            item: {
+              connect: { id: items.training.id }
+            }
           }
         ]
       }
@@ -1422,6 +1441,20 @@ async function createSalesOrders(salesId: string, customers: any, quotations: an
 async function createStockMovements(warehouseId: string, items: any, accounts: any) {
   const movements = []
 
+  // Create stock lot first for laptops
+  const laptopProLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-LAP-PRO-001',
+      itemId: items.laptopPro.id,
+      receivedDate: new Date('2024-01-01'),
+      receivedQty: 50,
+      availableQty: 50,
+      unitCost: 1200.00,
+      totalCost: 60000.00,
+      createdBy: warehouseId
+    }
+  })
+
   // Opening stock for laptops
   movements.push(await prisma.stockMovement.create({
     data: {
@@ -1433,22 +1466,25 @@ async function createStockMovements(warehouseId: string, items: any, accounts: a
       unitCost: 1200.00,
       totalCost: 60000.00,
       unitOfMeasureId: items.laptopPro.unitOfMeasureId,
+      stockLotId: laptopProLot.id,
       notes: 'Opening inventory balance - Professional Laptops',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-LAP-PRO-001',
-          itemId: items.laptopPro.id,
-          receivedDate: new Date('2024-01-01'),
-          receivedQty: 50,
-          availableQty: 50,
-          unitCost: 1200.00,
-          totalCost: 60000.00,
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   }))
+
+  // Create stock lot for business laptops
+  const laptopBusinessLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-LAP-BUS-001',
+      itemId: items.laptopBusiness.id,
+      receivedDate: new Date('2024-01-01'),
+      receivedQty: 75,
+      availableQty: 75,
+      unitCost: 800.00,
+      totalCost: 60000.00,
+      createdBy: warehouseId
+    }
+  })
 
   // Opening stock for business laptops
   movements.push(await prisma.stockMovement.create({
@@ -1461,22 +1497,25 @@ async function createStockMovements(warehouseId: string, items: any, accounts: a
       unitCost: 800.00,
       totalCost: 60000.00,
       unitOfMeasureId: items.laptopBusiness.unitOfMeasureId,
+      stockLotId: laptopBusinessLot.id,
       notes: 'Opening inventory balance - Business Laptops',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-LAP-BUS-001',
-          itemId: items.laptopBusiness.id,
-          receivedDate: new Date('2024-01-01'),
-          receivedQty: 75,
-          availableQty: 75,
-          unitCost: 800.00,
-          totalCost: 60000.00,
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   }))
+
+  // Create stock lot for desktops
+  const desktopLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-DT-WORK-001',
+      itemId: items.desktop.id,
+      receivedDate: new Date('2024-01-01'),
+      receivedQty: 20,
+      availableQty: 20,
+      unitCost: 2500.00,
+      totalCost: 50000.00,
+      createdBy: warehouseId
+    }
+  })
 
   // Opening stock for desktops
   movements.push(await prisma.stockMovement.create({
@@ -1489,86 +1528,77 @@ async function createStockMovements(warehouseId: string, items: any, accounts: a
       unitCost: 2500.00,
       totalCost: 50000.00,
       unitOfMeasureId: items.desktop.unitOfMeasureId,
+      stockLotId: desktopLot.id,
       notes: 'Opening inventory balance - Workstation Desktops',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-DT-WORK-001',
-          itemId: items.desktop.id,
-          receivedDate: new Date('2024-01-01'),
-          receivedQty: 20,
-          availableQty: 20,
-          unitCost: 2500.00,
-          totalCost: 50000.00,
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   }))
+
+  // Create stock lot for monitors
+  const monitorLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-MON-27-001',
+      itemId: items.monitor.id,
+      receivedDate: new Date('2024-01-10'),
+      receivedQty: 100,
+      availableQty: 100,
+      unitCost: 350.00,
+      totalCost: 35000.00,
+      supplierName: 'Display Tech Solutions',
+      createdBy: warehouseId
+    }
+  })
 
   // Stock in for monitors
   movements.push(await prisma.stockMovement.create({
     data: {
       movementNumber: 'SIN-2024-001',
       itemId: items.monitor.id,
-      movementType: MovementType.STOCK_IN,
+      movementType: MovementType.IN,
       movementDate: new Date('2024-01-10'),
       quantity: 100,
       unitCost: 350.00,
       totalCost: 35000.00,
       unitOfMeasureId: items.monitor.unitOfMeasureId,
+      stockLotId: monitorLot.id,
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-001',
-      supplier: 'Display Tech Solutions',
       notes: 'Monthly monitor inventory replenishment',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-MON-27-001',
-          itemId: items.monitor.id,
-          receivedDate: new Date('2024-01-10'),
-          receivedQty: 100,
-          availableQty: 100,
-          unitCost: 350.00,
-          totalCost: 35000.00,
-          supplier: 'Display Tech Solutions',
-          purchaseRef: 'PO-2024-001',
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   }))
+
+  // Create stock lot for keyboards
+  const keyboardLot = await prisma.stockLot.create({
+    data: {
+      lotNumber: 'LOT-KBD-MECH-001',
+      itemId: items.keyboard.id,
+      receivedDate: new Date('2024-01-15'),
+      receivedQty: 200,
+      availableQty: 200,
+      unitCost: 75.00,
+      totalCost: 15000.00,
+      supplierName: 'Peripheral Plus Inc',
+      createdBy: warehouseId
+    }
+  })
 
   // Stock in for peripherals
   movements.push(await prisma.stockMovement.create({
     data: {
       movementNumber: 'SIN-2024-002',
       itemId: items.keyboard.id,
-      movementType: MovementType.STOCK_IN,
+      movementType: MovementType.IN,
       movementDate: new Date('2024-01-15'),
       quantity: 200,
       unitCost: 75.00,
       totalCost: 15000.00,
       unitOfMeasureId: items.keyboard.unitOfMeasureId,
+      stockLotId: keyboardLot.id,
       referenceType: 'PURCHASE',
       referenceNumber: 'PO-2024-002',
-      supplier: 'Peripheral Plus Inc',
       notes: 'Keyboard inventory for Q1 orders',
-      createdBy: warehouseId,
-      stockLot: {
-        create: {
-          lotNumber: 'LOT-KBD-MECH-001',
-          itemId: items.keyboard.id,
-          receivedDate: new Date('2024-01-15'),
-          receivedQty: 200,
-          availableQty: 200,
-          unitCost: 75.00,
-          totalCost: 15000.00,
-          supplier: 'Peripheral Plus Inc',
-          purchaseRef: 'PO-2024-002',
-          createdBy: warehouseId
-        }
-      }
+      createdBy: warehouseId
     }
   }))
 
@@ -1577,12 +1607,13 @@ async function createStockMovements(warehouseId: string, items: any, accounts: a
     data: {
       movementNumber: 'SOUT-2024-001',
       itemId: items.laptopPro.id,
-      movementType: MovementType.STOCK_OUT,
+      movementType: MovementType.OUT,
       movementDate: new Date('2024-02-05'),
       quantity: -10,
       unitCost: 1200.00,
-      totalCost: 12000.00,
+      totalCost: -12000.00,
       unitOfMeasureId: items.laptopPro.unitOfMeasureId,
+      stockLotId: laptopProLot.id,
       referenceType: 'SALE',
       referenceNumber: 'SO-2024-001',
       notes: 'Partial fulfillment for TechCorp order SO-2024-001',
