@@ -99,6 +99,64 @@ body {
   scrollbar-color: #d1d5db transparent;
 }
 
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  /* Ensure minimum touch targets */
+  button, 
+  [role="button"], 
+  select, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve tap targets for links */
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  /* Prevent iOS zoom on form inputs */
+  input, 
+  textarea, 
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Safe area support for iOS */
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  [class*="hover:"]:hover {
+    opacity: 1;
+  }
+  
+  /* Larger focus rings on touch devices */
+  *:focus {
+    outline-width: 3px;
+    outline-offset: 2px;
+  }
+}
+
 .scrollbar-track-gray-100 {
   scrollbar-color: #d1d5db #f3f4f6;
 }

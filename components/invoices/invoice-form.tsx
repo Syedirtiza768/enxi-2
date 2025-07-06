@@ -680,9 +680,9 @@ export function InvoiceForm({
             <div className="space-y-4">
               {formData.items?.map((item, index) => (
                 <div key={index} className="border rounded-lg p-4">
-                  <div className="grid grid-cols-12 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
                     {/* Item Code */}
-                    <div className="col-span-2">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-2">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Item Code
                       </label>
@@ -690,12 +690,12 @@ export function InvoiceForm({
                         type="text"
                         value={item.itemCode}
                         onChange={(e): void => updateItem(index, { itemCode: e.target.value })}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     {/* Description */}
-                    <div className="col-span-4">
+                    <div className="col-span-1 sm:col-span-2 lg:col-span-4">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Description *
                       </label>
@@ -703,7 +703,7 @@ export function InvoiceForm({
                         type="text"
                         value={item.description}
                         onChange={(e): void => updateItem(index, { description: e.target.value })}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                       {validationErrors[`item_${index}_description`] && (
                         <p className="text-xs text-red-600 mt-1">{validationErrors[`item_${index}_description`]}</p>
@@ -711,7 +711,7 @@ export function InvoiceForm({
                     </div>
 
                     {/* Quantity */}
-                    <div className="col-span-1">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-1">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Quantity *
                       </label>
@@ -720,7 +720,7 @@ export function InvoiceForm({
                         value={item.quantity}
                         onChange={(e): void => updateItem(index, { quantity: Math.max(0, parseInt(e.target.value) || 0) })}
                         min="0"
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                       {validationErrors[`item_${index}_quantity`] && (
                         <p className="text-xs text-red-600 mt-1">{validationErrors[`item_${index}_quantity`]}</p>
@@ -728,7 +728,7 @@ export function InvoiceForm({
                     </div>
 
                     {/* Unit Price */}
-                    <div className="col-span-2">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-2">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Unit Price *
                       </label>
@@ -738,7 +738,7 @@ export function InvoiceForm({
                         onChange={(e): void => updateItem(index, { unitPrice: Math.max(0, parseFloat(e.target.value) || 0) })}
                         min="0"
                         step="0.01"
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                       {validationErrors[`item_${index}_unitPrice`] && (
                         <p className="text-xs text-red-600 mt-1">{validationErrors[`item_${index}_unitPrice`]}</p>
@@ -746,7 +746,7 @@ export function InvoiceForm({
                     </div>
 
                     {/* Discount */}
-                    <div className="col-span-1">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-1">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Discount (%)
                       </label>
@@ -757,12 +757,12 @@ export function InvoiceForm({
                         min="0"
                         max="100"
                         step="0.01"
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                     </div>
 
                     {/* Tax Rate */}
-                    <div className="col-span-1">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-1">
                       <label className="block text-xs font-medium text-gray-700 mb-1">
                         Tax
                       </label>
@@ -775,17 +775,17 @@ export function InvoiceForm({
                           })
                         }}
                         taxType={TaxType.SALES}
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-2 py-1 text-base border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Select tax"
                       />
                     </div>
 
                     {/* Actions */}
-                    <div className="col-span-1 flex items-end">
+                    <div className="col-span-1 sm:col-span-1 lg:col-span-1 flex items-end">
                       <button
                         onClick={(): void => removeItem(index)}
                         aria-label="Remove item"
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        className="p-2 text-red-600 hover:bg-red-50 rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

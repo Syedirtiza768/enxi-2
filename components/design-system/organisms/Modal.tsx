@@ -88,10 +88,10 @@ const ModalContent = ({
   showCloseButton = true
 }: ModalContentProps): void => {
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
+    sm: 'max-w-[95vw] sm:max-w-sm',
+    md: 'max-w-[95vw] sm:max-w-md',
+    lg: 'max-w-[95vw] sm:max-w-lg',
+    xl: 'max-w-[95vw] sm:max-w-xl',
     full: 'max-w-[95vw]'
   }
 
@@ -100,7 +100,7 @@ const ModalContent = ({
       className={cn(
         'relative w-full bg-[var(--bg-elevated)] rounded-[var(--radius-xl)]',
         'shadow-[var(--shadow-2xl)] overflow-hidden',
-        'flex flex-col max-h-[85vh]',
+        'flex flex-col max-h-[90vh] sm:max-h-[85vh]',
         sizeClasses[size],
         className
       )}
@@ -111,8 +111,9 @@ const ModalContent = ({
         <button
           onClick={onClose}
           className={cn(
-            'absolute right-4 top-4 z-10',
-            'p-1 rounded-[var(--radius-md)]',
+            'absolute right-2 top-2 sm:right-4 sm:top-4 z-10',
+            'p-2 sm:p-1 rounded-[var(--radius-md)]',
+            'min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px]',
             'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]',
             'hover:bg-[var(--bg-secondary)]',
             'transition-colors duration-[var(--transition-fast)]',
@@ -120,7 +121,7 @@ const ModalContent = ({
           )}
           aria-label="Close modal"
         >
-          <X className="h-5 w-5" />
+          <X className="h-6 w-6 sm:h-5 sm:w-5" />
         </button>
       )}
       {children}
@@ -138,7 +139,7 @@ const ModalHeader = ({
     <div
       className={cn(
         'flex items-center justify-between',
-        'px-6 py-4 border-b border-[var(--border-primary)]',
+        'px-4 py-3 sm:px-6 sm:py-4 border-b border-[var(--border-primary)]',
         className
       )}
     >
@@ -178,7 +179,7 @@ const ModalBody = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement
         ref={ref}
         className={cn(
           'flex-1 overflow-y-auto',
-          'px-6 py-4',
+          'px-4 py-3 sm:px-6 sm:py-4',
           className
         )}
         {...props}
@@ -206,7 +207,7 @@ const ModalFooter = ({
       className={cn(
         'flex items-center gap-3',
         alignmentClasses[align],
-        'px-6 py-4 border-t border-[var(--border-primary)]',
+        'px-4 py-3 sm:px-6 sm:py-4 border-t border-[var(--border-primary)]',
         className
       )}
     >

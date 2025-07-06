@@ -436,7 +436,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
       'bg-[var(--bg-primary)] border-r border-[var(--border-primary)]',
       'transform transition-all duration-300 ease-in-out',
       'lg:static lg:z-auto lg:translate-x-0',
-      sidebarCollapsed ? 'w-16' : 'w-64',
+      sidebarCollapsed ? 'w-16' : 'w-72 sm:w-64',
       // Mobile behavior - slide in from left
       sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       // Add shadow on mobile when open
@@ -484,32 +484,32 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
               {/* Mobile menu toggle */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="md"
                 onClick={(): void => setSidebarOpen(true)}
-                className="lg:hidden hover:bg-[var(--bg-secondary)]"
+                className="lg:hidden hover:bg-[var(--bg-secondary)] min-h-[44px] min-w-[44px] p-2"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               </Button>
               
               {/* Mobile close button (shows when sidebar is open) */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="md"
                 onClick={(): void => setSidebarOpen(false)}
                 className={cn(
-                  "lg:hidden hover:bg-[var(--bg-secondary)]",
+                  "lg:hidden hover:bg-[var(--bg-secondary)] min-h-[44px] min-w-[44px] p-2",
                   sidebarOpen ? "block" : "hidden"
                 )}
               >
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
               </Button>
               
               {/* Desktop sidebar toggle */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="md"
                 onClick={(): void => setSidebarCollapsed(!sidebarCollapsed)}
-                className="hidden lg:flex hover:bg-[var(--bg-secondary)]"
+                className="hidden lg:flex hover:bg-[var(--bg-secondary)] min-h-[44px] min-w-[44px] p-2"
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -716,11 +716,11 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
               {/* Mobile Search Toggle */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="md"
                 onClick={(): void => setShowSearch(!showSearch)}
-                className="md:hidden hover:bg-[var(--bg-secondary)]"
+                className="md:hidden hover:bg-[var(--bg-secondary)] min-h-[44px] min-w-[44px] p-2"
               >
-                <Search className="h-4 w-4" />
+                <Search className="h-5 w-5" />
               </Button>
 
               {/* Help */}
@@ -761,7 +761,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
                       className="fixed inset-0 z-10" 
                       onClick={(): void => setShowNotifications(false)}
                     />
-                    <div className="absolute right-0 top-12 w-80 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20 max-h-96 overflow-hidden">
+                    <div className="absolute right-0 top-12 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20 max-h-96 overflow-hidden">
                       <div className="p-4 border-b border-[var(--border-primary)]">
                         <HStack justify="between" align="center">
                           <Text weight="semibold">Notifications</Text>
@@ -845,7 +845,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
                       className="fixed inset-0 z-10" 
                       onClick={(): void => setShowUserMenu(false)}
                     />
-                    <div className="absolute right-0 top-12 w-64 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20">
+                    <div className="absolute right-0 top-12 w-64 sm:w-80 max-w-[calc(100vw-2rem)] bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg shadow-2xl z-20">
                       <div className="p-4 border-b border-[var(--border-primary)]">
                         <HStack gap="sm" align="center">
                           <div className="w-10 h-10 bg-gradient-to-br from-[var(--color-brand-primary-500)] to-[var(--color-brand-primary-700)] rounded-full flex items-center justify-center">

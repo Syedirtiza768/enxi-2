@@ -51,7 +51,7 @@ export function ResponsiveTable({
   className,
   mobileCardLayout = true,
   stickyHeader = true,
-  maxHeight = '600px',
+  maxHeight = 'calc(100vh - 200px)',
   onSelectionChange,
   selectable = false,
   bulkActions,

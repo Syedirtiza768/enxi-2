@@ -49,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     `
 
     const sizeStyles = {
-      sm: 'h-9 px-3 text-sm rounded-[var(--radius-md)]',
+      sm: 'h-9 px-3 text-base rounded-[var(--radius-md)]',
       md: 'h-10 px-4 text-base rounded-[var(--radius-lg)]',
       lg: 'h-12 px-5 text-lg rounded-[var(--radius-lg)]'
     }

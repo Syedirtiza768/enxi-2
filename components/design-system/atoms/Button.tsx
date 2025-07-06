@@ -76,11 +76,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const sizes = {
-      xs: 'h-7 px-2.5 text-xs rounded-[var(--radius-md)]',
-      sm: 'h-9 px-3 text-sm rounded-[var(--radius-md)]',
-      md: 'h-10 px-4 text-sm rounded-[var(--radius-lg)]',
-      lg: 'h-12 px-6 text-base rounded-[var(--radius-lg)]',
-      xl: 'h-14 px-8 text-lg rounded-[var(--radius-lg)]'
+      xs: 'h-8 px-2.5 text-xs rounded-[var(--radius-md)] min-h-[32px]',
+      sm: 'h-10 px-3 text-sm rounded-[var(--radius-md)] min-h-[40px]',
+      md: 'h-10 px-4 text-sm rounded-[var(--radius-lg)] min-h-[40px]',
+      lg: 'h-12 px-6 text-base rounded-[var(--radius-lg)] min-h-[44px]',
+      xl: 'h-14 px-8 text-lg rounded-[var(--radius-lg)] min-h-[48px]'
     }
 
     const iconSizes = {

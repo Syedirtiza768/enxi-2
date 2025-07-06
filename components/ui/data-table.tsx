@@ -116,7 +116,7 @@ export function DataTable<TData, TValue>({
   showColumnVisibility = true,
   showSorting = true,
   stickyHeader = true,
-  maxHeight = '600px',
+  maxHeight = 'calc(100vh - 200px)',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -154,7 +154,7 @@ export function DataTable<TData, TValue>({
         <div className="flex items-center justify-between">
           <div className="flex-1 flex items-center gap-2">
             {search && (
-              <div className="relative w-full max-w-sm">
+              <div className="relative w-full max-w-sm sm:max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={search.placeholder || 'Search...'}
