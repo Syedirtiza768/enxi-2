@@ -163,6 +163,11 @@ npm run test:coverage
 - `npm run seed:production-coa` - Production Chart of Accounts only
 - `npm run setup:production-coa` - Deploy setup for Chart of Accounts
 
+## Presales Documentation
+
+For executive-focused materials see [docs/presales](docs/presales).
+
+
 ## License
 
 ISC
