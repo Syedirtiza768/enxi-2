@@ -18,21 +18,100 @@
 
 import { prisma } from '../lib/db/prisma'
 import bcrypt from 'bcryptjs'
-import { 
-  AccountType, 
-  Role, 
-  CustomerStatus, 
-  LeadStatus,
-  SalesCaseStatus,
-  QuotationStatus,
-  OrderStatus,
-  InvoiceStatus,
-  InvoiceType,
-  PaymentMethod,
-  ItemType,
-  MovementType,
-  JournalStatus
-} from '../lib/generated/prisma'
+// Define enum-like constants for database values
+const AccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE'
+} as const
+
+const Role = {
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  USER: 'USER',
+  SALES: 'SALES'
+} as const
+
+const CustomerStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BLOCKED: 'BLOCKED'
+} as const
+
+const LeadStatus = {
+  NEW: 'NEW',
+  CONTACTED: 'CONTACTED',
+  QUALIFIED: 'QUALIFIED',
+  CONVERTED: 'CONVERTED',
+  LOST: 'LOST'
+} as const
+
+const SalesCaseStatus = {
+  OPEN: 'OPEN',
+  QUALIFIED: 'QUALIFIED',
+  PROPOSAL: 'PROPOSAL',
+  WON: 'WON',
+  LOST: 'LOST'
+} as const
+
+const QuotationStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+const OrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+const InvoiceStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  CANCELLED: 'CANCELLED'
+} as const
+
+const InvoiceType = {
+  SALES: 'SALES',
+  PURCHASE: 'PURCHASE',
+  CREDIT: 'CREDIT',
+  DEBIT: 'DEBIT'
+} as const
+
+const PaymentMethod = {
+  CASH: 'CASH',
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CHECK: 'CHECK',
+  CREDIT_CARD: 'CREDIT_CARD'
+} as const
+
+const ItemType = {
+  PRODUCT: 'PRODUCT',
+  SERVICE: 'SERVICE',
+  ASSEMBLY: 'ASSEMBLY'
+} as const
+
+const MovementType = {
+  IN: 'IN',
+  OUT: 'OUT',
+  ADJUSTMENT: 'ADJUSTMENT',
+  TRANSFER: 'TRANSFER'
+} as const
+
+const JournalStatus = {
+  DRAFT: 'DRAFT',
+  POSTED: 'POSTED',
+  CANCELLED: 'CANCELLED'
+} as const
 
 async function main(): Promise<void> {
   console.warn('🌱 Starting Comprehensive ERP Seed...\n')
