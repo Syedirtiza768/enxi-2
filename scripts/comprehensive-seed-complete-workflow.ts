@@ -204,32 +204,44 @@ async function main(): Promise<void> {
 async function cleanDatabase(): Promise<void> {
   console.warn('🧹 Cleaning existing data...')
   
-  // Clean in correct order to respect foreign key constraints
   try {
-    await prisma.auditLog.deleteMany()
-    await prisma.payment.deleteMany()
-    await prisma.invoiceItem.deleteMany()
-    await prisma.invoice.deleteMany()
-    await prisma.salesOrderItem.deleteMany()
-    await prisma.salesOrder.deleteMany()
-    await prisma.customerPO.deleteMany()
-    await prisma.quotationItem.deleteMany()
-    await prisma.quotationVersion.deleteMany()
-    await prisma.quotation.deleteMany()
-    await prisma.salesCaseUpdate.deleteMany()
-    await prisma.salesCase.deleteMany()
-    await prisma.stockLot.deleteMany()
-    await prisma.stockMovement.deleteMany()
-    await prisma.journalLine.deleteMany()
-    await prisma.journalEntry.deleteMany()
-    await prisma.exchangeRate.deleteMany()
-    await prisma.item.deleteMany()
-    await prisma.category.deleteMany()
-    await prisma.unitOfMeasure.deleteMany()
-    await prisma.lead.deleteMany()
-    await prisma.customer.deleteMany()
-    await prisma.account.deleteMany()
-    await prisma.user.deleteMany()
+    await prisma.$connect()
+    console.warn('✅ Database connected successfully')
+    
+    // Clean in correct order to respect foreign key constraints
+    // Only clean models that actually exist in the schema
+    const cleanupOperations = [
+      () => prisma.auditLog.deleteMany(),
+      () => prisma.payment.deleteMany(),
+      () => prisma.invoiceItem.deleteMany(),
+      () => prisma.invoice.deleteMany(),
+      () => prisma.salesOrderItem.deleteMany(),
+      () => prisma.salesOrder.deleteMany(),
+      () => prisma.customerPO.deleteMany(),
+      () => prisma.quotationItem.deleteMany(),
+      () => prisma.quotation.deleteMany(),
+      () => prisma.salesCase.deleteMany(),
+      () => prisma.stockLot.deleteMany(),
+      () => prisma.stockMovement.deleteMany(),
+      () => prisma.journalLine.deleteMany(),
+      () => prisma.journalEntry.deleteMany(),
+      () => prisma.exchangeRate.deleteMany(),
+      () => prisma.item.deleteMany(),
+      () => prisma.category.deleteMany(),
+      () => prisma.unitOfMeasure.deleteMany(),
+      () => prisma.lead.deleteMany(),
+      () => prisma.customer.deleteMany(),
+      () => prisma.account.deleteMany(),
+      () => prisma.user.deleteMany()
+    ]
+    
+    for (const operation of cleanupOperations) {
+      try {
+        await operation()
+      } catch (error) {
+        console.warn(`⚠️  Failed to clean a table:`, error.message)
+      }
+    }
     
     console.warn('✅ Database cleaned')
   } catch (error) {
@@ -240,8 +252,14 @@ async function cleanDatabase(): Promise<void> {
 async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
-  const admin = await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: { username: 'admin' },
+    update: {
+      password: hashedPassword,
+      role: Role.ADMIN,
+      isActive: true
+    },
+    create: {
       username: 'admin',
       email: 'admin@enxi-erp.com',
       password: hashedPassword,
@@ -250,8 +268,14 @@ async function createUsers() {
     }
   })
 
-  const sales = await prisma.user.create({
-    data: {
+  const sales = await prisma.user.upsert({
+    where: { username: 'sarah' },
+    update: {
+      password: hashedPassword,
+      role: Role.USER,
+      isActive: true
+    },
+    create: {
       username: 'sarah',
       email: 'sarah@enxi-erp.com',
       password: hashedPassword,
@@ -260,8 +284,14 @@ async function createUsers() {
     }
   })
 
-  const accountant = await prisma.user.create({
-    data: {
+  const accountant = await prisma.user.upsert({
+    where: { username: 'michael' },
+    update: {
+      password: hashedPassword,
+      role: Role.USER,
+      isActive: true
+    },
+    create: {
       username: 'michael',
       email: 'michael@enxi-erp.com',
       password: hashedPassword,
@@ -270,8 +300,14 @@ async function createUsers() {
     }
   })
 
-  const warehouse = await prisma.user.create({
-    data: {
+  const warehouse = await prisma.user.upsert({
+    where: { username: 'david' },
+    update: {
+      password: hashedPassword,
+      role: Role.USER,
+      isActive: true
+    },
+    create: {
       username: 'david',
       email: 'david@enxi-erp.com',
       password: hashedPassword,
@@ -280,8 +316,14 @@ async function createUsers() {
     }
   })
 
-  const manager = await prisma.user.create({
-    data: {
+  const manager = await prisma.user.upsert({
+    where: { username: 'lisa' },
+    update: {
+      password: hashedPassword,
+      role: Role.USER,
+      isActive: true
+    },
+    create: {
       username: 'lisa',
       email: 'lisa@enxi-erp.com',
       password: hashedPassword,
