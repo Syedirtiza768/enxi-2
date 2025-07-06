@@ -153,7 +153,10 @@ async function cleanDatabase(): Promise<void> {
     await prisma.user.deleteMany()
     
     console.warn('✅ Database cleaned')
-} catch {}
+  } catch (error) {
+    console.warn('⚠️  Database cleanup failed:', error)
+  }
+}
 
 async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
