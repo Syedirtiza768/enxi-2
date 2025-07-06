@@ -132,3 +132,153 @@ body {
 .overflow-auto:hover::-webkit-scrollbar-thumb {
   background: #9ca3af;
 }
+
+/* Mobile responsive utilities */
+@media (max-width: 767px) {
+  /* Hide desktop-only elements */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Mobile-specific table styling */
+  .mobile-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-table-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .mobile-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .mobile-table-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    padding: 12px 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Touch-friendly buttons */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+  
+  /* Mobile form styling */
+  .mobile-form-field {
+    margin-bottom: 16px;
+  }
+  
+  .mobile-form-field input,
+  .mobile-form-field select,
+  .mobile-form-field textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+}
+
+/* Tablet specific styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-only {
+    display: block !important;
+  }
+  
+  .tablet-hidden {
+    display: none !important;
+  }
+}
+
+/* Desktop specific styles */
+@media (min-width: 1024px) {
+  .mobile-only {
+    display: none !important;
+  }
+  
+  .desktop-only {
+    display: block !important;
+  }
+}
+
+/* Safe area support for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-inset-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-inset-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets for touch devices */
+  button, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover states on touch devices */
+  .hover-desktop:hover {
+    background-color: initial;
+    color: initial;
+  }
+}
+
+/* High DPI display support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Crisp borders and lines on high DPI displays */
+  .border {
+    border-width: 0.5px;
+  }
+}
+
+/* Smooth transitions for responsive changes */
+.responsive-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Utility classes for responsive visibility */
+.mobile-show { display: none; }
+.tablet-show { display: none; }
+.desktop-show { display: block; }
+
+@media (max-width: 767px) {
+  .mobile-show { display: block; }
+  .mobile-hide { display: none; }
+  .desktop-show { display: none; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tablet-show { display: block; }
+  .tablet-hide { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .desktop-show { display: block; }
+  .desktop-hide { display: none; }
+}

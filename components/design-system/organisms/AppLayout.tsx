@@ -181,7 +181,7 @@ interface NotificationItem {
 export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
   const pathname = usePathname()
   const router = useRouter() // eslint-disable-line @typescript-eslint/no-unused-vars
-  const [sidebarOpen, setSidebarOpen] = useState(true) // Default open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(false) // Default closed on mobile
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [user, setUser] = useState<UserInfo | null>(null)
@@ -432,14 +432,16 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
 
   const sidebar = (
     <aside className={cn(
-      'fixed inset-y-0 left-0 z-[var(--z-modal)] flex flex-col',
+      'fixed inset-y-0 left-0 z-50 flex flex-col',
       'bg-[var(--bg-primary)] border-r border-[var(--border-primary)]',
-      'transform transition-all duration-[var(--transition-normal)]',
-      'lg:static lg:z-auto',
+      'transform transition-all duration-300 ease-in-out',
+      'lg:static lg:z-auto lg:translate-x-0',
       sidebarCollapsed ? 'w-16' : 'w-64',
-      // Mobile behavior
-      'lg:translate-x-0',
-      sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      // Mobile behavior - slide in from left
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+      // Add shadow on mobile when open
+      'lg:shadow-none',
+      sidebarOpen && 'shadow-2xl lg:shadow-none'
     )}>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
@@ -468,17 +470,17 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-[var(--z-overlay)] bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden animate-fade-in"
           onClick={(): void => setSidebarOpen(false)}
         />
       )}
 
       {/* Enhanced Top bar - Full Width */}
-      <header className="h-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] shadow-sm relative z-30">
+      <header className="h-16 lg:h-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)] shadow-sm relative z-30">
         <Container size="full" className="h-full">
-          <HStack justify="between" align="center" className="h-full px-4 lg:px-6">
+          <HStack justify="between" align="center" className="h-full px-3 sm:px-4 lg:px-6">
             {/* Left Section */}
-            <HStack gap="lg" align="center" className="flex-1">
+            <HStack gap="sm lg:gap-lg" align="center" className="flex-1">
               {/* Mobile menu toggle */}
               <Button
                 variant="ghost"
@@ -513,7 +515,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
               </Button>
               
               {/* Company Name with enhanced styling */}
-              <HStack gap="sm" align="center" className="hidden sm:flex">
+              <HStack gap="xs sm:gap-sm" align="center" className="hidden xs:flex">
                 {companySettings.logoUrl ? (
                   <div className="w-8 h-8 relative">
                     <Image
@@ -684,11 +686,11 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
                     z"/>
                   </svg>
                 )}
-                <VStack gap="none">
-                  <Text size="lg" weight="bold" className="text-[var(--color-brand-primary-600)] leading-tight">
+                <VStack gap="none" className="hidden sm:block">
+                  <Text size="base sm:size-lg" weight="bold" className="text-[var(--color-brand-primary-600)] leading-tight">
                     {companySettings.name}
                   </Text>
-                  <Text size="xs" color="tertiary" className="leading-tight">
+                  <Text size="2xs sm:size-xs" color="tertiary" className="leading-tight hidden md:block">
                     Enterprise Resource Planning
                   </Text>
                 </VStack>
@@ -710,7 +712,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
             </HStack>
 
             {/* Right Section */}
-            <HStack gap="sm" align="center">
+            <HStack gap="xs sm:gap-sm" align="center">
               {/* Mobile Search Toggle */}
               <Button
                 variant="ghost"
@@ -821,10 +823,10 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
                   className="hover:bg-[var(--bg-secondary)]"
                 >
                   <HStack gap="sm" align="center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-[var(--color-brand-primary-500)] to-[var(--color-brand-primary-700)] rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-[var(--color-brand-primary-500)] to-[var(--color-brand-primary-700)] rounded-full flex items-center justify-center">
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
-                    <VStack gap="none" className="hidden sm:block text-left">
+                    <VStack gap="none" className="hidden md:block text-left">
                       <Text size="sm" weight="medium" className="leading-tight">
                         {user?.username || 'User'}
                       </Text>
@@ -832,7 +834,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
                         {user?.role?.toLowerCase() || 'user'}
                       </Text>
                     </VStack>
-                    <ChevronDown className="h-3 w-3 text-[var(--text-tertiary)] hidden sm:block" />
+                    <ChevronDown className="h-3 w-3 text-[var(--text-tertiary)] hidden md:block" />
                   </HStack>
                 </Button>
 
