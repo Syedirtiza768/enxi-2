@@ -206,7 +206,7 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
     }
   }
 
-  const getSeverityBadge = (severity: string): void => {
+  const getSeverityBadge = (severity: string): React.ReactNode => {
     const config = {
       HIGH: { className: 'bg-red-100 text-red-800' },
       MEDIUM: { className: 'bg-yellow-100 text-yellow-800' },
@@ -217,7 +217,7 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
     return <Badge className={className}>{severity}</Badge>
   }
 
-  const getTypeDescription = (type: string): void => {
+  const getTypeDescription = (type: string): string => {
     const descriptions = {
       QUANTITY_OVER_MATCH: 'Quantity Over Match',
       QUANTITY_UNDER_MATCH: 'Quantity Under Match',
@@ -275,7 +275,7 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
           <Text size="xl" weight="bold">Three-Way Matching Dashboard</Text>
           <Text color="secondary">Monitor procurement document matching and exceptions</Text>
         </VStack>
-        <HStack gap="sm">
+        <HStack gap="sm" className="flex-col sm:flex-row">
           <Button
             variant="ghost"
             size="sm"
@@ -298,7 +298,7 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
       </HStack>
 
       {/* Summary Statistics */}
-      <Grid cols={4} gap="lg">
+      <Grid cols={{ xs: 1, sm: 2, lg: 4 }} gap="lg">
         <Card>
           <CardContent className="p-6">
             <VStack gap="sm">
@@ -352,7 +352,7 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
       </Grid>
 
       {/* Trends Section */}
-      <Grid cols={2} gap="lg">
+      <Grid cols={{ xs: 1, lg: 2 }} gap="lg">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -395,10 +395,10 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <HStack gap="md" className="flex-col sm:flex-row">
-            <div className="flex-1">
+          <VStack gap="md" className="sm:flex-row sm:items-center">
+            <div className="w-full sm:flex-1">
               <Input
-                placeholder="Search exceptions by PO number, supplier, or description..."
+                placeholder="Search exceptions..."
                 value={search}
                 onChange={(e): void => setSearch(e.target.value)}
                 leftIcon={<Search />}
@@ -406,30 +406,32 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
               />
             </div>
 
-            <select
-              value={typeFilter}
-              onChange={(e): void => setTypeFilter(e.target.value)}
-              className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[150px]"
-            >
-              <option value="all">All Types</option>
-              <option value="PRICE_VARIANCE">Price Variance</option>
-              <option value="QUANTITY_OVER_MATCH">Quantity Over</option>
-              <option value="QUANTITY_UNDER_MATCH">Quantity Under</option>
-              <option value="MISSING_GOODS_RECEIPT">Missing GR</option>
-              <option value="MISSING_INVOICE">Missing Invoice</option>
-            </select>
+            <HStack gap="sm" className="w-full sm:w-auto flex-col sm:flex-row">
+              <select
+                value={typeFilter}
+                onChange={(e): void => setTypeFilter(e.target.value)}
+                className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] w-full sm:min-w-[150px]"
+              >
+                <option value="all">All Types</option>
+                <option value="PRICE_VARIANCE">Price Variance</option>
+                <option value="QUANTITY_OVER_MATCH">Quantity Over</option>
+                <option value="QUANTITY_UNDER_MATCH">Quantity Under</option>
+                <option value="MISSING_GOODS_RECEIPT">Missing GR</option>
+                <option value="MISSING_INVOICE">Missing Invoice</option>
+              </select>
 
-            <select
-              value={severityFilter}
-              onChange={(e): void => setSeverityFilter(e.target.value)}
-              className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] min-w-[120px]"
-            >
-              <option value="all">All Severities</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
-            </select>
-          </HStack>
+              <select
+                value={severityFilter}
+                onChange={(e): void => setSeverityFilter(e.target.value)}
+                className="px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)] w-full sm:min-w-[120px]"
+              >
+                <option value="all">All Severities</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
+            </HStack>
+          </VStack>
         </CardContent>
       </Card>
 
@@ -453,92 +455,173 @@ export function ThreeWayMatchingDashboard(): React.JSX.Element | null {
             </VStack>
           </CardContent>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Purchase Order</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Exception Type</TableHead>
-                <TableHead>Severity</TableHead>
-                <TableHead>Variance</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredExceptions.map((exception) => (
-                <TableRow key={exception.id}>
-                  <TableCell className="font-medium">
-                    {exception.purchaseOrder.poNumber}
-                  </TableCell>
-                  <TableCell>{exception.purchaseOrder.supplier?.name || 'N/A'}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-blue-100 text-blue-800">
-                      {getTypeDescription(exception.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{getSeverityBadge(exception.severity)}</TableCell>
-                  <TableCell>
-                    {exception.variance && exception.variancePercentage ? (
-                      <div>
-                        <div className="font-medium">
-                          {formatCurrency(exception.variance)}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ({exception.variancePercentage.toFixed(1)}%)
-                        </div>
-                      </div>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-48 truncate" title={exception.description}>
-                      {exception.description}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(exception.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <HStack gap="xs">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(): void => router.push(`/three-way-matching/${exception.id}`)}
-                        title="View Details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {exception.requiresApproval && (
-                        <>
+          <>
+            {/* Mobile Card View */}
+            <div className="block lg:hidden">
+              <VStack gap="md">
+                {filteredExceptions.map((exception) => (
+                  <Card key={exception.id} className="p-4">
+                    <VStack gap="sm">
+                      <HStack justify="between" align="start">
+                        <VStack gap="xs" align="start">
+                          <Text size="sm" weight="semibold">
+                            {exception.purchaseOrder.poNumber}
+                          </Text>
+                          <Text size="xs" color="secondary">
+                            {exception.purchaseOrder.supplier?.name || 'N/A'}
+                          </Text>
+                        </VStack>
+                        {getSeverityBadge(exception.severity)}
+                      </HStack>
+                      
+                      <HStack gap="xs" className="flex-wrap">
+                        <Badge className="bg-blue-100 text-blue-800">
+                          {getTypeDescription(exception.type)}
+                        </Badge>
+                        {exception.variance && exception.variancePercentage && (
+                          <Badge className="bg-gray-100 text-gray-800">
+                            {formatCurrency(exception.variance)} ({exception.variancePercentage.toFixed(1)}%)
+                          </Badge>
+                        )}
+                      </HStack>
+                      
+                      <Text size="sm" className="text-left">
+                        {exception.description}
+                      </Text>
+                      
+                      <HStack justify="between" align="center">
+                        <Text size="xs" color="secondary">
+                          {new Date(exception.createdAt).toLocaleDateString()}
+                        </Text>
+                        <HStack gap="xs">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={(): void => handleApprove(exception)}
-                            className="text-green-600 hover:text-green-700"
-                            title="Approve"
+                            onClick={(): void => router.push(`/three-way-matching/${exception.id}`)}
+                            title="View Details"
                           >
-                            <ThumbsUp className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
+                          {exception.requiresApproval && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(): void => handleApprove(exception)}
+                                className="text-green-600 hover:text-green-700"
+                                title="Approve"
+                              >
+                                <ThumbsUp className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(): void => handleReject(exception)}
+                                className="text-red-600 hover:text-red-700"
+                                title="Reject"
+                              >
+                                <ThumbsDown className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </HStack>
+                      </HStack>
+                    </VStack>
+                  </Card>
+                ))}
+              </VStack>
+            </div>
+            
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Purchase Order</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Exception Type</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Variance</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredExceptions.map((exception) => (
+                    <TableRow key={exception.id}>
+                      <TableCell className="font-medium">
+                        {exception.purchaseOrder.poNumber}
+                      </TableCell>
+                      <TableCell>{exception.purchaseOrder.supplier?.name || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-blue-100 text-blue-800">
+                          {getTypeDescription(exception.type)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getSeverityBadge(exception.severity)}</TableCell>
+                      <TableCell>
+                        {exception.variance && exception.variancePercentage ? (
+                          <div>
+                            <div className="font-medium">
+                              {formatCurrency(exception.variance)}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              ({exception.variancePercentage.toFixed(1)}%)
+                            </div>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-48 truncate" title={exception.description}>
+                          {exception.description}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(exception.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <HStack gap="xs">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={(): void => handleReject(exception)}
-                            className="text-red-600 hover:text-red-700"
-                            title="Reject"
+                            onClick={(): void => router.push(`/three-way-matching/${exception.id}`)}
+                            title="View Details"
                           >
-                            <ThumbsDown className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        </>
-                      )}
-                    </HStack>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                          {exception.requiresApproval && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(): void => handleApprove(exception)}
+                                className="text-green-600 hover:text-green-700"
+                                title="Approve"
+                              >
+                                <ThumbsUp className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(): void => handleReject(exception)}
+                                className="text-red-600 hover:text-red-700"
+                                title="Reject"
+                              >
+                                <ThumbsDown className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </HStack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </Card>
 

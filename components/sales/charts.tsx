@@ -397,9 +397,9 @@ export default function SalesChartsComponent() {
 
   // Metric cards component
   const MetricCards = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-6">
       {metrics.map((metric, index) => (
-        <Card key={index} className="p-4">
+        <Card key={index} className="p-3 sm:p-4 hover:shadow-md transition-shadow duration-200">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{metric.title}</p>
@@ -440,18 +440,18 @@ export default function SalesChartsComponent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Sales Analytics Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Sales Analytics Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-400">
             Comprehensive sales performance and analytics
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px] px-4"
           >
             <Filter className="w-4 h-4" />
             Filters
@@ -462,7 +462,7 @@ export default function SalesChartsComponent() {
             size="sm" 
             onClick={fetchSalesData}
             disabled={isLoading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px] px-4"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -470,7 +470,7 @@ export default function SalesChartsComponent() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 min-h-[44px] px-4">
                 <Download className="w-4 h-4" />
                 Export
               </Button>
@@ -514,7 +514,7 @@ export default function SalesChartsComponent() {
             variant="outline" 
             size="sm" 
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px] px-4"
           >
             <Settings className="w-4 h-4" />
             {theme === 'light' ? 'Dark' : 'Light'}
@@ -525,7 +525,7 @@ export default function SalesChartsComponent() {
       {/* Filters Panel */}
       {showFilters && (
         <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <Label htmlFor="dateRange">Date Range</Label>
               <Select 
@@ -577,13 +577,13 @@ export default function SalesChartsComponent() {
       {/* Charts */}
       <div id="sales-charts" className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="regions">Regions</TabsTrigger>
-            <TabsTrigger value="funnel">Pipeline</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="trends" className="text-xs sm:text-sm">Trends</TabsTrigger>
+            <TabsTrigger value="products" className="text-xs sm:text-sm">Products</TabsTrigger>
+            <TabsTrigger value="customers" className="text-xs sm:text-sm">Customers</TabsTrigger>
+            <TabsTrigger value="regions" className="text-xs sm:text-sm">Regions</TabsTrigger>
+            <TabsTrigger value="funnel" className="text-xs sm:text-sm">Pipeline</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -592,7 +592,7 @@ export default function SalesChartsComponent() {
               {/* Revenue Trends */}
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Revenue Trends</h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
                   <LineChart data={salesData}>
                     <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEMES[theme].grid} />
                     <XAxis dataKey="date" stroke={CHART_THEMES[theme].text} />
@@ -633,7 +633,7 @@ export default function SalesChartsComponent() {
           <TabsContent value="trends" className="space-y-6">
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Sales Performance Trends</h3>
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" height={300} className="sm:h-[400px]">
                 <AreaChart data={salesData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEMES[theme].grid} />
                   <XAxis dataKey="date" stroke={CHART_THEMES[theme].text} />
@@ -668,7 +668,7 @@ export default function SalesChartsComponent() {
                   <BarChart data={productData.slice(0, 10)} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEMES[theme].grid} />
                     <XAxis type="number" stroke={CHART_THEMES[theme].text} />
-                    <YAxis type="category" dataKey="name" stroke={CHART_THEMES[theme].text} width={100} />
+                    <YAxis type="category" dataKey="name" stroke={CHART_THEMES[theme].text} width={80} className="sm:w-[100px]" />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="revenue" fill={COLORS[0]} />
                   </BarChart>
@@ -708,7 +708,7 @@ export default function SalesChartsComponent() {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={customerData.slice(0, 10)}>
                     <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEMES[theme].grid} />
-                    <XAxis dataKey="name" stroke={CHART_THEMES[theme].text} angle={-45} textAnchor="end" height={80} />
+                    <XAxis dataKey="name" stroke={CHART_THEMES[theme].text} angle={-45} textAnchor="end" height={60} className="sm:h-[80px]" />
                     <YAxis stroke={CHART_THEMES[theme].text} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="revenue" fill={COLORS[2]} />

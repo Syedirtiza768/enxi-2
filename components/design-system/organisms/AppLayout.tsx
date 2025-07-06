@@ -308,7 +308,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
     }
   }
 
-  const formatTimeAgo = (timestamp: string): void => {
+  const formatTimeAgo = (timestamp: string): string => {
     const now = new Date()
     const time = new Date(timestamp)
     const diff = now.getTime() - time.getTime()
@@ -329,7 +329,7 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
     )
   }
 
-  const getNotificationIcon = (type: string): void => {
+  const getNotificationIcon = (type: string): React.ReactNode => {
     switch (type) {
       case 'warning': return <AlertCircle className="h-4 w-4 text-orange-500" />
       case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -338,13 +338,13 @@ export function AppLayout({ children }: AppLayoutProps): React.JSX.Element {
     }
   }
 
-  const isActive = (href: string): void => {
+  const isActive = (href: string): boolean => {
     if (href === '/dashboard' && pathname === '/dashboard') return true
     if (href !== '/dashboard' && pathname.startsWith(href)) return true
     return false
   }
 
-  const renderNavItem = (item: NavItem, level = 0): void => {
+  const renderNavItem = (item: NavItem, level = 0): React.ReactNode => {
     const hasChildren = item.children && item.children.length > 0
     const isExpanded = expandedItems.includes(item.title)
     const active = isActive(item.href)

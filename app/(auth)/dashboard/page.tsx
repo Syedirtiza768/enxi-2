@@ -56,7 +56,7 @@ export default function DashboardPage(): React.JSX.Element {
 
         {/* Quick Stats */}
         <PageSection>
-          <Grid cols={3} gap="lg" className="w-full">
+          <Grid cols={{ xs: 1, sm: 2, lg: 3 }} gap="lg" className="w-full">
             <Card variant="elevated" padding="lg">
               <CardContent>
                 <HStack justify="between" align="center" className="mb-4">
@@ -142,17 +142,19 @@ export default function DashboardPage(): React.JSX.Element {
               <h2 className="text-xl font-semibold">Quick Actions</h2>
             </CardHeader>
             <CardContent className="pt-6">
-              <Grid cols={2} gap="md">
+              <Grid cols={{ xs: 1, sm: 2 }} gap="md">
                 <Link href="/leads" className="block">
-                  <Button fullWidth variant="outline" size="lg" className="justify-start">
-                    <Users className="mr-3 h-5 w-5" />
-                    Manage Leads
+                  <Button fullWidth variant="outline" size="lg" className="justify-center sm:justify-start">
+                    <Users className="mr-2 sm:mr-3 h-5 w-5" />
+                    <span className="hidden sm:inline">Manage Leads</span>
+                    <span className="sm:hidden">Leads</span>
                   </Button>
                 </Link>
                 <Link href="/leads" className="block">
-                  <Button fullWidth variant="outline" size="lg" className="justify-start">
-                    <Plus className="mr-3 h-5 w-5" />
-                    Add New Lead
+                  <Button fullWidth variant="outline" size="lg" className="justify-center sm:justify-start">
+                    <Plus className="mr-2 sm:mr-3 h-5 w-5" />
+                    <span className="hidden sm:inline">Add New Lead</span>
+                    <span className="sm:hidden">Add Lead</span>
                   </Button>
                 </Link>
               </Grid>
