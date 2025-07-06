@@ -44,6 +44,7 @@ const LeadStatus = {
   NEW: 'NEW',
   CONTACTED: 'CONTACTED',
   QUALIFIED: 'QUALIFIED',
+  PROPOSAL: 'PROPOSAL',
   CONVERTED: 'CONVERTED',
   LOST: 'LOST'
 } as const
@@ -76,6 +77,7 @@ const InvoiceStatus = {
   DRAFT: 'DRAFT',
   SENT: 'SENT',
   PAID: 'PAID',
+  PARTIAL: 'PARTIAL',
   OVERDUE: 'OVERDUE',
   CANCELLED: 'CANCELLED'
 } as const
@@ -104,7 +106,8 @@ const MovementType = {
   IN: 'IN',
   OUT: 'OUT',
   ADJUSTMENT: 'ADJUSTMENT',
-  TRANSFER: 'TRANSFER'
+  TRANSFER: 'TRANSFER',
+  OPENING: 'OPENING'
 } as const
 
 const JournalStatus = {
@@ -343,7 +346,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Cash and Cash Equivalents',
       type: AccountType.ASSET,
       description: 'Cash, checking, and savings accounts',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -355,7 +358,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Main business checking account',
       parentId: cash.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -367,7 +370,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       type: AccountType.ASSET,
       description: 'Small cash fund for miscellaneous expenses',
       parentId: cash.id,
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -378,7 +381,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Accounts Receivable',
       type: AccountType.ASSET,
       description: 'Customer receivables parent account',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -389,7 +392,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Inventory',
       type: AccountType.ASSET,
       description: 'Inventory assets',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -400,7 +403,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Prepaid Expenses',
       type: AccountType.ASSET,
       description: 'Prepaid insurance, rent, etc.',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -411,7 +414,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Property, Plant & Equipment',
       type: AccountType.ASSET,
       description: 'Fixed assets',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -423,7 +426,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Accounts Payable',
       type: AccountType.LIABILITY,
       description: 'Vendor payables',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -434,7 +437,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Sales Tax Payable',
       type: AccountType.LIABILITY,
       description: 'Sales tax collected from customers',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -445,7 +448,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Accrued Liabilities',
       type: AccountType.LIABILITY,
       description: 'Wages, utilities, and other accrued expenses',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -456,7 +459,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Short-term Debt',
       type: AccountType.LIABILITY,
       description: 'Notes payable due within one year',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -468,7 +471,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Capital Stock',
       type: AccountType.EQUITY,
       description: 'Common stock',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -479,7 +482,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Retained Earnings',
       type: AccountType.EQUITY,
       description: 'Accumulated earnings',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -490,7 +493,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Owner Drawings',
       type: AccountType.EQUITY,
       description: 'Owner withdrawals',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -500,9 +503,9 @@ async function createComprehensiveChartOfAccounts(userId: string) {
     data: {
       code: '4000',
       name: 'Sales Revenue',
-      type: AccountType.INCOME,
+      type: AccountType.REVENUE,
       description: 'Revenue from product sales',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -511,9 +514,9 @@ async function createComprehensiveChartOfAccounts(userId: string) {
     data: {
       code: '4100',
       name: 'Service Revenue',
-      type: AccountType.INCOME,
+      type: AccountType.REVENUE,
       description: 'Revenue from services',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -522,9 +525,9 @@ async function createComprehensiveChartOfAccounts(userId: string) {
     data: {
       code: '4900',
       name: 'Other Income',
-      type: AccountType.INCOME,
+      type: AccountType.REVENUE,
       description: 'Miscellaneous income',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -536,7 +539,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Cost of Goods Sold',
       type: AccountType.EXPENSE,
       description: 'Direct cost of goods sold',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -547,7 +550,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Salaries and Wages',
       type: AccountType.EXPENSE,
       description: 'Employee compensation',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -558,7 +561,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Rent Expense',
       type: AccountType.EXPENSE,
       description: 'Office and warehouse rent',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -569,7 +572,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Utilities Expense',
       type: AccountType.EXPENSE,
       description: 'Electric, water, gas, internet',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -580,7 +583,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Advertising and Marketing',
       type: AccountType.EXPENSE,
       description: 'Marketing and promotional expenses',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -591,7 +594,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Office Expenses',
       type: AccountType.EXPENSE,
       description: 'Office supplies and miscellaneous',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -602,7 +605,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Travel and Entertainment',
       type: AccountType.EXPENSE,
       description: 'Business travel and client entertainment',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -613,7 +616,7 @@ async function createComprehensiveChartOfAccounts(userId: string) {
       name: 'Professional Fees',
       type: AccountType.EXPENSE,
       description: 'Legal, accounting, consulting fees',
-      isActive: true,
+      status: 'ACTIVE',
       createdBy: userId
     }
   })
@@ -657,7 +660,7 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
           parentId: accounts.accountsReceivable.id,
           currency: 'USD',
           description: 'Accounts Receivable for TechCorp Solutions',
-          isActive: true,
+          status: 'ACTIVE',
           createdBy: adminId
         }
       }
@@ -686,7 +689,7 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
           parentId: accounts.accountsReceivable.id,
           currency: 'USD',
           description: 'Accounts Receivable for Global Retail Networks',
-          isActive: true,
+          status: 'ACTIVE',
           createdBy: salesId
         }
       }
@@ -714,7 +717,7 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
           parentId: accounts.accountsReceivable.id,
           currency: 'USD',
           description: 'Accounts Receivable for Advanced Manufacturing Ltd',
-          isActive: true,
+          status: 'ACTIVE',
           createdBy: salesId
         }
       }
@@ -742,7 +745,7 @@ async function createCustomersWithAR(adminId: string, salesId: string, accounts:
           parentId: accounts.accountsReceivable.id,
           currency: 'USD',
           description: 'Accounts Receivable for HealthCare Plus Systems',
-          isActive: true,
+          status: 'ACTIVE',
           createdBy: salesId
         }
       }
@@ -764,9 +767,7 @@ async function createLeads(salesId: string) {
         phone: '+1 (555) 111-2222',
         source: 'WEBSITE',
         status: LeadStatus.NEW,
-        estimatedValue: 75000,
         notes: 'Interested in enterprise software solution. Has budget approved.',
-        assignedTo: salesId,
         createdBy: salesId
       }
     }),
@@ -779,9 +780,7 @@ async function createLeads(salesId: string) {
         phone: '+1 (555) 333-4444',
         source: 'TRADE_SHOW',
         status: LeadStatus.CONTACTED,
-        estimatedValue: 120000,
         notes: 'Met at EdTech Expo 2024. Very interested in our learning management system.',
-        assignedTo: salesId,
         createdBy: salesId
       }
     }),
@@ -794,9 +793,7 @@ async function createLeads(salesId: string) {
         phone: '+1 (555) 555-6666',
         source: 'REFERRAL',
         status: LeadStatus.QUALIFIED,
-        estimatedValue: 300000,
         notes: 'Referred by TechCorp Solutions. Looking for comprehensive financial management system.',
-        assignedTo: salesId,
         createdBy: salesId
       }
     }),
@@ -809,9 +806,7 @@ async function createLeads(salesId: string) {
         phone: '+1 (555) 777-8888',
         source: 'COLD_CALL',
         status: LeadStatus.PROPOSAL,
-        estimatedValue: 180000,
         notes: 'Proposal sent for inventory management system. Awaiting decision.',
-        assignedTo: salesId,
         createdBy: salesId
       }
     })
@@ -1193,8 +1188,6 @@ async function createSalesCases(salesId: string, customers: any, leads: any) {
         actualValue: 0,
         cost: 0,
         profitMargin: 0,
-        probability: 90,
-        expectedCloseDate: new Date('2024-03-15'),
         status: SalesCaseStatus.OPEN,
         assignedTo: salesId,
         createdBy: salesId
@@ -1212,8 +1205,6 @@ async function createSalesCases(salesId: string, customers: any, leads: any) {
         actualValue: 0,
         cost: 0,
         profitMargin: 0,
-        probability: 75,
-        expectedCloseDate: new Date('2024-04-30'),
         status: SalesCaseStatus.OPEN,
         assignedTo: salesId,
         createdBy: salesId
@@ -1231,8 +1222,6 @@ async function createSalesCases(salesId: string, customers: any, leads: any) {
         actualValue: 0,
         cost: 0,
         profitMargin: 0,
-        probability: 60,
-        expectedCloseDate: new Date('2024-05-31'),
         status: SalesCaseStatus.OPEN,
         assignedTo: salesId,
         createdBy: salesId
@@ -1248,26 +1237,12 @@ async function createQuotations(salesId: string, customers: any, items: any, sal
   const quotation1 = await prisma.quotation.create({
     data: {
       quotationNumber: 'QT-2024-001',
-      customerId: customers.techCorp.id,
       salesCaseId: salesCases[0].id,
-      createdBy: salesId
-    }
-  })
-
-  await prisma.quotationVersion.create({
-    data: {
-      quotationId: quotation1.id,
-      versionNumber: 1,
-      date: new Date('2024-01-15'),
       validUntil: new Date('2024-02-29'),
-      currency: 'USD',
-      exchangeRate: 1.0,
+      status: QuotationStatus.SENT,
+      notes: 'Volume discount applied for quantities over 20 units',
       paymentTerms: 'Net 30',
       deliveryTerms: 'FOB Origin',
-      notes: 'Volume discount applied for quantities over 20 units',
-      termsAndConditions: 'Standard terms and conditions apply. Warranty: 3 years parts and labor.',
-      status: QuotationStatus.SENT,
-      isCurrent: true,
       createdBy: salesId,
       items: {
         create: [
@@ -1325,26 +1300,12 @@ async function createQuotations(salesId: string, customers: any, items: any, sal
   const quotation2 = await prisma.quotation.create({
     data: {
       quotationNumber: 'QT-2024-002',
-      customerId: customers.healthcarePlus.id,
       salesCaseId: salesCases[1].id,
-      createdBy: salesId
-    }
-  })
-
-  await prisma.quotationVersion.create({
-    data: {
-      quotationId: quotation2.id,
-      versionNumber: 1,
-      date: new Date('2024-01-20'),
       validUntil: new Date('2024-03-20'),
-      currency: 'USD',
-      exchangeRate: 1.0,
+      status: QuotationStatus.SENT,
+      notes: 'Healthcare compliance configuration included',
       paymentTerms: 'Net 30',
       deliveryTerms: 'Delivered and Installed',
-      notes: 'Healthcare compliance configuration included',
-      termsAndConditions: 'HIPAA compliance setup included. Extended warranty available.',
-      status: QuotationStatus.SENT,
-      isCurrent: true,
       createdBy: salesId,
       items: {
         create: [
@@ -1398,15 +1359,13 @@ async function createSalesOrders(salesId: string, customers: any, quotations: an
     data: {
       orderNumber: 'SO-2024-001',
       quotationId: quotations[0].id,
-      customerId: customers.techCorp.id,
+      salesCaseId: quotations[0].salesCaseId,
       orderDate: new Date('2024-02-01'),
-      requestedDeliveryDate: new Date('2024-02-29'),
-      currency: 'USD',
-      exchangeRate: 1.0,
+      requestedDate: new Date('2024-02-29'),
       paymentTerms: 'Net 30',
       billingAddress: 'TechCorp Solutions Inc\\n123 Technology Blvd\\nSan Francisco, CA 94105',
       shippingAddress: 'TechCorp Solutions Inc\\n123 Technology Blvd\\nSan Francisco, CA 94105',
-      status: OrderStatus.APPROVED,
+      status: OrderStatus.CONFIRMED,
       notes: 'Rush delivery requested for executive laptops',
       approvedBy: salesId,
       approvedAt: new Date('2024-02-01'),
@@ -1809,18 +1768,14 @@ async function createPayments(accountantId: string, invoices: any, accounts: any
 async function createCustomerPOs(salesId: string, customers: any, quotations: any) {
   const customerPO = await prisma.customerPO.create({
     data: {
-      customerPONumber: 'PO-TECH-2024-0156',
+      poNumber: 'PO-TECH-2024-0156',
       quotationId: quotations[0].id,
       customerId: customers.techCorp.id,
       poDate: new Date('2024-01-30'),
-      requestedDeliveryDate: new Date('2024-02-28'),
-      amount: 115000.00,
+      poAmount: 115000.00,
       currency: 'USD',
-      paymentTerms: 'Net 30',
-      billingAddress: 'TechCorp Solutions Inc\\nAccounts Payable\\n123 Technology Blvd\\nSan Francisco, CA 94105',
-      shippingAddress: 'TechCorp Solutions Inc\\nReceiving Dock\\n123 Technology Blvd\\nSan Francisco, CA 94105',
       notes: 'Please coordinate delivery with our IT team. Contact: John Smith (555) 123-4567',
-      status: 'ACCEPTED',
+      isAccepted: true,
       acceptedBy: salesId,
       acceptedAt: new Date('2024-01-30'),
       createdBy: salesId
@@ -2367,7 +2322,7 @@ async function createCurrencyData(adminId: string) {
         fromCurrency: 'EUR',
         toCurrency: 'USD',
         rate: 1.08,
-        effectiveDate: new Date('2024-01-01'),
+        rateDate: new Date('2024-01-01'),
         source: 'MANUAL',
         createdBy: adminId
       }
@@ -2377,7 +2332,7 @@ async function createCurrencyData(adminId: string) {
         fromCurrency: 'GBP',
         toCurrency: 'USD',
         rate: 1.26,
-        effectiveDate: new Date('2024-01-01'),
+        rateDate: new Date('2024-01-01'),
         source: 'MANUAL',
         createdBy: adminId
       }
@@ -2387,7 +2342,7 @@ async function createCurrencyData(adminId: string) {
         fromCurrency: 'CAD',
         toCurrency: 'USD',
         rate: 0.74,
-        effectiveDate: new Date('2024-01-01'),
+        rateDate: new Date('2024-01-01'),
         source: 'MANUAL',
         createdBy: adminId
       }
