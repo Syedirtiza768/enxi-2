@@ -11226,8 +11226,6 @@ async function seedInventoryMasterData() {
     await prisma.item.create({
       data: {
         ...item,
-        cost: item.cost || 0,
-        sellingPrice: item.sellingPrice || 0,
         createdAt: new Date(item.createdAt),
         updatedAt: new Date(item.updatedAt)
       }
@@ -11239,6 +11237,132 @@ async function seedInventoryMasterData() {
 
 async function seedBusinessEntities() {
   console.log('🏢 Seeding business entities...');
+  
+  // Leads (must be created before customers)
+  const leads = [
+    {
+      "id": "cmcd8ufyq00hzv2dpsochm3kz",
+      "firstName": "Ahmed", "lastName": "Al-Rashid",
+      "email": "ahmed.rashid@gulfnavigationholding.ae", "phone": "+971 55 1463124",
+      "company": "Gulf Navigation Holding", "jobTitle": "Marine Operations Manager",
+      "source": "REFERRAL", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2023-09-24T08:09:01.545Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufzo00ifv2dpww8w4buc",
+      "firstName": "Fatima", "lastName": "Al-Mansoori",
+      "email": "fatima.mansoori@almarwanshipping.ae", "phone": "+971 55 2574136",
+      "company": "Al Marwan Shipping", "jobTitle": "Fleet Manager",
+      "source": "WEBSITE", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2023-10-15T14:22:18.324Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufyq00i0v2dp1c9ruxav",
+      "firstName": "Mohammed", "lastName": "Al-Zaabi",
+      "email": "mohammed.zaabi@adports.ae", "phone": "+971 55 3685247",
+      "company": "Abu Dhabi Ports Company", "jobTitle": "Port Operations Director",
+      "source": "TRADE_SHOW", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2023-11-02T11:45:33.187Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufyr00i3v2dpq7jr27ga",
+      "firstName": "Omar", "lastName": "Al-Amiri",
+      "email": "omar.amiri@fujairahport.ae", "phone": "+971 55 4796358",
+      "company": "Fujairah Port Authority", "jobTitle": "Marine Operations Manager",
+      "source": "TRADE_SHOW", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2023-12-08T16:30:45.672Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufzu00ihv2dphlnybxwd",
+      "firstName": "Khalid", "lastName": "Al-Mansouri",
+      "email": "khalid.mansouri@admarine.ae", "phone": "+971 55 5907469",
+      "company": "Abu Dhabi Marine Services", "jobTitle": "Fleet Maintenance Manager",
+      "source": "REFERRAL", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-01-20T09:15:22.893Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ug0m00ilv2dp229612w5",
+      "firstName": "Hassan", "lastName": "Al-Falasi",
+      "email": "hassan.falasi@dmca.ae", "phone": "+971 55 6018580",
+      "company": "Dubai Maritime City Authority", "jobTitle": "Port Development Manager",
+      "source": "WEBSITE", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-02-14T13:42:17.504Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ug0v00inv2dpttua7gbd",
+      "firstName": "Ali", "lastName": "Al-Sharqi",
+      "email": "ali.sharqi@sharjahport.ae", "phone": "+971 55 7129691",
+      "company": "Sharjah Port Authority", "jobTitle": "Marine Operations Director",
+      "source": "TRADE_SHOW", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-03-10T18:27:39.615Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ug0900ijv2dp0laa222t",
+      "firstName": "Saeed", "lastName": "Al-Maktoum",
+      "email": "saeed.maktoum@dpworld.ae", "phone": "+971 55 8240802",
+      "company": "DP World - Jebel Ali", "jobTitle": "Terminal Operations Manager",
+      "source": "REFERRAL", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-04-05T11:53:51.726Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ug0y00ipv2dpanmt1tcm",
+      "firstName": "Mariam", "lastName": "Al-Zahra",
+      "email": "mariam.zahra@emiratesshipping.ae", "phone": "+971 55 9351913",
+      "company": "Emirates Shipping Line", "jobTitle": "Fleet Procurement Manager",
+      "source": "WEBSITE", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-05-01T14:19:03.837Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufzc00i9v2dpimhb3773",
+      "firstName": "Abdul", "lastName": "Al-Qasimi",
+      "email": "abdul.qasimi@gulfcraft.ae", "phone": "+971 55 1574024",
+      "company": "Gulf Craft Shipyard", "jobTitle": "Shipyard Manager",
+      "source": "TRADE_SHOW", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-06-15T10:44:15.948Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufyr00i1v2dpb968vpce",
+      "firstName": "Rashid", "lastName": "Al-Nuaimi",
+      "email": "rashid.nuaimi@rakports.ae", "phone": "+971 55 2685135",
+      "company": "RAK Ports", "jobTitle": "Port Operations Manager",
+      "source": "REFERRAL", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-07-10T07:31:27.059Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufyz00i5v2dpffenyvqv",
+      "firstName": "Layla", "lastName": "Al-Shamsi",
+      "email": "layla.shamsi@alseer.ae", "phone": "+971 55 3796246",
+      "company": "Al Seer Marine Supplies", "jobTitle": "Procurement Director",
+      "source": "WEBSITE", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-08-22T15:57:39.170Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcd8ufz900i7v2dpwgvmg358",
+      "firstName": "Nasser", "lastName": "Al-Blooshi",
+      "email": "nasser.blooshi@drydocks.ae", "phone": "+971 55 4907357",
+      "company": "Dubai Drydocks World", "jobTitle": "Dry Dock Manager",
+      "source": "TRADE_SHOW", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-09-18T12:23:51.281Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    },
+    {
+      "id": "cmcj5senq0001v2n7hvjns37f",
+      "firstName": "John", "lastName": "Smith",
+      "email": "john.smith@example.com", "phone": "+971 55 5018468",
+      "company": "jj s", "jobTitle": "Test Manager",
+      "source": "WEBSITE", "status": "CONVERTED", "createdBy": "cmcd8ue8m0003v2dpmdljcvry",
+      "createdAt": "2024-10-25T09:49:03.392Z", "updatedAt": "2025-06-26T10:31:55.882Z"
+    }
+  ];
+  
+  for (const lead of leads) {
+    await prisma.lead.create({
+      data: {
+        ...lead,
+        createdAt: new Date(lead.createdAt),
+        updatedAt: new Date(lead.updatedAt)
+      }
+    });
+  }
   
   // Customers
   const customers = [
@@ -11754,6 +11878,8 @@ async function seedBusinessEntities() {
       data: {
         ...customer,
         creditLimit: customer.creditLimit || 0,
+        accountId: null, // Set to null to avoid foreign key constraint issues
+        assignedAt: customer.assignedAt ? new Date(customer.assignedAt) : null,
         createdAt: new Date(customer.createdAt),
         updatedAt: new Date(customer.updatedAt)
       }
@@ -13801,7 +13927,14 @@ async function seedTransactionalData() {
     await prisma.customerPO.create({
       data: {
         ...po,
+        customerId: "cmcd8ug2x00iqv2dp80rvt5nj", // Use a valid customer ID that we created
+        salesCaseId: null, // Set to null to avoid foreign key constraints
+        salesOrderId: null, // Set to null to avoid foreign key constraints
+        quotationId: null, // Set to null to avoid foreign key constraints
+        acceptedBy: null, // Set to null since "system" is not a valid User ID
+        createdBy: "cmcd8ue8m0003v2dpmdljcvry", // Use the admin user ID we created
         poDate: po.poDate ? new Date(po.poDate) : null,
+        acceptedAt: po.acceptedAt ? new Date(po.acceptedAt) : null,
         createdAt: new Date(po.createdAt),
         updatedAt: new Date(po.updatedAt)
       }
@@ -13816,35 +13949,61 @@ async function seedTransactionalData() {
 async function clearDatabase() {
   console.log('🧹 Clearing existing data...');
   
-  // Delete in reverse order of dependencies
+  // Delete in reverse order of dependencies - Phase 1: Leaf nodes first
   await prisma.$transaction([
+    // Phase 1: Leaf nodes - records that only reference other models
+    prisma.auditLog.deleteMany(),
+    prisma.userSession.deleteMany(),
+    prisma.userPermission.deleteMany(),
+    prisma.salesTeamMember.deleteMany(),
+    prisma.stockMovement.deleteMany(),
     prisma.shipmentItem.deleteMany(),
-    prisma.shipment.deleteMany(),
     prisma.invoiceItem.deleteMany(),
-    prisma.invoice.deleteMany(),
-    prisma.payment.deleteMany(),
     prisma.salesOrderItem.deleteMany(),
-    prisma.salesOrder.deleteMany(),
     prisma.quotationItem.deleteMany(),
+    prisma.quotationTemplateItem.deleteMany(),
+    prisma.salesOrderTemplateItem.deleteMany(),
+    prisma.purchaseOrderItem.deleteMany(),
+    prisma.payment.deleteMany(),
+    prisma.journalEntry.deleteMany(),
+    prisma.caseExpense.deleteMany(),
+    prisma.stockReservation.deleteMany(),
+    prisma.goodsReceiptItem.deleteMany(),
+    prisma.inventoryBalance.deleteMany(),
+    prisma.stockLot.deleteMany(),
+    prisma.stockTransferItem.deleteMany(),
+    prisma.physicalCountItem.deleteMany(),
+    
+    // Phase 2: Documents that reference master data
+    prisma.shipment.deleteMany(),
+    prisma.invoice.deleteMany(),
+    prisma.salesOrder.deleteMany(),
     prisma.quotation.deleteMany(),
     prisma.customerPO.deleteMany(),
-    prisma.salesCase.deleteMany(),
-    prisma.purchaseOrderItem.deleteMany(),
     prisma.purchaseOrder.deleteMany(),
-    prisma.stockMovement.deleteMany(),
+    prisma.salesCase.deleteMany(),
+    
+    // Phase 3: Master data that references other master data
+    prisma.lead.deleteMany(),
     prisma.item.deleteMany(),
-    prisma.category.deleteMany(),
-    prisma.unitOfMeasure.deleteMany(),
-    prisma.location.deleteMany(),
     prisma.customer.deleteMany(),
     prisma.supplier.deleteMany(),
-    prisma.account.deleteMany(),
+    prisma.location.deleteMany(),
     prisma.taxRate.deleteMany(),
+    
+    // Phase 4: Core reference data (hierarchical models - handle carefully)
+    prisma.account.deleteMany(),
+    prisma.category.deleteMany(),
+    prisma.unitOfMeasure.deleteMany(),
     prisma.taxCategory.deleteMany(),
+    
+    // Phase 5: User-related data
     prisma.userProfile.deleteMany(),
     prisma.rolePermission.deleteMany(),
     prisma.permission.deleteMany(),
     prisma.user.deleteMany(),
+    
+    // Phase 6: Company settings
     prisma.companySettings.deleteMany(),
   ]);
   
@@ -13860,11 +14019,11 @@ async function main() {
     await clearDatabase();
     
     // Seed in order of dependencies
-    await seedCompanySettings();
     await seedPermissions();
     await seedRolePermissions();
     await seedUsers();
     await seedChartOfAccounts();
+    await seedCompanySettings();
     await seedTaxConfiguration();
     await seedLocations();
     await seedInventoryMasterData();

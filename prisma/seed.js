@@ -1,4 +1,4 @@
-import { PrismaClient } from '../lib/generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -782,7 +782,7 @@ async function createStockMovements(warehouseId, items) {
       availableQty: 200,
       unitCost: 20,
       totalCost: 4000,
-      supplier: 'Tech Supplies Inc',
+      supplierName: 'Tech Supplies Inc',
       purchaseRef: 'PO-2024-001',
       createdBy: warehouseId
     }
@@ -817,7 +817,7 @@ async function createStockMovements(warehouseId, items) {
       availableQty: 500,
       unitCost: 5,
       totalCost: 2500,
-      supplier: 'Office Supplies Co',
+      supplierName: 'Office Supplies Co',
       purchaseRef: 'PO-2024-002',
       expiryDate: new Date('2025-01-05'),
       createdBy: warehouseId
