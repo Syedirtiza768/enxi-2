@@ -100,10 +100,10 @@ async function main(): Promise<void> {
   await createCustomerPOs(users.sales.id, customers, quotations)
   console.warn('✅ Created customer POs\n')
 
-  // Step 13: Create additional journal entries
-  console.warn('📚 Step 13: Creating additional journal entries...')
-  await createAdditionalJournalEntries(users.accountant.id, accounts)
-  console.warn('✅ Created additional journal entries\n')
+  // Step 13: Create comprehensive GL journal entries  
+  console.warn('📚 Step 13: Creating comprehensive GL journal entries...')
+  await createComprehensiveJournalEntries(users.accountant.id, accounts, invoices, inventory.items)
+  console.warn('✅ Created comprehensive GL journal entries\n')
 
   // Step 14: Create audit trail examples
   console.warn('🔍 Step 14: Creating audit trail examples...')
@@ -122,7 +122,7 @@ async function main(): Promise<void> {
   console.warn('\n🚀 Ready to test complete business workflows!')
 }
 
-async function cleanDatabase(): Promise<Account> {
+async function cleanDatabase(): Promise<void> {
   console.warn('🧹 Cleaning existing data...')
   
   // Clean in correct order to respect foreign key constraints
@@ -155,7 +155,7 @@ async function cleanDatabase(): Promise<Account> {
     console.warn('✅ Database cleaned')
 } catch {}
 
-async function createUsers(): Promise<T> {
+async function createUsers() {
   const hashedPassword = await bcrypt.hash('demo123', 10)
 
   const admin = await prisma.user.create({
@@ -1706,7 +1706,7 @@ async function createCustomerPOs(salesId: string, customers: any, quotations: an
   return [customerPO]
 }
 
-async function createAdditionalJournalEntries(accountantId: string, accounts: any) {
+async function createComprehensiveJournalEntries(accountantId: string, accounts: any, invoices: any, items: any) {
   // Create opening balances
   const openingEntry = await prisma.journalEntry.create({
     data: {
@@ -1867,6 +1867,363 @@ async function createAdditionalJournalEntries(accountantId: string, accounts: an
         exchangeRate: 1.0,
         baseDebitAmount: 0,
         baseCreditAmount: 56300.00
+      }
+    })
+  ])
+
+  // Journal entry for sales revenue recognition (Invoice INV-2024-001)
+  const salesRevenueEntry = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-003',
+      date: new Date('2024-02-10'),
+      description: 'Sales revenue recognition - INV-2024-001 TechCorp',
+      reference: 'INV-2024-001',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-02-10'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit AR for full invoice amount
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: salesRevenueEntry.id,
+        accountId: accounts.accountsReceivable.id,
+        description: 'AR - TechCorp Solutions - INV-2024-001',
+        debitAmount: 73150.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 73150.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit sales revenue for net amount
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: salesRevenueEntry.id,
+        accountId: accounts.salesRevenue.id,
+        description: 'Sales revenue - Computer hardware',
+        debitAmount: 0,
+        creditAmount: 67200.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 67200.00
+      }
+    }),
+    // Credit sales tax payable
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: salesRevenueEntry.id,
+        accountId: accounts.salesTaxPayable.id,
+        description: 'Sales tax collected - 8.5%',
+        debitAmount: 0,
+        creditAmount: 5950.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 5950.00
+      }
+    })
+  ])
+
+  // Cost of goods sold entry for inventory sold
+  const cogsEntry = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-004',
+      date: new Date('2024-02-10'),
+      description: 'Cost of goods sold - INV-2024-001',
+      reference: 'INV-2024-001-COGS',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-02-10'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit COGS for cost of items sold
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: cogsEntry.id,
+        accountId: accounts.cogs.id,
+        description: 'COGS - Laptops and desktops sold',
+        debitAmount: 55000.00, // 25 laptops @ $1200 + 10 desktops @ $2500
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 55000.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit inventory for cost of items sold
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: cogsEntry.id,
+        accountId: accounts.inventory.id,
+        description: 'Inventory reduction - items sold',
+        debitAmount: 0,
+        creditAmount: 55000.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 55000.00
+      }
+    })
+  ])
+
+  // Customer payment entry for first payment
+  const paymentEntry1 = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-005',
+      date: new Date('2024-02-20'),
+      description: 'Customer payment received - PAY-2024-001',
+      reference: 'PAY-2024-001',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-02-20'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit cash for payment received
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: paymentEntry1.id,
+        accountId: accounts.bank.id,
+        description: 'Payment received - Wire transfer',
+        debitAmount: 35000.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 35000.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit AR for payment applied
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: paymentEntry1.id,
+        accountId: accounts.accountsReceivable.id,
+        description: 'AR payment - TechCorp partial payment',
+        debitAmount: 0,
+        creditAmount: 35000.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 35000.00
+      }
+    })
+  ])
+
+  // Service revenue entry for training invoice
+  const serviceRevenueEntry = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-006',
+      date: new Date('2024-02-15'),
+      description: 'Service revenue recognition - INV-2024-002',
+      reference: 'INV-2024-002',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-02-15'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit AR for service invoice
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: serviceRevenueEntry.id,
+        accountId: accounts.accountsReceivable.id,
+        description: 'AR - HealthCare Plus - Training services',
+        debitAmount: 1736.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 1736.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit service revenue
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: serviceRevenueEntry.id,
+        accountId: accounts.serviceRevenue.id,
+        description: 'Training service revenue',
+        debitAmount: 0,
+        creditAmount: 1600.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 1600.00
+      }
+    }),
+    // Credit sales tax payable
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: serviceRevenueEntry.id,
+        accountId: accounts.salesTaxPayable.id,
+        description: 'Sales tax on training services',
+        debitAmount: 0,
+        creditAmount: 136.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 136.00
+      }
+    })
+  ])
+
+  // Payment for service invoice
+  const paymentEntry2 = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-007',
+      date: new Date('2024-02-25'),
+      description: 'Customer payment - Training services',
+      reference: 'PAY-2024-002',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-02-25'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit cash for payment
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: paymentEntry2.id,
+        accountId: accounts.bank.id,
+        description: 'Payment received - Check #4567',
+        debitAmount: 1736.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 1736.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit AR
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: paymentEntry2.id,
+        accountId: accounts.accountsReceivable.id,
+        description: 'AR payment - HealthCare Plus full payment',
+        debitAmount: 0,
+        creditAmount: 1736.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 1736.00
+      }
+    })
+  ])
+
+  // Inventory purchase entries for stock received
+  const inventoryPurchaseEntry = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-008',
+      date: new Date('2024-01-10'),
+      description: 'Inventory purchase - Monitors',
+      reference: 'PO-2024-001',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-01-10'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit inventory for goods received
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: inventoryPurchaseEntry.id,
+        accountId: accounts.inventory.id,
+        description: 'Inventory - 27" Monitors purchased',
+        debitAmount: 35000.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 35000.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit accounts payable
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: inventoryPurchaseEntry.id,
+        accountId: accounts.accountsPayable.id,
+        description: 'AP - Display Tech Solutions',
+        debitAmount: 0,
+        creditAmount: 35000.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 35000.00
+      }
+    })
+  ])
+
+  // Keyboard purchase entry
+  const keyboardPurchaseEntry = await prisma.journalEntry.create({
+    data: {
+      entryNumber: 'JE-2024-009',
+      date: new Date('2024-01-15'),
+      description: 'Inventory purchase - Keyboards',
+      reference: 'PO-2024-002',
+      currency: 'USD',
+      exchangeRate: 1.0,
+      status: JournalStatus.POSTED,
+      postedAt: new Date('2024-01-15'),
+      postedBy: accountantId,
+      createdBy: accountantId
+    }
+  })
+
+  await Promise.all([
+    // Debit inventory for keyboards
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: keyboardPurchaseEntry.id,
+        accountId: accounts.inventory.id,
+        description: 'Inventory - Mechanical keyboards purchased',
+        debitAmount: 15000.00,
+        creditAmount: 0,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 15000.00,
+        baseCreditAmount: 0
+      }
+    }),
+    // Credit accounts payable
+    prisma.journalLine.create({
+      data: {
+        journalEntryId: keyboardPurchaseEntry.id,
+        accountId: accounts.accountsPayable.id,
+        description: 'AP - Peripheral Plus Inc',
+        debitAmount: 0,
+        creditAmount: 15000.00,
+        currency: 'USD',
+        exchangeRate: 1.0,
+        baseDebitAmount: 0,
+        baseCreditAmount: 15000.00
       }
     })
   ])
