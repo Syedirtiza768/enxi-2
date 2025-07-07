@@ -92,7 +92,7 @@ export default function TrialBalancePage() {
       </div>
 
       <form onSubmit={handleGenerateReport} className="mb-6 bg-white p-4 rounded-lg shadow">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">As of Date</label>
             <input

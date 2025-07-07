@@ -263,7 +263,7 @@ export default function SystemHealthPage() {
                 <CardContent>
                   <div className="space-y-2">
                     <div>Total Routes: {healthData.routes.totalRoutes}</div>
-                    <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                       <div className="text-green-600">Healthy: {healthData.routes.healthyRoutes}</div>
                       <div className="text-yellow-600">Degraded: {healthData.routes.degradedRoutes}</div>
                       <div className="text-red-600">Unhealthy: {healthData.routes.unhealthyRoutes}</div>
@@ -316,7 +316,7 @@ export default function SystemHealthPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                         <div>
                           <div className="text-sm text-gray-600">Total Requests</div>
                           <div className="font-semibold">{route.totalRequests.toLocaleString()}</div>

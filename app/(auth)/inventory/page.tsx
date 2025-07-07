@@ -109,7 +109,7 @@ export default function InventoryPage(): React.JSX.Element {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg border">
           <div className="flex items-center justify-between">
             <div>
@@ -160,7 +160,7 @@ export default function InventoryPage(): React.JSX.Element {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action) => {
             const Icon = action.icon
             return (

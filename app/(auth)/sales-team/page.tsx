@@ -220,7 +220,7 @@ export default function SalesTeamPage(): React.JSX.Element {
 
           {/* Team Members */}
           {hierarchy.teamMembers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {hierarchy.teamMembers.map((member) => {
                 const achievement = member.salesTeamMember
                   ? calculateAchievement(
@@ -344,7 +344,7 @@ export default function SalesTeamPage(): React.JSX.Element {
               </div>
             </div>
           ) : unassignedCustomers.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {unassignedCustomers.map((customer) => (
                 <Card key={customer.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="pt-6">
