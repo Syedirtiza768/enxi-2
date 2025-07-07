@@ -20,7 +20,7 @@ interface LeadStatsProps {
 export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
   if (!stats || typeof stats !== 'object' || stats === null) {
     return (
-      <Grid cols={4} gap="md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i} variant="subtle" padding="lg">
             <CardContent>
@@ -31,7 +31,7 @@ export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
             </CardContent>
           </Card>
         ))}
-      </Grid>
+      </div>
     )
   }
 
@@ -105,30 +105,30 @@ export function LeadStats({ stats }: LeadStatsProps): React.JSX.Element {
         </Text>
       </HStack>
       
-      <Grid cols={4} gap="md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statItems.map((item) => {
           const Icon = item.icon
           return (
             <Card key={item.title} variant="subtle" padding="lg" className="transition-all duration-[var(--transition-fast)] hover:shadow-[var(--shadow-lg)]">
               <CardContent>
-                <HStack gap="md" align="center">
-                  <div className={`p-3 rounded-[var(--radius-lg)] ${item.bgColor}`}>
+                <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                  <div className={`p-3 rounded-[var(--radius-lg)] ${item.bgColor} self-start`}>
                     <Icon className={`h-5 w-5 ${item.iconColor}`} />
                   </div>
-                  <VStack gap="xs">
+                  <div className="flex flex-col gap-1">
                     <Text size="sm" weight="medium" color="secondary">
                       {item.title}
                     </Text>
                     <Text size="xl" weight="bold">
                       {item.value}
                     </Text>
-                  </VStack>
-                </HStack>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )
         })}
-      </Grid>
+      </div>
     </VStack>
   )
 }
